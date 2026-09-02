@@ -5510,7 +5510,6 @@ AbstractClass * UnitClass::Greatest_Threat(ThreatType threat, Coord const & coor
 void UnitClass::Read_INI(CCINIClass const & ini)
 {
 	UnitClass	* unit;         // Working unit pointer.
-	HousesType	inhouse;        // Unit house.
 	UnitType		classid;    // Unit class.
 	char			buf[128];
 	int len = ini.Entry_Count(INI_NAME);
@@ -5522,12 +5521,8 @@ void UnitClass::Read_INI(CCINIClass const & ini)
 
 		ini.Get_String(INI_NAME, entry, NULL, buf, sizeof(buf));
 
-		inhouse = HouseTypeClass::From_Name(strtok(buf, ","));
-		if (inhouse != HOUSE_NONE) {
-			HouseClass * inhousep = House_From_HousesType(inhouse);
-			if (inhousep == NULL) {
-				continue;
-			}
+		HouseClass * inhousep = House_From_Name(strtok(buf, ","));
+		if (inhousep != NULL) {
 			classid = UnitTypeClass::From_Name(strtok(NULL, ","));
 
 			if (classid != UNIT_NONE) {

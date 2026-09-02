@@ -421,7 +421,7 @@ bool Do_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp)
 	/*
 	**	perform some preliminary checks for validity.
 	*/
-	if (!teamtype || !teamtype->TaskForce->ClassCount) return(false);
+	if (!teamtype || !teamtype->TaskForce->ClassCount || teamtype->House == NULL) return(false);
 
 	AircraftTypeClass const * dshp = AircraftTypes[AircraftTypeClass::From_Name("DSHP")];
 	if (teamtype->TaskForce->ClassCount == 1 && teamtype->TaskForce->Members[0].Class == dshp && teamtype->House->CurrentDropship < 3) {

@@ -97,7 +97,7 @@ TagClass::~TagClass(void)
 
 	if (GameActive && ScenarioActive &&
 		Trigger != NULL && Trigger->Class != NULL && Trigger->Class->House != NULL && Class->Is_Allow_Win()) {
-		HouseClass *hptr = House_From_HousesType(Trigger->Class->House->House);
+		HouseClass *hptr = Trigger->Class->House;
 
 		if (hptr->Blockage) hptr->Blockage--;
 		hptr->BorrowedTime = TICKS_PER_SECOND*4;

@@ -258,6 +258,10 @@ TeamClass * TeamTypeClass::Create_One_Of(HouseClass * house) const
 	if (house == NULL) {
 		house = House;
 	}
+	// A type owned by nobody, such as a start position nobody holds, raises no team.
+	if (house == NULL) {
+		return(NULL);
+	}
 	if (ScenarioInit || MaxAllowed < 0 ||
 		((Session.Type == GAME_NORMAL && Number < MaxAllowed) ||
 		 (Session.Type != GAME_NORMAL && house->Owned_Team_Count(this) < MaxAllowed))) {

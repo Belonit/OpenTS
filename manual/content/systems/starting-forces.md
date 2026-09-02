@@ -26,7 +26,7 @@ related:
     id: veterancy
 ---
 
-The pass runs once, as a skirmish or multiplayer scenario finishes loading, and never in a campaign. It visits every house in turn and skips a house whose country is [`MultiplayPassive`](/keys/multiplaypassive/) and an [observer's](/systems/observers/) house. Each remaining house is given its start position, then a base unit when bases are on, then random vehicles and infantry until a budget is spent.
+The pass runs once, as a skirmish or multiplayer scenario finishes loading, and never in a campaign. It visits every house in turn and skips a house whose country is [`MultiplayPassive`](/keys/multiplaypassive/) and an [observer's](/systems/observers/) house. Each remaining house is placed at its start position, then given a base unit when bases are on, then random vehicles and infantry until a budget is spent.
 
 ## The budget
 
@@ -38,7 +38,7 @@ A house then makes its own shortlist from the allowed types: those whose [`TechL
 
 ## The start position
 
-The pool of positions and the order houses draw from it are decided by the map's [`Official`](/keys/official/#scope-scenarios-2) flag. A position named for a seat in [the launch file](/formats/spawn-ini/#who-is-playing) is held for that house before anybody draws. The cell chosen becomes the house's center.
+Positions are settled as the scenario loads, before its teams, triggers, and objects are read, so that a [spawn house](/formats/scenario-objects/#spawn-houses) can name the house that starts there. The pool is the map's placed waypoints `0` through `7`, narrowed by the map's [`Official`](/keys/official/#scope-scenarios-2) flag. A position named for a seat in [the launch file](/formats/spawn-ini/#who-is-playing) is held for that house before anybody draws; the first house to draw takes an open position at random, and every house after it takes whichever open position lies furthest from those already held. A house left over when the eligible waypoints run out starts on a random cell of open ground, found once the map is loaded, and holds no numbered position. The cell chosen becomes the house's center.
 
 ## The base unit
 

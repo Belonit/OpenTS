@@ -6887,7 +6887,6 @@ void BuildingClass::Update_Radar_Spied(void)
 void BuildingClass::Read_INI(CCINIClass const & ini)
 {
 	BuildingClass			* b;        // Working unit pointer.
-	HousesType				bhouse;     // Building house.
 	HouseClass				* bhptr;    // Building house.
 	StructType				classid;    // Building type.
 	Cell						cell;   // Cell of building.
@@ -6913,14 +6912,9 @@ void BuildingClass::Read_INI(CCINIClass const & ini)
 		/*
 		**	1st token: house name.
 		*/
-		bhouse = HouseTypeClass::From_Name(strtok(buf, ","));
-		bhptr = House_From_HousesType(bhouse);
+		bhptr = House_From_Name(strtok(buf, ","));
 
 		if (bhptr == NULL) {
-			continue;
-		}
-
-		if (Session.Type != GAME_NORMAL && bhptr == PlayerPtr) {
 			continue;
 		}
 
@@ -6929,7 +6923,7 @@ void BuildingClass::Read_INI(CCINIClass const & ini)
 		*/
 		classid = BuildingTypeClass::From_Name(strtok(NULL, ","));
 
-		if (bhouse != HOUSE_NONE && classid != STRUCT_NONE) {
+		if (classid != STRUCT_NONE) {
 			int	strength;
 			Dir256 facing;
 

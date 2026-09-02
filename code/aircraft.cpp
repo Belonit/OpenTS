@@ -3830,7 +3830,6 @@ void AircraftClass::Write_INI(CCINIClass & ini)
 void AircraftClass::Read_INI(CCINIClass const & ini)
 {
 	AircraftClass	* air;      // Working unit pointer.
-	HousesType		inhouse;    // Unit house.
 	AircraftType	classid;    // Unit class.
 	char				buf[128];
 
@@ -3841,12 +3840,8 @@ void AircraftClass::Read_INI(CCINIClass const & ini)
 
 		ini.Get_String(INI_NAME, entry, NULL, buf, sizeof(buf));
 
-		inhouse = HouseTypeClass::From_Name(strtok(buf, ","));
-		if (inhouse != HOUSE_NONE) {
-			HouseClass * inhousep = House_From_HousesType(inhouse);
-			if (inhousep == NULL) {
-				continue;
-			}
+		HouseClass * inhousep = House_From_Name(strtok(buf, ","));
+		if (inhousep != NULL) {
 			classid = AircraftTypeClass::From_Name(strtok(NULL, ","));
 
 			if (classid != AIRCRAFT_NONE) {

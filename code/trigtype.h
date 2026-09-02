@@ -38,7 +38,7 @@
 #include "dialog.hh"
 #include "diff.hh"
 
-class HouseTypeClass;
+class HouseClass;
 class TActionClass;
 class TEventClass;
 class TriggerClass;
@@ -147,7 +147,7 @@ class TriggerTypeClass : public AbstractTypeClass
 		/*
 		**	For house-specific events, this is the house for that event.
 		*/
-		HouseTypeClass * House;
+		HouseClass * House;
 
 		/*
 		 * This points to the next trigger type hanging off the same tag, or is NULL if this

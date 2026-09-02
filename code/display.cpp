@@ -3162,10 +3162,7 @@ void DisplayClass::Read_INI(CCINIClass const & ini)
 	Session.Update_Progress(65);
 	Call_Back();
 
-	/*
-	**	Read the Waypoint entries.
-	*/
-	Scen->Read_Waypoints(ini);
+	Scen->Flag_Waypoint_Cells();
 
 	/*
 	**	Set the starting position (do this after Init(), which clears the cells'

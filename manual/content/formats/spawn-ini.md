@@ -122,7 +122,9 @@ color — and everything below that names a seat by number means that order.
 | `[IsSpectator]` | `Multi1`–`Multi8` | Whether that seat watches rather than plays. |
 
 A start position the map does not declare, or one another seat has already taken, is left
-to the game to choose, which is also what writing no position means. Alliances are made
+to the game to choose, which is also what writing no position means. A map hands a seat
+whatever it placed for that position by owning it with a
+[spawn house](/formats/scenario-objects/#spawn-houses). Alliances are made
 exactly as written, before the first frame: a match whose file forbids new alliances still
 starts with the ones it wrote. Nothing announces them, and the computer players keep the
 alliances the file gave them instead of [closing ranks](/keys/paranoid/) as they do against

@@ -172,6 +172,7 @@
 #include "scenario.h"
 #include "scheme.h"
 #include "session.h"
+#include "spawnhouse.h"
 #include "sun.h"
 #include "super.h"
 #include "suprtype.h"
@@ -2910,7 +2911,7 @@ void HouseClass::Clobber_All(void)
 		}
 	}
 	for (i = 0; i < Triggers.Count(); i++) {
-		if (Triggers[i]->Class->House == Class) {
+		if (Triggers[i]->Class->House == this) {
 			delete Triggers[i];
 			i--;
 		}
@@ -5477,9 +5478,12 @@ void HouseClass::Read_All(CCINIClass const & ini)
 
 	for (index = HOUSE_FIRST; index < count; index++) {
 		/// Reading the entry is what forces the house type to be created. The house below is
-		/// built from the type at the same index, which need not be the one just read.
+		/// built from the type at the same index, which need not be the one just read, and a
+		/// spawn house entry registers no type at all.
 		ini.Get_HousesType("Houses", ini.Get_Entry("Houses", index), HOUSE_NONE);
-		new HouseClass(HouseTypes[index]);
+		if (index < HouseTypes.Count()) {
+			new HouseClass(HouseTypes[index]);
+		}
 	}
 
 	for (index = HOUSE_FIRST; index < Houses.Count(); index++) {
@@ -6281,6 +6285,11 @@ void HouseClass::Tracking_Active_Add(TechnoClass * techno, bool bycapture)
  *=============================================================================================*/
 HouseClass * House_From_HousesType(HousesType house)
 {
+	int spawn_waypoint = Spawn_House_Waypoint(house);
+	if (spawn_waypoint != -1) {
+		return(House_At(spawn_waypoint));
+	}
+
 	for (int index = 0; index < Houses.Count(); index++) {
 		HouseClass * housep = Houses[index];
 		if (housep->Class->House == house) {
@@ -6288,6 +6297,59 @@ HouseClass * House_From_HousesType(HousesType house)
 		}
 	}
 	return(NULL);
+}
+
+
+/// <summary>
+/// Fetches the house starting at a numbered start position.
+/// </summary>
+/// <returns>The house holding that position, or NULL while nobody does. An observer or a
+/// passive house never holds one.</returns>
+HouseClass * House_At(int spawn_waypoint)
+{
+	if (spawn_waypoint < 0) {
+		return(NULL);
+	}
+
+	for (int index = 0; index < Houses.Count(); index++) {
+		HouseClass * housep = Houses[index];
+		if (housep->SpawnWaypoint == spawn_waypoint && !housep->IsObserver && !housep->Class->IsMultiplayPassive) {
+			return(housep);
+		}
+	}
+	return(NULL);
+}
+
+
+/// <summary>
+/// Fetches the live house a scenario names as an owner: a country somebody is playing, or
+/// whoever starts at the position a spawn house name refers to.
+/// </summary>
+/// <returns>The house, or NULL when nobody in the session answers to the name.</returns>
+HouseClass * House_From_Name(char const * name)
+{
+	int spawn_waypoint = Spawn_House_Waypoint(name);
+	if (spawn_waypoint != -1) {
+		return(House_At(spawn_waypoint));
+	}
+	return(House_From_HousesType(HouseTypeClass::From_Name(name)));
+}
+
+
+/// <summary>
+/// Does a house parameter select this house? A spawn house selects the one house at that
+/// position, while a country selects every house playing it.
+/// </summary>
+bool House_Matches(HouseClass const * house, HousesType selector)
+{
+	if (house == NULL) {
+		return(false);
+	}
+	int spawn_waypoint = Spawn_House_Waypoint(selector);
+	if (spawn_waypoint != -1) {
+		return(House_At(spawn_waypoint) == house);
+	}
+	return(house->Class->House == selector);
 }
 
 

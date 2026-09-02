@@ -289,7 +289,11 @@ bool TEventClass::operator () (TEventType event, HouseClass const * house, Objec
 	*/
 	if (Event == TEVENT_PLAYER_ENTERED || Event == TEVENT_CROSS_HORIZONTAL || Event == TEVENT_CROSS_VERTICAL || Event == TEVENT_ENTERS_ZONE) {
 		if (event != Event) return(false);
-		if (!object || (Data.House != HOUSE_NONE && object->Owner() != House_From_HousesType(Data.House)->HeapID)) return(false);
+		if (!object) return(false);
+		if (Data.House != HOUSE_NONE) {
+			HouseClass * owner = House_From_HousesType(Data.House);
+			if (owner == NULL || object->Owner() != owner->HeapID) return(false);
+		}
 		tripped = true;
 		return(true);
 	}
@@ -303,7 +307,7 @@ bool TEventClass::operator () (TEventType event, HouseClass const * house, Objec
 	}
 	else if (Event == TEVENT_ATTACKED_BY) {
 		if (event != Event) return(false);
-		if (source == NULL || Data.House != source->House->HeapID) {
+		if (source == NULL || House_From_HousesType(Data.House) != source->House) {
 			return(false);
 		}
 	}

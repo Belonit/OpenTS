@@ -135,6 +135,7 @@
 #include "script.h"
 #include "session.h"
 #include "smudge.h"
+#include "spawnhouse.h"
 #include "stats.h"
 #include "surface.h"
 #include "swizzle.h"
@@ -168,6 +169,7 @@ CDTimerClass<SystemTimerClass> ScenUnusedTimer;
 
 
 static void Remove_AI_Players(void);
+static void Assign_Start_Positions(bool official);
 static void Create_Units(bool official);
 static Cell const Clip_Scatter(Cell const & cell, int maxdist);
 static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist);
@@ -771,7 +773,10 @@ void Fill_In_Data(void)
 
 		if (tp->Attaches_To() & ATTACH_HOUSE) {
 			TagClass * tt = Find_Or_Make(tp);
-			House_From_HousesType(tt->Class->FirstTrigger->House->House)->HouseTags.Add(tt);
+			HouseClass * owner = tt->Class->FirstTrigger->House;
+			if (owner != NULL) {
+				owner->HouseTags.Add(tt);
+			}
 		}
 	}
 
@@ -798,8 +803,8 @@ void Fill_In_Data(void)
 	*/
 	for (index = 0; index < TagTypes.Count(); index++) {
 		TagTypeClass * tp = TagTypes[index];
-		if (tp->Is_Allow_Win()) {
-			Houses[tp->FirstTrigger->House->HeapID]->Blockage++;
+		if (tp->Is_Allow_Win() && tp->FirstTrigger->House != NULL) {
+			tp->FirstTrigger->House->Blockage++;
 		}
 	}
 
@@ -1607,8 +1612,7 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 	char const * const BASIC = "Basic";
 	Scen->InitTime = ini.Get_Int(BASIC, "InitTime", 10000);
-	bool official = ini.Get_Bool(BASIC, "Official", false); /// read here, but never consulted
-	official = official; /// suppresses the unused variable warning
+	bool official = ini.Get_Bool(BASIC, "Official", false);
 
 	if (Session.Type == GAME_NORMAL) {
 		Disable_Addon(ADDON_ANY);
@@ -1743,6 +1747,16 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	Special.Apply_To_Game();
 
 	Call_Back();
+
+	/*
+	**	Read the Waypoint entries.
+	*/
+	Scen->Read_Waypoints(ini);
+
+	// Owners are resolved as objects are read, so start positions are settled ahead of them.
+	if (Session.Type != GAME_NORMAL && !is_mapgen && !Debug_Map) {
+		Assign_Start_Positions(official);
+	}
 
 	/*
 	**	Read in the team-type data. The team types must be created before any
@@ -2378,68 +2392,132 @@ static void Append_Open_Start_Positions(DynamicVectorClass<Cell> & waypts, int &
 
 
 /// <summary>
-/// Fetches the starting locations a multiplayer game may use, making up any shortfall with
-/// open ground. When identity is kept, each entry is numbered by its waypoint and undeclared
-/// ones are left as holes.
+/// Settles which numbered start position each playing house holds, from the waypoints the map
+/// declares. A house that named a position keeps it while it is free; the rest draw, the first
+/// at random and each after it the position furthest from those already held. A house left
+/// over when the positions run out holds none until the loaded map can offer open ground.
 /// </summary>
 /// <param name="official">Is this one of the maps that shipped with the game?</param>
-/// <param name="keep_identity">Must an entry's place in the list be its waypoint number?</param>
-/// <param name="wanted">How many houses need a position.</param>
-/// <returns>Returns with the list of cells that players may be started from.</returns>
-static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official, bool keep_identity, int wanted)
+/// <remarks>Calling this again leaves every house that already holds a position alone.</remarks>
+static void Assign_Start_Positions(bool official)
 {
-	DynamicVectorClass<Cell> waypts;
+	static_assert(SPAWN_HOUSE_COUNT == MAX_PLAYERS, "a spawn house names a multiplayer start position");
 
-	if (keep_identity) {
-		int usable = 0;
-		for (int waycount = 0; waycount < MAX_PLAYERS; waycount++) {
-			bool declared = Scen->Is_Valid_Waypoint(waycount);
-			waypts.Add(declared ? Scen->Get_Waypoint_Cell(waycount) : CELL_NONE);
-			if (declared) {
-				usable++;
-			}
-		}
-
-		/*
-		 * Spots making up a shortfall are appended past the numbered ones, so no number comes to
-		 * mean a place the map never declared.
-		 */
-		Append_Open_Start_Positions(waypts, usable, wanted);
-
-		return(waypts);
-	}
-
-	int num_waypts = 0;
-	for (int i = 0; i < MAX_PLAYERS; i++) {
-		if (Scen->Is_Valid_Waypoint(i)) {
-			num_waypts++;
+	/*
+	 * Only a playing house holds a position, whatever a launch file wrote for a spectator's seat.
+	 */
+	int playing = 0;
+	for (int index = 0; index < Houses.Count(); index++) {
+		HouseClass * housep = Houses[index];
+		if (housep->IsObserver || housep->Class->IsMultiplayPassive) {
+			housep->SpawnWaypoint = -1;
 		} else {
-			break;
+			playing++;
 		}
 	}
 
 	/*
-	**	Calculate the number of waypoints (as a minimum) that will be lifted from the
-	**	mission file. Bias this number so that only the first 4 waypoints are used
-	**	if there are 4 or fewer players. Unofficial maps will pick from all the
-	**	available waypoints.
-	*/
-	int look_for = std::max(num_waypts, wanted);
-	if (!official) {
-		look_for = MAX_PLAYERS;
+	 * A seat that named a position by number makes every declared waypoint eligible. Otherwise
+	 * an official map is trusted to have placed waypoint 0 onward for as many as play, and
+	 * nothing past that run is drawn from; any other map offers every waypoint it placed.
+	 */
+	bool choices = false;
+	for (int i = 0; i < Session.Players.Count(); i++) {
+		if (!Session.Players[i]->Player.IsObserver && Session.Players[i]->Player.SpawnChoice >= 0) {
+			choices = true;
+		}
 	}
-
-	for (int waycount = 0; waycount < look_for; waycount++) {
-		if (Scen->Is_Valid_Waypoint(waycount)) {
-			waypts.Add(Scen->Get_Waypoint_Cell(waycount));
-			DebugString("Multiplayer start waypoint found at cell %d,%d\n", Scen->Get_Waypoint_Cell(waycount).X, Scen->Get_Waypoint_Cell(waycount).Y);
+	for (int i = 0; i < Session.Computers.Count(); i++) {
+		if (!Session.Computers[i]->Player.IsObserver && Session.Computers[i]->Player.SpawnChoice >= 0) {
+			choices = true;
 		}
 	}
 
-	int usable = waypts.Count();
-	Append_Open_Start_Positions(waypts, usable, look_for);
+	int look_for = MAX_PLAYERS;
+	if (official && !choices) {
+		int placed = 0;
+		while (placed < MAX_PLAYERS && Scen->Is_Valid_Waypoint(placed)) {
+			placed++;
+		}
+		look_for = std::max(placed, playing);
+	}
 
-	return(waypts);
+	bool open[MAX_PLAYERS];
+	bool held[MAX_PLAYERS];
+	for (int spot = 0; spot < MAX_PLAYERS; spot++) {
+		open[spot] = spot < look_for && Scen->Is_Valid_Waypoint(spot);
+		held[spot] = false;
+	}
+
+	/*
+	 * A house that named a position holds it before anybody draws. When two name the same one,
+	 * the first keeps it and the other draws as though it had named none.
+	 */
+	for (int index = 0; index < Houses.Count(); index++) {
+		HouseClass * housep = Houses[index];
+		int spot = housep->SpawnWaypoint;
+		if (spot < 0) {
+			continue;
+		}
+		if (spot < MAX_PLAYERS && open[spot]) {
+			open[spot] = false;
+			held[spot] = true;
+		} else {
+			housep->SpawnWaypoint = -1;
+		}
+	}
+
+	for (int index = 0; index < Houses.Count(); index++) {
+		HouseClass * housep = Houses[index];
+		if (housep->IsObserver || housep->Class->IsMultiplayPassive || housep->SpawnWaypoint >= 0) {
+			continue;
+		}
+
+		bool anyone = false;
+		for (int spot = 0; spot < MAX_PLAYERS; spot++) {
+			anyone = anyone || held[spot];
+		}
+
+		int best = -1;
+		if (!anyone) {
+			int candidates[MAX_PLAYERS];
+			int count = 0;
+			for (int spot = 0; spot < MAX_PLAYERS; spot++) {
+				if (open[spot]) {
+					candidates[count++] = spot;
+				}
+			}
+			if (count > 0) {
+				best = candidates[Random_Pick(0, count - 1)];
+			}
+		} else {
+			int bestvalue = 0;
+			for (int spot = 0; spot < MAX_PLAYERS; spot++) {
+				if (!open[spot]) {
+					continue;
+				}
+				int score = 0;
+				for (int other = 0; other < MAX_PLAYERS; other++) {
+					if (held[other]) {
+						score += Distance(Scen->Get_Waypoint_Cell(spot), Scen->Get_Waypoint_Cell(other));
+					}
+				}
+				if (best == -1 || score > bestvalue) {
+					bestvalue = score;
+					best = spot;
+				}
+			}
+		}
+
+		if (best == -1) {
+			break;
+		}
+
+		housep->SpawnWaypoint = best;
+		open[best] = false;
+		held[best] = true;
+		DebugString("House %s starts at waypoint %d\n", (char const *)housep->IniName, best);
+	}
 }
 
 
@@ -2503,66 +2581,31 @@ static void Create_Units(bool official)
 	int average_cost = total_objs > 0 ? total_cost / total_objs : 0;
 	int max_value = unit_count * average_cost;
 
+	Assign_Start_Positions(official);
+
 	/*
-	 * A house only asks for a position by number when a launch file chose one for it, which is
-	 * what decides whether the numbers must keep their identity. An observer holds no position.
+	 * A house the numbered positions could not hold starts on open ground, which needs the loaded
+	 * map and so could not be found any earlier. Such a house holds no numbered position.
 	 */
-	bool choices = false;
-	int wanted = Session.Players.Count() + Session.Options.AIPlayers;
+	DynamicVectorClass<Cell> open_ground;
+	int usable = 0;
+	int wanted = 0;
 	for (int index = 0; index < Houses.Count(); index++) {
 		HouseClass * housep = Houses[index];
-		if (housep == NULL) {
-			continue;
-		}
-		if (housep->IsObserver) {
-			wanted--;
-		} else if (housep->SpawnWaypoint >= 0) {
-			choices = true;
+		if (!housep->IsObserver && !housep->Class->IsMultiplayPassive && housep->SpawnWaypoint < 0) {
+			wanted++;
 		}
 	}
+	Append_Open_Start_Positions(open_ground, usable, wanted);
+	int next_open = 0;
 
-	/*
-	**	Build a list of the valid waypoints. This normally shouldn't be
-	**	necessary because the scenario level designer should have assigned
-	**	valid locations to the first N waypoints, but just in case, this
-	**	loop verifies that.
-	*/
-	DynamicVectorClass<Cell> waypts = Build_Start_Waypoint_List(official, choices, wanted);
-	bool taken[MAX_PLAYERS * 2];
-	for (int index = 0; index < ARRAY_SIZE(taken); index++) {
-		taken[index] = choices && index < waypts.Count() && waypts[index] == CELL_NONE;
-	}
-
-	/*
-	 * A house that named a position holds it before anybody draws, so a house that named none
-	 * cannot take it. When two name the same position, the first keeps it.
-	 */
-	int reserved[MAX_PLAYERS * 2];
-	for (int index = 0; index < ARRAY_SIZE(reserved); index++) {
-		reserved[index] = -1;
-	}
-
-	if (choices) {
-		for (int index = 0; index < Houses.Count(); index++) {
-			HouseClass * housep = Houses[index];
-			if (housep == NULL || housep->Class->IsMultiplayPassive || housep->IsObserver) {
-				continue;
-			}
-
-			int spot = housep->SpawnWaypoint;
-			if (spot >= 0 && spot < waypts.Count() && !taken[spot]) {
-				reserved[spot] = index;
-				taken[spot] = true;
-			}
-		}
-	}
+	DynamicVectorClass<Cell> homes;
 
 	/*
 	**	Loop through all houses.  Computer-controlled houses, with Session.Options.Bases
 	**	ON, are treated as though bases are OFF (since we have no base-building
 	**	AI logic.)
 	*/
-	int numtaken = 0;
 	for (HousesType house = HOUSE_FIRST; house < Houses.Count(); house++) {
 
 		/*
@@ -2599,78 +2642,12 @@ static void Create_Units(bool official)
 		}
 
 
-		/*
-		**	Pick the starting location for this house. The first house just picks
-		**	one of the valid locations at random. The other houses pick the furthest
-		**	wapoint from the existing houses.
-		*/
-		if (choices && hptr->SpawnWaypoint >= 0 && hptr->SpawnWaypoint < waypts.Count() &&
-			reserved[hptr->SpawnWaypoint] == (int)house) {
-			centroid = waypts[hptr->SpawnWaypoint];
-			numtaken++;
-		} else if (numtaken == 0) {
-			int pick;
-			do {
-				pick = Random_Pick(0, waypts.Count() - 1);
-			} while (taken[pick]);
-			centroid = waypts[pick];
-			taken[pick] = true;
-			hptr->SpawnWaypoint = pick;
-			numtaken++;
+		if (hptr->SpawnWaypoint >= 0) {
+			centroid = Scen->Get_Waypoint_Cell(hptr->SpawnWaypoint);
 		} else {
-
-			/*
-			**	Set all waypoints to have a score of zero in preparation for giving
-			**	a distance score to all waypoints.
-			*/
-			int score[26];
-			memset(score, '\0', sizeof(score));
-
-			/*
-			**	Scan through all waypoints and give a score as a value of the sum
-			**	of the distances from this waypoint to all taken waypoints.
-			*/
-			for (int index = 0; index < waypts.Count(); index++) {
-
-				/*
-				**	If this waypoint has not already been taken, then accumulate the
-				**	sum of the distance between this waypoint and all other taken
-				**	waypoints.
-				*/
-				if (!taken[index]) {
-					for (int trypoint = 0; trypoint < waypts.Count(); trypoint++) {
-
-						if (taken[trypoint] && waypts[trypoint] != CELL_NONE) {
-							score[index] += Distance(waypts[index], waypts[trypoint]);
-						}
-					}
-				}
-			}
-
-			/*
-			**	Now find the waypoint with the largest score. This waypoint is the one
-			**	that is furthest from all other taken waypoints.
-			*/
-			int best = 0;
-			int bestvalue = 0;
-			for (int searchindex = 0; searchindex < waypts.Count(); searchindex++) {
-				if (waypts[searchindex] == CELL_NONE) {
-					continue;
-				}
-				if (score[searchindex] > bestvalue || bestvalue == 0) {
-					bestvalue = score[searchindex];
-					best = searchindex;
-				}
-			}
-
-			/*
-			**	Assign this best position to the house.
-			*/
-			centroid = waypts[best];
-			taken[best] = true;
-			hptr->SpawnWaypoint = best;
-			numtaken++;
+			centroid = open_ground[next_open++];
 		}
+		homes.Add(centroid);
 
 		/*
 		**	Assign the center of this house to the waypoint location.
@@ -2776,19 +2753,11 @@ static void Create_Units(bool official)
 		HouseClass * hptr = Houses[house];
 		if (hptr == NULL || !hptr->IsObserver) continue;
 
-		DynamicVectorClass<Cell> homes;
-		for (int index = 0; index < waypts.Count(); index++) {
-			if (taken[index] && waypts[index] != CELL_NONE) {
-				homes.Add(waypts[index]);
-			}
-		}
-
 		centroid = Cell(Map.MapRect.X + Map.MapRect.Width / 2, Map.MapRect.Y + Map.MapRect.Height / 2);
 		if (homes.Count() > 0) {
 			centroid = homes[Random_Pick(0, homes.Count() - 1)];
 		}
 
-		hptr->SpawnWaypoint = -1;
 		hptr->Center = Coord(centroid);
 	}
 	DebugString("Finished unit generation. Random number is %d\n", Random_Pick(0, 65535));
@@ -3918,7 +3887,7 @@ bool ScenarioClass::Is_Valid_Waypoint(WAYPOINT waypoint) const
 
 /// <summary>
 /// Reads the waypoint list from an INI database.
-/// The cells named are also flagged as waypoints so that the editor can display them.
+/// No cell is touched, so this may run before the map itself has been read.
 /// </summary>
 void ScenarioClass::Read_Waypoints(CCINIClass const & ini)
 {
@@ -3932,7 +3901,17 @@ void ScenarioClass::Read_Waypoints(CCINIClass const & ini)
 		} else {
 			Waypoint[i] = Cell(val % 1000, val / 1000);
 		}
+	}
+}
 
+
+/// <summary>
+/// Flags the cell under every placed waypoint so that the editor can display them.
+/// </summary>
+/// <remarks>Call this once the map's cells exist, since initializing them clears the flags.</remarks>
+void ScenarioClass::Flag_Waypoint_Cells(void)
+{
+	for (int i = 0; i < WAYPT_COUNT; i++) {
 		if (Is_Valid_Waypoint(i)) {
 			Get_Waypoint_CellClass(i)->IsWaypoint = 1;
 		}

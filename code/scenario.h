@@ -115,6 +115,7 @@ class ScenarioClass {
 		char const * First_Unused_Waypoint_Name(void) const;
 
 		void Read_Waypoints(CCINIClass const & ini);
+		void Flag_Waypoint_Cells(void);
 		void Write_Waypoints(CCINIClass & ini) const;
 
 		bool Is_Valid_Waypoint(WAYPOINT waypoint) const;

@@ -95,6 +95,7 @@
 #include "scheme.h"
 #include "shapipe.h"
 #include "side.h"
+#include "spawnhouse.h"
 #include "suprtype.h"
 #include "target.h"
 #include "theme.h"
@@ -1205,6 +1206,10 @@ HousesType CCINIClass::Get_HousesType(char const * section, char const * entry, 
 	char buffer[128];
 
 	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+		int spawn_waypoint = Spawn_House_Waypoint(buffer);
+		if (spawn_waypoint != -1) {
+			return(Spawn_House_Type(spawn_waypoint));
+		}
 		HousesType house = HouseTypeClass::From_Name(buffer);
 		if (house == HOUSE_NONE) {
 			HouseTypeClass * type = new HouseTypeClass(buffer);
@@ -1237,7 +1242,10 @@ HousesType CCINIClass::Get_HousesType(char const * section, char const * entry, 
 bool CCINIClass::Put_HousesType(char const * section, char const * entry, HousesType value)
 {
 	char const * name = "<none>";
-	if (value != HOUSE_NONE) {
+	int spawn_waypoint = Spawn_House_Waypoint(value);
+	if (spawn_waypoint != -1) {
+		name = Spawn_House_Name(spawn_waypoint);
+	} else if (value != HOUSE_NONE) {
 		name = HouseTypes[value]->Name();
 	}
 

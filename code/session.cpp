@@ -67,6 +67,7 @@
 #include "savestream.h"
 #include "scenario.h"
 #include "spawner.h"
+#include "spawnhouse.h"
 #include "special.h"
 #include "stats.h"
 #include "xstraw.h"
@@ -495,7 +496,11 @@ void SessionClass::Read_MultiPlayer_Settings(void)
 	PrefColor = ConfigINI.Get_Int("MultiPlayer", "Color", 0);
 
 	if (!Session.IsWDT) {
+		int previous = House;
 		House = (int)ConfigINI.Get_HousesType("MultiPlayer", "Side", (HousesType)House);
+		if (Spawn_House_Waypoint((HousesType)House) != -1) {
+			House = previous;
+		}
 	}
 
 	TrapCheckHeap = ConfigINI.Get_Int("MultiPlayer", "CheckHeap", 0);

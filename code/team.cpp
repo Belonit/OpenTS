@@ -2581,11 +2581,14 @@ void TeamClass::TMission_SCATTER(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_CHANGE_HOUSE(TeamMissionClass * mission, bool)
 {
-	FootClass *unit = Member;
-	while (unit != NULL) {
-		FootClass *next = unit->Member;
-		unit->Captured(House_From_HousesType(mission->Data.House));
-		unit = next;
+	HouseClass * newowner = House_From_HousesType(mission->Data.House);
+	if (newowner != NULL) {
+		FootClass *unit = Member;
+		while (unit != NULL) {
+			FootClass *next = unit->Member;
+			unit->Captured(newowner);
+			unit = next;
+		}
 	}
 	IsNextMission = true;
 }
@@ -3227,7 +3230,9 @@ void TeamClass::TMission_REDUCE_TIBERIUM(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_BEGIN_PRODUCTION(TeamMissionClass * mission, bool)
 {
-	Class->House->IsStarted = true;
+	if (Class->House != NULL) {
+		Class->House->IsStarted = true;
+	}
 	IsNextMission = true;
 }
 
@@ -3239,7 +3244,9 @@ void TeamClass::TMission_BEGIN_PRODUCTION(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_FIRE_SALE(TeamMissionClass * mission, bool)
 {
-	Class->House->State = STATE_ENDGAME;
+	if (Class->House != NULL) {
+		Class->House->State = STATE_ENDGAME;
+	}
 	IsNextMission = true;
 }
 
