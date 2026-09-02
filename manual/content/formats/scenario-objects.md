@@ -11,6 +11,7 @@ source_files:
 - code/trigtype.cpp
 - code/tagtype.cpp
 - code/house.cpp
+- code/scenario.cpp
 filenames:
 - "<scenario>.INI"
 - "*.MAP"
@@ -22,6 +23,12 @@ related:
   id: starting-forces
 - type: key
   id: House
+- type: key
+  id: Allies
+- type: key
+  id: NodeCount
+- type: key
+  id: UseMPAIBaseNodes
 ---
 
 Scenario INI files store placed objects as comma-separated entries in `[Units]`, `[Infantry]`, `[Aircraft]`, and `[Structures]`. Every row begins with an owner, an ObjectType ID, and strength; the remaining positional fields carry the location, facing, mission, tag, and type-specific state. The section entry name identifies the row when the engine writes a scenario, while the loader processes rows in their section order.
@@ -37,6 +44,8 @@ Trigger definitions in `[Triggers]` use the same live-owner rule, and a trigger 
 A spawn house names whoever starts at one of the eight numbered start positions, waypoints `0` through `7`. It is written `Spawn1` through `Spawn8` or `<Player @ A>` through `<Player @ H>`; both spellings mean the same position, are matched without regard to case, and must be spelled exactly, so `Spawn 1` and `Spawn9` name nothing. No HouseType is registered under these names and a scenario cannot define one. Which house holds each position is settled as the scenario loads, before any team, trigger, or object row is read, so a spawn owner resolves to the house that starts there. [Starting forces](/systems/starting-forces/#the-start-position) owns how positions are handed out; an observer and a house of a passive country never hold one, and a campaign never assigns any.
 
 A vehicle, infantry, aircraft, or structure row owned by a spawn house is created for that house. A spawn house nobody holds, such as `Spawn3` in a two-player game, resolves to nothing: the row is skipped like any other row without a live owner, a `[Triggers]` definition owned by it is deleted, and a [TeamType](/keys/house/) owned by it raises no team. Each owner dropped this way is written to the debug log.
+
+A spawn house may also have a section of its own, `[Spawn1]` through `[Spawn8]`, read for the house holding that position once positions are settled: [`Allies=`](/keys/allies/) in every skirmish or multiplayer game, and the base node keys, [`NodeCount`](/keys/nodecount/) with its numbered entries, when the map sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/). A section for a position nobody holds is ignored, and the engine does not write these sections back.
 
 Trigger event, trigger action, and team mission parameters that take a house by number accept `50` through `57`, or `4475` through `4482`, as `Spawn1` through `Spawn8`. Any other number that is not the index of a registered HouseType names nothing, `58` through `60` included: an event that needs the house never trips, and an action or mission that needs it does nothing. When the engine writes a scenario, a spawn owner is written as the country of the house it resolved to.
 

@@ -152,6 +152,7 @@
 #include "tracker.h"
 #include "trigger.h"
 #include "trigtype.h"
+#include "trim.h"
 #include "tube.h"
 #include "unit.h"
 #include "unittype.h"
@@ -170,6 +171,7 @@ CDTimerClass<SystemTimerClass> ScenUnusedTimer;
 
 static void Remove_AI_Players(void);
 static void Assign_Start_Positions(bool official);
+static void Read_Spawn_Houses(CCINIClass const & ini);
 static void Create_Units(bool official);
 static Cell const Clip_Scatter(Cell const & cell, int maxdist);
 static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist);
@@ -277,6 +279,7 @@ void ScenarioClass::Reset(void)
 	IsIgnoreGlobalAITriggers = false;
 	IsGDI = true;
 	IsMultiplayerOnly = false;
+	IsMPAIBaseNodes = false;
 	IsCrateBeenPickedUp = false;
 	FadeTimer = 0;
 	StartingDropships = 0;
@@ -1756,6 +1759,7 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	// Owners are resolved as objects are read, so start positions are settled ahead of them.
 	if (Session.Type != GAME_NORMAL && !is_mapgen && !Debug_Map) {
 		Assign_Start_Positions(official);
+		Read_Spawn_Houses(ini);
 	}
 
 	/*
@@ -2387,6 +2391,68 @@ static void Append_Open_Start_Positions(DynamicVectorClass<Cell> & waypts, int &
 			usable++;
 			DebugString("Random multiplayer start waypoint added at cell %d,%d\n", trycell.X, trycell.Y);
 		}
+	}
+}
+
+
+/// <summary>
+/// Allies the house with whoever the section names: a spawn house, or every playing house
+/// of a country. One way, as a campaign house record is.
+/// </summary>
+static void Read_Spawn_House_Allies(CCINIClass const & ini, char const * hname, HouseClass * housep)
+{
+	char buffer[128];
+	if (ini.Get_String(hname, "Allies", "", buffer, sizeof(buffer)) == 0) {
+		return;
+	}
+
+	for (char * name = strtok(buffer, ","); name != nullptr; name = strtok(nullptr, ",")) {
+		name = strtrim(name);
+
+		int spawn_waypoint = Spawn_House_Waypoint(name);
+		if (spawn_waypoint != -1) {
+			HouseClass * ally = House_At(spawn_waypoint);
+			if (ally != nullptr && ally != housep) {
+				housep->Make_Ally(ally);
+			}
+			continue;
+		}
+
+		HousesType country = HouseTypeClass::From_Name(name);
+		if (country == HOUSE_NONE) {
+			DebugString("[%s] Allies names %s, which is neither a country nor a spawn house\n", hname, name);
+			continue;
+		}
+		for (int index = 0; index < Houses.Count(); index++) {
+			HouseClass * ally = Houses[index];
+			if (ally != housep && !ally->IsObserver && ally->Class->House == country) {
+				housep->Make_Ally(ally);
+			}
+		}
+	}
+}
+
+
+/// <summary>
+/// Reads what a scenario wrote for each held start position: the base plan the computer
+/// follows when the scenario asks for it, and the alliances the house starts with.
+/// </summary>
+static void Read_Spawn_Houses(CCINIClass const & ini)
+{
+	for (int spawn_waypoint = 0; spawn_waypoint < SPAWN_HOUSE_COUNT; spawn_waypoint++) {
+		char const * section = Spawn_House_Name(spawn_waypoint);
+		HouseClass * housep = House_At(spawn_waypoint);
+		if (housep == nullptr || !ini.Section_Present(section)) {
+			continue;
+		}
+
+		if (Scen->IsMPAIBaseNodes) {
+			housep->Base.Read_INI(ini, section);
+			housep->Base.House = housep;
+			DebugString("House %s at waypoint %d follows the [%s] base plan (%d nodes)\n", (char const *)housep->IniName, spawn_waypoint, section, housep->Base.Nodes.Count());
+		}
+
+		Read_Spawn_House_Allies(ini, section, housep);
 	}
 }
 
@@ -3184,6 +3250,17 @@ void ScenarioClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(SpeechSide);
 	stream.Serialize(Stage);
 	stream.Serialize(IsInputLocked);
+	stream.Serialize(IsMPAIBaseNodes);
+}
+
+
+/// <summary>
+/// Does the computer build as it does in a campaign: from the scenario's base plan, at the
+/// plan's cells, with no skirmish power or money interventions?
+/// </summary>
+bool ScenarioClass::Is_Campaign_Base_AI(void) const
+{
+	return(Session.Type == GAME_NORMAL || IsMPAIBaseNodes);
 }
 
 
@@ -3538,6 +3615,7 @@ bool ScenarioClass::Read_INI(CCINIClass const & ini)
 	IsTibGrowth = ini.Get_Bool(BASIC, "TiberiumGrowthEnabled", IsTibGrowth);
 	IsVeinGrowth = ini.Get_Bool(BASIC, "VeinGrowthEnabled", IsVeinGrowth);
 	IsIceGrowth = ini.Get_Bool(BASIC, "IceGrowthEnabled", IsIceGrowth);
+	IsMPAIBaseNodes = ini.Get_Bool(BASIC, "UseMPAIBaseNodes", IsMPAIBaseNodes);
 	IsTiberiumDeathToVisceroid = ini.Get_Bool(BASIC, "TiberiumDeathToVisceroid", IsTiberiumDeathToVisceroid);
 	IsFreeRadar = ini.Get_Bool(BASIC, "FreeRadar", IsFreeRadar);
 	Home = ini.Get_Int(BASIC, "HomeCell", Home);
@@ -3670,6 +3748,7 @@ bool ScenarioClass::Write_INI(CCINIClass & ini, bool mplayer) const
 	ini.Put_Bool(BASIC, "TiberiumGrowthEnabled", IsTibGrowth);
 	ini.Put_Bool(BASIC, "VeinGrowthEnabled", IsVeinGrowth);
 	ini.Put_Bool(BASIC, "IceGrowthEnabled", IsIceGrowth);
+	ini.Put_Bool(BASIC, "UseMPAIBaseNodes", IsMPAIBaseNodes);
 	ini.Put_Bool(BASIC, "TiberiumDeathToVisceroid", IsTiberiumDeathToVisceroid);
 	ini.Put_Bool(BASIC, "FreeRadar", IsFreeRadar);
 
@@ -3752,6 +3831,7 @@ void ScenarioClass::Compute_CRC(CRCEngine & crc) const
 	crc(TransitTheme);
 	crc(CarryOverPercent);
 	crc(IsMultiplayerOnly);
+	crc(IsMPAIBaseNodes);
 	crc(IsInheritTimer);
 	crc(CarryOverCap / 100);
 	crc(BridgeCount);

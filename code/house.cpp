@@ -4107,7 +4107,7 @@ int HouseClass::Expert_AI(void)
 		}
 	}
 
-	if (Session.Type != GAME_NORMAL) {
+	if (!Scen->Is_Campaign_Base_AI()) {
 		/*
 		**	Records the urgency of all actions possible.
 		*/
@@ -4502,7 +4502,7 @@ int HouseClass::AI_Building(void)
 	/*
 	**	Try to build a power plant if there is insufficient power.
 	*/
-	if (Session.Type != GAME_NORMAL && b->Drain + Drain > Power - PowerSurplus && b != Rule->BuildConst[0] && b->Drain > 0) {
+	if (!Scen->Is_Campaign_Base_AI() && b->Drain + Drain > Power - PowerSurplus && b != Rule->BuildConst[0] && b->Drain > 0) {
 
 		BuildingTypeClass const * choice;
 
@@ -6399,6 +6399,7 @@ void HouseClass::Compute_CRC(CRCEngine & crc) const
 	crc(Drain);
 	crc(WhoLastHurtMe);
 	crc(Enemy);
+	crc((int)Allies);
 	Base.Compute_CRC(crc);
 }
 
@@ -6778,6 +6779,33 @@ void HouseClass::Begin_Construction(void)
 		Make_Base_Nodes();
 		ScenarioInit = save_init;
 	}
+}
+
+
+/// <summary>
+/// Starts the computer building from its base plan with the construction yard standing at
+/// the given cell. A plan the scenario supplied keeps its cells; only its construction yard
+/// node follows the yard.
+/// </summary>
+void HouseClass::Begin_Construction(Cell const & center)
+{
+	bool generated = Base.Nodes.Count() == 0;
+	Begin_Construction();
+
+	if (generated) {
+		if (Base.Nodes.Count() > 0) {
+			Base.Nodes[0].CellID = center;
+		}
+	} else {
+		for (int index = 0; index < Base.Nodes.Count(); index++) {
+			int type = Base.Nodes[index].Type;
+			if (type >= STRUCT_FIRST && BuildingTypes[type]->IsConstructionYard) {
+				Base.Nodes[index].CellID = center;
+				break;
+			}
+		}
+	}
+	Base.PlacementCenter = center;
 }
 
 
@@ -8545,8 +8573,8 @@ void HouseClass::AI_Chem_Missile(SuperClass * super)
 /// Invalidates the base node that a building occupies.
 /// This routine is called when a building leaves the map. Any other node laying claim to
 /// the same spot is released so the computer may build there again, and base defense
-/// nodes are retired outright in multiplayer games, since the AI picks those spots for
-/// itself rather than following the pre-built base list.
+/// nodes are retired outright when the computer is not following a scenario's base plan,
+/// since it then picks those spots for itself.
 /// </summary>
 /// <param name="building">The building whose base node location is to be invalidated.</param>
 void HouseClass::Invalidate_Base_Node_Position(BuildingClass * building)
@@ -8561,7 +8589,7 @@ void HouseClass::Invalidate_Base_Node_Position(BuildingClass * building)
 						Base.Nodes[j].CellID = CELL_NONE;
 					}
 				}
-				if (building->Class->IsBaseDefense && Session.Type != GAME_NORMAL) {
+				if (building->Class->IsBaseDefense && !Scen->Is_Campaign_Base_AI()) {
 					Base.Nodes[i].Type = STRUCT_NONE;
 					Base.Nodes[i].CellID = CELL_NONE;
 				}
@@ -8625,14 +8653,7 @@ void HouseClass::AI_Takeover(void)
 
 	Cell center = conyard->PositionCoord.As_Cell();
 	Center = Coord(center, 0);
-	if (Base.Nodes.Count() == 0) {
-		int save = ScenarioInit;
-		ScenarioInit = 0;
-		Make_Base_Nodes();
-		ScenarioInit = save;
-	}
-	Base.Nodes[0].CellID = center;
-	Base.PlacementCenter = center;
+	Begin_Construction(center);
 	IsStarted = true;
 	IsAITriggersOn = true;
 	IsBaseBuilding = true;
@@ -9022,13 +9043,14 @@ bool HouseClass::Is_Human_Player(void) const
 /// <summary>
 /// Can this house place a building at the specified location?
 /// This routine keeps a computer base compact by requiring a candidate site to touch
-/// something the house already occupies. Campaign games impose no such restriction.
+/// something the house already occupies. A house following a scenario's base plan is not
+/// restricted.
 /// </summary>
 /// <param name="cell">The upper left cell of the proposed building location.</param>
 /// <returns>bool; Is the location acceptable to build at?</returns>
 bool HouseClass::Can_Build_Here(BuildingTypeClass *building, Cell const & cell)
 {
-	if (Session.Type == GAME_NORMAL) {
+	if (Scen->Is_Campaign_Base_AI()) {
 		return(true);
 	}
 

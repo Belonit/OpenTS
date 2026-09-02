@@ -32,6 +32,7 @@ keys:
   - NodRegularPower
   - NodeCount
   - PlacementDelay
+  - UseMPAIBaseNodes
   - Verses
   - WallTower
   - Weeder
@@ -48,6 +49,8 @@ Not every node names a structure at a place. A cell of `0,0` names no cell, and 
 
 The list is carried in the house's own map section, not in a section of its own. [`NodeCount`](/keys/nodecount/) gives the entry count and entries are read in order from zero-padded three-digit keys; a value beginning with `-` is one of the three instructions, otherwise the first field is an ObjectType ID and the next two are the cell X and Y. Structures a scenario starts with are ordinary map objects, which the node list then matches.
 
+A **house following a map plan** is a campaign house, or a skirmish or multiplayer house on a map that sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/). On such a map the house holding start position N reads its list from the [spawn house](/formats/scenario-objects/#spawn-houses) section `[Spawn<N+1>]`.
+
 ```ini title="map file"
 [GDI]
 NodeCount=4
@@ -57,7 +60,7 @@ NodeCount=4
 003=MYPOWR,0,0    ; example power plant BuildingType; cell picked at build time
 ```
 
-A house whose list is empty generates one when either of two things happens: an MCV of a non-human house deploys into a [`ConstructionYard=yes`](/keys/constructionyard/) BuildingType outside a campaign game, or a house passes to the computer. A scenario-supplied list suppresses generation entirely.
+A house whose list is empty generates one when either of two things happens: an MCV of a non-human house deploys into a [`ConstructionYard=yes`](/keys/constructionyard/) BuildingType outside a campaign game, or a house passes to the computer. A scenario-supplied list, a spawn house section's included, suppresses generation entirely. At either moment a generated plan has its first node placed on the construction yard's cell, while a supplied plan keeps its cells and only its first `ConstructionYard=yes` node moves onto the yard.
 
 ## Building the plan
 
@@ -115,7 +118,7 @@ Placing any structure flags its footprint, expanded by [`AIBaseSpacing`](/keys/a
 
 The first two terms are settled together as one test, and that test is skipped altogether on a second pass over the ranked cells, so a cramped base still builds. A search that accepts nothing returns cell `0,0`.
 
-That compactness test passes unconditionally in a campaign game, so campaign bases spread wherever the other tests allow. Every other session type requires an already-occupied cell within the candidate footprint padded by `AIBaseSpacing` — one cell beyond that margin to the north and west, and twice the spacing plus one to the south and east — welding a skirmish or multiplayer base to what it holds.
+That compactness test passes unconditionally for a house following a map plan, so its base spreads wherever the other tests allow. Every other house requires an already-occupied cell within the candidate footprint padded by `AIBaseSpacing` — one cell beyond that margin to the north and west, and twice the spacing plus one to the south and east — welding a skirmish or multiplayer base to what it holds.
 
 An allied ground object standing in the placement zone is ordered to move and the factory waits [`PlacementDelay`](/keys/placementdelay/) minutes. A permanent obstruction — an overlay, a terrain object, a building that cannot take the structure as an upgrade, or another house's object — and a failed placement both abandon the structure: the factory refunds the cost already paid, deletes the object under construction, and clears the pending structure. The node is deleted when its type is a wall or a gate, and otherwise every node claiming that cell has its cell reset to `0,0`. After a `WallTower` is placed, the next base-defense node moves onto the tower's cell.
 
@@ -166,18 +169,18 @@ The planner compares the house's country name against the literal strings "GDI" 
 
 A power plant node is inserted immediately before the node the house is about to build while all of this holds:
 
-- the session is not a campaign game;
+- the house is not following a map plan;
 - the node's own drain added to the house's current drain exceeds its current power output;
 - the node is not the [`BuildConst`](/keys/buildconst/) construction yard;
 - the node's type draws power at all.
 
 Which plant goes in depends on the house. GDI inserts [`GDIPowerTurbine`](/keys/gdipowerturbine/) when it owns a [`GDIPowerPlant`](/keys/gdipowerplant/) with a free upgrade slot and a random draw falls under [`AIUseTurbineUpgradeProbability`](/keys/aiuseturbineupgradeprobability/) — a fraction of 1 that defaults to 1, so the turbine is taken whenever a slot is free unless the value is lowered — and `GDIPowerPlant` otherwise; every other house inserts [`NodAdvancedPower`](/keys/nodadvancedpower/) when the buildings it owns meet that type's prerequisites, and [`NodRegularPower`](/keys/nodregularpower/) otherwise.
 
-A house that cannot make money, again only outside campaign games, sells its base from the back of the node list forward until the proceeds cover a harvester — where it owns both a refinery and a war factory — or a refinery otherwise, abandons its factories, and either orders that harvester or inserts a refinery node at the current build position. Selling out the whole list without raising enough sends every unit it owns to hunt.
+A house that cannot make money, again only when it is not following a map plan, sells its base from the back of the node list forward until the proceeds cover a harvester — where it owns both a refinery and a war factory — or a refinery otherwise, abandons its factories, and either orders that harvester or inserts a refinery node at the current build position. Selling out the whole list without raising enough sends every unit it owns to hunt.
 
 ## Rebuilding
 
-Rebuilding needs no separate mechanism: a destroyed structure stops matching its node, and the node becomes the next hole in the list. When a building is taken off the map, every other node claiming its cell has its cell cleared, and outside campaign games an `IsBaseDefense=yes` node is retired to a `-1` placeholder so the planner picks a fresh type and cell for it.
+Rebuilding needs no separate mechanism: a destroyed structure stops matching its node, and the node becomes the next hole in the list. When a building is taken off the map, every other node claiming its cell has its cell cleared, and a house that is not following a map plan retires an `IsBaseDefense=yes` node to a `-1` placeholder so the planner picks a fresh type and cell for it. A house following a map plan keeps the node and rebuilds the same defense on the same cell.
 
 ## Parsed settings without effect
 

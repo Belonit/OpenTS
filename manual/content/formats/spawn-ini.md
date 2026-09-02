@@ -130,7 +130,8 @@ starts with the ones it wrote. Nothing announces them, and the computer players 
 alliances the file gave them instead of [closing ranks](/keys/paranoid/) as they do against
 a side that allies during play. A seat that watches holds no alliances: its own entries and
 any naming it are ignored. [Observers and coach mode](/systems/observers/) owns what a
-watching seat is shown and how the match treats it.
+watching seat is shown and how the match treats it. A map may add alliances of its own
+through its spawn house sections, which [`Allies`](/keys/allies/) owns.
 
 A computer player may share the color a person plays; in a game against other machines, two
 people may not. The client keys each seat by an order no other machine can rebuild, so two

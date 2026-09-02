@@ -36,6 +36,15 @@ Action:
   "SuperWeaponTypeClass::Action": {verdict: distinct}
   "ScenarioClass::ActionMovie": {verdict: distinct}
 
+Allies:
+  "HouseClass::owners":
+    verdict: distinct
+    absorbs: ["HouseClass::None"]
+    note: >-
+      read from a house record in a campaign and, outside a campaign, from the
+      spawn house section of the house holding that start position; both feed
+      the same alliance state
+
 Armor:
   "ObjectTypeClass::Armor": {verdict: distinct}
   "HouseTypeClass::ArmorBias": {verdict: distinct}

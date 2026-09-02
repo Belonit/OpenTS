@@ -813,6 +813,7 @@ class HouseClass : public AbstractClass
 		void Mark_Scouted(HouseClass const * house);
 
 		void Begin_Construction(void);
+		void Begin_Construction(Cell const & center);
 		BuildingTypeClass const * Get_First_Ownable(DynamicVectorClass<BuildingTypeClass const *> const & owned) const;
 		bool AI_Has_Prerequisites(TechnoTypeClass const * type, DynamicVectorClass<BuildingTypeClass const *> & owned, int ownedcount) const;
 		void Make_Base_Nodes(void);

@@ -1436,13 +1436,15 @@ Allies:
       kind: identifier
       source: house
     value_type: list of HouseTypes
-    status: generated
+    status: reviewed
     _provenance:
       default_candidate: null
       declared_in: HouseClass
       member: owners
       source: code/house.cpp
       guard: null
+    note: read from a house record in a campaign and, outside a campaign, from the spawn house section
+      of the house holding that start position; both feed the same alliance state
     level: HouseClass
 AllowBurrowing:
   key: AllowBurrowing
@@ -23079,6 +23081,24 @@ UseIonStorms:
       source: code/mapgen.cpp
       guard: null
     level: MapSeedClass
+UseMPAIBaseNodes:
+  key: UseMPAIBaseNodes
+  scopes:
+  - applies_to:
+    - scenarios
+    file: map file
+    section:
+      kind: literal
+      name: Basic
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: ScenarioClass
+      member: IsMPAIBaseNodes
+      source: code/scenario.cpp
+      guard: null
+    level: ScenarioClass
 UseMinDefenseRule:
   key: UseMinDefenseRule
   scopes:

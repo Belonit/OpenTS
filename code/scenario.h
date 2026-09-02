@@ -107,6 +107,8 @@ class ScenarioClass {
 
 		void Compute_CRC(CRCEngine & crc) const;
 
+		bool Is_Campaign_Base_AI(void) const;
+
 		Cell Get_Waypoint_Cell(WAYPOINT waypoint) const;
 		Coord Get_Waypoint_Coord(WAYPOINT waypoint) const;
 		CellClass * Get_Waypoint_CellClass(WAYPOINT waypoint) const;
@@ -454,6 +456,10 @@ class ScenarioClass {
 
 		/// Unused. Round-trips through the scenario INI and feeds the CRC, but nothing acts on it.
 		bool IsMultiplayerOnly;
+
+		// Set by the map: outside a campaign the computer follows the base plan written for its
+		// start position and builds as it does in a campaign.
+		bool IsMPAIBaseNodes;
 
 		/*
 		 * If the map being played was built by the random map generator rather than read
