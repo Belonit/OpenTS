@@ -2,6 +2,7 @@
 # recursive glob building the engine cannot pick this target's entry point up.
 add_executable(IniContract
     "${CMAKE_CURRENT_SOURCE_DIR}/inicontract.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/uublockcontract.cpp"
     "${CMAKE_SOURCE_DIR}/code/ini.cpp"
     "${CMAKE_SOURCE_DIR}/code/dbgprint.cpp"
     "${CMAKE_SOURCE_DIR}/code/b64pipe.cpp"
