@@ -703,6 +703,63 @@ int main(void)
 		Check(Judge(tunnelled, sizeof(tunnelled) - 1, 2, 8, fault),
 			"a tunnelled machine is named by its number rather than an address");
 
+		char const client_tunnel[] =
+			"[Settings]\n"
+			"Name=Alpha\n"
+			"Side=0\n"
+			"Color=3\n"
+			"Port=-14\n"
+			"\n"
+			"[Other1]\n"
+			"Name=Bravo\n"
+			"Side=1\n"
+			"Color=5\n"
+			"Ip=0.0.0.0\n"
+			"Port=-3695\n"
+			"\n"
+			"[Tunnel]\n"
+			"Ip=88.99.11.22\n"
+			"Port=50000\n";
+		Check(Judge(client_tunnel, sizeof(client_tunnel) - 1, 2, 8, fault),
+			"the client's negative tunnel numbers are accepted");
+
+		char const zero_tunnel_number[] =
+			"[Settings]\n"
+			"Name=Alpha\n"
+			"Side=0\n"
+			"Color=3\n"
+			"Port=-14\n"
+			"\n"
+			"[Other1]\n"
+			"Name=Bravo\n"
+			"Side=1\n"
+			"Color=5\n"
+			"Port=0\n"
+			"\n"
+			"[Tunnel]\n"
+			"Ip=88.99.11.22\n"
+			"Port=50000\n";
+		Check(!Judge(zero_tunnel_number, sizeof(zero_tunnel_number) - 1, 2, 8, fault),
+			"a seat the tunnel knows as zero is refused");
+
+		char const portless_tunnel[] =
+			"[Settings]\n"
+			"Name=Alpha\n"
+			"Side=0\n"
+			"Color=3\n"
+			"Port=-14\n"
+			"\n"
+			"[Other1]\n"
+			"Name=Bravo\n"
+			"Side=1\n"
+			"Color=5\n"
+			"\n"
+			"[Tunnel]\n"
+			"Ip=88.99.11.22\n"
+			"Port=50000\n";
+		Check(!Judge(portless_tunnel, sizeof(portless_tunnel) - 1, 2, 8, fault),
+			"a seat the tunnel is given no number for is refused");
+
 		/*
 		 * A client that runs the tunnel beside the game points the match at the loopback
 		 * address, so that is an address like any other.

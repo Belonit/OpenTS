@@ -157,9 +157,11 @@ in-game retry cadence: a second between retries and ten seconds before a report 
 up.
 
 A tunnel server may run beside the game rather than across the internet, in which case
-`[Tunnel] Ip` is the loopback address. The tunnel's port and the number it knows this
-machine by are both carried as sixteen-bit values, so each must fall between `1` and
-`65535`.
+`[Tunnel] Ip` is the loopback address. The tunnel's port must fall between `1` and
+`65535`. A version 2 tunnel hands out the numbers it knows the machines by from the
+whole signed sixteen-bit range, and the client writes them as they come, so about half
+of them are negative; the tunnel matches the same sixteen bits either way, and any
+nonzero number within sixteen bits either side of zero is accepted.
 
 ## When something is wrong
 
@@ -179,10 +181,12 @@ when it
 A match against other machines is refused as well when
 
 - a person is left unnamed, or two are named the same or given one color;
-- a machine other than this one is given no port to answer on or no address to answer at;
+- a machine other than this one is given no port to answer on, or no address to answer
+  at when no tunnel carries the match;
 - a `[Tunnel]` section carries no address, or one that names no machine;
-- `[Tunnel] Port`, or the `[Settings] Port` the tunnel knows this machine by, falls outside
-  `1` to `65535`;
+- `[Tunnel] Port` falls outside `1` to `65535`;
+- through a tunnel, the `Port` the tunnel knows a machine by is zero or beyond sixteen
+  bits either side of zero;
 - `[Settings] Port` falls outside `1` to `65535` when no tunnel carries the match.
 
 A difficulty easier than the three the game has is not refused: the seat is played as the

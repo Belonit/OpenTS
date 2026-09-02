@@ -80,6 +80,13 @@ bool Is_Address(std::string const & text)
 }
 
 
+/// <summary>Accepts a tunnel number as the client writes it: nonzero, within sixteen bits either side of zero.</summary>
+static bool Is_Tunnel_Number(int value)
+{
+	return(value != 0 && value >= -65535 && value <= 65535);
+}
+
+
 /// <summary>
 /// Names the fault that refuses a launch.
 /// </summary>
@@ -121,7 +128,7 @@ void SpawnerConfigClass::Read_Slots(INIClass const & ini)
 			slot.Color = ini.Get_Int(section.c_str(), "Color", -1);
 			slot.Country = ini.Get_Int(section.c_str(), "Side", -1);
 			slot.Address = Read_Text(ini, section.c_str(), "Ip", slot.Address);
-			slot.Port = ini.Get_Int(section.c_str(), "Port", -1);
+			slot.Port = ini.Get_Int(section.c_str(), "Port", 0);
 		} else {
 			slot.Color = Read_Slot_Int(ini, "HouseColors", index, -1);
 			slot.Country = Read_Slot_Int(ini, "HouseCountries", index, -1);
@@ -348,7 +355,8 @@ bool SpawnerConfigClass::Is_Playable(int countries, int colors, std::string & fa
 
 	/*
 	 * These reach the network as sixteen bit values, so a wider number would be truncated
-	 * without a word.
+	 * without a word. A version 2 tunnel hands out its numbers from the whole signed sixteen
+	 * bit range and the client writes them as they come, so about half arrive negative.
 	 */
 	if (multiplayer) {
 		if (TunnelPort != 0) {
@@ -362,7 +370,7 @@ bool SpawnerConfigClass::Is_Playable(int countries, int colors, std::string & fa
 					TunnelAddress.c_str()));
 			}
 
-			if (TunnelId < 1 || TunnelId > 65535) {
+			if (!Is_Tunnel_Number(TunnelId)) {
 				return(Fault(fault, "The tunnel knows this machine as %d, which is not a tunnel number.",
 					TunnelId));
 			}
@@ -434,7 +442,12 @@ bool SpawnerConfigClass::Is_Playable(int countries, int colors, std::string & fa
 			 * it either way.
 			 */
 			if (index != LocalSlot) {
-				if (slot.Port < 1 || slot.Port > 65535) {
+				if (TunnelPort != 0 && !Is_Tunnel_Number(slot.Port)) {
+					return(Fault(fault, "The tunnel knows seat %d as %d, which is not a tunnel number.",
+						index + 1, slot.Port));
+				}
+
+				if (TunnelPort == 0 && (slot.Port < 1 || slot.Port > 65535)) {
 					return(Fault(fault, "Seat %d is reached on port %d, which names no machine.",
 						index + 1, slot.Port));
 				}

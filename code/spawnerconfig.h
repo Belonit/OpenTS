@@ -62,7 +62,7 @@ class SpawnerConfigClass
 			int StartingPosition = -1;
 			std::array<int, SLOT_COUNT> Alliances = {-1, -1, -1, -1, -1, -1, -1, -1};
 			std::string Address = "0.0.0.0";
-			int Port = -1;
+			int Port = 0;
 		};
 
 		void Read_INI(INIClass const & ini);
