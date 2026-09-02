@@ -213,6 +213,7 @@ message(STATUS "${PROJECT_NAME}: Applying linker options...")
 add_dependencies(OpenTS bgfx bx bimg)
 target_link_libraries(OpenTS PRIVATE
     VQALib
+    base64
 
     $<TARGET_FILE:bgfx>
     $<TARGET_FILE:bx>
