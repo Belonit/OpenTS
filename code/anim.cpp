@@ -87,6 +87,7 @@
 #include "shapeset.h"
 #include "smudtype.h"
 #include "sun.h"
+#include "syncrechook.h"
 #include "tactical.h"
 #include "techno.h"
 #include "tiberium.h"
@@ -95,6 +96,7 @@
 #include "bench.hh"
 
 #include <algorithm>
+#include <intrin.h>
 
 
 /***********************************************************************************************
@@ -150,6 +152,7 @@ AnimClass::AnimClass(AnimTypeClass const * type, Coord const & coord, int timede
 	ShapeFlags(flags)
 {
 	Create_ID();
+	Sync_Record_Anim(*this, coord, (unsigned)(uintptr_t)_ReturnAddress());
 	Anims.Add(this);
 	IsActive = true;
 

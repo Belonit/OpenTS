@@ -92,6 +92,10 @@ class Random2Class {
 		int operator() (void);
 		int operator() (int minval, int maxval);
 
+		// The two lagged-Fibonacci table cursors, reported by the out-of-sync diagnostics.
+		int Index_1(void) const {return(Index1);}
+		int Index_2(void) const {return(Index2);}
+
 		enum {
 			TABLE_SIZE = 250,
 			SIGNIFICANT_BITS=32				// Random number bit significance.

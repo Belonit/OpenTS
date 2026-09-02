@@ -1904,6 +1904,19 @@ launch_options:
   _provenance:
     source: code/init.cpp
     guard: null
+- id: launch:desync-test
+  route_id: desync-test
+  kind: launch
+  title: Out-of-sync test
+  description: Corrupts this machine's own game checksum once, on the first frame at or after the one
+    given, so that the out-of-sync report can be checked without waiting for a real divergence. The corruption
+    waits for the checksum comparison to start, so a frame inside the first 256 fires as soon as it does.
+  audience: developer
+  availability: *id001
+  syntax: -DESYNCTEST=<frame>
+  _provenance:
+    source: code/init.cpp
+    guard: null
 - id: launch:seed
   route_id: seed
   kind: launch

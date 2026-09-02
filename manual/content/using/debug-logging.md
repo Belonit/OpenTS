@@ -81,4 +81,5 @@ the game waits for a keypress before exiting so that the message stays readable.
 
 A log describes what the engine did, and in multiplayer that includes other people. Expect to
 find player names as typed in the lobby, and network addresses of the machines in the game.
-Read a log before attaching it to a public bug report.
+Read a log before attaching it to a public bug report. The same applies to an
+[out-of-sync report](/using/out-of-sync-reports/).

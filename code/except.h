@@ -49,6 +49,7 @@
 
 void Install_Exception_Handler(void);
 void Exception_Register_Log_File(char const * path);
+bool Describe_Code_Address(void const * address, char * buffer, unsigned size);
 
 void Exception_Set_Test_Mode(char const * mode);
 void Exception_Run_Immediate_Test(void);

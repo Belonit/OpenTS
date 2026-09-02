@@ -186,6 +186,7 @@
 #include "stimer.h"
 #include "sun.h"
 #include "swizzle.h"
+#include "syncrechook.h"
 #include "tactical.h"
 #include "tag.h"
 #include "team.h"
@@ -206,6 +207,7 @@
 #include "tube.hh"
 
 #include <algorithm>
+#include <intrin.h>
 
 CDTimerClass<FrameTimerClass> TechnoClass::ActionLineTimer;
 bool TechnoClass::ActionLines = true;
@@ -3613,6 +3615,12 @@ void TechnoClass::Stun(void)
  *=============================================================================================*/
 void TechnoClass::Assign_Target(AbstractClass * target)
 {
+	// Infantry record their own assignment before calling here, and buildings are not recorded.
+	RTTIType const rtti = Fetch_RTTI();
+	if (rtti != RTTI_INFANTRY && rtti != RTTI_BUILDING) {
+		Sync_Record_Target(*this, target, (unsigned)(uintptr_t)_ReturnAddress());
+	}
+
 	AbstractClass * old_target = TarCom;
 
 	if (target == TarCom) return;
@@ -4740,6 +4748,11 @@ int TechnoClass::Weapon_Range(int which) const
  *=========================================================================*/
 void TechnoClass::Override_Mission(MissionType mission, AbstractClass * tarcom, AbstractClass * navcom)
 {
+	// Foot units record their own override before calling here.
+	if (Fetch_RTTI() == RTTI_BUILDING) {
+		Sync_Record_Mission(*this, CurrentMission, mission, SYNC_MISSION_OVERRIDE, (unsigned)(uintptr_t)_ReturnAddress());
+	}
+
 	SuspendedTarCom = TarCom;
 	BASECLASS::Override_Mission(mission, tarcom, navcom);
 	Assign_Target(tarcom);

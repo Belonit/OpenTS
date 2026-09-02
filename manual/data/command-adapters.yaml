@@ -557,6 +557,18 @@ launch_options:
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-EXCEPTIONTEST=' }
+  - id: launch:desync-test
+    title: Out-of-sync test
+    syntax: -DESYNCTEST=<frame>
+    description: >-
+      Corrupts this machine's own game checksum once, on the first frame at or after the one
+      given, so that the out-of-sync report can be checked without waiting for a real
+      divergence. The corruption waits for the checksum comparison to start, so a frame inside
+      the first 256 fires as soon as it does.
+    audience: developer
+    availability: *all
+    sites:
+      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-DESYNCTEST=' }
   - id: launch:seed
     title: Random seed
     syntax: -SEED<number>

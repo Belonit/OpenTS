@@ -7,12 +7,6 @@
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
 
+#include "syncrec.h"
 
-#pragma once
-
-
-void Spawner_Request(void);
-bool Spawner_Is_Requested(void);
-bool Spawner_Is_Active(void);
-bool Spawner_Prepare(bool & gameloaded);
-int Spawner_Session_Identity(void);
+SyncRecorderClass SyncRecorder;

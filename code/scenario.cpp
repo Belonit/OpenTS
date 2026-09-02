@@ -138,6 +138,8 @@
 #include "stats.h"
 #include "surface.h"
 #include "swizzle.h"
+#include "syncrechook.h"
+#include "syncreport.h"
 #include "tactical.h"
 #include "tag.h"
 #include "tagtype.h"
@@ -666,6 +668,8 @@ bool Read_Scenario(char const * fname)
 
 	Session.SawGameCompletion = false;
 	Session.OutOfSync = false;
+	Sync_Report_Reset();
+	Sync_Recorder_Arm();
 
 	bool all_loaded = Wait_For_Players_To_Load();
 
@@ -902,6 +906,8 @@ void Post_Load_Game(void)
  *=============================================================================================*/
 void Clear_Scenario(void)
 {
+	Sync_Recorder_Disarm();
+
 	int index;
 
 	Scen->UniqueID = 1000 * 1000;

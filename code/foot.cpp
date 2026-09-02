@@ -116,6 +116,7 @@
 #include "savestream.h"
 #include "session.h"
 #include "swizzle.h"
+#include "syncrechook.h"
 #include "tactical.h"
 #include "team.h"
 #include "tracker.h"
@@ -135,6 +136,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <intrin.h>
 #include <iterator>
 
 
@@ -2137,6 +2139,8 @@ void FootClass::Per_Cell_Process(PCPType why)
  *=========================================================================*/
 void FootClass::Override_Mission(MissionType mission, AbstractClass * tarcom, AbstractClass * navcom)
 {
+	Sync_Record_Mission(*this, CurrentMission, mission, SYNC_MISSION_OVERRIDE, (unsigned)(uintptr_t)_ReturnAddress());
+
 	SuspendedNavCom = NavCom;
 	BASECLASS::Override_Mission(mission, tarcom, navcom);
 

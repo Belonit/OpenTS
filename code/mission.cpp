@@ -55,8 +55,11 @@
 #include "incdec.h"
 #include "mono.h"
 #include "savestream.h"
+#include "syncrechook.h"
 
 #include "bench.hh"
+
+#include <intrin.h>
 
 
 /***********************************************************************************************
@@ -340,6 +343,8 @@ bool MissionClass::Commence(void)
  *=============================================================================================*/
 void MissionClass::Assign_Mission(MissionType order)
 {
+	Sync_Record_Mission(*this, CurrentMission, order, SYNC_MISSION_ASSIGN, (unsigned)(uintptr_t)_ReturnAddress());
+
 	if (CurrentMission == MISSION_DECONSTRUCTION) return;
 	/*
 	**	Ensure that a MISSION_QMOVE is translated into a MISSION_MOVE.

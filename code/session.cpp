@@ -237,6 +237,7 @@ SessionClass::SessionClass(void)
 	TrapCell = NULL;            // for trapping a cell
 	TrapCheckHeap = 0;          // start checking the Heap
 	TrapPrintCRC = 0;           // output CRC file
+	ForceDesyncFrame = -1;      // deliberate checksum mismatch, disarmed
 }	// end of SessionClass
 
 

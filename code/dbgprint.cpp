@@ -537,6 +537,17 @@ char const * Debug_Log_File_Name(void)
 
 
 /// <summary>
+/// Returns the folder where per-run diagnostic files belong, or an empty string when it could
+/// not be created. Shared by callers that write their own files beside the debug log.
+/// </summary>
+char const * Debug_Directory(void)
+{
+	Init_Once(false);
+	return(DebugDirectory);
+}
+
+
+/// <summary>
 /// Reports a formatted message to the debug log, the debugger, and the debug console. A
 /// message that starts a line is stamped with the time it was reported.
 /// </summary>

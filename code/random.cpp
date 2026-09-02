@@ -42,6 +42,10 @@
 
 #include "random.h"
 
+#include "syncrechook.h"
+
+#include <intrin.h>
+
 // Timing tests for random these random number generators in seconds for
 // 10000000 iterations. Testing done by Hector Yee, 6/20/01
 // using DIEHARD and multidimensional Monte-Carlo Integration
@@ -195,6 +199,7 @@ int Random2Class::operator() (void)
 	if (Index1 >= TABLE_SIZE) Index1 = 0;
 	if (Index2 >= TABLE_SIZE) Index2 = 0;
 
+	Sync_Record_Random(*this, val, 0, 0, false, (unsigned)(uintptr_t)_ReturnAddress());
 	return(val);
 }
 
@@ -218,7 +223,11 @@ int Random2Class::operator() (void)
  *=============================================================================================*/
 int Random2Class::operator() (int minval, int maxval)
 {
-	return(Pick_Random_Number(*this, minval, maxval));
+	SyncRecorder.Begin_Ranged_Draw();
+	int val = Pick_Random_Number(*this, minval, maxval);
+	SyncRecorder.End_Ranged_Draw();
+	Sync_Record_Random(*this, val, minval, maxval, true, (unsigned)(uintptr_t)_ReturnAddress());
+	return(val);
 }
 
 

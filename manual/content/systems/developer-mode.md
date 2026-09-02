@@ -72,7 +72,9 @@ An Internet session writes `mpstats.txt` when its game loop finishes, in either 
 
 ## The sync dump
 
-Seven `sun.ini` settings exist to diagnose a desynchronized game, and one of them acts: [`PrintCRC`](/keys/printcrc/) names a recording-playback frame, and on reaching it the game writes a checksum dump and ends the run. The other six are read from the file and reach nothing further. [`Frame`](/keys/frame/), [`Type`](/keys/type/#scope-multiplayer-settings), [`Coord`](/keys/coord/), [`Target`](/keys/target/) and [`Cell`](/keys/cell/) describe an object for a per-frame hunt whose body is compiled into neither configuration, and [`CheckHeap`](/keys/checkheap/) raises a flag no reader consults.
+A desynchronized network game writes an [out-of-sync report](/using/out-of-sync-reports/) into the `Debug` folder beside the executable, and so does the [`PrintCRC`](/keys/printcrc/) playback trap on reaching its frame. Both are the same report; it carries the build, the session identity and seed, the recent frame-checksum ring, the offending event, bounded histories of the random draws, targeting, missions, facings, animations and events leading up to the divergence, and per-object and per-heap checksums keyed to each object's stable identifier.
+
+Seven `sun.ini` settings exist to diagnose a desynchronized game, and only [`PrintCRC`](/keys/printcrc/) acts. The other six are read from the file and reach nothing further. [`Frame`](/keys/frame/), [`Type`](/keys/type/#scope-multiplayer-settings), [`Coord`](/keys/coord/), [`Target`](/keys/target/) and [`Cell`](/keys/cell/) describe an object for a per-frame hunt whose body is compiled into neither configuration, and [`CheckHeap`](/keys/checkheap/) raises a flag no reader consults.
 
 `CheckHeap` sits in `[MultiPlayer]`; the rest sit in `[SyncBug]`, which is read only while recording playback is armed. Both blocks are read as a session outside a campaign is set up, so a campaign game reads none of the seven.
 

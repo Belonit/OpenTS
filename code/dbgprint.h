@@ -21,6 +21,7 @@ void Debug_Init(void);
 void Debug_Init_Console(void);
 void Debug_Console_Hold(void);
 char const * Debug_Log_File_Name(void);
+char const * Debug_Directory(void);
 bool Delete_Files_Older_Than(char const * directory, char const * pattern, unsigned days);
 
 void __cdecl DebugString(_Printf_format_string_ char const * string, ...);

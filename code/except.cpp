@@ -508,6 +508,50 @@ static bool Resolve_Line(DWORD_PTR address, char * file, unsigned file_size, uns
 
 
 /// <summary>
+/// Describes a code address as "Name()+0x1a [file.cpp:34]", or as the name alone when the build
+/// carries no line information. The file is named without its directory, so that the result fits
+/// a report carrying one line per entry rather than a stack trace.
+/// </summary>
+/// <param name="address">The address to describe. For a return address, pass the byte before it,
+/// or the description names the line after the call.</param>
+/// <returns>True when the address was named; false empties the buffer.</returns>
+bool Describe_Code_Address(void const * address, char * buffer, unsigned size)
+{
+	if (buffer == NULL || size == 0) {
+		return(false);
+	}
+
+	buffer[0] = '\0';
+
+	char symbol[256];
+	DWORD_PTR displacement = 0;
+
+	if (!Resolve_Symbol((DWORD_PTR)address, symbol, sizeof(symbol), &displacement)) {
+		return(false);
+	}
+
+	char file[MAX_PATH];
+	unsigned line = 0;
+
+	if (Resolve_Line((DWORD_PTR)address, file, sizeof(file), &line)) {
+		char const * name = file;
+		for (char const * scan = file; *scan != '\0'; scan++) {
+			if (*scan == '\\' || *scan == '/') {
+				name = scan + 1;
+			}
+		}
+		snprintf(buffer, size, "%s()+0x%IX [%s:%u]", symbol, displacement, name, line);
+	} else {
+		snprintf(buffer, size, "%s()+0x%IX", symbol, displacement);
+	}
+
+	buffer[size - 1] = '\0';
+
+	return(true);
+}
+
+
+/// <summary>
 /// Decodes one of the eight 80 bit x87 registers into an ordinary double.
 /// </summary>
 /// <remarks>

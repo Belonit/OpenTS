@@ -741,6 +741,7 @@ class SessionClass
 		CellClass * TrapCell;       // Ptr to cell to trap (watch)
 		int TrapCheckHeap;          // true = check the heap as of TrapFrame
 		int TrapPrintCRC;          // Frame # to print CRC state file
+		int ForceDesyncFrame;       // Frame # to corrupt our own checksum at, -1 = never
 };
 
 extern SessionClass Session;

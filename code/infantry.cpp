@@ -125,6 +125,7 @@
 #include "session.h"
 #include "sun.h"
 #include "swizzle.h"
+#include "syncrechook.h"
 #include "tactical.h"
 #include "tag.h"
 #include "tagtype.h"
@@ -141,6 +142,7 @@
 #include "bench.hh"
 
 #include <algorithm>
+#include <intrin.h>
 
 
 int const InfantryClass::HumanShape[32] = {7,7,6,6,6,6,5,5,5,5,4,4,4,4,3,3,3,3,2,2,2,2,1,1,1,1,0,0,0,0,7,7};
@@ -1236,6 +1238,8 @@ void InfantryClass::Assign_Destination(AbstractClass * target, bool immediate)
  *=============================================================================================*/
 void InfantryClass::Assign_Target(AbstractClass * target)
 {
+	Sync_Record_Target(*this, target, (unsigned)(uintptr_t)_ReturnAddress());
+
 	if (target != TarCom && Strength > 0) {
 		IsFiring = false;
 		if (IsProne) {

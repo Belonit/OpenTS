@@ -675,18 +675,6 @@ void FactoryClass::Serialize(SaveStreamClass & stream)
 /// </summary>
 void FactoryClass::Compute_CRC(CRCEngine &crc) const
 {
-	DebugString("Frame == %d\n", Frame);
-	DebugString("QueuedObjects.Count() == %d\n", QueuedObjects.Count());
-	DebugString("Object->RTTI == %d\n", Object->RTTI);
-	DebugString("Object->HeapID == %d\n", Object->Fetch_Heap_ID());
-	DebugString("IsSuspended\t= %d\n", IsSuspended);
-	DebugString("IsDifferent\t= %d\n", IsDifferent);
-	DebugString("Balance\t= %d\n", Balance);
-	DebugString("OriginalBalance = %d\n", OriginalBalance);
-	DebugString("SpecialItem\t= %d\n", SpecialItem);
-	DebugString("House->Fetch_ID()\t= %d\n", House->Fetch_ID());
-	DebugString("ID\t= %d\n", Fetch_ID());
-
 	BASECLASS::Compute_CRC(crc);
 
 	crc(IsSuspended);

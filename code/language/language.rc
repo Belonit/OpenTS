@@ -1694,7 +1694,7 @@ BEGIN
     TXT_DEFAULT             "Default"
     TXT_SETTINGS            "Settings"
     TXT_NAME_COLON          "Name:"
-    TXT_OUT_OF_SYNC         "Reconnection Error!"
+    TXT_OUT_OF_SYNC         "The game is out of sync."
     TXT_PACKET_TOO_LATE     "Packet received too late!"
     TXT_USER_SIGNED_OFF     "User signed off!"
 END

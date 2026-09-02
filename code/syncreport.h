@@ -7,12 +7,13 @@
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
 
-
 #pragma once
 
+class EventClass;
 
-void Spawner_Request(void);
-bool Spawner_Is_Requested(void);
-bool Spawner_Is_Active(void);
-bool Spawner_Prepare(bool & gameloaded);
-int Spawner_Session_Identity(void);
+void Print_CRCs(EventClass const * events, int count, unsigned const * crc_ring, unsigned ring_size);
+bool Report_Out_Of_Sync(EventClass const * events, int count, unsigned const * crc_ring, unsigned ring_size);
+void Sync_Report_Reset(void);
+
+bool Sync_Is_Out_Of_Sync(int house_id);
+void Sync_Mark_Out_Of_Sync(int house_id);

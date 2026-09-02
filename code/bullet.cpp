@@ -82,6 +82,7 @@
 #include "scheme.h"
 #include "stimer.h"
 #include "sun.h"
+#include "syncrechook.h"
 #include "tactical.h"
 #include "techno.h"
 #include "tracker.h"
@@ -91,6 +92,7 @@
 #include "weapon.h"
 
 #include <algorithm>
+#include <intrin.h>
 
 
 extern ULONG COMRefCount;
@@ -1589,6 +1591,7 @@ HRESULT STDMETHODCALLTYPE BulletClass::GetClassID(CLSID * retval)
 /// </summary>
 void BulletClass::Assign_Target(AbstractClass * target)
 {
+	Sync_Record_Target(*this, target, (unsigned)(uintptr_t)_ReturnAddress());
 	TarCom = target;
 }
 

@@ -476,6 +476,16 @@ bool Spawner_Is_Active(void)
 
 
 /// <summary>
+/// Returns the launch file's session identity digest, which two peers handed the same match
+/// share, or 0 when the game was not launched from a spawn file.
+/// </summary>
+int Spawner_Session_Identity(void)
+{
+	return(Spawner_Is_Active() ? SpawnConfig.Session_Identity_CRC() : 0);
+}
+
+
+/// <summary>
 /// Reads the launch file and assembles the game it describes, in place of the menu. Answers
 /// false once that game has ended, so the process exits rather than showing one.
 /// </summary>

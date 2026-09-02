@@ -1729,6 +1729,15 @@ bool Parse_Command_Line(int argc, char * argv[])
 			Exception_Set_Test_Mode(string + strlen("-EXCEPTIONTEST="));
 			continue;
 		}
+
+		/*
+		 * Arms one deliberate checksum mismatch, so that the out-of-sync path can be
+		 * exercised without waiting for a real desynchronization.
+		 */
+		if (strnicmp(string, "-DESYNCTEST=", strlen("-DESYNCTEST=")) == 0) {
+			Session.ForceDesyncFrame = atoi(string + strlen("-DESYNCTEST="));
+			continue;
+		}
 #ifdef _DEBUG
 		/*
 		**	Specify the random number seed (for debugging)

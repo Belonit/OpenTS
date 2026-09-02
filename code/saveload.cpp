@@ -108,6 +108,8 @@
 #include "super.h"
 #include "suprtype.h"
 #include "swizzle.h"
+#include "syncrechook.h"
+#include "syncreport.h"
 #include "tactical.h"
 #include "taction.h"
 #include "tag.h"
@@ -132,6 +134,8 @@
 #include "wave.h"
 #include "waypoint.h"
 #include "weapon.h"
+
+#include "objheaps.hh"
 
 #include <string>
 
@@ -227,56 +231,9 @@ CRCEngine Object_CRCs(void)
 #define DO_OBJ_CRC(VECTOR) \
 	for (i = 0; i < VECTOR.Count(); i++) { \
 		VECTOR[i]->Compute_CRC(crc); \
-	} \
+	}
 
-	DO_OBJ_CRC(HouseTypes);
-	DO_OBJ_CRC(Houses);
-	DO_OBJ_CRC(UnitTypes);
-	DO_OBJ_CRC(Units);
-	DO_OBJ_CRC(InfantryTypes);
-	DO_OBJ_CRC(Infantry);
-	DO_OBJ_CRC(BuildingTypes);
-	DO_OBJ_CRC(Buildings);
-	DO_OBJ_CRC(AircraftTypes);
-	DO_OBJ_CRC(Aircraft);
-	DO_OBJ_CRC(AITriggerTypes);
-	DO_OBJ_CRC(Anims);
-	DO_OBJ_CRC(AnimTypes);
-	DO_OBJ_CRC(TaskForces);
-	DO_OBJ_CRC(TeamTypes);
-	DO_OBJ_CRC(Teams);
-	DO_OBJ_CRC(ScriptTypes);
-	DO_OBJ_CRC(Scripts);
-	DO_OBJ_CRC(TagTypes);
-	DO_OBJ_CRC(Tags);
-	DO_OBJ_CRC(TriggerTypes);
-	DO_OBJ_CRC(Triggers);
-	DO_OBJ_CRC(Actions);
-	DO_OBJ_CRC(Events);
-	DO_OBJ_CRC(Factories);
-	DO_OBJ_CRC(VoxelAnimTypes);
-	DO_OBJ_CRC(VoxelAnims);
-	DO_OBJ_CRC(Warheads);
-	DO_OBJ_CRC(Weapons);
-	DO_OBJ_CRC(ParticleTypes);
-	DO_OBJ_CRC(Particles);
-	DO_OBJ_CRC(ParticleSystems);
-	DO_OBJ_CRC(ParticleSystemTypes);
-	DO_OBJ_CRC(BulletTypes);
-	DO_OBJ_CRC(Bullets);
-	DO_OBJ_CRC(WaypointPaths);
-	DO_OBJ_CRC(SmudgeTypes);
-	DO_OBJ_CRC(OverlayTypes);
-	DO_OBJ_CRC(LightSources);
-	DO_OBJ_CRC(BuildingLights);
-	DO_OBJ_CRC(Tubes);
-	DO_OBJ_CRC(Sides);
-	DO_OBJ_CRC(Tiberiums);
-	DO_OBJ_CRC(EMPulseClass::EMPulses);
-	DO_OBJ_CRC(SuperWeaponTypes);
-	DO_OBJ_CRC(SuperWeapons);
-	DO_OBJ_CRC(TerrainTypes);
-	DO_OBJ_CRC(Terrains);
+	OBJECT_HEAP_LIST(DO_OBJ_CRC)
 
 #undef DO_OBJ_CRC
 
@@ -286,6 +243,46 @@ CRCEngine Object_CRCs(void)
 	crc((int)Frame);
 	crc(CurrentObject.Count());
 	return(crc);
+}
+
+
+/// <summary>
+/// Writes a per-heap checksum table to the out-of-sync report: one summary line per heap, then
+/// a row per live object keyed by its stable identifier. Unlike Object_CRCs this folds in no
+/// per-machine state, so two peers' tables are directly comparable.
+/// </summary>
+void Print_Heap_CRCs(FILE * fp)
+{
+	int i;
+
+	fprintf(fp, "\n----- Heap checksums -----\n");
+
+#define HEAP_SUMMARY(VECTOR) \
+	{ \
+		CRCEngine heap_crc; \
+		for (i = 0; i < VECTOR.Count(); i++) { \
+			VECTOR[i]->Compute_CRC(heap_crc); \
+		} \
+		fprintf(fp, "%-28s count=%-5d crc=%08x\n", #VECTOR, VECTOR.Count(), heap_crc()); \
+	}
+
+	OBJECT_HEAP_LIST(HEAP_SUMMARY)
+
+#undef HEAP_SUMMARY
+
+#define HEAP_ROWS(VECTOR) \
+	{ \
+		CRCEngine heap_crc; \
+		fprintf(fp, "\n--- %s ---\n", #VECTOR); \
+		for (i = 0; i < VECTOR.Count(); i++) { \
+			VECTOR[i]->Compute_CRC(heap_crc); \
+			fprintf(fp, "%05d  ID:%-8d  %08x\n", i, VECTOR[i]->Fetch_ID(), heap_crc()); \
+		} \
+	}
+
+	OBJECT_HEAP_LIST_INSTANCES(HEAP_ROWS)
+
+#undef HEAP_ROWS
 }
 
 /***********************************************************************************************
@@ -1231,6 +1228,8 @@ bool Load_Game(const char *file_name)
 	Map.Complete_Radar_Refresh();
 	ScenarioActive = true;
 	TacticalActive = true;
+	Sync_Recorder_Arm();
+	Sync_Report_Reset();
 	DebugString("LOADING GAME [%s] - Complete\n\n", file_name);
 	return(true);
 }
