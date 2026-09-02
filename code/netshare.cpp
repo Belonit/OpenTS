@@ -1494,11 +1494,11 @@ void Send_Preview_To_Guests(void)
 
 				Call_Back();
 
-				GlobalPacketType response;
+				GlobalPacketType response = {};
 				int length = 455;
 				unsigned short product_id;
 
-				if (Ipx.Get_Global_Message(&response, &length, &sender_address, &product_id)) {
+				if (Ipx.Get_Global_Message(&response, sizeof(response), &length, &sender_address, &product_id)) {
 					if (response.Command == NET_PREVIEW_ACK) {
 						for (int j = 1; j < Session.Players.Count(); j++) {
 							if (sender_address == Session.Players[j]->Address) {

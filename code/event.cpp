@@ -60,6 +60,7 @@
 #include "house.h"
 #include "language\language.h"
 #include "mouse.h"
+#include "netsemantic.h"
 #include "rules.h"
 #include "saveload.h"
 #include "scenario.h"
@@ -76,87 +77,124 @@
 #include "special.hh"
 
 
-/***************************************************************************
-**	Table of what data is really used in the EventClass struct for different
-**	events.  This table must be kept current with the EventType enum.
-*/
-unsigned char EventClass::EventLength[EventClass::LAST_EVENT] = {
-	0,												// EMPTY
-	size_of(EventClass, Data.Target ),				/// POWERON
-	size_of(EventClass, Data.Target ),				/// POWEROFF
-	size_of(EventClass, Data.General ),				// ALLY
-	size_of(EventClass, Data.MegaMission ),			// MEGAMISSION
-	size_of(EventClass, Data.MegaMission_F ),		// MEGAMISSION_F
-	size_of(EventClass, Data.Target ),				// IDLE
-	size_of(EventClass, Data.Target ),				// SCATTER
-	0,												// DESTRUCT
-	size_of(EventClass, Data.Target ),				// DEPLOY
-	size_of(EventClass, Data.Place ),				// PLACE
-	0,												// OPTIONS
-	size_of(EventClass, Data.General ),				// GAMESPEED
-	size_of(EventClass, Data.Specific ),			// PRODUCE
-	size_of(EventClass, Data.Specific ),			// SUSPEND
-	size_of(EventClass, Data.Specific ),			// ABANDON
-	size_of(EventClass, Data.Target ),				// PRIMARY
-	size_of(EventClass, Data.Special ),				// SPECIAL_PLACE
-	0,												// EXIT
-	size_of(EventClass, Data.Anim ),				// ANIMATION
-	size_of(EventClass, Data.Target ),				// REPAIR
-	size_of(EventClass, Data.Target ),				// SELL
-	size_of(EventClass, Data.SellCell),				// SELLCELL
-	size_of(EventClass, Data.Options ),				// SPECIAL
-	0,												// FRAMESYNC
-	0,												// MESSAGE
-	size_of(EventClass, Data.FrameInfo.Delay ),		// RESPONSE_TIME
-	size_of(EventClass, Data.FrameInfo ),			// FRAMEINFO
-	0,												// SAVEGAME
-	size_of(EventClass, Data.NavCom ),				// ARCHIVE
-	size_of(EventClass, Data.Variable.Size),		// ADDPLAYER
-	size_of(EventClass, Data.Timing ),				// TIMING
-	size_of(EventClass, Data.ProcessTime ),			// PROCESS_TIME
-	0,												/// PAGEUSER
-	size_of(EventClass, Data.General ),				/// REMOVEPLAYER
-	size_of(EventClass, Data.General ),				/// LATENCYFUDGE
-};
+namespace {
+	enum class EventRejectReason : unsigned int {
+		InvalidType,
+		InvalidOrigin,
+		MissingOrigin,
+		InvalidAllyHouse,
+		InvalidAnimationType,
+		InvalidAnimationOwner,
+		InvalidProductionSelector,
+		InvalidSuperWeapon,
+		InvalidMission,
+		InvalidGameSpeed,
+		InvalidRemovedHouse,
+		InvalidLatencyFudge,
+		UnauthorizedSubject,
+		UnauthorizedTiming,
+		InvalidTimingValues,
+		Count,
+	};
 
-char const * EventClass::EventNames[EventClass::LAST_EVENT] = {
-	"EMPTY",
-	"POWERON",
-	"POWEROFF",
-	"ALLY",
-	"MEGAMISSION",
-	"MEGAMISSION_F",
-	"IDLE",
-	"SCATTER",
-	"DESTRUCT",
-	"DEPLOY",
-	"PLACE",
-	"OPTIONS",
-	"GAMESPEED",
-	"PRODUCE",
-	"SUSPEND",
-	"ABANDON",
-	"PRIMARY",
-	"SPECIAL_PLACE",
-	"EXIT",
-	"ANIMATION",
-	"REPAIR",
-	"SELL",
-	"SELLCELL",
-	"SPECIAL",
-	"FRAMESYNC",
-	"MESSAGE",
-	"RESPONSE_TIME",
-	"FRAMEINFO",
-	"SAVEGAME",
-	"ARCHIVE",
-	"ADDPLAYER",
-	"TIMING",
-	"PROCESS_TIME",
-	"PAGEUSER",
-	"REMOVEPLAYER",
-	"LATENCYFUDGE",
-};
+	char const * const EventRejectReasonNames[] = {
+		"invalid type",
+		"invalid origin",
+		"missing origin",
+		"invalid ally house",
+		"invalid animation type",
+		"invalid animation owner",
+		"invalid production selector",
+		"invalid super weapon",
+		"invalid mission",
+		"invalid game speed",
+		"invalid removed house",
+		"invalid latency fudge",
+		"unauthorized subject",
+		"unauthorized timing",
+		"invalid timing values",
+	};
+
+	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
+	unsigned int EventRejectCounts[(unsigned int)EventRejectReason::Count] = {};
+
+
+	/// <summary>Records a rejected synchronized event.</summary>
+	void Log_Event_Rejection(EventRejectReason reason, unsigned int type, int origin, int detail)
+	{
+		unsigned int const reason_index = (unsigned int)reason;
+		unsigned int const count = ++EventRejectCounts[reason_index];
+		if (count == 0 || (count & (count - 1)) != 0) {
+			return;
+		}
+
+		DebugString("Rejected network event: %s, type %u, origin %d, detail %d (count %u)\n",
+			EventRejectReasonNames[reason_index], type, origin, detail, count);
+	}
+
+
+	// Abandon_Production takes this in place of a heap index to mean whatever its factory
+	// currently holds.
+	constexpr int PRODUCTION_ID_NONE = -1;
+
+
+	bool Production_Type_Is_Valid(RTTIType type)
+	{
+		switch (type) {
+			case RTTI_UNIT:
+			case RTTI_UNITTYPE:
+			case RTTI_INFANTRY:
+			case RTTI_INFANTRYTYPE:
+			case RTTI_BUILDING:
+			case RTTI_BUILDINGTYPE:
+			case RTTI_AIRCRAFT:
+			case RTTI_AIRCRAFTTYPE:
+				return(true);
+
+			default:
+				return(false);
+		}
+	}
+
+
+	/// <summary>Accepts a type and heap index that resolve to an object type, or the abandon sentinel with a buildable type.</summary>
+	bool Production_Selector_Is_Valid(RTTIType type, int id, bool allow_sentinel)
+	{
+		if (allow_sentinel && id == PRODUCTION_ID_NONE) {
+			return(Production_Type_Is_Valid(type));
+		}
+		return(Fetch_Techno_Type(type, id) != NULL);
+	}
+
+
+	/// <summary>Resolves the object controlled by an ownership-gated event.</summary>
+	TechnoClass * Event_Subject(EventClass const & event, bool & requires_ownership)
+	{
+		requires_ownership = true;
+		switch (event.Type) {
+			case EventClass::POWERON:
+			case EventClass::POWEROFF:
+			case EventClass::REPAIR:
+			case EventClass::PRIMARY:
+			case EventClass::IDLE:
+			case EventClass::DEPLOY:
+			case EventClass::SCATTER:
+			case EventClass::SELL:
+				return(event.Data.Target.Whom.As_Techno());
+
+			case EventClass::ARCHIVE:
+				return(event.Data.NavCom.Whom.As_Techno());
+
+			case EventClass::MEGAMISSION:
+			case EventClass::MEGAMISSION_F:
+				return(event.Data.MegaMission.Whom.As_Techno());
+
+			default:
+				requires_ownership = false;
+				return(NULL);
+		}
+	}
+}
 
 
 /***********************************************************************************************
@@ -632,7 +670,34 @@ void EventClass::Execute(void)
 	TechnoClass * techno = NULL;
 	BuildingClass * building = NULL;
 	AnimClass * anim = NULL;
+	if (Type == EMPTY || Type >= LAST_EVENT) {
+		Log_Event_Rejection(EventRejectReason::InvalidType, Type, -1, Type);
+		return;
+	}
+	if (!NetSemantic::Index_Is_Valid(ID, Houses.Count())) {
+		Log_Event_Rejection(EventRejectReason::InvalidOrigin, Type, ID, ID);
+		return;
+	}
+	if (Houses[ID] == NULL) {
+		Log_Event_Rejection(EventRejectReason::MissingOrigin, Type, ID, ID);
+		return;
+	}
+
 	HouseClass * house = Houses[ID];
+	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+		bool requires_ownership = false;
+		TechnoClass * subject = Event_Subject(*this, requires_ownership);
+		if (requires_ownership) {
+			if (subject == NULL || !subject->IsActive || subject->Strength <= 0) {
+				return;
+			}
+			int const owner = subject->House != NULL ? subject->House->HeapID : -1;
+			if (!NetSemantic::Subject_Owner_Is_Valid(ID, owner)) {
+				Log_Event_Rejection(EventRejectReason::UnauthorizedSubject, Type, ID, owner);
+				return;
+			}
+		}
+	}
 	HouseClass * hptr = NULL;
 	const char *str = NULL;
 //	Cell cell;
@@ -680,11 +745,16 @@ void EventClass::Execute(void)
 		**	Make or break alliance.
 		*/
 		case ALLY:
-			hptr = Houses[Data.General.Value];
+			index = Data.General.Value;
+			if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
+				Log_Event_Rejection(EventRejectReason::InvalidAllyHouse, Type, ID, index);
+				break;
+			}
+			hptr = Houses[index];
 			if (house->Is_Ally(hptr)) {
-				house->Make_Enemy((HousesType)Data.General.Value);
+				house->Make_Enemy((HousesType)index);
 			} else {
-				house->Make_Ally((HousesType)Data.General.Value);
+				house->Make_Ally((HousesType)index);
 			}
 			break;
 
@@ -755,6 +825,19 @@ void EventClass::Execute(void)
 		*/
 		case ANIMATION:
 		{
+			int const animation_type = (int)Data.Anim.What;
+			int const owner = (int)Data.Anim.Owner;
+			if (!NetSemantic::Animation_Type_Is_Valid(animation_type, ANIM_NONE, AnimTypes.Count()) ||
+				(animation_type != ANIM_NONE && AnimTypes[animation_type] == NULL)) {
+				Log_Event_Rejection(EventRejectReason::InvalidAnimationType, Type, ID, animation_type);
+				break;
+			}
+			if (!NetSemantic::Animation_Owner_Is_Valid(owner, HOUSE_NONE, Houses.Count()) ||
+				(owner != HOUSE_NONE && Houses[owner] == NULL)) {
+				Log_Event_Rejection(EventRejectReason::InvalidAnimationOwner, Type, ID, owner);
+				break;
+			}
+
 			Coord coord(Data.Anim.Where.X, Data.Anim.Where.Y);
 			coord.Z = Map.Get_Height_GL(coord);
 			if (Map[coord].IsUnderBridge) {
@@ -766,7 +849,7 @@ void EventClass::Execute(void)
 				anim = new AnimClass(AnimTypes[Data.Anim.What], coord);
 			}
 			if (anim) {
-				if (Data.Anim.Owner != HOUSE_NONE && !Houses[Data.Anim.Owner]->Is_Player_Control()) {
+				if (owner != HOUSE_NONE && !Houses[owner]->Is_Player_Control()) {
 					anim->Make_Invisible();
 				}
 			}
@@ -789,6 +872,10 @@ void EventClass::Execute(void)
 		**	what factory to use.
 		*/
 		case PRODUCE:
+			if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, false)) {
+				Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+				break;
+			}
 			house->Begin_Production(Data.Specific.Type, Data.Specific.ID);
 			break;
 
@@ -805,6 +892,10 @@ void EventClass::Execute(void)
 		**	object type. From the object type, the exact factory can be inferred.
 		*/
 		case ABANDON:
+			if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, true)) {
+				Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+				break;
+			}
 			house->Abandon_Production(Data.Specific.Type, Data.Specific.ID);
 			break;
 
@@ -841,6 +932,10 @@ void EventClass::Execute(void)
 			// Fall thru to next case...
 
 		case MEGAMISSION:
+			if (!NetSemantic::Mission_Is_Valid(Data.MegaMission.Mission, MISSION_NONE, MISSION_COUNT)) {
+				Log_Event_Rejection(EventRejectReason::InvalidMission, Type, ID, Data.MegaMission.Mission);
+				break;
+			}
 			//if (Debug_Print_Events) {
 			//	printf("Whom:%x Tgt:%x Dest:%x ",
 			//		Data.MegaMission.Whom.As_TARGET(),
@@ -1048,6 +1143,10 @@ void EventClass::Execute(void)
 		**	care of it.
 		*/
 		case SPECIAL_PLACE:
+			if (!NetSemantic::Index_Is_Valid(Data.Special.ID, house->SuperWeapon.Count())) {
+				Log_Event_Rejection(EventRejectReason::InvalidSuperWeapon, Type, ID, Data.Special.ID);
+				break;
+			}
 			house->Place_Special_Blast((SuperWeaponType)Data.Special.ID, Cell(Data.Special.Where.X, Data.Special.Where.Y));
 			break;
 
@@ -1079,6 +1178,10 @@ void EventClass::Execute(void)
 		**	Process the options Game Speed
 		*/
 		case GAMESPEED:
+			if (!NetSemantic::Game_Speed_Is_Valid(Data.General.Value)) {
+				Log_Event_Rejection(EventRejectReason::InvalidGameSpeed, Type, ID, Data.General.Value);
+				break;
+			}
 			Options.GameSpeed = Data.General.Value;
 
 			house = Houses[ID];
@@ -1095,8 +1198,20 @@ void EventClass::Execute(void)
 		**	Adjust connection timing for multiplayer games
 		*/
 		case RESPONSE_TIME:
+		{
+			int const master = Session.Master_Player_ID();
+			if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
+				Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
+				break;
+			}
+			if (!NetSemantic::Response_Time_Is_Valid(Data.FrameInfo.Delay, NETWORK_MIN_MAX_AHEAD, Session.FrameSendRate,
+				Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP)) {
+				Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.FrameInfo.Delay);
+				break;
+			}
 			Session.MaxAhead = Data.FrameInfo.Delay;
 			break;
+		}
 
 		/*
 		**	Save a multiplayer game (this event is only generated in multiplayer mode)
@@ -1124,10 +1239,17 @@ void EventClass::Execute(void)
 			break;
 
 		case REMOVEPLAYER:
+			index = Data.General.Value;
+			if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
+				Log_Event_Rejection(EventRejectReason::InvalidRemovedHouse, Type, ID, index);
+				break;
+			}
+			if (!Houses[index]->Is_Human_Player()) {
+				break;
+			}
+
 			DebugString("Executing REMOVEPLAYER event. Frame is %d\n", ::Frame);
 			Disable_Multiplayer_Saving();
-			index = Data.General.Value;
-
 			house = Houses[index];
 			if (house->IsObserver) {
 				break;
@@ -1142,6 +1264,10 @@ void EventClass::Execute(void)
 			break;
 
 		case LATENCYFUDGE:
+			if (!NetSemantic::Latency_Fudge_Is_Valid(Data.General.Value)) {
+				Log_Event_Rejection(EventRejectReason::InvalidLatencyFudge, Type, ID, Data.General.Value);
+				break;
+			}
 			DebugString("Executing LATENCYFUDGE event. Frame is %d\n", ::Frame);
 			Session.LatencyFudge = Data.General.Value;
 			DebugString("LatencyFudge is %d\n", Session.LatencyFudge);
@@ -1162,7 +1288,23 @@ void EventClass::Execute(void)
 		// COMM_MULTI_E_COMP protocol.
 		//
 		case TIMING:
-			Data.Timing.MaxAhead -= Scen->Special.IsFogOfWar ? 10 : 0;
+		{
+			int const master = Session.Master_Player_ID();
+			if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
+				Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
+				break;
+			}
+
+			unsigned int const padding = Scen->Special.IsFogOfWar ? 10 : 0;
+			if (Data.Timing.MaxAhead < padding) {
+				Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.Timing.MaxAhead);
+				break;
+			}
+			unsigned int const max_ahead = Data.Timing.MaxAhead - padding;
+			if (!NetSemantic::Timing_Values_Are_Valid(Data.Timing.DesiredFrameRate, max_ahead, Data.Timing.FrameSendRate)) {
+				Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, max_ahead);
+				break;
+			}
 
 #if (TIMING_FIX)
 			//
@@ -1172,9 +1314,9 @@ void EventClass::Execute(void)
 			// period of vulnerability's frame start & end values, so we
 			// can reschedule these events to execute after it's over.
 			//
-			if (Data.Timing.MaxAhead > Session.MaxAhead || Data.Timing.FrameSendRate > Session.FrameSendRate) {
+			if (max_ahead > Session.MaxAhead || Data.Timing.FrameSendRate > Session.FrameSendRate) {
 				NewMaxAheadFrame1 = Frame;
-				NewMaxAheadFrame2 = Data.Timing.FrameSendRate * ((Data.Timing.FrameSendRate + Data.Timing.MaxAhead + Frame - 1) / Data.Timing.FrameSendRate);
+				NewMaxAheadFrame2 = Data.Timing.FrameSendRate * ((Data.Timing.FrameSendRate + max_ahead + Frame - 1) / Data.Timing.FrameSendRate);
 			} else {
 				NewMaxAheadFrame1 = 0;
 				NewMaxAheadFrame2 = 0;
@@ -1184,7 +1326,7 @@ void EventClass::Execute(void)
 			ul = Session.MaxMaxAhead;
 
 			Session.DesiredFrameRate = Data.Timing.DesiredFrameRate;
-			Session.MaxAhead = Data.Timing.MaxAhead;
+			Session.MaxAhead = max_ahead;
 
 			if (ul <= Session.MaxAhead) {
 				Session.MaxMaxAhead = Session.MaxAhead;
@@ -1193,6 +1335,7 @@ void EventClass::Execute(void)
 			Session.FrameSendRate = Data.Timing.FrameSendRate;
 
 			break;
+		}
 
 		//
 		// This event tells all systems what the other systems' process

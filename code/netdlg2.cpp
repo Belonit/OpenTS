@@ -1014,7 +1014,7 @@ bool Net2Remote_Connect(void)
 
 				do {
 					Call_Back();
-					int retcode = Ipx.Get_Global_Message(&Session.GPacket, &Session.GPacketlen, &Session.GAddress, &Session.GProductID);
+					int retcode = Ipx.Get_Global_Message(&Session.GPacket, sizeof(Session.GPacket), &Session.GPacketlen, &Session.GAddress, &Session.GProductID);
 					if (retcode && Session.GProductID == IPXGlobalConnClass::COMMAND_AND_CONQUER2) {
 						for (int i = 1; i < Session.Players.Count(); i++) {
 							if (Session.Players[i]->Address == Session.GAddress) {
@@ -2077,7 +2077,7 @@ static void Unjoin_Game(int game_index)
  *=============================================================================================*/
 static void Send_Join_Queries(int gamenow, int playernow, int chatnow, int init)
 {
-	GlobalPacketType packet;
+	GlobalPacketType packet = {};
 
 	//........................................................................
 	// These values control the timeouts for sending various types of packets;
@@ -2184,7 +2184,7 @@ static void Send_Join_Queries(int gamenow, int playernow, int chatnow, int init)
  *=============================================================================================*/
 bool Process_Global_Packet(GlobalPacketType *packet, IPXAddressClass *address)
 {
-	GlobalPacketType mypacket;
+	GlobalPacketType mypacket = {};
 #if 0
 	//------------------------------------------------------------------------
 	// If our Players vector is empty, just return.
@@ -2302,7 +2302,8 @@ static void Get_Join_Responses(void)
 	//------------------------------------------------------------------------
 	// If there is no incoming packet, just return
 	//------------------------------------------------------------------------
-	for (Call_Back(); (rc = Ipx.Get_Global_Message (&Session.GPacket, &Session.GPacketlen, &Session.GAddress, &Session.GProductID)) != 0; Call_Back()) {
+	for (Call_Back(); (rc = Ipx.Get_Global_Message (&Session.GPacket, sizeof(Session.GPacket),
+		&Session.GPacketlen, &Session.GAddress, &Session.GProductID)) != 0; Call_Back()) {
 		if (Session.GProductID != IPXGlobalConnClass::COMMAND_AND_CONQUER2) {
 			continue;
 		}
@@ -2952,7 +2953,7 @@ static void Get_Join_Responses(void)
 		// NET_QUERY_JOIN:
 		//------------------------------------------------------------------------
 		if (Session.GPacket.Command==NET_QUERY_JOIN) {
-			GlobalPacketType packet;
+			GlobalPacketType packet = {};
 
 			if (!Session.Players.Count()) {
 				memset (&packet, 0, sizeof(GlobalPacketType));
@@ -3187,7 +3188,7 @@ static void Get_Join_Responses(void)
 /// <returns>bool; Is this machine ready to go?</returns>
 bool Net2ReadyToGo(int load_game)
 {
-	GlobalPacketType packet;
+	GlobalPacketType packet = {};
 	int i;
 
 	Ipx.Set_Timing(Ipx.Global_Response_Time() + 2 > 30 ? Ipx.Global_Response_Time () + 2 : 30, (unsigned int) -1, 1000);
