@@ -4181,7 +4181,6 @@ void DisplayClass::Abort_Drag_Select(void)
 	IsTentative = false;
 	drag_select_aborted = true;
 	Set_Default_Mouse(MOUSE_NORMAL, false);
-	DebugString("Display: Abort_Drag_Select()\n");
 }
 
 
