@@ -118,12 +118,6 @@ class DSAudio
 		int MagicNumber;
 
 		/*
-		 * This is the staging buffer that a compressed audio frame is copied into before it
-		 * is decoded into its destination. It is sized for the largest compressed block.
-		 */
-		void *UncompBuffer;
-
-		/*
 		**	Buffer for streaming audio from CD
 		*/
 		void *FileStreamBuffer;

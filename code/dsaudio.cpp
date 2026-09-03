@@ -155,9 +155,8 @@ static void *Audio_Add_Long_To_Pointer(void const *ptr, int size)
 
 /// <summary>
 /// Constructor for the sound driver.
-/// This routine allocates the decompression and file streaming buffers and creates the
-/// mutexes that guard the sample trackers. The sound hardware itself is not touched until
-/// Init is called.
+/// This routine allocates the file streaming buffer and creates the mutexes that guard
+/// the sample trackers. The sound hardware itself is not touched until Init is called.
 /// </summary>
 DSAudio::DSAudio(void)
 {
@@ -167,7 +166,6 @@ DSAudio::DSAudio(void)
 
 	MagicNumber = 0xDEAF;
 
-	UncompBuffer = new char[LARGEST_SONARC_BLOCK + 50];
 	StreamBufferSize = (SECONDARY_BUFFER_SIZE / 4) + 128;
 	FileStreamBuffer = new char[StreamBufferSize * STREAM_BUFFER_COUNT];
 
@@ -212,11 +210,6 @@ DSAudio::~DSAudio(void)
 	}
 
 	LOCK_ALL_MUTEX();
-
-	if (UncompBuffer != NULL) {
-		delete UncompBuffer;
-		UncompBuffer = NULL;
-	}
 
 	if (FileStreamBuffer != NULL) {
 		delete FileStreamBuffer;
@@ -467,7 +460,7 @@ bool DSAudio::Init( HWND window , int bits_per_sample, bool stereo , int rate )
 		**	Initialise the Windows timer system to provide us with a callback
 		**
 		*/
-		SoundTimerHandle = timeSetEvent ( 1000/MAINTENANCE_RATE , 1 , Sound_Timer_Callback , 0 , TIME_PERIODIC);
+		SoundTimerHandle = timeSetEvent ( 1000/MAINTENANCE_RATE , 1 , Sound_Timer_Callback , 0 , TIME_PERIODIC | TIME_KILL_SYNCHRONOUS);
 		AudioDone = FALSE;
 		//_beginthread(&Sound_Thread, NULL, 16*1024, NULL);
 
@@ -541,8 +534,6 @@ void DSAudio::End(void)
 		timeEndPeriod(TimerResolution);
 	}
 
-	ReleaseMutex(TimerMutex);
-
 	if (SoundObject && PrimaryBufferPtr){
 		if (WaitForMultipleObjects(MAX_SFX, SecondaryBufferMutexes, true, MUTEX_TIMEOUT) == WAIT_TIMEOUT) {
 			DebugString("Warning: Probable deadlock occurred on secondary sound buffer mutexes. %s, line %d\n", __FILE__, __LINE__);
@@ -591,11 +582,6 @@ void DSAudio::End(void)
 		SoundObject = NULL;
 	}
 
-	if (UncompBuffer) {
-		delete UncompBuffer;
-		UncompBuffer = NULL;
-	}
-
 	if (FileStreamBuffer != NULL) {
 		delete FileStreamBuffer;
 		FileStreamBuffer = NULL;
@@ -610,6 +596,8 @@ void DSAudio::End(void)
 	//DeleteCriticalSection(&GlobalAudioCriticalSection);
 
 	UNLOCK_GLOBAL_MUTEX();
+
+	ReleaseMutex(TimerMutex);
 }
 
 
@@ -1500,11 +1488,6 @@ void DSAudio::maintenance_callback(void)
 				**	Check for unusual situations like a focus loss
 				*/
 				if (return_code != DS_OK){
-					if (return_code == DSERR_BUFFERLOST){
-						if (Audio_Focus_Loss_Function){
-							Audio_Focus_Loss_Function();
-						}
-					}
 					//LeaveCriticalSection(&GlobalAudioCriticalSection);
 					//LeaveCriticalSection (&st->AudioCriticalSection);
 					UNLOCK_SECONDARY_MUTEX(index);
@@ -2230,21 +2213,29 @@ bool DSAudio::Set_Primary_Buffer_Format(void)
 
 void DSAudio::Restore_Sound_Buffers ( void )
 {
-	LOCK_ALL_MUTEX();
+	DWORD const result = WaitForMultipleObjects(MUTEX_COUNT, AllAudioMutexes, true, MUTEX_TIMEOUT);
+	bool const owned = result != WAIT_TIMEOUT && result != WAIT_FAILED;
+	if (!owned) {
+		DebugString("Warning: Probable deadlock occurred on multiple audio mutexes. %s, line %d\n", __FILE__, __LINE__);
+	}
 
 	if (PrimaryBufferPtr != NULL){
 		PrimaryBufferPtr->Restore();
 	}
 
-
 	for ( int index = 0; index < MAX_SFX; index++) {
 		if (SampleTracker[index].PlayBuffer != NULL){
 			SampleTracker[index].PlayBuffer->Restore();
-			UNLOCK_SECONDARY_MUTEX(index);
 		}
 	}
 
-	ReleaseMutex(AllAudioMutexes[0]);
+	// The caller already holds its own slot, so releasing after a failed wait would hand
+	// that slot to the timer thread mid-update.
+	if (owned) {
+		for (int index = 0; index < MUTEX_COUNT; index++) {
+			ReleaseMutex(AllAudioMutexes[index]);
+		}
+	}
 }
 
 
@@ -2594,6 +2585,7 @@ int DSAudio::Sample_Copy(SampleTrackerType *st, void ** source, int * ssize, voi
 
 	int	s;
 	int	datasize = 0;		// Output bytes.
+	char	staging[LARGEST_SONARC_BLOCK + 50];
 
 	if (scomp == SCOMP_NONE || scomp != SCOMP_SOS) {
 		datasize = Simple_Copy(source, ssize, alternate, altsize, &dest, size);
@@ -2657,12 +2649,16 @@ int DSAudio::Sample_Copy(SampleTrackerType *st, void ** source, int * ssize, voi
 						**	The frame was compressed, so copy it to the staging buffer, and then
 						**	uncompress it into the final destination buffer.
 						*/
-						fptr = UncompBuffer;
+						// The decoder reads a quarter of dsize for 16 bit and half of it for 8 bit.
+						if (fsize > sizeof(staging) || dsize > sizeof(staging) * (st->sosinfo.BitSize / 4)) {
+							return(datasize);
+						}
+						fptr = staging;
 						s = Simple_Copy(source, ssize, alternate, altsize, &fptr, fsize);
 						if (s < fsize) {
 							return(datasize);
 						}
-						st->sosinfo.Source = (char *)UncompBuffer;
+						st->sosinfo.Source = staging;
 						st->sosinfo.Dest   = (char *)dest;
 						if (st->sosinfo.BitSize==16 && st->sosinfo.ChannelCount==1){
 							sosCODECDecompressData(&st->sosinfo, dsize);
