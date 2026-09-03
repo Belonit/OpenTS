@@ -11,7 +11,7 @@ The figure applies while the right mouse button is held down over the tactical m
 
 | Figure | Behavior |
 | --- | --- |
-| `0` | The map scrolls by that offset divided by the scroll rate every thirtieth of a second, and the pointer is left where it is. |
+| `0` | The map scrolls by that offset divided by the scroll rate every sixtieth of a second, and the pointer is left where it is. |
 | `1` | The map scrolls twelve times as far and the pointer is put back on the press point, so the ground appears to slide under a pointer that never moves. Each stretch of hand movement is consumed once, so the map keeps pace with the hand rather than the clock. |
 | `2` | The same, with the offset negated, so the ground follows the pointer instead of running away from it. |
 

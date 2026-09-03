@@ -76,10 +76,10 @@ extern FacingType Facing_Between_Points(Point2D const & pt1, Point2D const & pt2
 CDTimerClass<SystemTimerClass> ScrollClass::Counter;
 
 // Steps from the scroll tables are paced off the clock at this rate, not off the frames drawn.
-#define	SCROLL_STEPS_PER_SECOND	30
+#define	SCROLL_STEPS_PER_SECOND	60
 
 // Caps what a poll may cover, so a wait on a dialog or a load does not return as one long jump.
-#define	MAX_SCROLL_STEPS_PER_POLL	2.0
+#define	MAX_SCROLL_STEPS_PER_POLL	4.0
 
 static unsigned int _LastScrollPollTime = 0;
 static double _ScrollFraction = 0.0;
