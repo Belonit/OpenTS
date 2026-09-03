@@ -678,13 +678,11 @@ static void Queue_AI_Multiplayer(void)
 		{ 120, 900, 420, 3600 },
 		{ 120, 900, 420, 3600 },
 		{ 60, 900, 420, 2400 },
-		{ 15, 1200, 720, 7200 },
+		{ 60, 900, 420, 2400 },
 		{ 0, 0, 0, 0 },
 		{ 0, 0, 0, 0 },
 		{ 0, 0, 0, 0 }
 	};
-
-	int timeout_factor = (Session.Type == GAME_INTERNET) ? 6 : 1;
 
 	//........................................................................
 	// Variables for sending, receiving & parsing packets:
@@ -982,8 +980,6 @@ void Wait_For_End_Of_Queue(void)
 		FRAMESYNC_DLG_TIME = (3*TIMER_SECOND),       // time until displaying reconnect dialog
 		FRAMESYNC_TIMEOUT = (15*TIMER_SECOND),       // timeout waiting for frame sync packet
 	};
-
-	int timeout_factor = (Session.Type == GAME_INTERNET) ? 6 : 1;
 
 	//........................................................................
 	// Variables for sending, receiving & parsing packets:

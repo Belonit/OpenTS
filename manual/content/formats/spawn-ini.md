@@ -197,7 +197,9 @@ at the hardest of the game's three settings.
 
 The timing keys are not read at all, `ReconnectTimeout` and `ConnTimeout` among them. How
 far ahead the machines run, how often they exchange their orders, and how long they wait for
-one that has gone quiet are set by the game, and no launch file changes them. `MapHash` is
+one that has gone quiet are set by the game, and no launch file changes them: a machine
+that stops answering brings up the reconnect dialog after seven seconds and is given up
+after forty, the waits a LAN game has always used. `MapHash` is
 not read either: the machines compare the games they have loaded before play begins, which
 settles the same question for themselves.
 
