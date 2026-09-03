@@ -41,7 +41,6 @@ int VideoModeHeight = 0;
  */
 bool WindowedMode = false;
 
-static HWND _Window = NULL;
 static bool _Initialized = false;
 static VideoScaleInfo _ScaleInfo;
 
@@ -60,21 +59,13 @@ static bool _Presenting = false;
 /// <summary>
 /// Works out the shortest sensible gap between presents from the display's refresh rate.
 /// </summary>
-static void Update_Present_Interval(void)
+static void Update_Present_Interval(int refreshrate)
 {
-	int refresh = 0;
-	HDC dc = GetDC(_Window);
-
-	if (dc != NULL) {
-		refresh = GetDeviceCaps(dc, VREFRESH);
-		ReleaseDC(_Window, dc);
+	if (refreshrate <= 1) {
+		refreshrate = 60;
 	}
 
-	if (refresh <= 1) {
-		refresh = 60;
-	}
-
-	_PresentInterval = (unsigned int)(1000 / refresh);
+	_PresentInterval = (unsigned int)(1000 / refreshrate);
 	if (_PresentInterval < 3) {
 		_PresentInterval = 3;
 	}
@@ -91,33 +82,21 @@ static void Update_Present_Interval(void)
 /// </summary>
 static void Update_Scale_Info(void)
 {
-	RECT client;
-
 	_ScaleInfo.GameWidth = VideoModeWidth;
 	_ScaleInfo.GameHeight = VideoModeHeight;
 
-	if (_Window == NULL || !GetClientRect(_Window, &client)) {
-		client.left = 0;
-		client.top = 0;
-		client.right = VideoModeWidth;
-		client.bottom = VideoModeHeight;
-	}
-
-	_ScaleInfo.WindowWidth = client.right - client.left;
-	_ScaleInfo.WindowHeight = client.bottom - client.top;
-
-	if (_ScaleInfo.GameWidth <= 0 || _ScaleInfo.GameHeight <= 0 || _ScaleInfo.WindowWidth <= 0 || _ScaleInfo.WindowHeight <= 0) {
+	if (_ScaleInfo.GameWidth <= 0 || _ScaleInfo.GameHeight <= 0 || _ScaleInfo.DrawableWidth <= 0 || _ScaleInfo.DrawableHeight <= 0) {
 		_ScaleInfo.DestX = 0;
 		_ScaleInfo.DestY = 0;
-		_ScaleInfo.DestWidth = _ScaleInfo.WindowWidth;
-		_ScaleInfo.DestHeight = _ScaleInfo.WindowHeight;
+		_ScaleInfo.DestWidth = _ScaleInfo.DrawableWidth;
+		_ScaleInfo.DestHeight = _ScaleInfo.DrawableHeight;
 		_ScaleInfo.ScaleX = 1.0f;
 		_ScaleInfo.ScaleY = 1.0f;
 		return;
 	}
 
-	double scalex = (double)_ScaleInfo.WindowWidth / (double)_ScaleInfo.GameWidth;
-	double scaley = (double)_ScaleInfo.WindowHeight / (double)_ScaleInfo.GameHeight;
+	double scalex = (double)_ScaleInfo.DrawableWidth / (double)_ScaleInfo.GameWidth;
+	double scaley = (double)_ScaleInfo.DrawableHeight / (double)_ScaleInfo.GameHeight;
 	double scale = (scalex < scaley) ? scalex : scaley;
 
 	if (Options.IntegerScaling && scale >= 1.0) {
@@ -126,8 +105,8 @@ static void Update_Scale_Info(void)
 
 	_ScaleInfo.DestWidth = (int)((double)_ScaleInfo.GameWidth * scale);
 	_ScaleInfo.DestHeight = (int)((double)_ScaleInfo.GameHeight * scale);
-	_ScaleInfo.DestX = (_ScaleInfo.WindowWidth - _ScaleInfo.DestWidth) / 2;
-	_ScaleInfo.DestY = (_ScaleInfo.WindowHeight - _ScaleInfo.DestHeight) / 2;
+	_ScaleInfo.DestX = (_ScaleInfo.DrawableWidth - _ScaleInfo.DestWidth) / 2;
+	_ScaleInfo.DestY = (_ScaleInfo.DrawableHeight - _ScaleInfo.DestHeight) / 2;
 	_ScaleInfo.ScaleX = (float)((double)_ScaleInfo.DestWidth / (double)_ScaleInfo.GameWidth);
 	_ScaleInfo.ScaleY = (float)((double)_ScaleInfo.DestHeight / (double)_ScaleInfo.GameHeight);
 }
@@ -154,24 +133,26 @@ static BackendScaleMode Backend_Scale_Mode(void)
 /// <summary>
 /// Starts the presenter on the game's window.
 /// </summary>
-/// <param name="window">The main window. Its client area receives the frame.</param>
+/// <param name="window">The native window whose drawable area receives the frame.</param>
+/// <param name="drawablewidth">The drawable area's width in physical pixels.</param>
+/// <param name="drawableheight">The drawable area's height in physical pixels.</param>
+/// <param name="refreshrate">The display refresh rate in hertz, or zero when unknown.</param>
 /// <returns>bool; Did the presenter start? A false return is fatal to the game.</returns>
-bool Video_Init(HWND window)
+bool Video_Init(NativeWindow const & window, int drawablewidth, int drawableheight, int refreshrate)
 {
-	RECT client;
-
 	if (_Initialized) {
 		return(true);
 	}
 
-	if (window == NULL || !GetClientRect(window, &client)) {
+	if (window.Handle == nullptr || drawablewidth <= 0 || drawableheight <= 0) {
 		return(false);
 	}
 
-	_Window = window;
+	_ScaleInfo.DrawableWidth = drawablewidth;
+	_ScaleInfo.DrawableHeight = drawableheight;
 
 	BackendRenderer renderer = (BackendRenderer)Options.Renderer;
-	if (!Backend_Init(window, client.right - client.left, client.bottom - client.top, renderer, Options.VSync)) {
+	if (!Backend_Init(window, drawablewidth, drawableheight, renderer, Options.VSync)) {
 		return(false);
 	}
 
@@ -186,7 +167,7 @@ bool Video_Init(HWND window)
 	}
 
 	Update_Scale_Info();
-	Update_Present_Interval();
+	Update_Present_Interval(refreshrate);
 	return(true);
 }
 
@@ -203,7 +184,6 @@ void Video_Shutdown(void)
 	Win_Cursor_Shutdown();
 	Backend_Shutdown();
 	_Initialized = false;
-	_Window = NULL;
 	_FrameIsDirty = false;
 }
 
@@ -230,7 +210,6 @@ bool Video_Set_Mode(int width, int height)
 	VideoModeHeight = height;
 
 	Update_Scale_Info();
-	Update_Present_Interval();
 	Win_Cursor_Refresh();
 	_FrameIsDirty = true;
 	return(true);
@@ -238,17 +217,18 @@ bool Video_Set_Mode(int width, int height)
 
 
 /// <summary>
-/// Tells the presenter the window's client area changed size.
+/// Tells the presenter the drawable area changed size.
 /// </summary>
-void Video_On_Resize(int width, int height)
+void Video_On_Resize(int drawablewidth, int drawableheight)
 {
-	if (!_Initialized || width <= 0 || height <= 0) {
+	if (!_Initialized || drawablewidth <= 0 || drawableheight <= 0) {
 		return;
 	}
 
-	Backend_On_Resize(width, height);
+	_ScaleInfo.DrawableWidth = drawablewidth;
+	_ScaleInfo.DrawableHeight = drawableheight;
+	Backend_On_Resize(drawablewidth, drawableheight);
 	Update_Scale_Info();
-	Update_Present_Interval();
 	Win_Cursor_Refresh();
 	Video_Mark_Dirty();
 }
@@ -258,13 +238,13 @@ void Video_On_Resize(int width, int height)
 /// Tells the presenter the desktop's display settings changed.
 /// The window may now be on a monitor that refreshes at a different rate.
 /// </summary>
-void Video_On_Display_Change(void)
+void Video_On_Display_Change(int refreshrate)
 {
 	if (!_Initialized) {
 		return;
 	}
 
-	Update_Present_Interval();
+	Update_Present_Interval(refreshrate);
 	Video_Mark_Dirty();
 }
 

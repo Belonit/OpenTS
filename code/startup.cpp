@@ -623,7 +623,12 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int command_sho
 
 		Audio.Init(MainWindow, 16, 0, 22050);
 
-		if (!Video_Init(MainWindow)) {
+		int drawablewidth = 0;
+		int drawableheight = 0;
+		int refreshrate = Win_Window_Refresh_Rate(MainWindow);
+		NativeWindow nativewindow = Win_Native_Window(MainWindow);
+		if (!Win_Window_Drawable_Size(MainWindow, drawablewidth, drawableheight)
+			|| !Video_Init(nativewindow, drawablewidth, drawableheight, refreshrate)) {
 			MessageBox(MainWindow, Fetch_String(TXT_VIDEO_ERROR), Fetch_String(TXT_SHORT_TITLE), MB_ICONWARNING);
 			exit(EXIT_FAILURE);
 		}

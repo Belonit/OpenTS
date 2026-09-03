@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include <windows.h>
+#include "nativewindow.hh"
 
 
 enum BackendRenderer {
@@ -32,11 +32,12 @@ enum BackendScaleMode {
 };
 
 
-bool Backend_Init(HWND window, int windowwidth, int windowheight, BackendRenderer renderer, bool vsync);
+// Drawable sizes are physical pixel dimensions supplied by the application shell.
+bool Backend_Init(NativeWindow const & window, int drawablewidth, int drawableheight, BackendRenderer renderer, bool vsync);
 void Backend_Shutdown(void);
 
 bool Backend_Set_Frame_Size(int width, int height);
-void Backend_On_Resize(int windowwidth, int windowheight);
+void Backend_On_Resize(int drawablewidth, int drawableheight);
 
 // Uploads the frame and presents it. The pixels are 16 bit 565 and stay owned by the
 // caller; they are consumed before this returns.

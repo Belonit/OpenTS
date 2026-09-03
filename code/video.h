@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "win.h"
+#include "nativewindow.hh"
 
 
 // How the presented frame is filtered when the window is larger than it.
@@ -22,12 +22,13 @@ enum VideoScaleMode {
 
 // Where the game's frame lands inside the window. The frame keeps its aspect ratio, so
 // the destination is centered and the window may show bars on two of its sides.
+// Drawable dimensions and the destination rectangle are measured in physical pixels.
 struct VideoScaleInfo
 {
 	int GameWidth;
 	int GameHeight;
-	int WindowWidth;
-	int WindowHeight;
+	int DrawableWidth;
+	int DrawableHeight;
 	int DestX;
 	int DestY;
 	int DestWidth;
@@ -37,12 +38,12 @@ struct VideoScaleInfo
 };
 
 
-bool Video_Init(HWND window);
+bool Video_Init(NativeWindow const & window, int drawablewidth, int drawableheight, int refreshrate);
 void Video_Shutdown(void);
 
 bool Video_Set_Mode(int width, int height);
-void Video_On_Resize(int width, int height);
-void Video_On_Display_Change(void);
+void Video_On_Resize(int drawablewidth, int drawableheight);
+void Video_On_Display_Change(int refreshrate);
 
 void Video_Mark_Dirty(void);
 void Video_Present(void);

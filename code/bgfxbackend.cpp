@@ -56,8 +56,8 @@ static int _FrameWidth = 0;
 static int _FrameHeight = 0;
 static int _PrescaleWidth = 0;
 static int _PrescaleHeight = 0;
-static int _WindowWidth = 0;
-static int _WindowHeight = 0;
+static int _DrawableWidth = 0;
+static int _DrawableHeight = 0;
 static unsigned int _ResetFlags = BGFX_RESET_FLIP_AFTER_RENDER;
 
 // True while the frame texture holds the game's own 565 layout. When the hardware cannot
@@ -274,12 +274,12 @@ static bool Ensure_Prescale_Target(int width, int height)
 /// Starts the renderer on an existing window.
 /// </summary>
 /// <param name="window">The window the frame is presented into.</param>
-/// <param name="windowwidth">The width of that window's client area.</param>
-/// <param name="windowheight">The height of that window's client area.</param>
+/// <param name="drawablewidth">The drawable area's width in physical pixels.</param>
+/// <param name="drawableheight">The drawable area's height in physical pixels.</param>
 /// <param name="renderer">Which graphics API to ask for, or auto to let bgfx decide.</param>
 /// <param name="vsync">Should presents wait for the display's refresh?</param>
 /// <returns>bool; Did the renderer start?</returns>
-bool Backend_Init(HWND window, int windowwidth, int windowheight, BackendRenderer renderer, bool vsync)
+bool Backend_Init(NativeWindow const & window, int drawablewidth, int drawableheight, BackendRenderer renderer, bool vsync)
 {
 	if (_Initialized) {
 		return(true);
@@ -290,14 +290,18 @@ bool Backend_Init(HWND window, int windowwidth, int windowheight, BackendRendere
 	// renderFrame before init is what selects that.
 	bgfx::renderFrame();
 
-	_WindowWidth = windowwidth;
-	_WindowHeight = windowheight;
+	_DrawableWidth = drawablewidth;
+	_DrawableHeight = drawableheight;
 	_ResetFlags = BGFX_RESET_FLIP_AFTER_RENDER | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
 
 	bgfx::Init init;
-	init.platformData.nwh = window;
-	init.resolution.width = (uint32_t)windowwidth;
-	init.resolution.height = (uint32_t)windowheight;
+	init.platformData.ndt = window.Display;
+	init.platformData.nwh = window.Handle;
+	init.platformData.type = window.Type == NATIVE_WINDOW_WAYLAND
+		? bgfx::NativeWindowHandleType::Wayland
+		: bgfx::NativeWindowHandleType::Default;
+	init.resolution.width = (uint32_t)drawablewidth;
+	init.resolution.height = (uint32_t)drawableheight;
 	init.resolution.reset = _ResetFlags;
 	init.callback = &_Callback;
 	init.allocator = &_Allocator;
@@ -438,21 +442,21 @@ bool Backend_Set_Frame_Size(int width, int height)
 
 
 /// <summary>
-/// Tells the renderer the window's client area changed size.
+/// Tells the renderer the drawable area changed size.
 /// </summary>
-void Backend_On_Resize(int windowwidth, int windowheight)
+void Backend_On_Resize(int drawablewidth, int drawableheight)
 {
-	if (!_Initialized || windowwidth <= 0 || windowheight <= 0) {
+	if (!_Initialized || drawablewidth <= 0 || drawableheight <= 0) {
 		return;
 	}
 
-	if (_WindowWidth == windowwidth && _WindowHeight == windowheight) {
+	if (_DrawableWidth == drawablewidth && _DrawableHeight == drawableheight) {
 		return;
 	}
 
-	_WindowWidth = windowwidth;
-	_WindowHeight = windowheight;
-	bgfx::reset((uint32_t)windowwidth, (uint32_t)windowheight, _ResetFlags);
+	_DrawableWidth = drawablewidth;
+	_DrawableHeight = drawableheight;
+	bgfx::reset((uint32_t)drawablewidth, (uint32_t)drawableheight, _ResetFlags);
 }
 
 
@@ -473,7 +477,7 @@ void Backend_Present(void const * pixels, int pitch, int destx, int desty, int d
 	}
 
 	// A minimized window has no client area to present into.
-	if (_WindowWidth <= 0 || _WindowHeight <= 0) {
+	if (_DrawableWidth <= 0 || _DrawableHeight <= 0) {
 		return;
 	}
 
@@ -527,7 +531,7 @@ void Backend_Present(void const * pixels, int pitch, int destx, int desty, int d
 	// share the window's shape.
 	bgfx::setViewFrameBuffer(VIEW_PRESENT, BGFX_INVALID_HANDLE);
 	bgfx::setViewClear(VIEW_PRESENT, BGFX_CLEAR_COLOR, 0x000000FF);
-	Set_View_Transform(VIEW_PRESENT, _WindowWidth, _WindowHeight);
+	Set_View_Transform(VIEW_PRESENT, _DrawableWidth, _DrawableHeight);
 
 	bool flipv = from_prescale && bgfx::getCaps()->originBottomLeft;
 	Submit_Quad(VIEW_PRESENT, source, (float)destx, (float)desty, (float)destwidth, (float)destheight, samplerflags, flipv);
