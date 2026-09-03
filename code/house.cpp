@@ -7922,10 +7922,7 @@ PathType HouseClass::New_Waypoint_Path(void) const
 {
 	for (int i = 0; i < PATH_COUNT; i++) {
 		WaypointPathClass * path = Paths[i];
-		if (path == NULL) {
-			path = new WaypointPathClass();
-		}
-		if (path->Waypoint_Count() == 0) {
+		if (path == NULL || path->Waypoint_Count() == 0) {
 			return((PathType)i);
 		}
 	}
