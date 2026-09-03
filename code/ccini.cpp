@@ -192,32 +192,19 @@ char const * const ActionName[ACTION_COUNT] = {
 int CCINIClass::Load(FileClass & file, bool withdigest, bool loadcomments)
 {
 	FileStraw straw(file);
-	return(Load(straw, withdigest, loadcomments));
+	return(Load_Verified(straw, withdigest, loadcomments, file.File_Name()));
 }
 
 
-/***********************************************************************************************
- * CCINIClass::Load -- Load the INI database from the data stream specified.                   *
- *                                                                                             *
- *    This will load the INI database and in the process, it will fetch and verify any         *
- *    message digest present.                                                                  *
- *                                                                                             *
- * INPUT:   straw -- The data stream to fetch the INI data from.                               *
- *                                                                                             *
- *          withdigest  -- Should a message digest be examined when loaded. If there is a      *
- *                         mismatch detected, then an error will be returned.                  *
- *                                                                                             *
- * OUTPUT:  bool; Was the database loaded ok? (hack: returns "2" if digest doesn't match).     *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/10/1996 JLB : Created.                                                                 *
- *   08/21/1996 JLB : Handles message digest control.                                          *
- *=============================================================================================*/
-int CCINIClass::Load(Straw & file, bool withdigest, bool loadcomments)
+/// <summary>
+/// Loads the database from a straw and, when asked, checks the message digest it carries.
+/// </summary>
+/// <param name="source">The file name to give in diagnostics, or NULL when there is none.</param>
+/// <returns>0 if nothing loaded, 1 if the database loaded, and 2 if a digest was asked for
+/// but was missing or did not match.</returns>
+int CCINIClass::Load_Verified(Straw & file, bool withdigest, bool loadcomments, char const * source)
 {
-	int ok = BASECLASS::Load(file, loadcomments);
+	int ok = BASECLASS::Load(file, loadcomments, source);
 
 	Invalidate_Message_Digest();
 	if (ok && withdigest) {
@@ -247,6 +234,31 @@ int CCINIClass::Load(Straw & file, bool withdigest, bool loadcomments)
 		}
 	}
 	return(ok);
+}
+
+
+/***********************************************************************************************
+ * CCINIClass::Load -- Load the INI database from the data stream specified.                   *
+ *                                                                                             *
+ *    This will load the INI database and in the process, it will fetch and verify any         *
+ *    message digest present.                                                                  *
+ *                                                                                             *
+ * INPUT:   straw -- The data stream to fetch the INI data from.                               *
+ *                                                                                             *
+ *          withdigest  -- Should a message digest be examined when loaded. If there is a      *
+ *                         mismatch detected, then an error will be returned.                  *
+ *                                                                                             *
+ * OUTPUT:  bool; Was the database loaded ok? (hack: returns "2" if digest doesn't match).     *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/10/1996 JLB : Created.                                                                 *
+ *   08/21/1996 JLB : Handles message digest control.                                          *
+ *=============================================================================================*/
+int CCINIClass::Load(Straw & file, bool withdigest, bool loadcomments)
+{
+	return(Load_Verified(file, withdigest, loadcomments, NULL));
 }
 
 
@@ -714,19 +726,14 @@ bool CCINIClass::Put_Scheme_Index(char const * section, char const * entry, int 
 /// Fetches an RGB color from the INI database.
 /// The color is expressed as a "red,green,blue" triplet.
 /// </summary>
-/// <returns>Returns with the color found. If the entry is absent, the default color is
-/// returned.</returns>
+/// <returns>Returns with the color found. If the entry is absent, or does not hold three
+/// numbers, the default color is returned.</returns>
 RGBClass CCINIClass::Get_RGBClass(char const * section, char const * entry, RGBClass const & defvalue) const
 {
-	char defstr[64];
-	char buffer[64];
+	int values[3];
 
-	sprintf(defstr, "%d,%d,%d", defvalue.Get_Red(), defvalue.Get_Green(), defvalue.Get_Blue());
-	if (Get_String(section, entry, defstr, buffer, sizeof(buffer))) {
-		int r, g, b;
-		sscanf(buffer, "%d,%d,%d", &r, &g, &b);
-		RGBClass rgb(r, g, b);
-		return(rgb);
+	if (Read_Numbers(section, entry, values, 3) == INIReadResult::Parsed) {
+		return(RGBClass(values[0], values[1], values[2]));
 	}
 	return(defvalue);
 }
@@ -750,19 +757,14 @@ bool CCINIClass::Put_RGBClass(char const * section, char const * entry, RGBClass
 /// Fetches an HSV color from the INI database.
 /// The color is expressed as a "hue,saturation,value" triplet.
 /// </summary>
-/// <returns>Returns with the color found. If the entry is absent, the default color is
-/// returned.</returns>
+/// <returns>Returns with the color found. If the entry is absent, or does not hold three
+/// numbers, the default color is returned.</returns>
 HSVClass CCINIClass::Get_HSVClass(char const * section, char const * entry, HSVClass const & defvalue) const
 {
-	char defstr[64];
-	char buffer[64];
+	int values[3];
 
-	sprintf(defstr, "%d,%d,%d", defvalue.Get_Hue(), defvalue.Get_Saturation(), defvalue.Get_Value());
-	if (Get_String(section, entry, defstr, buffer, sizeof(buffer))) {
-		int h = 0, s = 0, v = 0;
-		sscanf(buffer, "%d,%d,%d", &h, &s, &v);
-		HSVClass hsv(h, s, v);
-		return(hsv);
+	if (Read_Numbers(section, entry, values, 3) == INIReadResult::Parsed) {
+		return(HSVClass(values[0], values[1], values[2]));
 	}
 	return(defvalue);
 }
@@ -1008,13 +1010,13 @@ bool CCINIClass::Put_RTTIType(char const * section, char const * entry, RTTIType
  *=============================================================================================*/
 int CCINIClass::Get_Owners(char const * section, char const * entry, int defvalue) const
 {
-	char buffer[128];
 	int ownable = defvalue;
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	std::string value = Get_String(section, entry);
+	if (!value.empty()) {
 
 		ownable = 0;
-		char * name = strtok(buffer, ",");
+		char * name = strtok(value.data(), ",");
 
 		while (name) {
 			ownable |= Owner_From_Name(name);
@@ -1583,13 +1585,13 @@ bool CCINIClass::Put_CrateType(char const * section, char const * entry, CrateTy
  *=============================================================================================*/
 int CCINIClass::Get_Buildings(char const * section, char const * entry, int defvalue) const
 {
-	char buffer[128];
 	int pre;
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	std::string value = Get_String(section, entry);
+	if (!value.empty()) {
 
 		pre = 0;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 
 			if (!strcmpi(token, "POWER")) {
@@ -1685,11 +1687,11 @@ bool CCINIClass::Put_VocType_List(char const * section, char const * entry, Type
 /// then the default value is returned.</returns>
 TypeList<int> CCINIClass::Get_IntList(const char * section, const char * entry, TypeList<int> defvalue) const
 {
-	char buffer[MAX_LINE_LENGTH];
+	std::string value = Get_String(section, entry);
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	if (!value.empty()) {
 		TypeList<int> list;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 			list.Add(atoi(token));
 			token = strtok(NULL, ",");
@@ -1730,10 +1732,11 @@ bool CCINIClass::Put_IntList(char const * section, char const * entry, TypeList<
 /// found, then the default value is returned.</returns>
 TypeList<int> CCINIClass::Get_Target_List(const char * section, const char * entry, TypeList<int> defvalue) const
 {
-	char buffer[MAX_LINE_LENGTH];
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	std::string value = Get_String(section, entry);
+
+	if (!value.empty()) {
 		TypeList<int> list;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 			TargetClass trgt;
 			InfantryType inf = InfantryTypeClass::From_Name(token);
@@ -1782,23 +1785,11 @@ bool CCINIClass::Put_Target_List(const char * section, const char * entry, TypeL
 /// Fetches a three dimensional vector from the INI database.
 /// The vector is expressed in the database as comma separated X, Y, and Z values.
 /// </summary>
-/// <returns>Returns with the vector specified. If the entry could not be found, then the
-/// default value is returned.</returns>
+/// <returns>Returns with the vector specified. If the entry could not be found, or does not
+/// hold three numbers, then the default value is returned.</returns>
 TPoint3D<float> CCINIClass::Get_Vector(char const * section, char const * entry, TPoint3D<float> const & defvalue) const
 {
-	char buffer[MAX_LINE_LENGTH];
-	TPoint3D<float> point = defvalue;
-
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
-		char * token = strtok(buffer, ",");
-		point.X = atof(token);
-		token = strtok(NULL, ",");
-		point.Y = atof(token);
-		token = strtok(NULL, ",");
-		point.Z = atof(token);
-		return(point);
-	}
-	return(defvalue);
+	return(Get_Point(section, entry, defvalue));
 }
 
 
@@ -1806,23 +1797,11 @@ TPoint3D<float> CCINIClass::Get_Vector(char const * section, char const * entry,
 /// Fetches a three dimensional offset from the INI database.
 /// The offset is expressed in the database as comma separated X, Y, and Z values.
 /// </summary>
-/// <returns>Returns with the offset specified. If the entry could not be found, then the
-/// default value is returned.</returns>
+/// <returns>Returns with the offset specified. If the entry could not be found, or does not
+/// hold three numbers, then the default value is returned.</returns>
 TPoint3D<int> CCINIClass::Get_Offset(char const * section, char const * entry, TPoint3D<int> const & defvalue) const
 {
-	char buffer[MAX_LINE_LENGTH];
-	TPoint3D<int> point = defvalue;
-
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
-		char * token = strtok(buffer, ",");
-		point.X = atoi(token);
-		token = strtok(NULL, ",");
-		point.Y = atoi(token);
-		token = strtok(NULL, ",");
-		point.Z = atoi(token);
-		return(point);
-	}
-	return(defvalue);
+	return(Get_Point(section, entry, defvalue));
 }
 
 
@@ -1835,11 +1814,11 @@ TPoint3D<int> CCINIClass::Get_Offset(char const * section, char const * entry, T
 /// found, then the default value is returned.</returns>
 TypeList<TechnoTypeClass *> CCINIClass::Get_TechnoType_List(const char * section, const char * entry, TypeList<TechnoTypeClass *> defvalue) const
 {
-	char buffer[MAX_LINE_LENGTH];
+	std::string value = Get_String(section, entry);
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	if (!value.empty()) {
 		TypeList<TechnoTypeClass *> list;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 			for (int index = 0; index < TechnoTypes.Count(); index++) {
 				if (!strcmpi(token, TechnoTypes[index]->Name())) {
@@ -1883,11 +1862,11 @@ bool CCINIClass::Put_TechnoType_List(char const * section, char const * entry, T
 /// found, then the default value is returned.</returns>
 TypeList<int> CCINIClass::Get_House_List(const char * section, const char * entry, TypeList<int> defvalue) const
 {
-	char buffer[128];
+	std::string value = Get_String(section, entry);
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	if (!value.empty()) {
 		TypeList<int> list;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 			int house = (int)HouseTypeClass::From_Name(token);
 			if (house != HOUSE_NONE) {
@@ -1938,18 +1917,19 @@ bool CCINIClass::Put_House_List(char const * section, char const * entry, TypeLi
 /// then the default value is returned.</returns>
 TypeList<RGBClass> CCINIClass::Get_RGBClass_List(const char * section, const char * entry, TypeList<RGBClass> defvalue) const
 {
-	char buffer[MAX_LINE_LENGTH];
+	std::string value = Get_String(section, entry);
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	if (!value.empty()) {
 		TypeList<RGBClass> list;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 
 			RGBClass c(0,0,0);
 			bool valid = true;
 
 			if (token && *token) {
-				c.Set_Red(atoi(token + 1));
+				if (*token == '(') token++;
+				c.Set_Red(atoi(token));
 			} else {
 				valid = false;
 			}
@@ -1963,7 +1943,7 @@ TypeList<RGBClass> CCINIClass::Get_RGBClass_List(const char * section, const cha
 
 			token = strtok(NULL, ",");
 			if (token && *token) {
-				token[strlen(token) - 1] = '\0';
+				if (token[strlen(token) - 1] == ')') token[strlen(token) - 1] = '\0';
 				c.Set_Blue(atoi(token));
 			} else {
 				valid = false;
@@ -2161,11 +2141,11 @@ bool CCINIClass::Put_SpeedType(char const * section, char const * entry, SpeedTy
 /// found, then the default value is returned.</returns>
 TypeList<int> CCINIClass::Get_BuildingType_List(CCINIClass const & ini, char const * section, char const * entry, TypeList<int> defvalue)
 {
-	char buffer[128];
+	std::string value = ini.Get_String(section, entry);
 
-	if (ini.Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	if (!value.empty()) {
 		TypeList<int> list;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 
 			bool isgroup = false;
@@ -2222,11 +2202,11 @@ TypeList<int> CCINIClass::Get_BuildingType_List(CCINIClass const & ini, char con
 /// default value is returned.</returns>
 AbilityFlagsType CCINIClass::Get_Abilities(char const * section, char const * entry, AbilityFlagsType const & defvalue) const
 {
-	char buffer[128];
+	std::string value = Get_String(section, entry);
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+	if (!value.empty()) {
 		AbilityFlagsType abilities;
-		char * token = strtok(buffer, ",");
+		char * token = strtok(value.data(), ",");
 		while (token != NULL && *token != '\0') {
 			AbilityType ability = Ability_From_Name(token);
 			if (ability != ABILITY_NONE) {
