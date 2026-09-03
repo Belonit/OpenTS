@@ -1027,14 +1027,20 @@ int DSAudio::Play_Sample_Handle(void const *sample, int priority, int volume, in
 		st->PlayBuffer=NULL;
 	}
 
-		/// Removed from TS
-		/*
-		DsBuffFormat.nSamplesPerSec	= (unsigned short int) RawHeader.Rate;
-		DsBuffFormat.nChannels			= (RawHeader.Flags & AUD_FLAG_STEREO) ? 2 : 1 ;
-		DsBuffFormat.wBitsPerSample	= (RawHeader.Flags & AUD_FLAG_16BIT) ? 16 : 8 ;
-		DsBuffFormat.nBlockAlign	= (short) ((DsBuffFormat.wBitsPerSample/8) * DsBuffFormat.nChannels);
-		DsBuffFormat.nAvgBytesPerSec= DsBuffFormat.nSamplesPerSec * DsBuffFormat.nBlockAlign;
-		*/
+		WAVEFORMATEX format;
+		memset(&format, 0, sizeof(format));
+		format.wFormatTag = WAVE_FORMAT_PCM;
+		format.nSamplesPerSec = RawHeader.Rate;
+		format.nChannels = (RawHeader.Flags & AUD_FLAG_STEREO) ? 2 : 1;
+		format.wBitsPerSample = (RawHeader.Flags & AUD_FLAG_16BIT) ? 16 : 8;
+		format.nBlockAlign = (unsigned short)((format.wBitsPerSample / 8) * format.nChannels);
+		format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;
+
+		memset(&BufferDesc, 0, sizeof(BufferDesc));
+		BufferDesc.dwSize = sizeof(BufferDesc);
+		BufferDesc.dwFlags = DSBCAPS_CTRLVOLUME;
+		BufferDesc.dwBufferBytes = SECONDARY_BUFFER_SIZE;
+		BufferDesc.lpwfxFormat = &format;
 
 		/*
 		**	Create the new sound buffer
@@ -1291,6 +1297,10 @@ bool DSAudio::Attempt_Audio_Restore (LPDIRECTSOUNDBUFFER sound_buffer)
 	//if (AudioDone){
 	//	return (FALSE);
 	//}
+
+	if (sound_buffer == NULL) {
+		return(false);
+	}
 
 	/*
 	**	Call the audio focus loss function if it has been set up

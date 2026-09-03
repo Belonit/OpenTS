@@ -42,6 +42,6 @@ The one term the two lists do not share is the sample test, and a silent session
 
 ## What the reader takes from the file
 
-The start of the file supplies the playback rate, the size of the data, the size it uncompresses to, a set of flags and a compression code. Two flags are read: one marks the sample as stereo, the other marks it as sixteen bit. A rate above 20000 and below 24000 hertz is played as 22050 whatever the file asked for.
+The start of the file supplies the playback rate, the size of the data, the size it uncompresses to, a set of flags and a compression code. Two flags are read: one marks the sample as stereo, the other marks it as sixteen bit. Any rate, either bit depth, and mono or stereo all play; a rate above 20000 and below 24000 hertz is played as 22050 whatever the file asked for.
 
 Only one compression method is decoded, the one the shipped files carry. Any other code, including the earlier Westwood delta compression, is not rejected — the data is passed to the mixer as raw samples and plays as noise. Within a compressed sample each frame is preceded by its compressed size, its uncompressed size and a fixed marker, and a frame whose marker does not match, or whose sizes do not fit the decoder's staging area, ends the sample there instead of failing the play.
