@@ -47,7 +47,6 @@
 #include "_keyboar.h"
 #include "_map.h"
 #include "_rect.h"
-#include "_surface.h"
 #include "_tooltip.h"
 #include "ccfile.h"
 #include "cctooltip.h"
@@ -57,12 +56,11 @@
 #include "dsaudio.h"
 #include "dsurface.h"
 #include "except.h"
+#include "gamewindow.h"
 #include "globals.h"
 #include "goptions.h"
-#include "init.h"
 #include "misc.h"
 #include "movie.h"
-#include "movies.h"
 #include "msgroute.h"
 #include "nativewindow.hh"
 #include "pcx.h"
@@ -88,7 +86,6 @@ HWND	UnusedWindow;
 
 HINSTANCE	ProgramInstance;
 bool _MouseCaptured;
-bool _MouseWheel;
 
 
 //void output(short,short)
@@ -247,19 +244,7 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 			return(0);
 
 		case WM_PAINT:
-			if (GameInFocus == true || WindowedMode == true) {
-				if (MouseCursor != NULL && VisibleSurface != NULL && HiddenSurface != NULL && CompositeSurface != NULL) {
-					if (ScenarioActive == true) {
-						Map.Blit_Sidebar(true);
-						Update_Visible_Surface(CompositeSurface);
-					} else if (Movie_Is_Playing() == true) {
-						Movie_Update_Visible_Surface();
-					} else {
-						Update_Visible_Surface(HiddenSurface);
-					}
-				}
-			}
-			Video_Present_If_Dirty();
+			Game_Window_On_Paint(GameInFocus == true || WindowedMode == true);
 			ValidateRect(hwnd, NULL);
 			break;
 
@@ -275,7 +260,7 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 		case WM_SIZE:
 			if (wParam != SIZE_MINIMIZED) {
 				Video_On_Resize(LOWORD(lParam), HIWORD(lParam));
-				Video_On_Display_Change(Win_Window_Refresh_Rate(hwnd));
+				Video_Set_Refresh_Rate(Win_Window_Refresh_Rate(hwnd));
 				if (MouseCursor != NULL) {
 					((WWMouseClass *)MouseCursor)->Calc_Confining_Rect();
 				}
@@ -283,7 +268,7 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 			break;
 
 		case WM_DISPLAYCHANGE:
-			Video_On_Display_Change(Win_Window_Refresh_Rate(hwnd));
+			Video_Set_Refresh_Rate(Win_Window_Refresh_Rate(hwnd));
 			break;
 
 		case WM_CLOSE:
@@ -343,22 +328,14 @@ LRESULT CALLBACK /*_export*/ Windows_Procedure(HWND hwnd, UINT message, UINT wPa
 			return(0);
 
 		case WM_RBUTTONUP:
-			Map.Set_Scroll_Coasting_Allowed(false);
+			Game_Window_On_Right_Mouse_Up();
 			break;
 
 		case WM_MOVING:
 			return(On_WM_MOVING(hwnd, wParam, lParam));
 
 		case WM_MOUSEWHEEL:
-			if (!_MouseWheel) {
-				_MouseWheel = true;
-				if (GET_WHEEL_DELTA_WPARAM(wParam) < 0) {
-					Execute_Command("SidebarDown");
-				} else {
-					Execute_Command("SidebarUp");
-				}
-				_MouseWheel = false;
-			}
+			Game_Window_On_Mouse_Wheel(GET_WHEEL_DELTA_WPARAM(wParam));
 			break;
 
 		case WM_SYSCOMMAND:

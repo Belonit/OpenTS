@@ -43,7 +43,7 @@ void Video_Shutdown(void);
 
 bool Video_Set_Mode(int width, int height);
 void Video_On_Resize(int drawablewidth, int drawableheight);
-void Video_On_Display_Change(int refreshrate);
+void Video_Set_Refresh_Rate(int refreshrate);
 
 void Video_Mark_Dirty(void);
 void Video_Present(void);

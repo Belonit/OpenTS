@@ -235,10 +235,9 @@ void Video_On_Resize(int drawablewidth, int drawableheight)
 
 
 /// <summary>
-/// Tells the presenter the desktop's display settings changed.
-/// The window may now be on a monitor that refreshes at a different rate.
+/// Sets the refresh rate used to pace presentation.
 /// </summary>
-void Video_On_Display_Change(int refreshrate)
+void Video_Set_Refresh_Rate(int refreshrate)
 {
 	if (!_Initialized) {
 		return;
