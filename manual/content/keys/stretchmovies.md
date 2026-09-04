@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-The flag reaches the full screen movie player alone, and only where that player's caller also asks for stretching. A movie played into a fixed rectangle — the sidebar's, for one — never consults the flag and keeps that rectangle either way.
+The flag reaches the full screen movie player alone, and only where that player's caller also asks for stretching. The `TS_TITLE.VQA` and `FS_TITLE.VQA` menu transition movies play at their original size when they fit the display. Any full-screen movie larger than the display is scaled down to fit regardless of this setting. A movie played into a fixed rectangle — the sidebar's, for one — never consults the flag and keeps that rectangle either way.
 
 A stretched movie keeps its shape. It grows by whichever of the two axes runs out first and sits centered in what is left over, so a 640 by 400 movie on a 1920 by 1080 display plays at 1728 by 1080 with a black band down each side. Where the two shapes match, as at 1280 by 800, the movie reaches every edge.
 

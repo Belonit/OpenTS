@@ -109,14 +109,14 @@ __forceinline int NewMenuClass::Game_Select_Loop(NewMenuClass * menu)
 					case GMENU_TIBSUN:
 						menu->GameMode = 0;
 						if (CCFileClass("TS_Title.VQA").Is_Available()) {
-							Play_Movie("TS_Title.VQA", THEME_NONE, false, true, false);
+							Play_Movie("TS_Title.VQA", THEME_NONE, false, false, false);
 						}
 						continue;
 
 					case GMENU_FIRESTORM:
 						menu->GameMode = 1;
 						if (CCFileClass("FS_Title.VQA").Is_Available()) {
-							Play_Movie("FS_Title.VQA", THEME_NONE, false, true, false);
+							Play_Movie("FS_Title.VQA", THEME_NONE, false, false, false);
 						}
 						continue;
 

@@ -57,7 +57,9 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 			return;
 		}
 
-		bool dostretch = (stretch == true && Options.StretchMovies == true);
+		bool oversized = movie->Frame_Rect().Width > VisibleRect.Width
+			|| movie->Frame_Rect().Height > VisibleRect.Height;
+		bool dostretch = oversized || (stretch == true && Options.StretchMovies == true);
 
 		if (DSurface::AllowStretchBlits == true && dostretch == true && movie->Frame_Rect().Is_Valid()) {
 			double scalex = (double)VisibleRect.Width / (double)movie->Frame_Rect().Width;

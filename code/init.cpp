@@ -424,7 +424,7 @@ int Init_Game(int , char * [])
 		Play_Movie("WWLOGO.VQA", THEME_NONE);
 		if (!Get_New_Menu()->MixFile) {
 			if (CCFileClass("FS_TITLE.VQA").Is_Available() == true) {
-				Play_Movie("FS_TITLE.VQA", THEME_NONE, false);
+				Play_Movie("FS_TITLE.VQA", THEME_NONE, false, false);
 			} else {
 				Play_Movie("STARTUP.VQA", THEME_NONE, false);
 			}
