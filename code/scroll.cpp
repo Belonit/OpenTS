@@ -322,14 +322,14 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 			}
 
 			/*
-			 * Dragging a waypoint takes priority. Otherwise, shift-clicking the end
-			 * of the currently selected path loops it, clicking any waypoint selects
-			 * it, and clicking an empty cell places a new waypoint if possible.
+			 * Dragging a waypoint takes priority. Otherwise, a plain click on an earlier
+			 * waypoint of the selected path loops it back there, Shift or any other
+			 * waypoint picks one up, and an empty cell places a new waypoint if possible.
 			 */
 			if (Map.DraggedWaypoint != NULL) {
 				action = ACTION_DRAG_WAYPOINT;
 
-			} else if (shiftdown && waypoint != NULL && path == PlayerPtr->SelectedPath &&
+			} else if (!shiftdown && waypoint != NULL && path == PlayerPtr->SelectedPath &&
 					PlayerPtr->Can_Add_Waypoint_To_Path() && PlayerPtr->Paths[path]->Get_Next_Waypoint(waypoint) != NULL) {
 				action = ACTION_LOOP_WAYPOINT_PATH;
 
