@@ -94,6 +94,23 @@ the same way. A seed of `0` leaves the placement to chance, which is also what a
 rest of the match's options but does not apply it, exactly as a skirmish set up from the
 menu does not.
 
+## Automatic saves
+
+`AutoSaveGame` is the number of frames between automatic saves, and `0` turns them off,
+which is also what an absent key means. A written interval replaces the
+[`AutoSaveInterval`](/keys/autosaveinterval/) a player's own settings carry, whatever kind
+of game the file starts. In a game against other machines every machine saves the same
+frame, so the file must carry the same interval on each of them, as a lobby option written
+alike into every file does. [Save games](/formats/save-games/#automatic-saves) owns what is
+written, under which names, and when.
+
+`NextSPAutoSaveId` and `NextSkirmishAutoSaveId` seed the rotating rings a fresh launch
+writes into: a campaign continues from the slot the first names and a skirmish from the
+second, both counted from one. A saved game carries its own ring positions, and a resumed
+game continues from those rather than from the file. A number below one or beyond the ring
+starts the ring at its first slot, so the `-1` a client writes for a loaded save that was no
+automatic save is harmless.
+
 ## Who is playing
 
 A seat is a person's because the file writes a section for it: `[Settings]` describes the
@@ -207,7 +224,7 @@ not read either: the machines compare the games they have loaded before play beg
 settles the same question for themselves.
 
 These keys are read but change nothing yet: `IsHost`, `Tournament`, `GameID`,
-`WriteStatistics`, the automatic-save scheduling keys, `BuildOffAlly`,
+`WriteStatistics`, `BuildOffAlly`,
 `AttackNeutralUnits`, `ScrapMetal`, `AutoSurrender`, `ContinueWithoutHumans`,
 `QuickMatch`, `SkipScoreScreen`, `PlayMoviesInMultiplayer`, `CustomLoadScreen`,
 `CustomLoadScreenPos`, and `DifficultyName`.

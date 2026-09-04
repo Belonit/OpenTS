@@ -79,6 +79,7 @@
 #include "aitrig.h"
 #include "anim.h"
 #include "astar.h"
+#include "autosave.h"
 #include "bench.h"
 #include "building.h"
 #include "builtype.h"
@@ -397,6 +398,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 	Update_Visible_Surface();
 
 	Scen->ElapsedTimer.Start();
+	Autosave.Schedule(Frame);
 
 	ScenarioActive = true;
 	TacticalActive = true;

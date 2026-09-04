@@ -127,6 +127,12 @@ class OptionsClass {
 		int TextBackgroundColor;
 
 		/*
+		 * Frames between automatic saves of a game started from the menu, or zero for none.
+		 * A launch file's own interval takes its place.
+		 */
+		int AutoSaveInterval;
+
+		/*
 		 * These are the dimensions of the game screen, expressed in pixels. The tactical
 		 * view, the sidebar and the tabs are all laid out against them.
 		 */

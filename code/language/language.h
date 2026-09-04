@@ -811,6 +811,11 @@
 #define TXT_CHAT_TO_ALL_DESC            1053
 #define TXT_CHAT_TO_ALLIES              1054
 #define TXT_CHAT_TO_ALLIES_DESC         1055
+#define TXT_AUTOSAVING                  1056
+#define TXT_AUTOSAVE_FAILED             1057
+#define TXT_AUTOSAVE_DESCRIPTION        1058
+#define TXT_AUTOSAVE_MULTIPLAYER        1059
+#define TXT_SAVE_FAILED                 1060
 #define IDC_LADDER_TYPE                 1043
 #define IDC_LADDER_LOCATION             1044
 #define IDC_FINDGAME_LOCATION           1046

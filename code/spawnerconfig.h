@@ -86,7 +86,7 @@ class SpawnerConfigClass
 		std::string MapName;
 		bool LoadSaveGame = false;
 		std::string SaveGameName;
-		int AutoSaveInterval = 10800;
+		int AutoSaveInterval = 0;
 		int NextCampaignAutoSave = 0;
 		int NextSkirmishAutoSave = 0;
 

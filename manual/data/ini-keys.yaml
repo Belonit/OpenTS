@@ -2331,6 +2331,24 @@ AutoCrush:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+AutoSaveInterval:
+  key: AutoSaveInterval
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Options
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: '10800'
+      declared_in: OptionsClass
+      member: AutoSaveInterval
+      source: code/options.cpp
+      guard: null
+    level: OptionsClass
 AutoScroll:
   key: AutoScroll
   scopes:

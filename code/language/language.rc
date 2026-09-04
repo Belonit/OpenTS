@@ -2435,6 +2435,11 @@ BEGIN
     TXT_CHAT_TO_ALL_DESC    "Starts a message to every player."
     TXT_CHAT_TO_ALLIES      "Message to Team"
     TXT_CHAT_TO_ALLIES_DESC "Starts a message to your allies, or to the other observers while you watch."
+    TXT_AUTOSAVING          "Auto-saving..."
+    TXT_AUTOSAVE_FAILED     "Auto-save failed."
+    TXT_AUTOSAVE_DESCRIPTION "Auto-Save %d: %s"
+    TXT_AUTOSAVE_MULTIPLAYER "Multiplayer Game (Auto-Save)"
+    TXT_SAVE_FAILED         "The game could not be saved."
 END
 
 #endif    // English (U.S.) resources

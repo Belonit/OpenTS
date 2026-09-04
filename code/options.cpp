@@ -122,6 +122,7 @@ OptionsClass::OptionsClass(void) :
 	ActionLines(true),
 	ToolTips(true),
 	TextBackgroundColor(0),
+	AutoSaveInterval(10800),
 	ScreenWidth(-1),
 	ScreenHeight(-1),
 	ScrollMethod(0),
@@ -393,6 +394,9 @@ void OptionsClass::Load_Settings(void)
 	TextBackgroundColor = ConfigINI.Get_Int("Options", "TextBackgroundColor", TextBackgroundColor);
 	DebugString("TextBackgroundColor = %d\n", TextBackgroundColor);
 
+	AutoSaveInterval = ConfigINI.Get_Int("Options", "AutoSaveInterval", AutoSaveInterval);
+	DebugString("AutoSaveInterval = %d\n", AutoSaveInterval);
+
 	ScreenWidth = ConfigINI.Get_Int("Video", "ScreenWidth", ScreenWidth);
 	ScreenHeight = ConfigINI.Get_Int("Video", "ScreenHeight", ScreenHeight);
 	DebugString("Resolution = %d X %d\n", ScreenWidth, ScreenHeight);
@@ -462,6 +466,7 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Bool("Options", "UnitActionLines", ActionLines);
 	ConfigINI.Put_Bool("Options", "ToolTips", ToolTips);
 	ConfigINI.Put_Int("Options", "TextBackgroundColor", TextBackgroundColor);
+	ConfigINI.Put_Int("Options", "AutoSaveInterval", AutoSaveInterval);
 	ConfigINI.Put_Int("Video", "ScreenWidth", ScreenWidth);
 	ConfigINI.Put_Int("Video", "ScreenHeight", ScreenHeight);
 	ConfigINI.Put_Bool("Video", "StretchMovies", StretchMovies);

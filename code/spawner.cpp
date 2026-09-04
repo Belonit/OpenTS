@@ -15,6 +15,7 @@
 #include "spawnerconfig.h"
 
 #include "addon.h"
+#include "autosave.h"
 #include "campaign.h"
 #include "ccfile.h"
 #include "ccini.h"
@@ -249,9 +250,6 @@ static void Spawner_Bind_Options(void)
 	 *   IsHost                        - which machine hosts matters once one can leave.
 	 *   Tournament, GameID,
 	 *   WriteStatistics               - naming a match and reporting how it went.
-	 *   AutoSaveInterval,
-	 *   NextCampaignAutoSave,
-	 *   NextSkirmishAutoSave          - saving on a schedule.
 	 *   BuildOffAlly, AttackNeutralUnits,
 	 *   ScrapMetal, AutoSurrender,
 	 *   ContinueWithoutHumans         - options the game has no setting of its own for yet.
@@ -262,6 +260,17 @@ static void Spawner_Bind_Options(void)
 	 *   CustomLoadScreenY,
 	 *   DifficultyName                - what a player is shown around the match.
 	 */
+}
+
+
+/// <summary>
+/// Hands the game the automatic-save schedule and ring positions the launch file names. A
+/// resumed save overrides the positions when it loads.
+/// </summary>
+static void Spawner_Bind_Autosave(void)
+{
+	Autosave.Set_Interval(SpawnConfig.AutoSaveInterval);
+	Autosave.Seed_Slots(SpawnConfig.NextCampaignAutoSave, SpawnConfig.NextSkirmishAutoSave);
 }
 
 
@@ -507,6 +516,8 @@ bool Spawner_Prepare(bool & gameloaded)
 	SpawnConfig.Read_INI(ini);
 
 	SpawnConsumed = true;
+
+	Spawner_Bind_Autosave();
 
 	/*
 	 * Every kind of launch is played at this speed, so it is checked before the kinds part.

@@ -471,6 +471,15 @@ test('Saved games are named in one folder rather than searched for', () => {
 	);
 });
 
+test('Automatic saves are serviced at the frame boundary ahead of the pending write', () => {
+	assertOrdered(functionBody(source('code/mainloop.cpp'), 'bool Main_Loop(void)'), [
+		'Frame++;',
+		'Process_Deferred_Deletion();',
+		'Autosave_Service();',
+		'Process_Pending_Save_Game();',
+	], 'an automatic save is written after the frame has retired its dead objects');
+});
+
 test('A match against other machines is assembled whole and wired to its network last', () => {
 	const spawner = source('code/spawner.cpp');
 

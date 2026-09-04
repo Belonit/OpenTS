@@ -171,12 +171,35 @@ int main(void)
 			"the scenario a client always writes is also the default");
 		Check(config.NextCampaignAutoSave == 0 && config.NextSkirmishAutoSave == 0,
 			"the first automatic save is numbered from zero");
+		Check(config.AutoSaveInterval == 0, "an unwritten interval saves nothing automatically");
 
 		bool any = false;
 		for (bool flag : config.GlobalFlags) {
 			any = any || flag;
 		}
 		Check(!any, "no scenario flag is set unasked");
+	}
+
+	/*
+	 * A client writes the interval only when it wants automatic saves, in frames, and hands
+	 * back -1 for a loaded save that was not one; the ring is what starts that over.
+	 */
+	{
+		char const off[] =
+			"[Settings]\n"
+			"AutoSaveGame=0\n"
+			"NextSPAutoSaveId=-1\n";
+		SpawnerConfigClass config = Read(off, sizeof(off) - 1);
+
+		Check(config.AutoSaveInterval == 0, "an interval of zero saves nothing automatically");
+		Check(config.NextCampaignAutoSave == -2, "a loaded save that was no autosave is handed on as read");
+
+		char const on[] =
+			"[Settings]\n"
+			"AutoSaveGame=10800\n";
+		config = Read(on, sizeof(on) - 1);
+
+		Check(config.AutoSaveInterval == 10800, "the interval is read in frames as written");
 	}
 
 	/*

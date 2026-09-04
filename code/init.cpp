@@ -85,6 +85,7 @@
 #include "airctype.h"
 #include "alphashp.h"
 #include "anim.h"
+#include "autosave.h"
 #include "bench.h"
 #include "blight.h"
 #include "building.h"
@@ -405,6 +406,7 @@ int Init_Game(int , char * [])
 	*/
 	DebugString("Reading Game Settings\n");
 	Options.Load_Settings();
+	Autosave.Set_Interval(Options.AutoSaveInterval);
 
 	/*
 	**	Initialize the animation system.
