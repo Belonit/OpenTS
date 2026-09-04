@@ -67,8 +67,7 @@ LCWPipe::LCWPipe(CompControl control, int blocksize) :
 		Buffer2(NULL),
 		BlockSize(blocksize)
 {
-	int margin = BlockSize/128+1;
-	SafetyMargin = margin < 128 ? 128 : margin;
+	SafetyMargin = LCW_Comp_Bound(BlockSize) - BlockSize;
 	Buffer = new char[BlockSize+SafetyMargin];
 	Buffer2 = new char[BlockSize+SafetyMargin];
 	BlockHeader.CompCount = 0xFFFF;
@@ -153,6 +152,15 @@ int LCWPipe::Put(void const * source, int slen)
 				if (Counter == sizeof(BlockHeader)) {
 					memmove(&BlockHeader, Buffer, sizeof(BlockHeader));
 					Counter = 0;
+
+					// A header the compressor could not have written passes through untouched,
+					// like a truncated block in Flush, and the sentinel resumes accumulation.
+					if (BlockHeader.CompCount == 0 || BlockHeader.CompCount > BlockSize+SafetyMargin ||
+						BlockHeader.UncompCount == 0 || BlockHeader.UncompCount > BlockSize) {
+						total += BASECLASS::Put(&BlockHeader, sizeof(BlockHeader));
+						BlockHeader.CompCount = 0xFFFF;
+						continue;
+					}
 				}
 			}
 
@@ -173,7 +181,7 @@ int LCWPipe::Put(void const * source, int slen)
 				**	through the pipe.
 				*/
 				if (Counter == BlockHeader.CompCount) {
-					LCW_Uncomp(Buffer, Buffer2);
+					LCW_Uncomp(Buffer, Buffer2, BlockHeader.UncompCount);
 					total += BASECLASS::Put(Buffer2, BlockHeader.UncompCount);
 					Counter = 0;
 					BlockHeader.CompCount = 0xFFFF;

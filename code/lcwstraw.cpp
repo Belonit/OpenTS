@@ -69,10 +69,10 @@ LCWStraw::LCWStraw(CompControl control, int blocksize) :
 		Buffer2(NULL),
 		BlockSize(blocksize)
 {
-	SafetyMargin = BlockSize/128+1;
+	SafetyMargin = LCW_Comp_Bound(BlockSize) - BlockSize;
 	Buffer = new char[BlockSize+SafetyMargin];
 	if (control == COMPRESS) {
-		Buffer2 = new char[BlockSize+SafetyMargin];
+		Buffer2 = new char[BlockSize+SafetyMargin+sizeof(BlockHeader)];
 	}
 }
 
@@ -159,11 +159,16 @@ int LCWStraw::Get(void * destbuf, int slen)
 			int incount = BASECLASS::Get(&BlockHeader, sizeof(BlockHeader));
 			if (incount != sizeof(BlockHeader)) break;
 
+			// The counts are stream data; a block the compressor could not have written
+			// would start before the buffer or expand past it.
+			if (BlockHeader.CompCount == 0 || BlockHeader.CompCount > BlockSize+SafetyMargin) break;
+			if (BlockHeader.UncompCount == 0 || BlockHeader.UncompCount > BlockSize) break;
+
 			void * ptr = &Buffer[(BlockSize+SafetyMargin) - BlockHeader.CompCount];
 			incount = BASECLASS::Get(ptr, BlockHeader.CompCount);
 			if (incount != BlockHeader.CompCount) break;
 
-			LCW_Uncomp(ptr, Buffer);
+			LCW_Uncomp(ptr, Buffer, BlockHeader.UncompCount);
 			Counter = BlockHeader.UncompCount;
 		} else {
 			BlockHeader.UncompCount = (unsigned short)BASECLASS::Get(Buffer, BlockSize);

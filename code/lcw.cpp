@@ -208,8 +208,8 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
  * OUTPUT:  Returns with the number of bytes of output data stored into the destination        *
  *          buffer.                                                                            *
  *                                                                                             *
- * WARNINGS:   Be sure that the destination buffer is big enough. The maximum size required    *
- *             for the destination buffer is (datasize + datasize/128).                        *
+ * WARNINGS:   Be sure that the destination buffer is big enough. LCW_Comp_Bound() gives the   *
+ *             maximum size required for the destination buffer.                               *
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   05/20/1997 JLB : Created.                                                                 *

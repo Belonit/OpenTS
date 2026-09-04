@@ -36,3 +36,13 @@
 uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length=0);
 
 int LCW_Comp(void const * source, void * dest, int length);
+
+/// <summary>
+/// Returns a destination size that holds LCW_Comp's output for any source of datasize bytes.
+/// </summary>
+constexpr int LCW_Comp_Bound(int datasize)
+{
+	// The worst case alternates a medium form three byte copy with one literal, five bytes out
+	// for four in, plus a command byte per 63 literals and the terminator.
+	return(datasize + datasize / 4 + datasize / 128 + 4);
+}
