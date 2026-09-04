@@ -34,6 +34,9 @@
 #include	"always.h"
 #include	"lcw.h"
 
+#include <cstddef>
+#include <cstdint>
+
 
 /// <summary>
 /// Decompresses an LCW encoded data block.
@@ -104,11 +107,11 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
 
 			if (bounded && (count > (unsigned) maxlen)) {
 				count = (unsigned) maxlen;
-			} 
+			}
 
 			while (count--) {
 				*dest_ptr++ = *copy_ptr++;
-			} 
+			}
 
 		} else {
 
@@ -147,7 +150,7 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
 					}
 
 
-					while (count--) { 
+					while (count--) {
 						*dest_ptr++ = data;
 					}
 
@@ -163,7 +166,7 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
 
 						if (bounded && (count > (unsigned) maxlen)) count = (unsigned) maxlen;
 
-						while (count--) { 
+						while (count--) {
 							*dest_ptr++ = *copy_ptr++;
 						}
 
@@ -177,7 +180,7 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
 
 						if (bounded && (count > (unsigned) maxlen)) count = (unsigned) maxlen;
 
-						while (count--) { 
+						while (count--) {
 							*dest_ptr++ = *copy_ptr++;
 						}
 					}
@@ -186,9 +189,6 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
 		}
 	}
 }
-
-
-#if defined(_MSC_VER)
 
 
 /***********************************************************************************************
@@ -214,232 +214,170 @@ uint32_t LCW_Uncomp(void const * source, void * dest, unsigned long length)
  * HISTORY:                                                                                    *
  *   05/20/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
-/// Renegade guards this body with #ifdef _WINDOWS, which would force retval ahead of the
-/// other locals; that shape is not reproduced here.
-/*ARGSUSED*/
+
 int LCW_Comp(void const * source, void * dest, int datasize)
 {
-	int inlen = 0;
-	int a1stdest = 0;
-	int a1stsrc = 0;
-	int lenoff = 0;
-	int ndest = 0;
-	int count = 0;
-	int matchoff = 0;
-	int end_of_data = 0;
-	int retval = 0;
-#ifdef _DEBUG
-	inlen = inlen;
-	a1stdest = a1stdest;
-	a1stsrc = a1stsrc;
-	lenoff = lenoff;
-	ndest = ndest;
-	count = count;
-	matchoff = matchoff;
-	end_of_data = end_of_data;
-#endif
+	uint8_t const * const start = static_cast<uint8_t const *>(source);
+	uint8_t * const first = static_cast<uint8_t *>(dest);
+	uint8_t const * const end_of_data = start + datasize;
 
-	__asm {
-		cld			// make sure all string commands are forward
-		mov	edi,[dest]
-		mov	esi,[source]
-		mov	edx,[datasize]		// get length of data to compress
+	uint8_t const * srcptr = start;
+	uint8_t * dstptr = first;
 
-// compress data to the following codes in the format b = byte, w = word
-// n = byte code pulled from compressed data
-//   Bit field of n		command		description
-// n=0xxxyyyy,yyyyyyyy		short run	back y bytes and run x+3
-// n=10xxxxxx,n1,n2,...,nx+1	med length	copy the next x+1 bytes
-// n=11xxxxxx,w1			med run		run x+3 bytes from offset w1
-// n=11111111,w1,w2		long run	run w1 bytes from offset w2
-// n=10000000			end		end of data reached
+	/*
+	 * The first command is always a run of literals, opened here and extended in place as
+	 * more of them are emitted.
+	 */
+	bool inlen = true;
+	uint8_t * lenoff = dstptr;
 
-		mov	ebx,esi
-		add	ebx,edx
-		mov	[end_of_data],ebx
-		mov	[inlen],1	//; set the in-length flag
-		mov	[a1stdest],edi	//; save original dest offset for size calc
-		mov	[a1stsrc],esi	//; save offset of first byte of data
-		mov	[lenoff],edi	//; save the offset of the legth of this len
-		sub	eax,eax
-		mov	al,081h		//; the first byte is always a len
-		stosb			//; write out a len of 1
-		lodsb			//; get the byte
-		stosb			//; save it
+	*dstptr++ = 0x81;
+	*dstptr++ = *srcptr++;
 
-		loopstart:
-		mov	[ndest],edi	//; save offset of compressed data
-		mov	edi,[a1stsrc]	//; get the offset to the first byte of data
-		mov	[count],1	//; set the count of run to 0
+	while (srcptr < end_of_data) {
+		uint8_t * ndest = dstptr;
+		uint8_t const * search = start;
+		uint8_t const * matchoff = start;
+		ptrdiff_t count = 1;
 
-		searchloop:
-		sub	eax,eax
-		mov	al,[esi]	//; get the current byte of data
-		cmp	al,[esi+64]
-		jne	short notrunlength
+		/*
+		 * Find the longest run of earlier data that repeats at the current position. A
+		 * single byte repeated far enough is worth a command of its own and is emitted
+		 * straight away, without disturbing the search.
+		 */
+		while (true) {
+			uint8_t const value = *srcptr;
+			ptrdiff_t const left = end_of_data - srcptr;
+			if (left > 64 && value == srcptr[64]) {
 
-		mov	ebx,edi
+				ptrdiff_t matched = 0;
 
-		mov	edi,esi
-		mov	ecx,[end_of_data]
-		sub	ecx,edi
-		repe	scasb
-		dec	edi
-		mov	ecx,edi
-		sub	ecx,esi
-		cmp	ecx,65
-		jb	short notlongenough
+				while (matched < left && srcptr[matched] == value) {
+					matched++;
+				}
 
-		mov	[inlen],0	//; clear the in-length flag
-//		mov	[DWORD PTR inlen],0	//; clear the in-length flag
-		mov	esi,edi
-		mov	edi,[ndest]	//; get the offset of our compressed data
+				/*
+				 * A run that reaches the end of the source is counted one short,
+				 * because the scan it replaces stepped past the last byte it read.
+				 * Callers hold the bytes that count produces, so it stays.
+				 */
+				ptrdiff_t const runlength = (matched < left) ? matched : (left - 1);
 
-		mov	ah,al
-		mov	al,0FEh
-		stosb
-		xchg	ecx,eax
-		stosw
-		mov	al,ch
-		stosb
+				if (runlength >= 65) {
+					inlen = false;
+					srcptr += runlength;
+					dstptr = ndest;
 
-		mov	[ndest],edi	//; save offset of compressed data
-		mov	edi,ebx
-		jmp	searchloop
+					*dstptr++ = 0xFE;
+					*dstptr++ = static_cast<uint8_t>(runlength & 0xFF);
+					*dstptr++ = static_cast<uint8_t>((runlength >> 8) & 0xFF);
+					*dstptr++ = value;
 
-		notlongenough:
-		mov	edi,ebx
+					ndest = dstptr;
+					continue;
+				}
+			}
 
-		notrunlength:
-		oploop:
-		mov	ecx,esi		//; get the address of the last byte +1
-		sub	ecx,edi		//; get the total number of bytes left to comp
-		jz	short searchdone
+			ptrdiff_t const window = srcptr - search;
 
-		repne	scasb		//; look for a match
-		jne	short searchdone	//; if we don't find one we're done
+			if (window <= 0) {
+				break;
+			}
 
-		mov	ebx,[count]
-		mov	ah,[esi+ebx-1]
-		cmp	ah,[edi+ebx-2]
+			/*
+			 * Look for somewhere earlier the current byte appears.
+			 */
+			uint8_t const * found = nullptr;
 
-		jne	oploop
+			for (ptrdiff_t i = 0; i < window; i++) {
+				uint8_t const candidate = *search++;
 
-		mov	edx,esi		//; save this spot for the next search
-		mov	ebx,edi		//; save this spot for the length calc
-		dec	edi		//; back up one for compare
-		mov	ecx,[end_of_data]		//; get the end of data
-		sub	ecx,esi		//; sub current source for max len
+				if (candidate == value) {
+					found = search;
+					break;
+				}
+			}
 
-		repe	cmpsb		//; see how many bytes match
+			if (found == nullptr) {
+				break;
+			}
 
-		jne	short notend	//; if found mismatch then di - bx = match count
+			/*
+			 * Reject the candidate cheaply before measuring it: if the byte that would
+			 * end a run at least as long as the best so far does not agree, it cannot
+			 * beat it.
+			 */
+			if (srcptr[count - 1] != search[count - 2]) {
+				continue;
+			}
 
-		inc	edi		//; else cx = 0 and di + 1 - bx = match count
+			ptrdiff_t const room = end_of_data - srcptr;
+			ptrdiff_t length = 0;
 
-		notend:
-		mov	esi,edx		//; restore si
-		mov	eax,edi		//; get the dest
-		sub	eax,ebx		//; sub the start for total bytes that match
-		mov	edi,ebx		//; restore dest
-		cmp	eax,[count]	//; see if its better than before
-		jb	searchloop	//; if not keep looking
+			while (length < room && srcptr[length] == (search - 1)[length]) {
+				length++;
+			}
 
-		mov	[count],eax	//; if so keep the count
-		dec	ebx		//; back it up for the actual match offset
-		mov	[matchoff],ebx //; save the offset for later
-		jmp	searchloop	//; loop until we searched it all
+			if (length < count) {
+				continue;
+			}
 
-		searchdone:
-		mov	ecx,[count]	//; get the count of the longest run
-		mov	edi,[ndest]	//; get the offset of our compressed data
-		cmp	ecx,2		//; see if its not enough run to matter
-		jbe	short lenin		//; if its 0,1, or 2 its too small
+			count = length;
+			matchoff = search - 1;
+		}
 
-		cmp	ecx,10		//; if not, see if it would fit in a short
-		ja	short medrun	//; if not, see if its a medium run
+		dstptr = ndest;
 
-		mov	eax,esi		//; if its short get the current address
-		sub	eax,[matchoff] //; sub the offset of the match
-		cmp	eax,0FFFh	//; if its less than 12 bits its a short
-		ja	short medrun	//; if its not, its a medium
+		if (count > 2) {
+			size_t const back = static_cast<size_t>(srcptr - matchoff);
 
-		//shortrun:
-		sub	ebx,ebx
-		mov	bl,cl		//; get the length (3-10)
-		sub	bl,3		//; sub 3 for a 3 bit number 0-7
-		shl	bl,4		//; shift it left 4
-		add	ah,bl		//; add in the length for the high nibble
-		xchg	ah,al		//; reverse the bytes for a word store
-		jmp	short srunnxt	//; do the run fixup code
+			if (count <= 10 && back <= 0x0FFF) {
 
-		medrun:
-		cmp	ecx,64		//; see if its a short run
-		ja	short longrun	//; if not, oh well at least its long
+				/*
+				 * Short run: three bits of length and twelve of distance, packed into
+				 * two bytes.
+				 */
+				*dstptr++ = static_cast<uint8_t>((static_cast<size_t>(count - 3) << 4) | ((back >> 8) & 0x0F));
+				*dstptr++ = static_cast<uint8_t>(back & 0xFF);
+			} else {
+				if (count <= 64) {
+					*dstptr++ = static_cast<uint8_t>(0xC0 | (count - 3));
+				} else {
+					*dstptr++ = 0xFF;
+					*dstptr++ = static_cast<uint8_t>(count & 0xFF);
+					*dstptr++ = static_cast<uint8_t>((count >> 8) & 0xFF);
+				}
 
-		sub	cl,3		//; back down 3 to keep it in 6 bits
-		or	cl,0C0h		//; the highest bits are always on
-		mov	al,cl		//; put it in al for the stosb
-		stosb			//; store it
-		jmp	short medrunnxt //; do the run fixup code
+				/*
+				 * The longer forms carry the match's position from the start of the
+				 * data rather than its distance back from here.
+				 */
+				size_t const offset = static_cast<size_t>(matchoff - start);
 
-		lenin:
-		cmp	[inlen],0	//; is it doing a length?
-//		cmp	[DWORD PTR inlen],0	//; is it doing a length?
-		jnz	short len	//; if so, skip code
+				*dstptr++ = static_cast<uint8_t>(offset & 0xFF);
+				*dstptr++ = static_cast<uint8_t>((offset >> 8) & 0xFF);
+			}
 
-		lenin1:
-		mov	[lenoff],edi	//; save the length code offset
-		mov	al,80h		//; set the length to 0
-		stosb			//; save it
+			srcptr += count;
+			inlen = false;
+		} else {
 
-		len:
-		mov	ebx,[lenoff]	//; get the offset of the length code
-		cmp	byte ptr [ebx],0BFh	//; see if its maxed out
-//		cmp	[BYTE PTR ebx],0BFh	//; see if its maxed out
-		je	lenin1	//; if so put out a new len code
+			/*
+			 * Nothing worth referencing, so the byte goes out as a literal. A length
+			 * command counts up to 0x3F bytes before another has to be opened.
+			 */
+			if (!inlen || *lenoff == 0xBF) {
+				lenoff = dstptr;
+				*dstptr++ = 0x80;
+			}
 
-		//stolen:
-		inc	byte ptr [ebx] //; inc the count code
-//		inc	[BYTE PTR ebx] //; inc the count code
-		lodsb			//; get the byte
-		stosb			//; store it
-		mov	[inlen],1	//; we are now in a length so save it
-//		mov	[DWORD PTR inlen],1	//; we are now in a length so save it
-		jmp	short nxt	//; do the next code
-
-		longrun:
-		mov	al,0ffh		//; its a long so set a code of FF
-		stosb			//; store it
-
-		mov	eax,[count]	//; send out the count
-		stosw			//; store it
-
-		medrunnxt:
-		mov	eax,[matchoff] //; get the offset
-		sub	eax,[a1stsrc]	//; make it relative tot he start of data
-
-		srunnxt:
-		stosw			//; store it
-		//; this code common to all runs
-		add	esi,[count]	//; add in the length of the run to the source
-		mov	[inlen],0	//; set the in leght flag to false
-//		mov	[DWORD PTR inlen],0	//; set the in leght flag to false
-
-		nxt:
-		cmp	esi,[end_of_data]		//; see if we did the whole pic
-		jae	short outofhere		//; if so, cool! were done
-
-		jmp	loopstart
-
-		outofhere:
-		mov	ax,080h		//; remember to send an end of data code
-		stosb			//; store it
-		mov	eax,edi		//; get the last compressed address
-		sub	eax,[a1stdest]	//; sub the first for the compressed size
-		mov	[retval],eax
+			(*lenoff)++;
+			*dstptr++ = *srcptr++;
+			inlen = true;
+		}
 	}
 
-	return(retval);
+	*dstptr++ = 0x80;
+
+	return(static_cast<int>(dstptr - first));
 }
-#endif
