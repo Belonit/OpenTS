@@ -4813,21 +4813,36 @@ class DeleteWaypointCommandClass : public CommandClass
 		}
 
 		virtual void Execute(void) const {
-			if (Map.DraggedWaypoint) {
-				char waypoint_id;
-				PathType path_type = PATH_NONE;
-				PlayerPtr->Fetch_Waypoint_Data(Map.DraggedWaypoint, path_type, waypoint_id);
-				PlayerPtr->Ensure_Path(path_type);
-				PlayerPtr->Paths[path_type]->Delete_Waypoint((int)waypoint_id);
-				Map.DraggedWaypoint = NULL;
+			WaypointClass * waypoint = Map.DraggedWaypoint;
+			bool held = (waypoint != NULL);
 
-				for (int i = Feet.Count() - 1; i >= 0; i--) {
-					FootClass *foot = Feet[i];
-					if (foot->House == PlayerPtr && foot->CurrentPath == path_type && foot->NextWaypoint > waypoint_id) {
-						foot->NextWaypoint--;
-					}
+			// With nothing picked up, the selected path loses its last waypoint.
+			if (!held) {
+				if (PlayerPtr->SelectedPath == PATH_NONE) {
+					return;
 				}
+				WaypointPathClass * path = PlayerPtr->Ensure_Path(PlayerPtr->SelectedPath);
+				waypoint = path->Get_Waypoint(path->Waypoint_Count() - 1);
+				if (waypoint == NULL) {
+					return;
+				}
+			}
 
+			char waypoint_id;
+			PathType path_type = PATH_NONE;
+			PlayerPtr->Fetch_Waypoint_Data(waypoint, path_type, waypoint_id);
+			PlayerPtr->Ensure_Path(path_type);
+			PlayerPtr->Paths[path_type]->Delete_Waypoint((int)waypoint_id);
+
+			for (int i = Feet.Count() - 1; i >= 0; i--) {
+				FootClass *foot = Feet[i];
+				if (foot->House == PlayerPtr && foot->CurrentPath == path_type && foot->NextWaypoint > waypoint_id) {
+					foot->NextWaypoint--;
+				}
+			}
+
+			if (held) {
+				Map.DraggedWaypoint = NULL;
 				Show_Mouse();
 			}
 		}

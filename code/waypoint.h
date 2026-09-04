@@ -68,9 +68,9 @@ class WaypointPathClass : public AbstractClass
 
 	private:
 		/*
-		 * This is the waypoint on this path that the player has picked up for editing, or -1
-		 * if none is selected. A path with a selection is walked as a circuit rather than a
-		 * line, and further clicks move the selected waypoint instead of extending the path.
+		 * This is the waypoint the path returns to after its last one, or -1 for a path that
+		 * ends there. A looped path is walked as a circuit and takes no further waypoints,
+		 * and its return point follows its waypoint when earlier ones are removed.
 		 */
 		int CurrentWaypoint;
 

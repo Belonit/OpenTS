@@ -221,15 +221,18 @@ void WaypointPathClass::Replace_Waypoint(int index, Coord const & coord)
 
 /// <summary>
 /// Removes a waypoint from this path.
-/// The selection is dropped when the removal would leave it pointing at a different
-/// waypoint than the player picked. Nothing happens if the index names no waypoint.
+/// The loop's return point stays on its waypoint, or moves to the one after it when that is
+/// the waypoint removed; removing the last waypoint opens the loop. Nothing happens if the
+/// index names no waypoint.
 /// </summary>
 /// <param name="index">The waypoint on this path to remove.</param>
 void WaypointPathClass::Delete_Waypoint(int index)
 {
 	if (index >= 0 && index < Waypoints.Count()) {
-		if (index == CurrentWaypoint || index == Waypoints.Count() - 1) {
+		if (index == Waypoints.Count() - 1) {
 			CurrentWaypoint = -1;
+		} else if (index < CurrentWaypoint) {
+			CurrentWaypoint--;
 		}
 		Waypoints.Delete_Index(index);
 	}
