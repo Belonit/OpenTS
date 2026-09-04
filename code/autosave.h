@@ -59,3 +59,6 @@ class AutosaveClass
 };
 
 extern AutosaveClass Autosave;
+
+// The file a quick save of one kind of game is written under and read back from.
+std::string Quick_Save_File_Name(AutosaveClass::KindType kind);

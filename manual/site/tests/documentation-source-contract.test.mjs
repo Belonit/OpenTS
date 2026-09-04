@@ -476,6 +476,7 @@ test('Automatic saves are serviced at the frame boundary ahead of the pending wr
 		'Frame++;',
 		'Process_Deferred_Deletion();',
 		'Autosave_Service();',
+		'Quick_Save_Service();',
 		'Process_Pending_Save_Game();',
 	], 'an automatic save is written after the frame has retired its dead objects');
 });

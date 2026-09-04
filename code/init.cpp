@@ -119,6 +119,7 @@
 #include "houstype.h"
 #include "incdec.h"
 #include "infatype.h"
+#include "inline.h"
 #include "intro.h"
 #include "ionblast.h"
 #include "ipxmgr.h"
@@ -153,6 +154,7 @@
 #include "rndstraw.h"
 #include "rules.h"
 #include "saveload.h"
+#include "savever.h"
 #include "scenario.h"
 #include "scheme.h"
 #include "script.h"
@@ -194,6 +196,7 @@
 #include <ctime>
 #include <dos.h>
 #include <unordered_set>
+#include <vector>
 
 extern VoxelDataStruct DropPodVoxel;
 
@@ -3369,10 +3372,9 @@ class SelectTeamCommandClass : public CommandClass
 			Map.Repair_Mode_Control(0);
 			Map.Sell_Mode_Control(0);
 
-			if (CurrentObject.Count()) {
-				if (!CurrentObject[0]->Is_Foot() || ((FootClass *)CurrentObject[0])->Group != (Team - 1)) {
-					Unselect_All();
-				}
+			bool already = CurrentObject.Count() > 0 && CurrentObject[0]->Is_Foot() && ((FootClass *)CurrentObject[0])->Group == (Team - 1);
+			if (CurrentObject.Count() > 0 && !already) {
+				Unselect_All();
 			}
 			for (int i = 0; i < Technos.Count(); i++) {
 				TechnoClass * obj = Technos[i];
@@ -3385,10 +3387,26 @@ class SelectTeamCommandClass : public CommandClass
 			}
 			AllowVoice = false;
 			TechnoClass::Reset_Action_Line_Timer();
+
+			// A second press within half a second brings a team that was already selected into view.
+			int now = TickCount;
+			bool repeat = already && LastTeam == Team && LastTick >= 0 && now - LastTick < TIMER_SECOND / 2;
+			LastTeam = Team;
+			LastTick = now;
+			if (repeat && CurrentObject.Count() > 0) {
+				Point2D pixel;
+				if (!TacticalMap->Coord_To_Pixel(CurrentObject[0]->Center_Coord(), pixel)) {
+					Map.Center_Map();
+					Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
+				}
+			}
 		}
 
 	private:
 		int Team;
+
+		inline static int LastTeam = -1;
+		inline static int LastTick = -1;
 };
 
 
@@ -3614,8 +3632,23 @@ class GuardCommandClass : public CommandClass
 				AllowVoice = true;
 				for (int index = 0; index < CurrentObject.Count(); index++) {
 					TechnoClass * tech = dynamic_cast<TechnoClass *>(CurrentObject[index]);/// should be CurrentObject[index]->As_TechnoClass() but causes regswaps
-					if (tech != NULL && tech->Can_Player_Move() && tech->Can_Player_Fire()) {
-						tech->Player_Assign_Mission(MISSION_GUARD_AREA, tech->Get_Target_Cell_Ptr());
+					if (tech == NULL || !tech->Can_Player_Move()) {
+						continue;
+					}
+
+					// An unarmed harvester cannot guard, so the key sends it back to work unless it is unloading.
+					UnitClass * unit = (tech->RTTI == RTTI_UNIT) ? static_cast<UnitClass *>(tech) : NULL;
+					if (unit != NULL && (unit->Class->IsToHarvest || unit->Class->IsToVeinHarvest)) {
+						if (unit->Get_Mission() != MISSION_UNLOAD && !unit->IsDumping) {
+							unit->Player_Assign_Mission(MISSION_HARVEST);
+							AllowVoice = false;
+						}
+						continue;
+					}
+
+					if (tech->Can_Player_Fire()) {
+						// Without an anchor cell the object guards where it stands instead of walking to its destination.
+						tech->Player_Assign_Mission(MISSION_GUARD_AREA);
 						AllowVoice = false;
 					}
 				}
@@ -3711,7 +3744,7 @@ class CenterBaseCommandClass : public CommandClass
 					BuildingClass * building = Buildings[index];
 
 					if (building != NULL && !building->IsInLimbo && building->House->Is_Player_Control()) {
-						if (building->Class == Rule->BaseUnit->DeploysInto) {
+						if (Rule->BuildConst.Is_In_List(building->Class)) {
 							conyard_coord = building->Center_Coord();
 							if (building->IsLeader) {
 								break;
@@ -4307,6 +4340,197 @@ class ScrollWCommandClass : public CommandClass
 };
 
 
+class ScrollNECommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ScrollNorthEast");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_SCROLL_NE));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_SCROLL_NE_DESC));
+		}
+
+		virtual void Execute(void) const {
+			int distance = 34;
+			Map.Scroll_Map(FACING_NE, distance, true);
+		}
+};
+
+
+class ScrollSECommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ScrollSouthEast");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_SCROLL_SE));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_SCROLL_SE_DESC));
+		}
+
+		virtual void Execute(void) const {
+			int distance = 34;
+			Map.Scroll_Map(FACING_SE, distance, true);
+		}
+};
+
+
+class ScrollSWCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ScrollSouthWest");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_SCROLL_SW));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_SCROLL_SW_DESC));
+		}
+
+		virtual void Execute(void) const {
+			int distance = 34;
+			Map.Scroll_Map(FACING_SW, distance, true);
+		}
+};
+
+
+class ScrollNWCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("ScrollNorthWest");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_SCROLL_NW));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_SCROLL_NW_DESC));
+		}
+
+		virtual void Execute(void) const {
+			int distance = 34;
+			Map.Scroll_Map(FACING_NW, distance, true);
+		}
+};
+
+
+/// <summary>
+/// Scrolls the view as far as it goes in one direction.
+/// </summary>
+static void Jump_Camera(FacingType facing)
+{
+	// The tactical position is clamped to the map, so any distance of at least the map size lands on its edge.
+	int distance = Cell_To_Lepton(std::max(Map.PlayRect.Width, Map.PlayRect.Height));
+	Map.Scroll_Map(facing, distance, true);
+}
+
+
+class JumpCameraWCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("JumpCameraWest");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_W));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_W_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Jump_Camera(FACING_W);
+		}
+};
+
+
+class JumpCameraECommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("JumpCameraEast");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_E));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_E_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Jump_Camera(FACING_E);
+		}
+};
+
+
+class JumpCameraNCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("JumpCameraNorth");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_N));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_N_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Jump_Camera(FACING_N);
+		}
+};
+
+
+class JumpCameraSCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("JumpCameraSouth");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_S));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_JUMP_CAMERA_S_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Jump_Camera(FACING_S);
+		}
+};
+
+
 class View1CommandClass : public CommandClass
 {
 	public:
@@ -4639,6 +4863,81 @@ class ScreenCaptureCommandClass : public CommandClass
 };
 
 
+/// <summary>
+/// Plays the nearest allowed track in the given direction and names it on screen.
+/// </summary>
+static void Step_Theme(int step)
+{
+	int count = Theme.Max_Themes();
+	if (count <= 0) {
+		return;
+	}
+
+	ThemeType theme = Theme.What_Is_Playing();
+	if (theme < THEME_FIRST || theme >= count) {
+		theme = (step > 0) ? ThemeType(count - 1) : THEME_FIRST;
+	}
+
+	for (int tries = 0; tries < count; tries++) {
+		theme = ThemeType((theme + step + count) % count);
+		if (!Theme.Is_Allowed(theme)) {
+			continue;
+		}
+		// Stopping first keeps the queue from fading the current track out or refusing the request while one is pending.
+		Theme.Stop();
+		Theme.Queue_Song(theme);
+		char buffer[128];
+		snprintf(buffer, sizeof(buffer), Fetch_String(TXT_NOW_PLAYING), Theme.Full_Name(theme));
+		Session.Messages.Add_Message(NULL, 0, buffer, PlayerPtr->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), TICKS_PER_SECOND * 4);
+		return;
+	}
+}
+
+
+class PrevThemeCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("PrevTheme");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_PREV_THEME));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_PREV_THEME_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Step_Theme(-1);
+		}
+};
+
+
+class NextThemeCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("NextTheme");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_NEXT_THEME));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_NEXT_THEME_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Step_Theme(1);
+		}
+};
+
+
 class SelectSameTypeCommandClass : public CommandClass
 {
 	public:
@@ -4707,6 +5006,301 @@ class SelectSameTypeCommandClass : public CommandClass
 };
 
 
+/// <summary>
+/// Narrows a mixed selection to one tier at a time. The selection the filter started from is
+/// remembered, so repeated presses cycle through its tiers and the add-lower form grows it back.
+/// </summary>
+class SelectionFilterClass
+{
+	public:
+		typedef int (*TierFunction)(TechnoClass const * techno);
+
+		SelectionFilterClass(TierFunction tier) : Tier(tier) {}
+
+		void Execute(bool add_lower);
+		void Reset(void) { LastFull.clear(); }
+
+	private:
+		typedef std::vector<TechnoClass *> TechnoList;
+
+		static bool Same_Set(TechnoList a, TechnoList b);
+		static bool Is_Union(TechnoList const & current, TechnoList const & a, TechnoList const & b);
+		TechnoList Resolve_Last_Full(void) const;
+
+		TierFunction Tier;
+		std::vector<TargetClass> LastFull;
+};
+
+
+void SelectionFilterClass::Execute(bool add_lower)
+{
+	// Nothing can be selected while a building is being placed.
+	if (Map.PendingObject != NULL) {
+		return;
+	}
+
+	TechnoList current;
+	TechnoList current_tiers[3];
+	int best = 3;
+	int worst = -1;
+	for (int index = 0; index < CurrentObject.Count(); index++) {
+		ObjectClass * obj = CurrentObject[index];
+		if (obj == NULL || !obj->Is_Techno()) {
+			continue;
+		}
+		TechnoClass * techno = (TechnoClass *)obj;
+		if (!techno->House->Is_Player_Control()) {
+			continue;
+		}
+		int tier = Tier(techno);
+		current.push_back(techno);
+		current_tiers[tier].push_back(techno);
+		best = std::min(best, tier);
+		worst = std::max(worst, tier);
+	}
+	if (current.empty()) {
+		return;
+	}
+
+	TechnoList last_full = Resolve_Last_Full();
+	TechnoList last_tiers[3];
+	for (TechnoClass * techno : last_full) {
+		last_tiers[Tier(techno)].push_back(techno);
+	}
+
+	bool continuing = !last_full.empty() && (Same_Set(current, last_full)
+		|| Same_Set(current, last_tiers[0]) || Same_Set(current, last_tiers[1]) || Same_Set(current, last_tiers[2])
+		|| Is_Union(current, last_tiers[0], last_tiers[1]) || Is_Union(current, last_tiers[0], last_tiers[2]) || Is_Union(current, last_tiers[1], last_tiers[2]));
+
+	if (!continuing) {
+		// A fresh selection starts a filter at its best tier; there is nothing to add back to yet.
+		if (add_lower || best == worst) {
+			return;
+		}
+		LastFull.clear();
+		for (TechnoClass * techno : current) {
+			LastFull.push_back(TargetClass(techno));
+		}
+		for (int tier = best + 1; tier < 3; tier++) {
+			for (TechnoClass * techno : current_tiers[tier]) {
+				techno->Unselect();
+			}
+		}
+		for (TechnoClass * techno : current_tiers[best]) {
+			techno->Response_Select();
+		}
+		return;
+	}
+
+	int next = worst;
+	if (best != worst) {
+		next = Same_Set(current, last_full) ? best : ((best + worst) * 2) % 3;
+	} else {
+		for (int tries = 0; tries < 3; tries++) {
+			next = (next + 1) % 3;
+			if (!last_tiers[next].empty()) {
+				break;
+			}
+		}
+	}
+	if (last_tiers[next].empty()) {
+		return;
+	}
+
+	if (!add_lower) {
+		for (TechnoClass * techno : current) {
+			techno->Unselect();
+		}
+	}
+	for (TechnoClass * techno : last_tiers[next]) {
+		techno->Select();
+	}
+}
+
+
+bool SelectionFilterClass::Same_Set(TechnoList a, TechnoList b)
+{
+	std::sort(a.begin(), a.end());
+	std::sort(b.begin(), b.end());
+	return(a == b);
+}
+
+
+bool SelectionFilterClass::Is_Union(TechnoList const & current, TechnoList const & a, TechnoList const & b)
+{
+	if (a.empty() || b.empty() || current.size() != a.size() + b.size()) {
+		return(false);
+	}
+	TechnoList joined(a);
+	joined.insert(joined.end(), b.begin(), b.end());
+	return(Same_Set(current, joined));
+}
+
+
+SelectionFilterClass::TechnoList SelectionFilterClass::Resolve_Last_Full(void) const
+{
+	TechnoList list;
+	for (TargetClass const & target : LastFull) {
+		TechnoClass * techno = target.As_Techno();
+		if (techno != NULL && techno->IsActive && !techno->IsInLimbo && techno->House->Is_Player_Control()) {
+			list.push_back(techno);
+		}
+	}
+	return(list);
+}
+
+
+static int Veterancy_Tier(TechnoClass const * techno)
+{
+	if (techno->Veterancy.Is_Elite()) {
+		return(0);
+	}
+	if (techno->Veterancy.Is_Veteran()) {
+		return(1);
+	}
+	return(2);
+}
+
+
+static int Health_Tier(TechnoClass const * techno)
+{
+	double ratio = techno->Get_Health_Ratio();
+	if (ratio <= Rule->ConditionRed) {
+		return(0);
+	}
+	if (ratio <= Rule->ConditionYellow) {
+		return(1);
+	}
+	return(2);
+}
+
+
+class VeterancyFilterCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("VeterancyFilter");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_VETERANCY_FILTER));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_SELECTION)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_VETERANCY_FILTER_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Filter.Execute(false);
+		}
+
+		inline static SelectionFilterClass Filter{&Veterancy_Tier};
+};
+
+
+class VeterancyFilterAddLowerCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("VeterancyFilterAddLower");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_VETERANCY_FILTER_ADD));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_SELECTION)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_VETERANCY_FILTER_ADD_DESC));
+		}
+
+		virtual void Execute(void) const {
+			VeterancyFilterCommandClass::Filter.Execute(true);
+		}
+};
+
+
+class HealthFilterCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("HealthFilter");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_HEALTH_FILTER));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_SELECTION)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_HEALTH_FILTER_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Filter.Execute(false);
+		}
+
+		inline static SelectionFilterClass Filter{&Health_Tier};
+};
+
+
+class HealthFilterAddLowerCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("HealthFilterAddLower");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_HEALTH_FILTER_ADD));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_SELECTION)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_HEALTH_FILTER_ADD_DESC));
+		}
+
+		virtual void Execute(void) const {
+			HealthFilterCommandClass::Filter.Execute(true);
+		}
+};
+
+
+class SelectOneLessCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("SelectOneLess");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_SELECT_ONE_LESS));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_SELECTION)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_SELECT_ONE_LESS_DESC));
+		}
+
+		virtual void Execute(void) const {
+			if (CurrentObject.Count() > 0) {
+				CurrentObject[CurrentObject.Count() - 1]->Unselect();
+			}
+		}
+};
+
+
+/// <summary>
+/// Forgets the selections the veterancy and health filters were started from.
+/// </summary>
+void Reset_Selection_Filters(void)
+{
+	VeterancyFilterCommandClass::Filter.Reset();
+	HealthFilterCommandClass::Filter.Reset();
+}
+
+
 class ManualPlaceCommandClass : public CommandClass
 {
 	public:
@@ -4747,6 +5341,193 @@ class ManualPlaceCommandClass : public CommandClass
 			Map.IsTargettingMode = SUPER_NONE;
 
 			PlayerPtr->Manual_Place(builder, (BuildingClass *)pending);
+		}
+};
+
+
+/// <summary>
+/// Queues another of the last completed item of one kind while the sidebar still offers it.
+/// Structures do not queue, so one already under way or waiting to be placed refuses.
+/// </summary>
+static void Repeat_Last_Production(RTTIType type, int id)
+{
+	if (id < 0 || !Map.Is_On_Sidebar(type, id)) {
+		return;
+	}
+
+	if (type == RTTI_BUILDINGTYPE) {
+		FactoryClass * factory = PlayerPtr->Fetch_Factory(type);
+		if (factory != NULL && factory->Get_Object() != NULL) {
+			if (factory->Is_Building() || factory->Has_Production_Target()) {
+				Speak(VOX_NO_FACTORY);
+			}
+			return;
+		}
+	}
+
+	Speak(type == RTTI_INFANTRYTYPE ? VOX_TRAINING : VOX_BUILDING);
+	OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::PRODUCE, type, id));
+}
+
+
+class RepeatLastBuildingCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("RepeatLastBuilding");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_BUILDING));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_BUILDING_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Repeat_Last_Production(RTTI_BUILDINGTYPE, PlayerPtr->JustBuiltStructure);
+		}
+};
+
+
+class RepeatLastInfantryCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("RepeatLastInfantry");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_INFANTRY));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_INFANTRY_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Repeat_Last_Production(RTTI_INFANTRYTYPE, PlayerPtr->JustBuiltInfantry);
+		}
+};
+
+
+class RepeatLastUnitCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("RepeatLastUnit");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_UNIT));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_UNIT_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Repeat_Last_Production(RTTI_UNITTYPE, PlayerPtr->JustBuiltUnit);
+		}
+};
+
+
+class RepeatLastAircraftCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("RepeatLastAircraft");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_AIRCRAFT));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_REPEAT_LAST_AIRCRAFT_DESC));
+		}
+
+		virtual void Execute(void) const {
+			Repeat_Last_Production(RTTI_AIRCRAFTTYPE, PlayerPtr->JustBuiltAircraft);
+		}
+};
+
+
+/// <summary>
+/// Whether a quick save or load may run: a campaign or skirmish game in play that is not
+/// being won or lost, with the player's input unlocked.
+/// </summary>
+static bool Quick_Save_Allowed(void)
+{
+	if (!ScenarioActive || Session.Play || Scen->IsInputLocked) {
+		return(false);
+	}
+	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
+		return(false);
+	}
+	return(!PlayerPtr->IsToWin && !PlayerPtr->IsToLose && !PlayerPtr->IsToDie);
+}
+
+
+class QuickSaveCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("QuickSave");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_QUICK_SAVE));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_QUICK_SAVE_DESC));
+		}
+
+		virtual void Execute(void) const {
+			if (Quick_Save_Allowed()) {
+				Request_Quick_Save();
+			}
+		}
+};
+
+
+class QuickLoadCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("QuickLoad");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_QUICK_LOAD));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_INTERFACE)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_QUICK_LOAD_DESC));
+		}
+
+		virtual void Execute(void) const {
+			if (!Quick_Save_Allowed()) {
+				return;
+			}
+
+			AutosaveClass::KindType kind = Session.Type == GAME_NORMAL ? AutosaveClass::KindType::Campaign : AutosaveClass::KindType::Skirmish;
+			SaveVersionInfo info;
+			if (!Get_Savefile_Info(Quick_Save_File_Name(kind).c_str(), &info) || info.Get_Internal_Version() != ExpectedGameVersion) {
+				Post_Save_Notice(TXT_NO_QUICKSAVE);
+				return;
+			}
+
+			// The load has to wait until the frame is over, where the menu dialogs run.
+			SpecialDialog = SDLG_QUICKLOAD;
 		}
 };
 
@@ -4895,6 +5676,16 @@ static void Init_Commands(void)
 	AllCommands.Add(new ScrollECommandClass);
 	AllCommands.Add(new ScrollWCommandClass);
 
+	AllCommands.Add(new ScrollNECommandClass);
+	AllCommands.Add(new ScrollSECommandClass);
+	AllCommands.Add(new ScrollSWCommandClass);
+	AllCommands.Add(new ScrollNWCommandClass);
+
+	AllCommands.Add(new JumpCameraWCommandClass);
+	AllCommands.Add(new JumpCameraECommandClass);
+	AllCommands.Add(new JumpCameraNCommandClass);
+	AllCommands.Add(new JumpCameraSCommandClass);
+
 	AllCommands.Add(new SidebarUpCommandClass);
 	AllCommands.Add(new LSidebarUpCommandClass);
 	AllCommands.Add(new RSidebarUpCommandClass);
@@ -4981,9 +5772,26 @@ static void Init_Commands(void)
 
 	AllCommands.Add(new ScreenCaptureCommandClass);
 
+	AllCommands.Add(new PrevThemeCommandClass);
+	AllCommands.Add(new NextThemeCommandClass);
+
 	AllCommands.Add(new SelectSameTypeCommandClass);
 
+	AllCommands.Add(new VeterancyFilterCommandClass);
+	AllCommands.Add(new VeterancyFilterAddLowerCommandClass);
+	AllCommands.Add(new HealthFilterCommandClass);
+	AllCommands.Add(new HealthFilterAddLowerCommandClass);
+	AllCommands.Add(new SelectOneLessCommandClass);
+
 	AllCommands.Add(new ManualPlaceCommandClass);
+
+	AllCommands.Add(new RepeatLastBuildingCommandClass);
+	AllCommands.Add(new RepeatLastInfantryCommandClass);
+	AllCommands.Add(new RepeatLastUnitCommandClass);
+	AllCommands.Add(new RepeatLastAircraftCommandClass);
+
+	AllCommands.Add(new QuickSaveCommandClass);
+	AllCommands.Add(new QuickLoadCommandClass);
 
 	const CommandClass * chatallcmd = new ChatToAllCommandClass;
 	AllCommands.Add(chatallcmd);

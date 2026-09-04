@@ -35,6 +35,7 @@ bool Allocate_Surfaces(const Rect & hidden_rect, const Rect & composite_rect, co
 
 bool Init_Hotkeys(void);
 void Execute_Command(char const * name);
+void Reset_Selection_Filters(void);
 
 #define ATTRACT_MODE_TIMEOUT	TIMER_MINUTE
 

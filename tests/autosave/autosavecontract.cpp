@@ -124,6 +124,14 @@ int main(void)
 		Check(autosave.Interval() == 0, "an interval below zero is off");
 	}
 
+	/*
+	 * A quick save keeps one file per kind of game, so a skirmish never writes over a campaign.
+	 */
+	Check(Quick_Save_File_Name(KindType::Campaign) == "QUICKSAVE.SAV",
+		"the campaign quick save has one fixed name");
+	Check(Quick_Save_File_Name(KindType::Skirmish) == "QUICKSAVE_SKIRMISH.SAV",
+		"the skirmish quick save keeps a file of its own");
+
 	std::printf("\n%s\n", Failures == 0 ? "PASSED" : "FAILED");
 	return(Failures == 0 ? 0 : 1);
 }

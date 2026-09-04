@@ -76,6 +76,7 @@
 #include "_theater.h"
 #include "_tooltip.h"
 #include "_wsproto.h"
+#include "autosave.h"
 #include "cctooltip.h"
 #include "chat.h"
 #include "data.h"
@@ -90,8 +91,10 @@
 #include "ipxmgr.h"
 #include "keyboard.h"
 #include "language/language.h"
+#include "loaddlg.h"
 #include "logic.h"
 #include "mainloop.h"
+#include "msgbox.h"
 #include "movie.h"
 #include "mplayer.h"
 #include "msgloop.h"
@@ -219,6 +222,27 @@ void Ingame_Menu_Dialog(void)
 						break;
 					}
 					SpecialDialog = SDLG_NONE;
+					break;
+
+				case SDLG_QUICKLOAD:
+					{
+						AutosaveClass::KindType kind = Session.Type == GAME_NORMAL ? AutosaveClass::KindType::Campaign : AutosaveClass::KindType::Skirmish;
+						if (LoadOptionsClass().Load_File(Quick_Save_File_Name(kind).c_str())) {
+							Keyboard->Clear();
+							IgnoreInput = Scen->IsInputLocked;
+							if (!MouseCursor->Is_Hidden() && Scen->IsInputLocked) {
+								Hide_Mouse();
+							} else if (MouseCursor->Is_Hidden() && !Scen->IsInputLocked) {
+								Show_Mouse();
+							}
+							Map.Flag_To_Redraw(GS_REDRAW_ALL);
+							SpecialDialog = SDLG_NONE;
+						} else {
+							// The scenario may already be gone, so the player is left in the options menu as a failed dialog load leaves them.
+							WWMessageBox().Process(TXT_ERROR_LOADING_GAME, TXT_OK, TXT_NONE, TXT_NONE);
+							SpecialDialog = SDLG_OPTIONS;
+						}
+					}
 					break;
 
 				case SDLG_SETTINGS:

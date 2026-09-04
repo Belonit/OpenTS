@@ -934,6 +934,7 @@ void Clear_Scenario(void)
 		}
 	}
 	Delete_All_Objects();
+	Reset_Selection_Filters();
 	for (index = 0; index < IsometricTileTypes.Count(); index++) {
 		AbstractTypes.Add(IsometricTileTypes[index]);
 	}

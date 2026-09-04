@@ -122,6 +122,7 @@ class SidebarClass : public PowerClass
 		bool Sidebar_Click(KeyNumType & input, int x, int y);
 		void Recalc(void);
 		bool Factory_Link(FactoryClass * factory, RTTIType type, int id);
+		bool Is_On_Sidebar(RTTIType type, int id) const;
 
 		int Max_Visible(void);
 

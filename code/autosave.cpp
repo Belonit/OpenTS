@@ -76,3 +76,9 @@ int AutosaveClass::Held_Slot(int slot)
 {
 	return(slot >= 0 && slot < SLOT_COUNT ? slot : 0);
 }
+
+
+std::string Quick_Save_File_Name(AutosaveClass::KindType kind)
+{
+	return(kind == AutosaveClass::KindType::Campaign ? "QUICKSAVE.SAV" : "QUICKSAVE_SKIRMISH.SAV");
+}

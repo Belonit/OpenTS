@@ -8,6 +8,7 @@ extensions:
 role: persistence
 source_files:
   - code/autosave.cpp
+  - code/conquer.cpp
   - code/event.cpp
   - code/goptions.cpp
   - code/init.cpp
@@ -45,6 +46,14 @@ The game also saves on its own at a fixed interval of frames: a game started fro
 A campaign writes `AUTOSAVE1.SAV` through `AUTOSAVE5.SAV` in turn and then starts over, and a skirmish writes `AUTOSAVE_SKIRMISH1.SAV` through `AUTOSAVE_SKIRMISH5.SAV` the same way; the two rings turn independently. Each is described as `Auto-Save`, its slot number and the scenario's description, so a listing tells it apart from a save the player named. Every save records the slot that follows the last one written, in both rings, and a loaded game continues from what its save records. The rings keep their positions for as long as the game runs, so a new game started from the menu carries on where the last automatic save left off rather than overwriting it, and a client-launched game starts where its launch file says.
 
 A game against other machines saves automatically only when a launch file set the interval, because every machine must write the same frame and a match arranged from the menu leaves each machine with settings of its own. Each machine then writes `SAVEGAME.NET`, described as `Multiplayer Game (Auto-Save)`, through the pending request and without the saving box a manual save shows, so a client watching the folder can number the file as it numbers a manual save. Once multiplayer saving is disabled for the match, automatic saves stop with it.
+
+## Quick saves
+
+The [`QuickSave`](/commands/quicksave/) command writes a campaign to `QUICKSAVE.SAV` and a skirmish to `QUICKSAVE_SKIRMISH.SAV`, replacing the previous file of that kind, so a skirmish never writes over a campaign. The save is written at the frame boundary after the key was pressed, once the frame has retired its dead objects, behind the saving box a menu save shows; the message list then reports `Mission Saved` or that the game could not be saved. Each file is described as `Quick Save` and the scenario's description, and the load dialog lists it like any other save. A quick save starts the automatic-save interval over like any completed save.
+
+[`QuickLoad`](/commands/quickload/) restores the file for the kind of game being played. It first reads the file's property set and refuses, with a line in the message list, when the file is missing or carries another version's stamp; otherwise the load runs when the frame ends, in the place the options menu runs, and the mission clock resumes in the restored game. A load that fails partway through the restore shows the same error box as the load dialog and leaves the player in the options menu.
+
+Both commands are refused in a game against other machines, during playback, while a scripted sequence has locked input, and once the game is being won or lost. Both arrive unbound.
 
 ## What the file holds
 

@@ -156,6 +156,7 @@ static bool MultiplayerSavePending = false;
 static bool MultiplayerSaveQuiet = false;
 static std::string PendingSaveFileName;
 static std::string PendingSaveDescription;
+static bool QuickSaveRequested = false;
 
 _COM_SMARTPTR_TYPEDEF(ILinkStream, __uuidof(ILinkStream));
 
@@ -1026,7 +1027,10 @@ static bool Save_Game(const char *file_name, char const * descr)
 }
 
 
-static void Post_Save_Notice(int text)
+/// <summary>
+/// Reports the outcome of a save, or why one was refused, in the message list.
+/// </summary>
+void Post_Save_Notice(int text)
 {
 	Session.Messages.Add_Message(NULL, 0, Fetch_String(text), PlayerPtr->Scheme,
 		TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), int(Rule->MessageDelay * TICKS_PER_MINUTE));
@@ -1112,6 +1116,7 @@ void Reset_Multiplayer_Save_State(void)
 	MultiplayerSavePending = false;
 	PendingSaveFileName.clear();
 	PendingSaveDescription.clear();
+	QuickSaveRequested = false;
 }
 
 
@@ -1136,6 +1141,12 @@ bool Is_Multiplayer_Saving_Allowed(void)
 }
 
 
+static AutosaveClass::KindType Single_Player_Kind(void)
+{
+	return(Session.Type == GAME_NORMAL ? AutosaveClass::KindType::Campaign : AutosaveClass::KindType::Skirmish);
+}
+
+
 /// <summary>
 /// Arms the next automatic save when it falls due and writes an armed one through the save
 /// boundary a frame later, once its notice has been drawn.
@@ -1156,8 +1167,7 @@ void Autosave_Service(void)
 		std::string description = Fetch_String(TXT_AUTOSAVE_MULTIPLAYER);
 
 		if (single) {
-			AutosaveClass::KindType kind = Session.Type == GAME_NORMAL
-				? AutosaveClass::KindType::Campaign : AutosaveClass::KindType::Skirmish;
+			AutosaveClass::KindType kind = Single_Player_Kind();
 			int slot = Autosave.Advance(kind);
 
 			char buffer[512];
@@ -1177,6 +1187,42 @@ void Autosave_Service(void)
 		Autosave.Arm();
 		Post_Save_Notice(TXT_AUTOSAVING);
 	}
+}
+
+
+/// <summary>
+/// Asks for a quick save at the next frame boundary.
+/// </summary>
+void Request_Quick_Save(void)
+{
+	QuickSaveRequested = true;
+}
+
+
+/// <summary>
+/// Writes a requested quick save once the frame has retired its dead objects, behind the box
+/// a menu save shows, and reports the outcome in the message list.
+/// </summary>
+void Quick_Save_Service(void)
+{
+	if (!QuickSaveRequested) return;
+	QuickSaveRequested = false;
+
+	if (!ScenarioActive || Session.Play) return;
+	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) return;
+
+	char description[512];
+	std::snprintf(description, sizeof(description), Fetch_String(TXT_QUICKSAVE_DESCRIPTION), Scen->Description);
+
+	HWND dialog = OwnerDraw::Custom_Message_Box(Fetch_String(TXT_SAVING_GAME), NULL, NULL);
+	if (dialog != 0) {
+		OwnerDraw::Display_Dialog(dialog);
+	}
+	bool saved = Request_Save_Game(Quick_Save_File_Name(Single_Player_Kind()).c_str(), description);
+	if (dialog != 0) {
+		OwnerDraw::End_Dialog(dialog);
+	}
+	Post_Save_Notice(saved ? TXT_GAME_WAS_SAVED : TXT_SAVE_FAILED);
 }
 
 

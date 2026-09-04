@@ -445,6 +445,7 @@ bool Main_Loop(void)
 		Sync_Delay();
 		Process_Deferred_Deletion();
 		Autosave_Service();
+		Quick_Save_Service();
 		Process_Pending_Save_Game();
 	}
 

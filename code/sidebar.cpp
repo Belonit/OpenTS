@@ -515,6 +515,23 @@ bool SidebarClass::Factory_Link(FactoryClass * factory, RTTIType type, int id)
 }
 
 
+/// <summary>
+/// Reports whether an object type is offered on either side strip.
+/// </summary>
+bool SidebarClass::Is_On_Sidebar(RTTIType type, int id) const
+{
+	for (int column = 0; column < COLUMNS; column++) {
+		StripClass const & strip = Column[column];
+		for (int index = 0; index < strip.BuildableCount; index++) {
+			if (strip.Buildables[index].BuildableType == type && strip.Buildables[index].BuildableID == id) {
+				return(true);
+			}
+		}
+	}
+	return(false);
+}
+
+
 /***********************************************************************************************
  * SidebarClass::Activate_Repair -- Controls the repair button on the sidebar.                 *
  *                                                                                             *

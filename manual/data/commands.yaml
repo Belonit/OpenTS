@@ -210,6 +210,126 @@ registered_commands:
     source: code/init.cpp
     class: ScrollWCommandClass
     guard: null
+- id: ScrollNorthEast
+  route_id: scrollnortheast
+  kind: registered
+  title: Scroll North-East
+  description: Scroll tactical map to the north-east.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ScrollNECommandClass
+    guard: null
+- id: ScrollSouthEast
+  route_id: scrollsoutheast
+  kind: registered
+  title: Scroll South-East
+  description: Scroll tactical map to the south-east.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ScrollSECommandClass
+    guard: null
+- id: ScrollSouthWest
+  route_id: scrollsouthwest
+  kind: registered
+  title: Scroll South-West
+  description: Scroll tactical map to the south-west.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ScrollSWCommandClass
+    guard: null
+- id: ScrollNorthWest
+  route_id: scrollnorthwest
+  kind: registered
+  title: Scroll North-West
+  description: Scroll tactical map to the north-west.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: ScrollNWCommandClass
+    guard: null
+- id: JumpCameraWest
+  route_id: jumpcamerawest
+  kind: registered
+  title: Jump Camera West
+  description: Jump tactical map to the west edge of the map.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: JumpCameraWCommandClass
+    guard: null
+- id: JumpCameraEast
+  route_id: jumpcameraeast
+  kind: registered
+  title: Jump Camera East
+  description: Jump tactical map to the east edge of the map.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: JumpCameraECommandClass
+    guard: null
+- id: JumpCameraNorth
+  route_id: jumpcameranorth
+  kind: registered
+  title: Jump Camera North
+  description: Jump tactical map to the north edge of the map.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: JumpCameraNCommandClass
+    guard: null
+- id: JumpCameraSouth
+  route_id: jumpcamerasouth
+  kind: registered
+  title: Jump Camera South
+  description: Jump tactical map to the south edge of the map.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: JumpCameraSCommandClass
+    guard: null
 - id: SidebarUp
   route_id: sidebarup
   kind: registered
@@ -1245,6 +1365,36 @@ registered_commands:
     source: code/init.cpp
     class: ScreenCaptureCommandClass
     guard: null
+- id: PrevTheme
+  route_id: prevtheme
+  kind: registered
+  title: 'Music: Previous Track'
+  description: Plays the previous music track.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: PrevThemeCommandClass
+    guard: null
+- id: NextTheme
+  route_id: nexttheme
+  kind: registered
+  title: 'Music: Next Track'
+  description: Plays the next music track.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: NextThemeCommandClass
+    guard: null
 - id: SelectType
   route_id: selecttype
   kind: registered
@@ -1261,6 +1411,83 @@ registered_commands:
     source: code/init.cpp
     class: SelectSameTypeCommandClass
     guard: null
+- id: VeterancyFilter
+  route_id: veterancyfilter
+  kind: registered
+  title: Veterancy Filter
+  description: Narrows a mixed selection to its highest rank, and cycles through the ranks when pressed
+    again.
+  category: Selection
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: VeterancyFilterCommandClass
+    guard: null
+- id: VeterancyFilterAddLower
+  route_id: veterancyfilteraddlower
+  kind: registered
+  title: Veterancy Filter (Add Lower)
+  description: Adds the next lower rank back to a filtered selection.
+  category: Selection
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: VeterancyFilterAddLowerCommandClass
+    guard: null
+- id: HealthFilter
+  route_id: healthfilter
+  kind: registered
+  title: Health Filter
+  description: Narrows a mixed selection to its most damaged units, and cycles through the health bands
+    when pressed again.
+  category: Selection
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: HealthFilterCommandClass
+    guard: null
+- id: HealthFilterAddLower
+  route_id: healthfilteraddlower
+  kind: registered
+  title: Health Filter (Add Lower)
+  description: Adds the next healthier band back to a filtered selection.
+  category: Selection
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: HealthFilterAddLowerCommandClass
+    guard: null
+- id: SelectOneLess
+  route_id: selectoneless
+  kind: registered
+  title: Select One Less
+  description: Removes the last unit from the selection.
+  category: Selection
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: SelectOneLessCommandClass
+    guard: null
 - id: ManualPlace
   route_id: manualplace
   kind: registered
@@ -1275,6 +1502,96 @@ registered_commands:
   _provenance:
     source: code/init.cpp
     class: ManualPlaceCommandClass
+    guard: null
+- id: RepeatLastBuilding
+  route_id: repeatlastbuilding
+  kind: registered
+  title: Repeat Last Building
+  description: Queues the last structure that was built, while it is still on the sidebar.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: RepeatLastBuildingCommandClass
+    guard: null
+- id: RepeatLastInfantry
+  route_id: repeatlastinfantry
+  kind: registered
+  title: Repeat Last Infantry
+  description: Queues the last infantry that was trained, while it is still on the sidebar.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: RepeatLastInfantryCommandClass
+    guard: null
+- id: RepeatLastUnit
+  route_id: repeatlastunit
+  kind: registered
+  title: Repeat Last Vehicle
+  description: Queues the last vehicle that was built, while it is still on the sidebar.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: RepeatLastUnitCommandClass
+    guard: null
+- id: RepeatLastAircraft
+  route_id: repeatlastaircraft
+  kind: registered
+  title: Repeat Last Aircraft
+  description: Queues the last aircraft that was built, while it is still on the sidebar.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: RepeatLastAircraftCommandClass
+    guard: null
+- id: QuickSave
+  route_id: quicksave
+  kind: registered
+  title: Quick Save
+  description: Saves the game to the quick save file.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: QuickSaveCommandClass
+    guard: null
+- id: QuickLoad
+  route_id: quickload
+  kind: registered
+  title: Quick Load
+  description: Loads the quick save file.
+  category: Interface
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: QuickLoadCommandClass
     guard: null
 - id: ChatToAll
   route_id: chattoall
