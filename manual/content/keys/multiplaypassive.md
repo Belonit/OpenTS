@@ -21,7 +21,7 @@ Everything else the flag does is confined to skirmish and multiplayer games, whe
 - A computer house never picks it as an enemy, and it never picks one of its own.
 - Its objects are rejected outright by automatic target scans, and they never open a crate they drive over.
 - Its objects do not reveal the map, and its buildings are never marked for automatic repair.
-- It is skipped by the score screen, by the starting-unit generator, and by the pass that thins out surplus computer players.
+- It is skipped by the score screen and by the starting-unit generator.
 
 An [observer's](/systems/observers/) house is left out of the same counts, lists and scores without being passive: it plays a country chosen at random and simply starts defeated.
 

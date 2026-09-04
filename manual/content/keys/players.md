@@ -6,7 +6,7 @@ when_omitted:
   value: "8"
 ---
 
-The figure caps a multiplayer session in three places. A player trying to join a game that already holds this many is turned away with the message that the game is full. The keys F1 upward open the in-game message line only as far as this many of them, with the last of that run addressed to everyone and the ones before it to the individual players in connection order. And a scenario whose human and computer players together fall short of the figure is put through the pass that clears surplus computer players away.
+The figure caps a multiplayer session. A player trying to join a game that already holds this many is turned away with the message that the game is full. The keys F1 upward open the in-game message line only as far as this many of them, with the last of that run addressed to everyone and the ones before it to the individual players in connection order.
 
 ```ini title="rules.ini"
 [Maximums]

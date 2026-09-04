@@ -169,7 +169,6 @@
 CDTimerClass<SystemTimerClass> ScenUnusedTimer;
 
 
-static void Remove_AI_Players(void);
 static void Assign_Start_Positions(bool official);
 static void Read_Spawn_Houses(CCINIClass const & ini);
 static void Create_Units(bool official);
@@ -1507,20 +1506,13 @@ char const * Pick_Load_Background_Name(Point2D & pos)
 
 /// <summary>
 /// Performs the multiplayer adjustments that must wait for the map.
-/// Surplus computer players are removed, each side's starting units and any random crates
-/// are placed, and everyone is allied with the special house. None of this can be done
-/// until every object in the scenario has been read, so it is left until the very end.
+/// Each side's starting units and any random crates are placed, and everyone is allied
+/// with the special house. None of this can be done until every object in the scenario
+/// has been read, so it is left until the very end.
 /// </summary>
 /// <param name="official">Is this one of the maps that shipped with the game?</param>
 void Multiplayer_Last_Minute_Fixups(bool official)
 {
-	/*
-	**	If Ghosts are disabled and we're not editing, remove computer players
-	**	(Must be done after all objects are read in from the INI)
-	*/
-	if ((Session.Options.AIPlayers + Session.Players.Count() < Rule->MaxPlayers) && !Debug_Map) {
-		Remove_AI_Players();
-	}
 	Call_Back();
 
 	/*
@@ -1972,7 +1964,6 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 	/*
 	**	Multi-player last-minute fixups:
-	**	- If computer players are disabled, remove all computer-owned houses
 	**	- If bases are disabled, create the scenario dynamically
 	**	- Remove any flag spot overlays lying around
 	**	- If capture-the-flag is enabled, assign flags to cells.
@@ -2333,36 +2324,6 @@ void Assign_Houses(void)
 	HouseClass * special_house = new HouseClass(HouseTypes[HouseTypeClass::From_Name("Special")]);
 	special_house->Scheme = Fetch_Scheme_Index_By_Name("LightGrey", NUM_INTENSITY_LEVELS);
 	special_house->Initialize_Radar_Color();
-}
-
-
-/***********************************************************************************************
- * Remove_AI_Players -- Removes the computer AI houses & their units                           *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/09/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-static void Remove_AI_Players(void)
-{
-	for (int i = 0; i < Houses.Count(); i++) {
-		int aicount = 0;
-		HouseClass * housep = Houses[i];
-		if (housep->IsHuman == false && !housep->Class->IsMultiplayPassive) {
-			aicount++;
-			if (aicount > Session.Options.AIPlayers) {
-				housep->Clobber_All();
-			}
-		}
-	}
 }
 
 
