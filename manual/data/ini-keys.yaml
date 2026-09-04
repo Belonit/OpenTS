@@ -1703,6 +1703,24 @@ AltPalette:
       source: code/animtype.cpp
       guard: null
     level: AnimTypeClass
+AlwaysShowActionLines:
+  key: AlwaysShowActionLines
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsAlwaysShowActionLines
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 Ambient:
   key: Ambient
   scopes:
@@ -13679,6 +13697,96 @@ MoveToShroud:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
+MovementLineColor:
+  key: MovementLineColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: MovementLineColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+MovementLineDashed:
+  key: MovementLineDashed
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsMovementLineDashed
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+MovementLineDropShadow:
+  key: MovementLineDropShadow
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsMovementLineDropShadow
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+MovementLineDropShadowColor:
+  key: MovementLineDropShadowColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: MovementLineDropShadowColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+MovementLineThick:
+  key: MovementLineThick
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsMovementLineThick
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 MovementPerturbationCoefficient:
   key: MovementPerturbationCoefficient
   scopes:
@@ -14047,6 +14155,96 @@ NaturalParticleSystem:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
+NavComQueueLineColor:
+  key: NavComQueueLineColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: NavComQueueLineColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+NavComQueueLineDashed:
+  key: NavComQueueLineDashed
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsNavComQueueLineDashed
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+NavComQueueLineDropShadow:
+  key: NavComQueueLineDropShadow
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsNavComQueueLineDropShadow
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+NavComQueueLineDropShadowColor:
+  key: NavComQueueLineDropShadowColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: NavComQueueLineDropShadowColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+NavComQueueLineThick:
+  key: NavComQueueLineThick
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsNavComQueueLineThick
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 NewINIFormat:
   key: NewINIFormat
   scopes:
@@ -18646,6 +18844,24 @@ ShouldUseCellDrawer:
       source: code/animtype.cpp
       guard: null
     level: AnimTypeClass
+ShowNavComQueueLines:
+  key: ShowNavComQueueLines
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsShowNavComQueueLines
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 ShroudGrow:
   key: ShroudGrow
   scopes:
@@ -20926,6 +21142,204 @@ TargetLaser:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
+TargetLaserColor:
+  key: TargetLaserColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: TargetLaserColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLaserDashed:
+  key: TargetLaserDashed
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsTargetLaserDashed
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLaserDropShadow:
+  key: TargetLaserDropShadow
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsTargetLaserDropShadow
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLaserDropShadowColor:
+  key: TargetLaserDropShadowColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: TargetLaserDropShadowColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLaserThick:
+  key: TargetLaserThick
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsTargetLaserThick
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLaserTime:
+  key: TargetLaserTime
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: TargetLaserTime
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLineColor:
+  key: TargetLineColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: TargetLineColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLineDashed:
+  key: TargetLineDashed
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsTargetLineDashed
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLineDropShadow:
+  key: TargetLineDropShadow
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsTargetLineDropShadow
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLineDropShadowColor:
+  key: TargetLineDropShadowColor
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: colour (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: TargetLineDropShadowColor
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+TargetLineThick:
+  key: TargetLineThick
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Ingame
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: IsTargetLineThick
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 TargetSpecialThreatCoefficient:
   key: TargetSpecialThreatCoefficient
   scopes:

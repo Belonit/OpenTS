@@ -140,6 +140,8 @@
 #include "_rules.h"
 #include "_surface.h"
 #include "_tactica.h"
+#include "_uicontrol.h"
+#include "actionline.h"
 #include "aircraft.h"
 #include "airctype.h"
 #include "anim.h"
@@ -192,6 +194,7 @@
 #include "team.h"
 #include "techtype.h"
 #include "tracker.h"
+#include "uicontrol.h"
 #include "unit.h"
 #include "unittype.h"
 #include "vanim.h"
@@ -311,19 +314,6 @@ TechnoClass::TechnoClass(HouseClass * house) :
 		ParticleSystems[i] = NULL;
 	}
 	SoundRandomSeed = Scen->RandomNumber();
-}
-
-
-/// <summary>
-/// Fetches the marker rectangle for a target laser end point.
-/// This routine is used by the target laser display to build the small block that is
-/// drawn over the aim point.
-/// </summary>
-/// <param name="point">The screen pixel that the marker should be centered upon.</param>
-/// <returns>Returns with the marker rectangle, centered about the pixel specified.</returns>
-static inline Rect Target_Laser_Rect(Point2D const & point)
-{
-	return(Rect(point - Point2D(2, 2), 3, 3));
 }
 
 
@@ -4102,7 +4092,7 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 				}
 
 				if (TClass->IsTargetLaser && House->Is_Player_Control()) {
-					TargetingLaserTimer = TICKS_PER_SECOND;
+					TargetingLaserTimer = UIControls.TargetLaserTime;
 				}
 
 				/*
@@ -4162,51 +4152,13 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 
 
 /// <summary>
-/// Draws the targeting laser line from this object's firing coordinate to its current target:
-/// a small box at each endpoint connected by an animated dashed red line.
+/// Draws the targeting laser line from this object's firing coordinate to its current
+/// target, styled by UI.INI.
 /// </summary>
 void TechnoClass::Draw_Target_Laser(void) const
 {
-	static bool _pattern[16] = {
-		true,
-		false,
-		true,
-		false,
-		true,
-		false,
-		true,
-		false,
-		true,
-		false,
-		true,
-		false,
-		true,
-		false,
-		true,
-		false
-	};
-
 	if (TarCom != NULL) {
-
-		Coord coord = Turret_Coord(0);
-		Coord predicted = Predict_Target_Coord();
-
-		Point2D point;
-		Point2D point2;
-
-		TacticalMap->Coord_To_Pixel(coord, point);
-		TacticalMap->Coord_To_Pixel(predicted, point2);
-
-		point.Y += TacticalRect.Y;
-		point2.Y += TacticalRect.Y;
-
-		LogicalSurface->Fill_Rect(Intersect(TacticalRect, Rect(point, 3, 3) - Point2D(2, 2)), NormalDrawer->Convert_Pixel(RED));
-		LogicalSurface->Fill_Rect(Intersect(TacticalRect, Target_Laser_Rect(point2)), NormalDrawer->Convert_Pixel(RED));
-
-		Rect tacticalr = TacticalRect;
-		if (Clip_Line_To_Rect(point, point2, tacticalr)) {
-			LogicalSurface->Draw_Dashed_Line(point, point2, NormalDrawer->Convert_Pixel(RED), _pattern, 7 * Frame % 16);
-		}
+		Draw_Action_Line_Segment(*LogicalSurface, Turret_Coord(0), Predict_Target_Coord(), UIControls.Target_Laser_Style(), 2, 1, 0);
 	}
 }
 

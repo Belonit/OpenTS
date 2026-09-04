@@ -90,6 +90,8 @@
 #include "_rules.h"
 #include "_surface.h"
 #include "_tactica.h"
+#include "_uicontrol.h"
+#include "actionline.h"
 #include "aircraft.h"
 #include "anim.h"
 #include "astar.h"
@@ -121,6 +123,7 @@
 #include "team.h"
 #include "tracker.h"
 #include "tube.h"
+#include "uicontrol.h"
 #include "unit.h"
 #include "unittype.h"
 #include "vein.h"
@@ -3785,10 +3788,10 @@ void FootClass::On_Movement_Blocked(void)
 
 
 /// <summary>
-/// Draws the line that shows this object's current order.
-/// This routine marks the two ends of the order -- the firing point and its target, or the
-/// object and its destination -- and joins them with a line clipped to the tactical map.
-/// The line only appears for a short while after the order is given.
+/// Draws the lines that show this object's current orders: the firing point to the target,
+/// the object to the far end of its route, and on through every queued destination. They
+/// appear for a short while after an order, while the queue-move key is held, or always
+/// when UI.INI asks for that.
 /// </summary>
 void FootClass::Draw_Action_Line(void) const
 {
@@ -3796,44 +3799,39 @@ void FootClass::Draw_Action_Line(void) const
 		return;
 	}
 
-	if (ActionLineTimer.Value() > 0) {
+	bool queueing = Keyboard->Down(Options.KeyQueueMove1) || Keyboard->Down(Options.KeyQueueMove2);
+	if (!UIControls.IsAlwaysShowActionLines && ActionLineTimer.Value() <= 0 && !queueing) {
+		return;
+	}
 
-		Coord start_coord;
-		Coord end_coord;
-		ColorType color;
+	if (TarCom != NULL) {
+		Draw_Action_Line_Segment(*CompositeSurface, Turret_Coord(), Predict_Target_Coord(), UIControls.Target_Line_Style(), 3, 4, 64);
+	}
 
-		if (TarCom != NULL) {
-			start_coord = Turret_Coord();
-			end_coord = Predict_Target_Coord();
-			color = RED;
-		} else {
-			start_coord = PositionCoord;
-			if (RouteQueue.Count() == 0) {
-				end_coord = NavCom->Center_Coord();
-			} else {
-				end_coord = RouteQueue[RouteQueue.Count() - 1]->Center_Coord();
-			}
-			color = GREEN;
-			if (Map.In_Radar(end_coord.As_Cell()) && Map[end_coord].IsUnderBridge) {
-				end_coord.Z = BRIDGE_LEPTON_HEIGHT + Map.Get_Height_GL(end_coord);
-			}
+	if (NavCom != NULL) {
+		AbstractClass * destination = RouteQueue.Count() ? RouteQueue[RouteQueue.Count() - 1] : NavCom;
+		Coord end_coord = Action_Line_Coord(destination);
+		Draw_Action_Line_Segment(*CompositeSurface, PositionCoord, end_coord, UIControls.Movement_Line_Style(), 3, 4, 128);
+
+		if (UIControls.IsShowNavComQueueLines) {
+			Draw_Navigation_Queue_Lines(end_coord);
 		}
+	}
+}
 
-		Point2D start_point;
-		Point2D end_point;
 
-		TacticalMap->Coord_To_Pixel(start_coord, start_point);
-		TacticalMap->Coord_To_Pixel(end_coord, end_point);
-
-		start_point.Y += TacticalRect.Y;
-		end_point.Y += TacticalRect.Y;
-
-		CompositeSurface->Fill_Rect(Intersect(TacticalRect, Rect(start_point - Point2D(2, 2), 3, 3)), NormalDrawer->Convert_Pixel(color));
-		CompositeSurface->Fill_Rect(Intersect(TacticalRect, Rect(end_point - Point2D(2, 2), 3, 3)), NormalDrawer->Convert_Pixel(color));
-
-		Rect tacticalr = TacticalRect;
-		if (Clip_Line_To_Rect(start_point, end_point, tacticalr)) {
-			CompositeSurface->Draw_Line(start_point, end_point, NormalDrawer->Convert_Pixel(color));
+/// <summary>
+/// Draws the queued destinations as a chain of lines that starts at the coordinate given.
+/// </summary>
+void FootClass::Draw_Navigation_Queue_Lines(Coord const & from) const
+{
+	Coord start_coord = from;
+	for (int index = 0; index < NavQueue.Count(); index++) {
+		AbstractClass * target = NavQueue[index];
+		if (target != NULL) {
+			Coord end_coord = Action_Line_Coord(target);
+			Draw_Action_Line_Segment(*CompositeSurface, start_coord, end_coord, UIControls.Navigation_Queue_Line_Style(), 3, 4, 128);
+			start_coord = end_coord;
 		}
 	}
 }

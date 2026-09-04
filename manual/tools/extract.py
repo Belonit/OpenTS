@@ -107,6 +107,8 @@ ADAPTER_UNITS = [
       "section_vars": {
           "hname": section_selectors.identifier("house"),
       }}),
+    ("uicontrol.cpp", "UIControlsClass", ["Read_INI"],
+     {"file": "ui.ini", "group": "UI controls"}),
 ]
 
 

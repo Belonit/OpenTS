@@ -78,6 +78,7 @@
 #include "_theater.h"
 #include "_timer.h"
 #include "_tooltip.h"
+#include "_uicontrol.h"
 #include "_voxel.h"
 #include "abstract.h"
 #include "addon.h"
@@ -171,6 +172,7 @@
 #include "tracker.h"
 #include "trigger.h"
 #include "tube.h"
+#include "uicontrol.h"
 #include "unit.h"
 #include "unittype.h"
 #include "vein.h"
@@ -469,6 +471,11 @@ int Init_Game(int , char * [])
 
 	if (!Init_Bulk_Data()) {
 		return(-1);
+	}
+
+	DebugString("Reading UI.INI\n");
+	if (!UIControls.Read_INI_File("UI.INI", true)) {
+		DebugString("UI.INI not found, using the defaults.\n");
 	}
 
 	/*
@@ -5547,6 +5554,9 @@ bool Prep_For_Side(SideType side)
 			return(false);
 		}
 	}
+
+	// A side archive may carry its own copy of the file.
+	UIControls.Read_INI_File("UI.INI", true);
 
 	Map.Init_For_House();
 
