@@ -1,7 +1,7 @@
 ---
 key: SoundVolume
 summary: The volume of sound effects, as a fraction from 0 to 1.
-see_also: [VoiceVolume, ScoreVolume, SoundLatency]
+see_also: [VoiceVolume, ScoreVolume]
 when_omitted:
   kind: value
   value: ".7"

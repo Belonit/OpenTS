@@ -198,13 +198,6 @@ class OptionsClass {
 		bool IsScoreShuffle;			// Score list should shuffle?
 
 		/*
-		 * This is how far ahead of the movie the sound card is assumed to be running, expressed
-		 * in VQA time ticks. The audio position is backed off by it so that a software emulated
-		 * sound driver stays in step with the video; a real driver has it zeroed instead.
-		 */
-		unsigned short SoundLatency;
-
-		/*
 		**	These are the hotkeys used for keyboard control.
 		*/
 		KeyNumType KeyForceMove1;

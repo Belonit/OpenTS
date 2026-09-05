@@ -19277,24 +19277,6 @@ SoloCrateMoney:
       source: code/rules.cpp
       guard: null
     level: RulesClass
-SoundLatency:
-  key: SoundLatency
-  scopes:
-  - applies_to:
-    - client settings
-    file: sun.ini
-    section:
-      kind: literal
-      name: Audio
-    value_type: integer
-    status: generated
-    _provenance:
-      default_candidate: '9'
-      declared_in: OptionsClass
-      member: SoundLatency
-      source: code/options.cpp
-      guard: null
-    level: OptionsClass
 SoundVolume:
   key: SoundVolume
   scopes:

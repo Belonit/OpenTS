@@ -136,7 +136,6 @@ OptionsClass::OptionsClass(void) :
 	VSync(false),
 	Renderer(0),
 	CursorScale(0),
-	SoundLatency(9),
 	KeyForceMove1(KN_LALT),
 	KeyForceMove2(KN_LALT),
 	KeyForceAttack1(KN_LCTRL),
@@ -420,9 +419,6 @@ void OptionsClass::Load_Settings(void)
 	Set_Repeat(ConfigINI.Get_Bool("Audio", "IsScoreRepeat", IsScoreRepeat));
 	Set_Shuffle(ConfigINI.Get_Bool("Audio", "IsScoreShuffle", IsScoreShuffle));
 
-	SoundLatency = ConfigINI.Get_Int("Audio", "SoundLatency", SoundLatency);
-	DebugString("Emulated sound card latency default = %d\n", SoundLatency);
-
 	DebugString("--------- Complete -------------------------------\n");
 
 	Map.Toggle_Cameo_Text(SidebarCameoText);
@@ -483,8 +479,6 @@ void OptionsClass::Save_Settings (void)
 	ConfigINI.Put_Float("Audio", "ScoreVolume", ScoreVolume);
 	ConfigINI.Put_Bool("Audio", "IsScoreRepeat", IsScoreRepeat);
 	ConfigINI.Put_Bool("Audio", "IsScoreShuffle", IsScoreShuffle);
-	ConfigINI.Put_Int("Audio", "SoundLatency", SoundLatency);
-
 	/*
 	**	Write the INI data out to a file.
 	*/
