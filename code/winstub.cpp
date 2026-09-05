@@ -105,8 +105,6 @@ bool _MouseCaptured;
 ///////////////////////////////////////////////////////////
 
 //unsigned long CCFocusMessage = WM_USER+50;	//Private message for receiving application focus
-extern	void VQA_PauseAudio(void);
-extern	void VQA_ResumeAudio(void);
 
 ThemeType OldTheme = THEME_NONE;
 

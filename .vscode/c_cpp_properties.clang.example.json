@@ -15,7 +15,6 @@
         ],
         "CLANG_INCLUDE_PATH": [
             "${workspaceFolder}/code",
-            "${workspaceFolder}/code/vqalib",
             "${workspaceFolder}/thirdparty/**",
             "${CLANG_BUILD_DIR}/generated",
             "${MSVC_TOOLS_DIR}/include",

@@ -95,7 +95,7 @@
 #include "language/language.h"
 #include "lightcon.h"
 #include "mixfile.h"
-#include "movies.h"
+#include "movie.h"
 #include "revent.h"
 #include "rules.h"
 #include "savestream.h"
@@ -103,7 +103,6 @@
 #include "tactical.h"
 #include "voc.h"
 #include "vox.h"
-#include "vqa.h"
 
 #include <algorithm>
 
@@ -472,7 +471,7 @@ void RadarClass::AI(KeyNumType & input, Point2D const & xy)
 {
 	BASECLASS::AI(input, xy);
 
-	if (IngameVQ.Count() > 0 && RadarMode != RMODE_MOVIE && !Is_Speaking()) {
+	if (Has_Ingame_Movies() && RadarMode != RMODE_MOVIE && !Is_Speaking()) {
 		Speak(VOX_INCOMING_TRANSMISSION, true);
 		SuspendedRadarMode = RadarMode;
 		Radar_Activate(3);
@@ -2247,70 +2246,12 @@ void RadarClass::Render_Radar(void)
 }
 
 
-/// <summary>
-/// Handles the movie playing in the radar pane.
-/// This routine ducks the game volume for the duration, advances the current in-game VQA by
-/// one frame, and moves on to the next queued movie. Once the queue drains, the volume is
-/// restored and the radar is handed back to whatever mode the movie interrupted.
-/// </summary>
-/// <remarks>Call this routine once per frame for as long as the radar is in movie
-/// mode.</remarks>
+// A restored movie mode must return to the radar even though playback is unavailable.
 void RadarClass::Play_Movie(void)
 {
-	static int prev_volume = 0;
-	static bool needs_volume_adjustment = true;
-
-	VQHandle * handle = NULL;
-
-	if (needs_volume_adjustment == true && !Is_Speaking()) {
-		prev_volume = Audio.Adjust_Volume_All(50);
-		needs_volume_adjustment = false;
-	}
-
-	if (IngameVQ.Count() > 0) {
-		handle = IngameVQ[0];
-	}
-
-	if (FullRedraw == true) {
-		Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, MAX_RADAR_FRAMES, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
-		if (handle != NULL && handle->IsInitialized == true && handle->VQA->Is_Paused()) {
-			Movie_Redraw_Paused_Frame(handle);
-		}
-		LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
-		DebugString("Radar: Movie full redrawn\n");
-	}
-
-	if (!needs_volume_adjustment && IngameVQ.Count() > 0) {
-		if (handle != NULL && handle->IsInitialized == true) {
-			if (!handle->VQA->Is_Paused()) {
-				if (Movie_Advance_Frame(handle, needs_volume_adjustment) == true) {
-					LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
-				}
-			} else {
-				DebugString("Radar: Movie paused\n");
-			}
-		} else {
-			needs_volume_adjustment = true;
-		}
-	}
-
-	if (handle && needs_volume_adjustment == true) {
-		Movie_Destroy(handle);
-		IngameVQ.Delete(handle);
-		delete handle;
-
-		if (IngameVQ.Count() == 0) {
-			DebugString("Radar: Movie done.\n");
-			Audio.Set_Volume_All(prev_volume);
-			RadarState = RSTATE_MOVIE_DONE;
-			Radar_Activate(SuspendedRadarMode);
-		} else {
-			DebugString("Radar: Next movie.\n");
-			RadarState = RSTATE_NEXT_MOVIE;
-			RadarAnimFrame = 25;
-			needs_volume_adjustment = false;
-		}
-	}
+	DebugString("[MoviePlaybackStub] Leaving radar movie mode\n");
+	RadarState = RSTATE_MOVIE_DONE;
+	Radar_Activate(SuspendedRadarMode);
 	IsToRedraw = false;
 }
 

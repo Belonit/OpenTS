@@ -56,7 +56,6 @@
  *   Sync_Delay -- Forces the game into a 15 FPS rate.                                         *
  *   Theater_From_Name -- Converts ASCII name into a theater number.                           *
  *   Unselect_All -- Causes all selected objects to become unselected.                         *
- *   VQ_Call_Back -- Maintenance callback used for VQ movies.                                  *
  *   Game_Registry_Key -- Returns pointer to string containing the registry subkey for the game.
  *   Is_Counterstrike_Installed -- Function to determine the availability of the CS expansion.
  *   Is_Aftermath_Installed -- Function to determine the availability of the AM expansion.

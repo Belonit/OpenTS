@@ -110,16 +110,3 @@ unsigned int Get_Game_Time( void )
 {
 	return( Game_Time.Get_Time() );
 }
-
-
-/// <summary>
-/// Fetches the elapsed game time in movie timer ticks.
-/// This routine is the timer source handed to the VQA player, which paces its frames
-/// and its audio against a sixty tick per second clock rather than milliseconds.
-/// </summary>
-/// <returns>Returns with the time elapsed since the game started, in sixtieths of a
-/// second.</returns>
-unsigned int Get_Game_Time_50( void )
-{
-	return( 3 * Game_Time.Get_Time() / 50 );
-}

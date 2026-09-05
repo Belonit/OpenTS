@@ -51,7 +51,6 @@ void Init_Theater(TheaterType theater);
 bool Prep_For_Side(SideType side);
 bool Prep_Speech_For_Side(SideType side);
 
-void Anim_Init(void);
 
 void Load_Title_Page(const char * name, bool visible);
 

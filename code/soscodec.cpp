@@ -16,10 +16,9 @@
 #include <cstdint>
 
 #include "soscomp.h"
-#include "vqalib/cmp.h"
 
 /*
- * Three decoders share this file, each replacing an assembly routine of the same name.
+ * Two decoders share this file, each replacing an assembly routine of the same name.
  *
  * sosCODECDecompressData is the fast path for 16 bit mono. It walks a difference table
  * indexed by the step index and the token together, and its stream state is that combined
@@ -29,10 +28,6 @@
  * General_sosCODECDecompressData handles every other shape. It computes the difference
  * arithmetically from the current step instead of reading a table, which is the same
  * arithmetic the table was built from.
- *
- * VQA_sosCODECDecompressData is the VQA flavour. It takes its shape through arguments,
- * carries only four values of state, and implements 16 bit only; anything else returns
- * having done nothing, exactly as the assembly did.
  */
 extern short const sosCODECIndexAdjust[16];
 extern unsigned short const sosCODECIndexTable[89 * 16];
@@ -61,8 +56,7 @@ inline int32_t Clamp_Sample(int32_t sample)
 
 
 /// <summary>
-/// Decodes 16 bit samples through the difference table, the form both the SOS fast path and
-/// the VQA decoder use. Tokens come out of each source byte low half first.
+/// Decodes 16 bit samples through the difference table, low nybble first.
 /// </summary>
 /// <param name="source">Compressed nybbles.</param>
 /// <param name="dest">Where the samples go.</param>
@@ -283,65 +277,9 @@ uint32_t __cdecl General_sosCODECDecompressData(SosCompressInfo * info, uint32_t
 }
 
 
-/// <summary>
-/// Starts a VQA compression stream.
-/// </summary>
-/// <param name="info">The stream to initialize.</param>
-void __cdecl VQA_sosCODECInitStream(_VQA_SOS_COMPRESS_INFO * info)
-{
-	info->wIndex = 0;
-	info->dwPredicted = 0;
-	info->wIndex2 = 0;
-	info->dwPredicted2 = 0;
-}
-
-
-/// <summary>
-/// Decompresses 4:1 ADPCM for VQA audio. Only 16 bit is implemented, mono and stereo; an 8 bit
-/// request does nothing, which is what the assembly did.
-///
-/// A stereo stream carries its two channels as consecutive halves of the source rather than
-/// interleaved, and writes them interleaved into the destination.
-/// </summary>
-/// <param name="src">Compressed nybbles.</param>
-/// <param name="dst">Where the samples go.</param>
-/// <param name="bits">Sample width; only 16 is handled.</param>
-/// <param name="channels">1 or 2.</param>
-/// <param name="bytes">How many bytes of samples to produce.</param>
-/// <param name="info">Stream state carried between calls.</param>
-void __cdecl VQA_sosCODECDecompressData(void * src, void * dst, unsigned short bits, unsigned short channels, uint32_t bytes, _VQA_SOS_COMPRESS_INFO * info)
-{
-	if (bits != 16) {
-		return;
-	}
-
-	unsigned char const * source = (unsigned char const *)src;
-	short * dest = (short *)dst;
-
-	if (channels == 2) {
-		int const perchannel = (int)(bytes / 4);
-		unsigned short index = (unsigned short)info->wIndex;
-		unsigned short index2 = (unsigned short)info->wIndex2;
-
-		Decode_Table_16(source, dest, perchannel, 2, info->dwPredicted, index);
-		Decode_Table_16(source + (bytes >> 3), dest + 1, perchannel, 2, info->dwPredicted2, index2);
-
-		info->wIndex = (short)index;
-		info->wIndex2 = (short)index2;
-	} else if (channels == 1) {
-		unsigned short index = (unsigned short)info->wIndex;
-
-		Decode_Table_16(source, dest, (int)(bytes / 2), 1, info->dwPredicted, index);
-
-		info->wIndex = (short)index;
-	}
-
-}
-
-
 /*
  * Step index adjustment per token, and the step size per index. These belong to the general
- * decoder; the other two reach the same numbers through the difference table below.
+ * decoder; the specialized decoder reaches the same numbers through the difference table below.
  */
 short const sosCODECIndexAdjust[16] = {
 	-1, -1, -1, -1, 2, 4, 6, 8,

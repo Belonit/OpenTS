@@ -158,7 +158,6 @@ void Nod_Ending(void)
 	Free_Sample(loopie6m);
 
 	sprintf(fname, "NODEND%d", selection);
-	PreserveVQAScreen = 1;
 	Play_Movie(fname);
 
 	Play_Movie("CC2TEASE");

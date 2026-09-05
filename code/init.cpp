@@ -26,7 +26,6 @@
  *                                                                                             *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
- *   Anim_Init -- Initialize the VQ animation control structure.                               *
  *   Bootstrap -- Perform the initial bootstrap procedure.                                     *
  *   Calculate_CRC -- Calculates a one-way hash from a data block.                             *
  *   Init_Authorization -- Verifies that the player is authorized to play the game.            *
@@ -180,7 +179,6 @@
 #include "vein.h"
 #include "voc.h"
 #include "vox.h"
-#include "vqoption.h"
 #include "wave.h"
 #include "waypoint.h"
 #include "winstub.h"
@@ -412,12 +410,6 @@ int Init_Game(int , char * [])
 	DebugString("Reading Game Settings\n");
 	Options.Load_Settings();
 	Autosave.Set_Interval(Options.AutoSaveInterval);
-
-	/*
-	**	Initialize the animation system.
-	*/
-	DebugString("Init Anim System\n");
-	Anim_Init();
 
 	/*
 	**	Play the startup animation.
@@ -1291,9 +1283,7 @@ restart:
 						Play_Intro(Debug_Flag);
 					} else {
 						Choose_Side();
-						Clear_Option(OPTION_PLAY_FROM_MIXFILE);
 						Play_Movie("SIZZLE1.VQA");
-						Set_Option(OPTION_PLAY_FROM_MIXFILE);
 					}
 					Theme.Queue_Song(Fetch_Main_Menu_Theme());
 					selection = SEL_NONE;
@@ -1540,30 +1530,6 @@ static void Play_Intro(bool sequenced)
 		//Play_Movie(VQ_TITLE, THEME_NONE, false);
 	}
 }
-
-
-/***********************************************************************************************
- * Anim_Init -- Initialize the VQ animation control structure.                                 *
- *                                                                                             *
- *    VQ animations are controlled by a structure passed to the VQ player. This routine        *
- *    initializes the structure to values required by C&C.                                     *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   Only need to call this routine once at the beginning of the game.               *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/20/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
-void Anim_Init(void)
-{
-	Initialize_Options();
-	Set_Option(OPTION_PLAY_FROM_MIXFILE);
-}
-
-
 /***********************************************************************************************
  * Parse_Command_Line -- Parses the command line parameters.                                   *
  *                                                                                             *

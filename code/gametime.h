@@ -36,7 +36,6 @@
 //==========================================================================
 
 extern unsigned int Get_Game_Time(void);
-extern unsigned int Get_Game_Time_50(void);
 
 //==========================================================================
 // PUBLIC DEFINES
@@ -56,7 +55,7 @@ class GameTimeClass {
 		GameTimeClass( void );
 		unsigned int Get_Time( void );
 
-}; /* VQAClass */
+};
 
 
 //==========================================================================

@@ -16,7 +16,6 @@
 #include <cstring>
 
 #include "soscomp.h"
-#include "vqalib/cmp.h"
 
 #include "sosgolden.h"
 
@@ -75,8 +74,6 @@ void Report(SosGoldenCase const & test, char const * what, long long expected, l
 
 	if (test.Codec == 1) {
 		name = "General_sosCODEC";
-	} else if (test.Codec == 2) {
-		name = "VQA_sosCODEC";
 	}
 
 	std::printf("FAILED %s %d bit %d channel %d bytes align %d: %s expected %lld, got %lld\n",
@@ -97,22 +94,6 @@ void Run_Case(SosGoldenCase const & test)
 {
 	Fill_Source(test.Seed);
 	std::memset(DestStore, GUARD, sizeof(DestStore));
-
-	if (test.Codec == 2) {
-		_VQA_SOS_COMPRESS_INFO info;
-		std::memset(&info, 0, sizeof(info));
-		VQA_sosCODECInitStream(&info);
-
-		VQA_sosCODECDecompressData(SourceStore, DestStore, (unsigned short)test.BitSize, (unsigned short)test.Channels, (unsigned long)test.Bytes, &info);
-
-		Check(test, "hash", (long long)test.Hash, (long long)Dest_Hash(test.Bytes));
-		Check(test, "predicted", test.Predicted, info.dwPredicted);
-		Check(test, "index", test.Index, info.wIndex);
-		Check(test, "predicted2", test.Predicted2, info.dwPredicted2);
-		Check(test, "index2", test.Index2, info.wIndex2);
-		Checked++;
-		return;
-	}
 
 	SosCompressInfo info;
 	std::memset(&info, 0, sizeof(info));

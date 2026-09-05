@@ -13,7 +13,6 @@ endif()
 #
 set(SUBPROJECT_DIRS
     "language"
-    "vqalib"
 )
 
 #
@@ -133,10 +132,6 @@ target_compile_options(OpenTS PRIVATE ${OPENTS_COMPILE_OPTIONS})
 # Subprojects
 # ---------------------------------------------------------
 #
-# The VQA player carries its own project, and hands OpenTS its include path along with the
-# library, so the movie code is reached the same way from anywhere in the solution.
-add_subdirectory(vqalib)
-
 message(STATUS "${PROJECT_NAME}: Adding include paths...")
 target_include_directories(OpenTS PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -197,8 +192,6 @@ message(STATUS "${PROJECT_NAME}: Applying linker options...")
 #
 
 target_link_libraries(OpenTS PRIVATE
-    VQALib
-
     bgfx
     bx
     bimg
