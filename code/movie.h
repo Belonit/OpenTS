@@ -25,4 +25,3 @@ void Play_Movie(MovieType movie, ThemeType theme=THEME_NONE, bool clrscrn=true, 
 void Play_InGame_Movie(MovieType movie);
 void Pause_InGame_Movie(bool pause);
 void Stop_InGame_Movie(void);
-bool Has_Ingame_Movies(void);

@@ -9,19 +9,25 @@
 
 #pragma once
 
-#include "rect.h"
+#include <optional>
 
-class Surface;
 
-// Only placement fields remain for the existing menu animation callers.
-struct MoviePlayback
+enum class MovieFrameAction
 {
-	Rect InitialRect;
-	Rect StretchRect;
+	Wait,
+	Present,
+	Drop,
 };
 
-MoviePlayback * Movie_Create(char const * name, Surface * surface, Rect rect1, Rect rect2, int volume, bool fullscreen);
-void Movie_Destroy(MoviePlayback * playback);
-bool Movie_Advance_Frame(MoviePlayback * playback, bool & finished);
-bool Movie_Is_Playing(void);
-void Movie_Update_Visible_Surface(void);
+
+constexpr MovieFrameAction Select_Movie_Frame(double clock, double currentpts,
+	std::optional<double> nextpts)
+{
+	if (currentpts > clock) {
+		return(MovieFrameAction::Wait);
+	}
+	if (nextpts.has_value() && *nextpts <= clock) {
+		return(MovieFrameAction::Drop);
+	}
+	return(MovieFrameAction::Present);
+}

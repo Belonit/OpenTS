@@ -32,6 +32,22 @@ enum BackendScaleMode {
 };
 
 
+enum BackendFrameFormat {
+	BACKEND_FRAME_RGB565,
+	BACKEND_FRAME_BGRA8888,
+};
+
+
+struct BackendFrameView
+{
+	void const *Pixels;
+	int Width;
+	int Height;
+	int Pitch;
+	BackendFrameFormat Format;
+};
+
+
 // Drawable sizes are physical pixel dimensions supplied by the application shell.
 bool Backend_Init(NativeWindow const & window, int drawablewidth, int drawableheight, BackendRenderer renderer, bool vsync);
 void Backend_Shutdown(void);
@@ -39,8 +55,8 @@ void Backend_Shutdown(void);
 bool Backend_Set_Frame_Size(int width, int height);
 void Backend_On_Resize(int drawablewidth, int drawableheight);
 
-// Uploads the frame and presents it. The pixels are 16 bit 565 and stay owned by the
-// caller; they are consumed before this returns.
-void Backend_Present(void const * pixels, int pitch, int destx, int desty, int destwidth, int destheight, BackendScaleMode mode);
+// The pixels stay owned by the caller and are copied before this returns.
+bool Backend_Update_Frame(BackendFrameView const & frame);
+void Backend_Present(int destx, int desty, int destwidth, int destheight, BackendScaleMode mode);
 
 char const * Backend_Renderer_Name(void);

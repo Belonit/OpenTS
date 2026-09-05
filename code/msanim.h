@@ -16,6 +16,8 @@
 
 #include "draw.hh"
 
+#include <memory>
+
 class ConvertClass;
 class MSFont;
 class MSAnim;
@@ -23,7 +25,7 @@ class Surface;
 class BSurface;
 class ShapeSet;
 class SurfaceCacheClass;
-struct MoviePlayback;
+class MoviePlayback;
 
 typedef DynamicVectorClass<MSAnim *> MS_ANIM_LIST;
 
@@ -202,6 +204,8 @@ class MSMovieAnim : public MSAnim
 		virtual ~MSMovieAnim(void) override;
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
+		virtual void Pause(void) override;
+		virtual void Resume(void) override;
 		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
 		virtual Rect Get_Rect(void) const override;
 		virtual bool Has_Finished(void) const override;
@@ -212,7 +216,8 @@ class MSMovieAnim : public MSAnim
 		 * Pointer to the movie being played. If the movie could not be created, then this is
 		 * NULL and the anim falls back on its still picture alone.
 		 */
-		MoviePlayback * Movie;
+		std::unique_ptr<MoviePlayback> Movie;
+		void Redraw_Siblings(Surface * surface, Rect const & rect);
 
 		/*
 		 * Pointer to the surface the movie is played onto, and the one the still picture is

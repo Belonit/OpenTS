@@ -174,6 +174,7 @@ class RadarClass: public DisplayClass
 
 		void Render_Radar(void);
 		void Play_Movie(void);
+		void Cancel_Movie_Playback(void);
 		void Complete_Radar_Refresh(void);
 
 		void Queue_Next_Movie(void) {RadarState = RSTATE_NEXT_MOVIE; RadarAnimFrame = RADAR_ACTIVATED_FRAME;}

@@ -2031,7 +2031,7 @@ fixed_controls:
   - Escape
   context: VQA playback
   _provenance:
-    source: code/vqa.cpp
+    source: code/movie_player.cpp
     guard: null
 - id: fixed:skip-campaign-presentation
   route_id: fixed-skip-campaign-presentation

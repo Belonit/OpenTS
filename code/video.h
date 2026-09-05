@@ -10,6 +10,7 @@
 #pragma once
 
 #include "nativewindow.hh"
+#include "rect.h"
 
 
 // How the presented frame is filtered when the window is larger than it.
@@ -17,6 +18,15 @@ enum VideoScaleMode {
 	VIDEO_SCALE_NEAREST,
 	VIDEO_SCALE_LINEAR,
 	VIDEO_SCALE_PIXELART,
+};
+
+
+struct VideoBgraFrameView
+{
+	void const *Pixels;
+	int Width;
+	int Height;
+	int Pitch;
 };
 
 
@@ -48,6 +58,9 @@ void Video_Set_Refresh_Rate(int refreshrate);
 void Video_Mark_Dirty(void);
 void Video_Present(void);
 void Video_Present_If_Dirty(void);
+bool Video_Set_Override_Frame(VideoBgraFrameView const & frame, Rect const & destination, VideoScaleMode mode);
+void Video_Clear_Override_Frame(void);
+bool Video_Has_Override_Frame(void);
 
 VideoScaleInfo const & Video_Get_Scale_Info(void);
 

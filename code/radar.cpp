@@ -95,7 +95,7 @@
 #include "language/language.h"
 #include "lightcon.h"
 #include "mixfile.h"
-#include "movie.h"
+#include "movie_player.h"
 #include "revent.h"
 #include "rules.h"
 #include "savestream.h"
@@ -105,6 +105,14 @@
 #include "vox.h"
 
 #include <algorithm>
+
+
+namespace {
+
+int MoviePreviousVolume = 0;
+bool MovieAudioDucked = false;
+
+} // namespace
 
 
 /// <summary>
@@ -471,7 +479,7 @@ void RadarClass::AI(KeyNumType & input, Point2D const & xy)
 {
 	BASECLASS::AI(input, xy);
 
-	if (Has_Ingame_Movies() && RadarMode != RMODE_MOVIE && !Is_Speaking()) {
+	if (Movie_Get_InGame() != nullptr && RadarMode != RMODE_MOVIE && !Is_Speaking()) {
 		Speak(VOX_INCOMING_TRANSMISSION, true);
 		SuspendedRadarMode = RadarMode;
 		Radar_Activate(3);
@@ -2246,13 +2254,67 @@ void RadarClass::Render_Radar(void)
 }
 
 
-// A restored movie mode must return to the radar even though playback is unavailable.
+/// <summary>
+/// Handles the movie playing in the radar pane.
+/// This routine ducks the game volume for the duration, advances the current in-game movie by
+/// one frame, and moves on to the next queued movie. Once the queue drains, the volume is
+/// restored and the radar is handed back to whatever mode the movie interrupted.
+/// </summary>
+/// <remarks>Call this routine once per frame for as long as the radar is in movie
+/// mode.</remarks>
 void RadarClass::Play_Movie(void)
 {
-	DebugString("[MoviePlaybackStub] Leaving radar movie mode\n");
-	RadarState = RSTATE_MOVIE_DONE;
-	Radar_Activate(SuspendedRadarMode);
+	MoviePlayback *movie = Movie_Get_InGame();
+	if (!MovieAudioDucked && !Is_Speaking()) {
+		MoviePreviousVolume = Audio.Adjust_Volume_All(50);
+		MovieAudioDucked = true;
+	}
+
+	if (FullRedraw == true) {
+		Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, MAX_RADAR_FRAMES, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
+		if (movie != nullptr) {
+			movie->Redraw();
+		}
+		LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
+		DebugString("Radar: Movie full redrawn\n");
+	}
+
+	MovieAdvance result = MovieAdvance::Waiting;
+	if (MovieAudioDucked && movie != nullptr) {
+		result = movie->Advance();
+		if (result == MovieAdvance::FrameReady) {
+			LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
+		}
+	}
+
+	if (movie != nullptr && (result == MovieAdvance::Finished || result == MovieAdvance::Failed)) {
+		Movie_Remove_InGame();
+		if (Movie_Get_InGame() == nullptr) {
+			DebugString("Radar: Movie done.\n");
+			Audio.Set_Volume_All(MoviePreviousVolume);
+			MovieAudioDucked = false;
+			RadarState = RSTATE_MOVIE_DONE;
+			Radar_Activate(SuspendedRadarMode);
+		} else {
+			DebugString("Radar: Next movie.\n");
+			RadarState = RSTATE_NEXT_MOVIE;
+			RadarAnimFrame = 25;
+		}
+	}
 	IsToRedraw = false;
+}
+
+
+void RadarClass::Cancel_Movie_Playback(void)
+{
+	if (MovieAudioDucked) {
+		Audio.Set_Volume_All(MoviePreviousVolume);
+		MovieAudioDucked = false;
+	}
+	if (RadarMode == RMODE_MOVIE) {
+		RadarState = RSTATE_MOVIE_DONE;
+		Radar_Activate(SuspendedRadarMode);
+	}
 }
 
 

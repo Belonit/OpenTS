@@ -23,10 +23,13 @@
 #include <fs_ocornut_imgui.bin.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <malloc.h>
+#include <new>
 
 
 static const bgfx::EmbeddedShader _EmbeddedShaders[] = {
@@ -54,6 +57,7 @@ static bgfx::VertexLayout _VertexLayout;
 
 static int _FrameWidth = 0;
 static int _FrameHeight = 0;
+static BackendFrameFormat _FrameFormat = BACKEND_FRAME_RGB565;
 static int _PrescaleWidth = 0;
 static int _PrescaleHeight = 0;
 static int _DrawableWidth = 0;
@@ -242,6 +246,84 @@ static void Destroy_Prescale_Target(void)
 }
 
 
+static void Destroy_Frame_Texture(void)
+{
+	if (bgfx::isValid(_FrameTexture)) {
+		bgfx::destroy(_FrameTexture);
+		_FrameTexture = BGFX_INVALID_HANDLE;
+	}
+	delete [] _ConvertBuffer;
+	_ConvertBuffer = NULL;
+	_FrameWidth = 0;
+	_FrameHeight = 0;
+	_FrameFormat = BACKEND_FRAME_RGB565;
+	_FrameIs565 = false;
+}
+
+
+static int Frame_Bytes_Per_Pixel(BackendFrameFormat format)
+{
+	switch (format) {
+		case BACKEND_FRAME_RGB565:
+			return(sizeof(std::uint16_t));
+		case BACKEND_FRAME_BGRA8888:
+			return(sizeof(std::uint32_t));
+		default:
+			return(0);
+	}
+}
+
+
+static bool Ensure_Frame_Texture(int width, int height, BackendFrameFormat format)
+{
+	int bytesperpixel = Frame_Bytes_Per_Pixel(format);
+	if (width <= 0 || height <= 0 || bytesperpixel == 0
+		|| width > std::numeric_limits<std::uint16_t>::max()
+		|| height > std::numeric_limits<std::uint16_t>::max()) {
+		return(false);
+	}
+	std::size_t pixels = static_cast<std::size_t>(width) * height;
+	if (pixels > std::numeric_limits<std::size_t>::max() / sizeof(*_ConvertBuffer)) {
+		return(false);
+	}
+	if (pixels > std::numeric_limits<std::uint32_t>::max() / sizeof(*_ConvertBuffer)) {
+		return(false);
+	}
+	if (bgfx::isValid(_FrameTexture) && _FrameWidth == width && _FrameHeight == height && _FrameFormat == format) {
+		return(true);
+	}
+
+	Destroy_Frame_Texture();
+	bgfx::Caps const * caps = bgfx::getCaps();
+	// bgfx's B5G6R5 matches the game's packed pixels; unsupported hardware uses
+	// the conversion buffer below.
+	_FrameIs565 = format == BACKEND_FRAME_RGB565 && (caps->formats[bgfx::TextureFormat::B5G6R5] & BGFX_CAPS_FORMAT_TEXTURE_2D) != 0;
+	bgfx::TextureFormat::Enum textureformat = _FrameIs565
+		? bgfx::TextureFormat::B5G6R5
+		: bgfx::TextureFormat::BGRA8;
+	_FrameTexture = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, textureformat);
+	if (!bgfx::isValid(_FrameTexture)) {
+		return(false);
+	}
+
+	if (format == BACKEND_FRAME_RGB565 && !_FrameIs565) {
+		if (_ConvertTable[0xFFFF] == 0) {
+			Build_Convert_Table();
+		}
+		_ConvertBuffer = new (std::nothrow) unsigned int[pixels];
+		if (_ConvertBuffer == NULL) {
+			Destroy_Frame_Texture();
+			return(false);
+		}
+	}
+
+	_FrameWidth = width;
+	_FrameHeight = height;
+	_FrameFormat = format;
+	return(true);
+}
+
+
 /// <summary>
 /// Makes sure the pixel art filter has an intermediate target of the requested size.
 /// </summary>
@@ -371,10 +453,7 @@ void Backend_Shutdown(void)
 
 	Destroy_Prescale_Target();
 
-	if (bgfx::isValid(_FrameTexture)) {
-		bgfx::destroy(_FrameTexture);
-		_FrameTexture = BGFX_INVALID_HANDLE;
-	}
+	Destroy_Frame_Texture();
 	if (bgfx::isValid(_TextureSampler)) {
 		bgfx::destroy(_TextureSampler);
 		_TextureSampler = BGFX_INVALID_HANDLE;
@@ -384,13 +463,7 @@ void Backend_Shutdown(void)
 		_Program = BGFX_INVALID_HANDLE;
 	}
 
-	delete [] _ConvertBuffer;
-	_ConvertBuffer = NULL;
-
 	bgfx::shutdown();
-
-	_FrameWidth = 0;
-	_FrameHeight = 0;
 	_Initialized = false;
 }
 
@@ -405,39 +478,7 @@ bool Backend_Set_Frame_Size(int width, int height)
 		return(false);
 	}
 
-	if (bgfx::isValid(_FrameTexture) && _FrameWidth == width && _FrameHeight == height) {
-		return(true);
-	}
-
-	if (bgfx::isValid(_FrameTexture)) {
-		bgfx::destroy(_FrameTexture);
-		_FrameTexture = BGFX_INVALID_HANDLE;
-	}
-
-	// bgfx names packed formats from their low bits up, so its B5G6R5 is the layout the
-	// game already draws in. Emulated support would convert every upload on the way
-	// through, which is what the fallback below does more cheaply.
-	const bgfx::Caps * caps = bgfx::getCaps();
-	_FrameIs565 = (caps->formats[bgfx::TextureFormat::B5G6R5] & BGFX_CAPS_FORMAT_TEXTURE_2D) != 0;
-
-	_FrameTexture = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, _FrameIs565 ? bgfx::TextureFormat::B5G6R5 : bgfx::TextureFormat::BGRA8);
-	if (!bgfx::isValid(_FrameTexture)) {
-		return(false);
-	}
-
-	delete [] _ConvertBuffer;
-	_ConvertBuffer = NULL;
-
-	if (!_FrameIs565) {
-		if (_ConvertTable[0xFFFF] == 0) {
-			Build_Convert_Table();
-		}
-		_ConvertBuffer = new unsigned int[width * height];
-	}
-
-	_FrameWidth = width;
-	_FrameHeight = height;
-	return(true);
+	return(Ensure_Frame_Texture(width, height, BACKEND_FRAME_RGB565));
 }
 
 
@@ -461,37 +502,74 @@ void Backend_On_Resize(int drawablewidth, int drawableheight)
 
 
 /// <summary>
-/// Uploads the frame and puts it on the screen.
+/// Copies a frame into the texture used by the presenter.
 /// </summary>
-/// <param name="pixels">The frame's top left pixel, in 16 bit 565.</param>
-/// <param name="pitch">The bytes between one row of that frame and the next.</param>
+/// <returns>bool; Was the frame accepted?</returns>
+bool Backend_Update_Frame(BackendFrameView const & frame)
+{
+	if (!_Initialized || frame.Pixels == NULL || frame.Width <= 0 || frame.Height <= 0
+		|| frame.Pitch <= 0) {
+		return(false);
+	}
+	int bytesperpixel = Frame_Bytes_Per_Pixel(frame.Format);
+	std::size_t rowbytes = static_cast<std::size_t>(frame.Width) * bytesperpixel;
+	if (bytesperpixel == 0 || rowbytes > std::numeric_limits<int>::max()
+		|| frame.Pitch < static_cast<int>(rowbytes)
+		|| frame.Pitch > std::numeric_limits<std::uint16_t>::max()) {
+		return(false);
+	}
+	std::size_t bytes = static_cast<std::size_t>(frame.Height) * frame.Pitch;
+	if (bytes > std::numeric_limits<std::uint32_t>::max()) {
+		return(false);
+	}
+
+	if (!Ensure_Frame_Texture(frame.Width, frame.Height, frame.Format)) {
+		return(false);
+	}
+
+	if (frame.Format == BACKEND_FRAME_BGRA8888 || _FrameIs565) {
+		bgfx::updateTexture2D(_FrameTexture, 0, 0, 0, 0, (uint16_t)_FrameWidth,
+			(uint16_t)_FrameHeight, bgfx::copy(frame.Pixels,
+				static_cast<std::uint32_t>(bytes)), (uint16_t)frame.Pitch);
+		return(true);
+	}
+
+	if (_ConvertBuffer == NULL) {
+		return(false);
+	}
+	for (int y = 0; y < _FrameHeight; y++) {
+		unsigned short const * source = (unsigned short const *)((char const *)frame.Pixels + y * frame.Pitch);
+		unsigned int * dest = _ConvertBuffer + y * _FrameWidth;
+		for (int x = 0; x < _FrameWidth; x++) {
+			dest[x] = _ConvertTable[source[x]];
+		}
+	}
+	bgfx::updateTexture2D(_FrameTexture, 0, 0, 0, 0, (uint16_t)_FrameWidth,
+		(uint16_t)_FrameHeight, bgfx::copy(_ConvertBuffer,
+			static_cast<std::uint32_t>(static_cast<std::size_t>(_FrameWidth)
+				* _FrameHeight * sizeof(*_ConvertBuffer))),
+		(uint16_t)(_FrameWidth * sizeof(*_ConvertBuffer)));
+	return(true);
+}
+
+
+/// <summary>
+/// Puts the most recently supplied frame on the screen.
+/// </summary>
 /// <param name="destx">Where the left edge of the frame lands in the window.</param>
 /// <param name="desty">Where the top edge of the frame lands in the window.</param>
 /// <param name="destwidth">How wide the frame is drawn.</param>
 /// <param name="destheight">How tall the frame is drawn.</param>
 /// <param name="mode">How the frame is filtered when it is drawn larger than it is.</param>
-void Backend_Present(void const * pixels, int pitch, int destx, int desty, int destwidth, int destheight, BackendScaleMode mode)
+void Backend_Present(int destx, int desty, int destwidth, int destheight, BackendScaleMode mode)
 {
-	if (!_Initialized || pixels == NULL || !bgfx::isValid(_FrameTexture)) {
+	if (!_Initialized || !bgfx::isValid(_FrameTexture)) {
 		return;
 	}
 
 	// A minimized window has no client area to present into.
 	if (_DrawableWidth <= 0 || _DrawableHeight <= 0) {
 		return;
-	}
-
-	if (_FrameIs565) {
-		bgfx::updateTexture2D(_FrameTexture, 0, 0, 0, 0, (uint16_t)_FrameWidth, (uint16_t)_FrameHeight, bgfx::copy(pixels, (uint32_t)(_FrameHeight * pitch)), (uint16_t)pitch);
-	} else if (_ConvertBuffer != NULL) {
-		for (int y = 0; y < _FrameHeight; y++) {
-			unsigned short const * source = (unsigned short const *)((char const *)pixels + y * pitch);
-			unsigned int * dest = _ConvertBuffer + y * _FrameWidth;
-			for (int x = 0; x < _FrameWidth; x++) {
-				dest[x] = _ConvertTable[source[x]];
-			}
-		}
-		bgfx::updateTexture2D(_FrameTexture, 0, 0, 0, 0, (uint16_t)_FrameWidth, (uint16_t)_FrameHeight, bgfx::copy(_ConvertBuffer, (uint32_t)(_FrameWidth * _FrameHeight * 4)), (uint16_t)(_FrameWidth * 4));
 	}
 
 	bgfx::TextureHandle source = _FrameTexture;

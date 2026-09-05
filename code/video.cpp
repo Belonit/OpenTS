@@ -54,6 +54,9 @@ static unsigned int _PresentInterval = 16;
 // Presents can nest, because a dialog repainting itself presents from inside the paint
 // that the engine's own present provoked.
 static bool _Presenting = false;
+static bool _HasOverrideFrame = false;
+static Rect _OverrideDestination;
+static VideoScaleMode _OverrideScaleMode = VIDEO_SCALE_LINEAR;
 
 
 /// <summary>
@@ -115,9 +118,12 @@ static void Update_Scale_Info(void)
 /// <summary>
 /// Converts the configured filter into the one the renderer names.
 /// </summary>
-static BackendScaleMode Backend_Scale_Mode(void)
+static BackendScaleMode Backend_Scale_Mode(VideoScaleMode mode);
+
+
+static BackendScaleMode Backend_Scale_Mode(VideoScaleMode mode)
 {
-	switch (Options.ScaleMode) {
+	switch (mode) {
 		case VIDEO_SCALE_LINEAR:
 			return(BACKEND_SCALE_LINEAR);
 
@@ -185,6 +191,7 @@ void Video_Shutdown(void)
 	Backend_Shutdown();
 	_Initialized = false;
 	_FrameIsDirty = false;
+	_HasOverrideFrame = false;
 }
 
 
@@ -262,23 +269,72 @@ void Video_Mark_Dirty(void)
 /// </summary>
 void Video_Present(void)
 {
-	if (!_Initialized || _Presenting || VisibleSurface == NULL) {
-		return;
-	}
-
-	DSurface * surface = (DSurface *)VisibleSurface;
-	void * pixels = surface->Get_Buffer();
-
-	if (pixels == NULL) {
+	if (!_Initialized || _Presenting) {
 		return;
 	}
 
 	_Presenting = true;
-	Backend_Present(pixels, surface->Stride(), _ScaleInfo.DestX, _ScaleInfo.DestY, _ScaleInfo.DestWidth, _ScaleInfo.DestHeight, Backend_Scale_Mode());
+	if (_HasOverrideFrame) {
+		int destx = _ScaleInfo.DestX + (int)(_OverrideDestination.X * _ScaleInfo.ScaleX);
+		int desty = _ScaleInfo.DestY + (int)(_OverrideDestination.Y * _ScaleInfo.ScaleY);
+		int destwidth = (int)(_OverrideDestination.Width * _ScaleInfo.ScaleX);
+		int destheight = (int)(_OverrideDestination.Height * _ScaleInfo.ScaleY);
+		Backend_Present(destx, desty, destwidth, destheight,
+			Backend_Scale_Mode(_OverrideScaleMode));
+	} else if (VisibleSurface != NULL) {
+		DSurface * surface = (DSurface *)VisibleSurface;
+		void * pixels = surface->Get_Buffer();
+		BackendFrameView frame = {
+			pixels,
+			surface->Get_Width(),
+			surface->Get_Height(),
+			surface->Stride(),
+			BACKEND_FRAME_RGB565,
+		};
+		if (pixels != NULL && Backend_Update_Frame(frame)) {
+			Backend_Present(_ScaleInfo.DestX, _ScaleInfo.DestY, _ScaleInfo.DestWidth,
+					_ScaleInfo.DestHeight,
+					Backend_Scale_Mode(static_cast<VideoScaleMode>(Options.ScaleMode)));
+		}
+	}
 	_Presenting = false;
 
 	_FrameIsDirty = false;
 	_LastPresentTime = timeGetTime();
+}
+
+
+bool Video_Set_Override_Frame(VideoBgraFrameView const & frame, Rect const & destination, VideoScaleMode mode)
+{
+	BackendFrameView backendframe = {
+		frame.Pixels,
+		frame.Width,
+		frame.Height,
+		frame.Pitch,
+		BACKEND_FRAME_BGRA8888,
+	};
+	if (!_Initialized || !destination.Is_Valid() || !Backend_Update_Frame(backendframe)) {
+		return(false);
+	}
+
+	_OverrideDestination = destination;
+	_OverrideScaleMode = mode;
+	_HasOverrideFrame = true;
+	Video_Mark_Dirty();
+	return(true);
+}
+
+
+void Video_Clear_Override_Frame(void)
+{
+	_HasOverrideFrame = false;
+	Video_Mark_Dirty();
+}
+
+
+bool Video_Has_Override_Frame(void)
+{
+	return(_HasOverrideFrame);
 }
 
 

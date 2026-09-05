@@ -17,7 +17,6 @@
 #include "globals.h"
 #include "gscreen.h"
 #include "init.h"
-#include "movies.h"
 #include "video.h"
 
 
@@ -29,13 +28,16 @@ static bool _HandlingMouseWheel = false;
 /// </summary>
 void Game_Window_On_Paint(bool update_surface)
 {
+	if (Video_Has_Override_Frame()) {
+		Video_Present();
+		return;
+	}
+
 	if (update_surface) {
 		if (MouseCursor != NULL && VisibleSurface != NULL && HiddenSurface != NULL && CompositeSurface != NULL) {
 			if (ScenarioActive == true) {
 				Map.Blit_Sidebar(true);
 				Update_Visible_Surface(CompositeSurface);
-			} else if (Movie_Is_Playing() == true) {
-				Movie_Update_Visible_Surface();
 			} else {
 				Update_Visible_Surface(HiddenSurface);
 			}

@@ -14,43 +14,178 @@
 #include "always.h"
 
 #include "movie.h"
+
+#include "_keyboar.h"
+#include "_map.h"
+#include "_rect.h"
+#include "_surface.h"
+#include "ccfile.h"
 #include "dbgprint.h"
+#include "dsurface.h"
+#include "globals.h"
+#include "goptions.h"
+#include "gscreen.h"
+#include "movie_player.h"
+#include "session.h"
+#include "vector.h"
+#include "movie_type.hh"
+
+#include <memory>
+#include <utility>
 
 
-// Playback requests complete immediately while the replacement player is absent.
-void Play_Movie(char const * name, ThemeType, bool, bool, bool)
+DynamicVectorClass<char const *> Movies;
+
+void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool stretch, bool clrscrn_before)
 {
-	DebugString("[MoviePlaybackStub] Skipping fullscreen movie: %s\n", name != nullptr ? name : "<none>");
-}
+	if (!CCFileClass(name).Is_Available()) {
+		return;
+	}
 
+	// Don't play movies in multiplayer mode
+	if (Session.Type != GAME_NORMAL) {
+		return;
+	}
 
-void Play_Movie(MovieType movie, ThemeType, bool, bool)
-{
-	if (movie != MOVIE_NONE) {
-		DebugString("[MoviePlaybackStub] Skipping fullscreen movie ID: %d\n", static_cast<int>(movie));
+	Keyboard->Clear();
+
+	std::unique_ptr<MoviePlayback> movie = Movie_Create_Fullscreen(name, HiddenSurface, Rect(0,0,0,0), int(Options.SoundVolume * 255.0f));
+
+	if (movie != NULL) {
+
+		if (movie->Get_Width() < 320 && movie->Get_Height() < 200) {
+			return;
+		}
+
+		bool dostretch = (stretch == true && Options.StretchMovies == true);
+
+		if (DSurface::AllowStretchBlits == true && dostretch == true && movie->Frame_Rect().Is_Valid()) {
+			double scalex = (double)VisibleRect.Width / (double)movie->Frame_Rect().Width;
+			double scaley = (double)VisibleRect.Height / (double)movie->Frame_Rect().Height;
+			double scale = (scalex < scaley) ? scalex : scaley;
+
+			Rect displayrect = movie->Display_Rect();
+			displayrect.Width = (int)(movie->Frame_Rect().Width * scale);
+			displayrect.Height = (int)(movie->Frame_Rect().Height * scale);
+			displayrect.X = (VisibleRect.Width - displayrect.Width) / 2;
+			displayrect.Y = (VisibleRect.Height - displayrect.Height) / 2;
+			movie->Set_Rects(movie->Frame_Rect(), displayrect);
+			DebugString("Stretching movie %dx%d -> %dx%d\n", movie->Frame_Rect().Width,
+				movie->Frame_Rect().Height, movie->Display_Rect().Width, movie->Display_Rect().Height);
+		}
+
+		/*
+		** Prepare to play a movie. First hide the mouse and stop any score that is playing.
+		** While the score (if any) is fading to silence, fade the palette to black as well.
+		** When the palette has finished fading, wait until the score has finished fading
+		** before launching the movie.
+		*/
+		// The screen around a movie that does not cover the display has to be cleared too.
+		if (clrscrn_before || movie->Display_Rect() != VisibleRect) {
+			HiddenSurface->Fill(0);
+			Update_Visible_Surface(HiddenSurface);
+		}
+
+		Movie_Play(*movie, theme);
+
+		/*
+		** Presume that the screen is left in a garbage state as well as the palette
+		** being in an unknown condition. Recover from this by clearing the screen and
+		** forcing the palette to black.
+		*/
+		if (clrscrn_after == true) {
+			HiddenSurface->Fill(0);
+			Update_Visible_Surface(HiddenSurface);
+		}
+
+		Map.Flag_To_Redraw(GS_REDRAW_ALL);
+		Keyboard->Clear();
 	}
 }
 
 
+/// <summary>
+/// Plays a movie.
+/// This routine is the convenient form that takes a movie identifier rather than a filename.
+/// A movie identifier of MOVIE_NONE is quietly ignored.
+/// </summary>
+void Play_Movie(MovieType movie, ThemeType theme, bool clrscrn, bool stretch)
+{
+	static char _buf[20];
+	if (movie != MOVIE_NONE) {
+		strcpy(_buf, Movies[movie]);
+		strcpy(_buf + strlen(Movies[movie]), ".VQA");
+		Play_Movie(_buf, theme, clrscrn, stretch, true);
+	}
+}
+
+
+/// <summary>
+/// Plays a movie on the sidebar.
+/// This routine queues the movie up to play within the sidebar surface while the game
+/// carries on around it. A missing movie, or a multiplayer game, is quietly ignored.
+/// </summary>
+/// <param name="name">The name of the movie file, including the ".VQA" extension.</param>
+void Play_InGame_Movie(const char * name)
+{
+	bool notavailable = CCFileClass(name).Is_Available() == false;
+	if (!notavailable && Session.Type == GAME_NORMAL) {
+		std::unique_ptr<MoviePlayback> movie =
+			Movie_Create_On_Surface(name, SidebarSurface, Rect(0,0,0,0), int(Options.SoundVolume * 255.0f));
+		if (movie != nullptr) {
+			Rect rect = movie->Frame_Rect();
+			rect.X = Map.RadX + Map.RadOffX;
+			rect.Y = Map.RadY + Map.RadOffY;
+			movie->Set_Rects(rect, rect);
+			Movie_Queue_InGame(std::move(movie));
+		}
+	}
+}
+
+/// <summary>
+/// Plays a movie on the sidebar.
+/// This routine is the convenient form that takes a movie identifier rather than a filename.
+/// A movie identifier of MOVIE_NONE is quietly ignored.
+/// </summary>
 void Play_InGame_Movie(MovieType movie)
 {
+	static char _buf[20];
 	if (movie != MOVIE_NONE) {
-		DebugString("[MoviePlaybackStub] Skipping radar movie ID: %d\n", static_cast<int>(movie));
+		strcpy(_buf, Movies[movie]);
+		strcpy(_buf + strlen(Movies[movie]), ".VQA");
+		Play_InGame_Movie(_buf);
 	}
 }
 
 
+/// <summary>
+/// Shuts down any in game movies that are playing.
+/// This routine tears down every queued sidebar movie and releases it. Call it whenever the
+/// sidebar is going away or the scenario is ending.
+/// </summary>
 void Stop_InGame_Movie(void)
 {
+	Map.Cancel_Movie_Playback();
+	Movie_Clear_InGame();
 }
 
 
-void Pause_InGame_Movie(bool)
+/// <summary>
+/// Suspends or resumes the in game movie.
+/// Use this routine when the game itself is being suspended, so that the sidebar movie does
+/// not run on while everything else is stopped.
+/// </summary>
+/// <param name="pause">Should the movie be suspended rather than resumed?</param>
+void Pause_InGame_Movie(bool pause)
 {
-}
-
-
-bool Has_Ingame_Movies(void)
-{
-	return(false);
+	MoviePlayback * movie = Movie_Get_InGame();
+	if (movie != nullptr) {
+		if (pause == true) {
+			movie->Pause();
+			DebugString("In-game movie paused\n");
+		} else {
+			movie->Resume();
+			DebugString("In-game movie resumed\n");
+		}
+	}
 }

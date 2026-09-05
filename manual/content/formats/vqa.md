@@ -10,14 +10,10 @@ related:
   - { type: format, id: mix }
 source_files:
   - code/movie.cpp
-  - code/movies.cpp
+  - code/movie_player.cpp
   - code/rules.cpp
-  - code/vqa.cpp
-  - code/vqalib/buffer_.cpp
-  - code/vqalib/drawer.cpp
-  - code/vqalib/loader.cpp
-  - code/vqalib/task.cpp
-  - code/vqalib/vqafile.h
+  - code/movie_decoder.cpp
+  - cmake/FFmpegMovies.cmake
 ---
 
 A `.VQA` is an IFF container holding vector-quantized video and, optionally, an audio track. The engine plays one either full screen, interrupting the mission, or a frame at a time inside the radar pane while the mission carries on.

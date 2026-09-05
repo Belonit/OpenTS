@@ -23,7 +23,7 @@
 #include "globals.h"
 #include "goptions.h"
 #include "mixfile.h"
-#include "movies.h"
+#include "movie_player.h"
 #include "msfont.h"
 #include "ownrdraw.h"
 #include "pcx.h"
@@ -592,17 +592,18 @@ bool MSOverlayAnim::Has_Finished(void) const
 MSMovieAnim::MSMovieAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, bool persistent) :
 	MSAnim(0, 0, false),
 	Anims(vector),
-	Movie(NULL),
+	Movie(nullptr),
 	TargetSurface(surface),
 	Background(NULL),
 	Persistent(persistent),
 	Done(false)
 {
 	if (name != NULL && surface != NULL) {
-		Movie = Movie_Create(name, surface, Rect(0, 0, 0, 0), Rect(0, 0, 0, 0), int(Options.SoundVolume * 255.0), false);
+		Movie = Movie_Create_On_Surface(name, surface, Rect(0, 0, 0, 0), int(Options.SoundVolume * 255.0f));
 		if (Movie != NULL) {
-			Movie->InitialRect = Rect((surface->Get_Width() - 640) / 2, (surface->Get_Height() - 400) / 2, 640, 400);
-			Movie->StretchRect = Rect((HiddenSurface->Get_Width() - 640) / 2, (HiddenSurface->Get_Height() - 400) / 2, 640, 400);
+			Rect framerect((surface->Get_Width() - 640) / 2, (surface->Get_Height() - 400) / 2, 640, 400);
+			Rect displayrect((HiddenSurface->Get_Width() - 640) / 2, (HiddenSurface->Get_Height() - 400) / 2, 640, 400);
+			Movie->Set_Rects(framerect, displayrect);
 		}
 		char pcx_name[64];
 		strcpy(pcx_name, name);
@@ -628,10 +629,6 @@ MSMovieAnim::~MSMovieAnim(void)
 		delete Background;
 	}
 
-	if (Movie != NULL) {
-		Movie_Destroy(Movie);
-		delete Movie;
-	}
 }
 
 
@@ -646,39 +643,24 @@ MSMovieAnim::~MSMovieAnim(void)
 bool MSMovieAnim::Advance(Surface * surface, Rect & rect)
 {
 	if (Movie != NULL) {
-		bool is_done = false;
 		if (!Done) {
-			bool advanced = Movie_Advance_Frame(Movie, is_done);
-			if (advanced == true) {
+			MovieAdvance result = Movie->Advance();
+			if (result == MovieAdvance::FrameReady) {
 				Redraw(surface);
-				rect = Movie->StretchRect;
-
-				int my_id = Anims->ID(this);
-				for (int i = 0; i < Anims->Count(); i++) {
-					if (i != my_id) {
-						(*Anims)[i]->Redraw(surface, &Movie->StretchRect);
-					}
-				}
+				rect = Movie->Display_Rect();
+				Redraw_Siblings(surface, rect);
 			}
 
-			if (is_done == true) {
+			bool is_done = result == MovieAdvance::Finished || result == MovieAdvance::Failed;
+			if (is_done) {
 				if (Background != NULL) {
-					TargetSurface->Blit_From(Movie->InitialRect, *Background, Background->Get_Rect());
+					TargetSurface->Blit_From(Movie->Frame_Rect(), *Background, Background->Get_Rect());
 					Redraw(surface);
-					rect = Movie->StretchRect;
-
-					int my_id = Anims->ID(this);
-					for (int i = 0; i < Anims->Count(); i++) {
-						if (i != my_id) {
-							(*Anims)[i]->Redraw(surface, &Movie->StretchRect);
-						}
-					}
+					rect = Movie->Display_Rect();
+					Redraw_Siblings(surface, rect);
 				}
+				Done = true;
 			}
-		}
-
-		if (is_done) {
-			Done = is_done;
 		}
 		return(Done && !Persistent);
 	}
@@ -689,18 +671,41 @@ bool MSMovieAnim::Advance(Surface * surface, Rect & rect)
 			TargetSurface->Blit_From(backdrop_rect, *Background, backdrop_rect);
 			Redraw(surface);
 			rect = backdrop_rect;
-
-			int my_id = Anims->ID(this);
-			for (int i = 0; i < Anims->Count(); i++) {
-				if (i != my_id) {
-					(*Anims)[i]->Redraw(surface, &backdrop_rect);
-				}
-			}
+			Redraw_Siblings(surface, rect);
 		}
 	}
 	Done = true;
 
 	return(!Persistent);
+}
+
+
+void MSMovieAnim::Redraw_Siblings(Surface * surface, Rect const & rect)
+{
+	int my_id = Anims->ID(this);
+	for (int i = 0; i < Anims->Count(); ++i) {
+		if (i != my_id) {
+			(*Anims)[i]->Redraw(surface, &rect);
+		}
+	}
+}
+
+
+void MSMovieAnim::Pause(void)
+{
+	MSAnim::Pause();
+	if (Movie != nullptr) {
+		Movie->Pause();
+	}
+}
+
+
+void MSMovieAnim::Resume(void)
+{
+	MSAnim::Resume();
+	if (Movie != nullptr) {
+		Movie->Resume();
+	}
 }
 
 
@@ -713,8 +718,8 @@ bool MSMovieAnim::Advance(Surface * surface, Rect & rect)
 void MSMovieAnim::Redraw(Surface * surface, const Rect * rect)
 {
 	if (Movie != NULL && !Done) {
-		if (rect == NULL || Intersect(*rect, Movie->StretchRect).Is_Valid()) {
-			surface->Blit_From(Movie->InitialRect, *AlternateSurface, Movie->StretchRect);
+		if (rect == NULL || Intersect(*rect, Movie->Display_Rect()).Is_Valid()) {
+			surface->Blit_From(Movie->Frame_Rect(), *AlternateSurface, Movie->Display_Rect());
 		}
 	}
 }
@@ -728,7 +733,7 @@ void MSMovieAnim::Redraw(Surface * surface, const Rect * rect)
 void MSMovieAnim::Restore(const Rect & rect)
 {
 	if (Done && Movie != NULL && Background != NULL) {
-		TargetSurface->Blit_From(Movie->InitialRect, *Background, Background->Get_Rect());
+		TargetSurface->Blit_From(Movie->Frame_Rect(), *Background, Background->Get_Rect());
 	}
 }
 
@@ -741,7 +746,7 @@ void MSMovieAnim::Restore(const Rect & rect)
 Rect MSMovieAnim::Get_Rect(void) const
 {
 	static Rect _rect_none(0,0,0,0);
-	return(Movie != NULL ? Movie->StretchRect : _rect_none);
+	return(Movie != NULL ? Movie->Display_Rect() : _rect_none);
 }
 
 

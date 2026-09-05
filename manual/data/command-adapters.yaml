@@ -270,7 +270,7 @@ fixed_controls:
     context: VQA playback
     availability: *all
     sites:
-      - { file: code/vqa.cpp, function: VQAClass::Play_VQA, expression: KN_ESC }
+      - { file: code/movie_player.cpp, function: Movie_Play, expression: KN_ESC }
   - id: fixed:skip-campaign-presentation
     title: Skip campaign presentation
     description: Stops the current World Domination Tour map presentation.
