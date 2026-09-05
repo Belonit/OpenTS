@@ -325,7 +325,8 @@ void Movie_Play(MoviePlayback &movie, ThemeType theme)
 	}
 
 	KeyNumType const escape_release = static_cast<KeyNumType>(
-		static_cast<int>(KN_ESC) | static_cast<int>(WWKEY_RLS_BIT));
+		static_cast<int>(KN_ESC) | static_cast<int>(WWKEY_RLS_BIT)
+	);
 	for (;;) {
 		Windows_Message_Handler();
 		if (Keyboard->Check() && Keyboard->Get() == escape_release) {
