@@ -3,8 +3,8 @@ title: Keep movie video synchronized to audio
 category: fix
 release: 0.2.0
 targets:
-- type: format
-  id: vqa
+- type: system
+  id: movie-playback
   effect: changed
 credit:
 - Belonit

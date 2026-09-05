@@ -264,10 +264,10 @@ fixed_controls:
       - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_ESC }
   - id: fixed:skip-vqa
     title: Skip video
-    description: Stops a VQA when the caller permits user breakout.
+    description: Stops a full-screen movie.
     audience: player
     bindings: [Escape]
-    context: VQA playback
+    context: Full-screen movie playback
     availability: *all
     sites:
       - { file: code/movie_player.cpp, function: Movie_Play, expression: KN_ESC }

@@ -2024,12 +2024,12 @@ fixed_controls:
   route_id: fixed-skip-vqa
   kind: fixed
   title: Skip video
-  description: Stops a VQA when the caller permits user breakout.
+  description: Stops a full-screen movie.
   audience: player
   availability: *id001
   bindings:
   - Escape
-  context: VQA playback
+  context: Full-screen movie playback
   _provenance:
     source: code/movie_player.cpp
     guard: null
