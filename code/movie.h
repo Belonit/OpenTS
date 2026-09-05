@@ -20,6 +20,7 @@ template<class T> class DynamicVectorClass;
 
 extern DynamicVectorClass<char const *> Movies;
 
+bool Movie_Is_Available(char const *name);
 void Play_Movie(char const * name, ThemeType theme=THEME_NONE, bool clrscrn_after=true, bool stretch=true, bool clrscrn_before=true);
 void Play_Movie(MovieType movie, ThemeType theme=THEME_NONE, bool clrscrn=true, bool stretch=true);
 void Play_InGame_Movie(MovieType movie);

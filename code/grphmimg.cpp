@@ -12,8 +12,8 @@
 #include "grphmimg.h"
 
 #include "_surface.h"
-#include "ccfile.h"
 #include "ini.h"
+#include "movie.h"
 #include "msanim.h"
 #include "mschoice.h"
 
@@ -202,7 +202,7 @@ void GraphicMenuImageItem::On_Enabled_Change(bool active)
 void GraphicMenuImageItem::Action(MSEngine * engine)
 {
 	GraphicMenuItem::Action(engine);
-	if (CCFileClass(SelectVQ).Is_Available()) {
+	if (Movie_Is_Available(SelectVQ)) {
 		MSAnim * anim = new MSMovieAnim(SelectVQ, AlternateSurface, engine->Get_Anims(), true);
 		if (anim != NULL) {
 			engine->Wait_For_Anim(anim);

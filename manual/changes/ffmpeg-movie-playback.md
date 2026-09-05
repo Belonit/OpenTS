@@ -16,4 +16,4 @@ credit:
   - Belonit
 ---
 
-Movie playback now uses a static, restricted FFmpeg build. Existing VQA movies remain supported, and Bink 1 or Matroska/WebM data can be used under the existing `.VQA` asset names. Loose files and movies in cached or uncached MIX archives use the same playback path.
+Movie playback now uses a static, restricted FFmpeg build. Existing VQA movies remain supported. The player searches for `.webm`, `.bik`, and `.vqa`, in that order, so Bink 1 or Matroska/WebM movies can replace an existing asset without changing its registered name. Loose files and movies in cached or uncached MIX archives use the same playback path.

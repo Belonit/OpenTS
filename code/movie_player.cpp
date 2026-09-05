@@ -13,9 +13,11 @@
 
 #include "_keyboar.h"
 #include "_xmouse.h"
+#include "ccfile.h"
 #include "dsaudio.h"
 #include "globals.h"
 #include "keyboard.h"
+#include "movie.h"
 #include "movie_audio.h"
 #include "movie_decoder.h"
 #include "movie_scheduler.h"
@@ -32,6 +34,8 @@
 #include <cstring>
 #include <deque>
 #include <memory>
+#include <optional>
+#include <string>
 #include <thread>
 #include <utility>
 
@@ -41,7 +45,41 @@ namespace {
 std::deque<std::unique_ptr<MoviePlayback>> InGameMovies;
 bool FullscreenMoviePlaying = false;
 
+
+std::optional<std::string> Find_Movie_File(char const *name)
+{
+	if (name == nullptr || *name == '\0') {
+		return(std::nullopt);
+	}
+
+	std::string stem(name);
+	std::size_t separator = stem.find_last_of("/\\");
+	std::size_t extension = stem.find_last_of('.');
+	if (extension != std::string::npos
+		&& (separator == std::string::npos || extension > separator)) {
+		stem.resize(extension);
+	}
+	if (stem.empty()) {
+		return(std::nullopt);
+	}
+
+	static constexpr char const * Extensions[] = {".WEBM", ".BIK", ".VQA"};
+	for (char const *candidateextension : Extensions) {
+		std::string candidate = stem + candidateextension;
+		if (CCFileClass(candidate.c_str()).Is_Available()) {
+			return(candidate);
+		}
+	}
+	return(std::nullopt);
+}
+
 } // namespace
+
+
+bool Movie_Is_Available(char const *name)
+{
+	return(Find_Movie_File(name).has_value());
+}
 
 
 MoviePlayback::MoviePlayback(std::unique_ptr<MovieDecoder> decoder, Surface *surface,
@@ -271,8 +309,12 @@ static std::unique_ptr<MoviePlayback> Create_Movie(char const *name, Surface *su
 	if (name == nullptr || surface == nullptr) {
 		return(nullptr);
 	}
+	std::optional<std::string> filename = Find_Movie_File(name);
+	if (!filename.has_value()) {
+		return(nullptr);
+	}
 
-	auto decoder = MovieDecoder::Create(name,
+	auto decoder = MovieDecoder::Create(filename->c_str(),
 		fullscreen ? MOVIE_PIXEL_BGRA8888 : MOVIE_PIXEL_RGB565,
 		Audio_Available());
 	if (decoder == nullptr) {

@@ -223,7 +223,7 @@ void Selection::Init_Regions(INIClass const & ini, const char * section, bool vq
 	ini.Get_String(section, "RegionName", NULL, region_name, sizeof(region_name));
 
 	char buffer[64];
-	sprintf(buffer, "%s%s.vqa", faction_name, region_name);
+	sprintf(buffer, "%s%s", faction_name, region_name);
 	if (vq_anim) {
 		RegionAnim = new MSMovieAnim(buffer, AlternateSurface, &Anims, true);
 	} else {

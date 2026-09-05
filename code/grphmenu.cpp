@@ -18,6 +18,7 @@
 #include "grphmitm.h"
 #include "ini.h"
 #include "keyboard.h"
+#include "movie.h"
 #include "msanim.h"
 #include "ownrdraw.h"
 #include "theme.h"
@@ -73,9 +74,8 @@ GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name)
 	Point2D pt(0,0);
 
 	if (has_background) {
-		strncat(buffer, ".VQA", sizeof(buffer));
 		MSAnim * anim = NULL;
-		if (CCFileClass(buffer).Is_Available()) {
+		if (Movie_Is_Available(buffer)) {
 			anim = new MSMovieAnim(buffer, AlternateSurface, menu->Engine.Get_Anims(), true);
 		}
 		if (anim == NULL) {

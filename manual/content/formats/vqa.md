@@ -19,7 +19,7 @@ A `.VQA` is an IFF container holding vector-quantized video and, optionally, an 
 
 ## Registering a movie
 
-Movie names come from the `[Movies]` section of the art layer: `ART.INI` first, then `ARTFS.INI` where that file is present. Each value is one movie name, without an extension; `.VQA` is appended when the movie is played.
+Movie names come from the `[Movies]` section of the art layer: `ART.INI` first, then `ARTFS.INI` where that file is present. Each value is one movie name, without an extension. [Movie playback](/systems/movie-playback/#finding-and-opening-a-movie) resolves that name to a file.
 
 ```ini title="art.ini"
 [Movies]
@@ -31,7 +31,7 @@ The section is walked in the order the file lists it in, and an entry key serves
 
 One lookup answers both questions asked of a movie name: whether the registry already holds it, and which registered movie a setting means. That lookup returns nothing for `<none>` without searching at all, and both of its uses inherit that. Registration therefore never finds a `<none>` already present and adds every one it meets in either file, while a setting or a trigger action naming `<none>` selects no movie and is left at the value it already had. A name that was never registered is left at that value too.
 
-Parts of the engine name a movie file outright instead of going through the list — the startup sequence, the score screen and the mission screens all do. Those names include the `.VQA` extension and the section has no bearing on them.
+Parts of the engine name a movie outright instead of going through the list — the startup sequence, the score screen and the mission screens all do. The normal extension search still applies, but the `[Movies]` section has no bearing on those requests.
 
 ## Container structure
 
@@ -72,7 +72,3 @@ The header is a fixed-length record read in one operation. The table sets each o
 The record also carries the block dimensions, the codebook entry count, the number of frames per codebook, a drawing position, the largest frame and codebook sizes, an audio preload figure, a color mode, and the sample rate, channel count, and sample width of a second audio track.
 
 The current decoder does not use the drawing position, color mode, or second audio track. A file carrying two tracks therefore plays its first one.
-
-:::danger[A long movie name overruns the buffer the filename is built in]
-The filename is assembled in a fixed twenty-byte buffer. `.VQA` takes four of those bytes and the string terminator a fifth, so a registered name of fifteen characters fills the buffer exactly and a sixteenth character writes one byte past its end. The registry accepts names of up to thirty-one characters, and playing a movie registered at that length writes sixteen bytes over whatever follows the buffer. The names the game ships with are all eight characters or fewer.
-:::

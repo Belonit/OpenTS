@@ -366,15 +366,6 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 		Play_Movie(Scen->BriefMovie);
 	}
 
-	/*
-	**	If there's no briefing movie, restate the mission at the beginning.
-	*/
-	char buffer[25];
-
-	if (Scen->BriefMovie != MOVIE_NONE) {
-		wsprintf(buffer, "%s.VQA", Movies[Scen->BriefMovie]);
-	}
-
 	if (Scen->StartingDropships > 0) {
 		Dropship_Screen();
 	}

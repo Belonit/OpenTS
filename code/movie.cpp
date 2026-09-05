@@ -19,7 +19,6 @@
 #include "_map.h"
 #include "_rect.h"
 #include "_surface.h"
-#include "ccfile.h"
 #include "dbgprint.h"
 #include "dsurface.h"
 #include "globals.h"
@@ -38,10 +37,6 @@ DynamicVectorClass<char const *> Movies;
 
 void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool stretch, bool clrscrn_before)
 {
-	if (!CCFileClass(name).Is_Available()) {
-		return;
-	}
-
 	// Don't play movies in multiplayer mode
 	if (Session.Type != GAME_NORMAL) {
 		return;
@@ -113,11 +108,8 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 /// </summary>
 void Play_Movie(MovieType movie, ThemeType theme, bool clrscrn, bool stretch)
 {
-	static char _buf[20];
 	if (movie != MOVIE_NONE) {
-		strcpy(_buf, Movies[movie]);
-		strcpy(_buf + strlen(Movies[movie]), ".VQA");
-		Play_Movie(_buf, theme, clrscrn, stretch, true);
+		Play_Movie(Movies[movie], theme, clrscrn, stretch, true);
 	}
 }
 
@@ -127,11 +119,10 @@ void Play_Movie(MovieType movie, ThemeType theme, bool clrscrn, bool stretch)
 /// This routine queues the movie up to play within the sidebar surface while the game
 /// carries on around it. A missing movie, or a multiplayer game, is quietly ignored.
 /// </summary>
-/// <param name="name">The name of the movie file, including the ".VQA" extension.</param>
+/// <param name="name">The movie name, with or without an extension.</param>
 void Play_InGame_Movie(const char * name)
 {
-	bool notavailable = CCFileClass(name).Is_Available() == false;
-	if (!notavailable && Session.Type == GAME_NORMAL) {
+	if (Session.Type == GAME_NORMAL) {
 		std::unique_ptr<MoviePlayback> movie =
 			Movie_Create_On_Surface(name, SidebarSurface, Rect(0,0,0,0), int(Options.SoundVolume * 255.0f));
 		if (movie != nullptr) {
@@ -151,11 +142,8 @@ void Play_InGame_Movie(const char * name)
 /// </summary>
 void Play_InGame_Movie(MovieType movie)
 {
-	static char _buf[20];
 	if (movie != MOVIE_NONE) {
-		strcpy(_buf, Movies[movie]);
-		strcpy(_buf + strlen(Movies[movie]), ".VQA");
-		Play_InGame_Movie(_buf);
+		Play_InGame_Movie(Movies[movie]);
 	}
 }
 

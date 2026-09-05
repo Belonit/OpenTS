@@ -12,7 +12,7 @@ related:
     id: mix
 ---
 
-Movie filenames keep the engine's existing `.VQA` convention, but FFmpeg identifies their container and codecs from the file contents. The same player handles full-screen movies and movies in the radar pane.
+Movie requests can use a base name or a filename with an extension. The same player handles full-screen movies and movies in the radar pane, and FFmpeg identifies the selected file's container and codecs from its contents.
 
 ## Supported data
 
@@ -24,11 +24,13 @@ The bundled FFmpeg build accepts these combinations:
 | Bink 1        | Bink Video | Bink Audio DCT or RDFT                                                      |
 | WebM/Matroska | VP8 or VP9 | Opus or Vorbis                                                              |
 
-No other demuxers or decoders are included. The build also excludes encoders, network protocols, command-line programs, device input, and filters. A Bink 1 or Matroska/WebM replacement must retain the `.VQA` filename expected by the calling code.
+No other demuxers or decoders are included. The build also excludes encoders, network protocols, command-line programs, device input, and filters.
 
 ## Finding and opening a movie
 
-The general file layer finds movies in either mounted MIX archives or the game directory. FFmpeg reads through an adapter over that layer, so a loose file and a member of either a cached or uncached archive use the same path. An archive member is not extracted to a temporary file.
+The player removes any extension from the requested name and searches for `.webm`, `.bik`, and `.vqa`, in that order. The first available file is used. This lets a newer movie replace a VQA asset without changing the movie registry, scripts, or hard-coded requests.
+
+The general file layer finds each candidate in either mounted MIX archives or the game directory. FFmpeg reads through an adapter over that layer, so a loose file and a member of either a cached or uncached archive use the same path. An archive member is not extracted to a temporary file.
 
 A full-screen movie is shown only while all of these hold:
 
@@ -43,7 +45,7 @@ Radar movies have no minimum-size check. Startup and menu movies pass the sessio
 
 Full-screen frames are converted to BGRA8888 and submitted directly to the video backend, bypassing the game's RGB565 surfaces. Movies in the radar pane are converted to RGB565 to match its surface.
 
-A full-screen movie normally keeps its decoded size. A caller may allow [`StretchMovies`](/keys/stretchmovies/) to fit it to the display without changing its aspect ratio. Any movie larger than the display is reduced to fit regardless of the setting. `TS_TITLE.VQA` and `FS_TITLE.VQA` do not grow when they already fit.
+A full-screen movie normally keeps its decoded size. A caller may allow [`StretchMovies`](/keys/stretchmovies/) to fit it to the display without changing its aspect ratio. Any movie larger than the display is reduced to fit regardless of the setting. The `TS_TITLE` and `FS_TITLE` movies do not grow when they already fit.
 
 Escape stops a full-screen movie. The player then removes the BGRA override and returns presentation to the RGB565 game surface.
 
