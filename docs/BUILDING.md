@@ -13,6 +13,7 @@
 | Processor | SSE2, so a Pentium 4 or Athlon 64 onward |
 | Generator and compiler | Visual Studio 2022 MSVC 19.30 or newer |
 | Windows SDK | A Visual Studio-installed Windows SDK |
+| FFmpeg build tools | Bash and GNU Make |
 | CMake | 3.23 or newer |
 | C++ language level | C++20 |
 | Configurations | Debug and Release |
@@ -21,15 +22,18 @@ Other generators, compilers, architectures, and configurations are currently
 unsupported.
 
 Install Visual Studio 2022 with the **Desktop development with C++** workload,
-a Windows SDK, and CMake 3.23 or newer. Git for Windows is needed to clone the
-repository and initialize its dependencies, but not to compile a complete
-source tree.
+a Windows SDK, and CMake 3.23 or newer. The vendored FFmpeg build also requires
+`bash` and GNU `make` on `PATH`; MSYS2 provides both tools. Git for Windows is
+needed to clone the repository and initialize its dependencies.
 
 ## Dependencies
 
 The renderer uses [bgfx](https://github.com/bkaradzic/bgfx), vendored through
-`thirdparty/bgfx.cmake` at a tested tag. That submodule contains bgfx, bx, and
-bimg as nested submodules, so initialize it recursively:
+`thirdparty/bgfx.cmake` at a tested tag. The tree also vendors FFmpeg `n9.0.1`
+through `thirdparty/ffmpeg` and builds it as static libraries for movie
+playback. Its configuration enables only the VQA, Bink 1, and WebM demuxers
+and the video and audio decoders required by those formats. Initialize these
+dependencies recursively:
 
 ```powershell
 git submodule update --init --recursive
@@ -89,9 +93,10 @@ cmake -S . -B build/clang-cl -G Ninja \
 cmake --build build/clang-cl
 ```
 
-The toolchain requires `clang-cl`, `lld-link`, `llvm-lib`, `llvm-mt`, and
-`llvm-rc` on `PATH`. It exports `compile_commands.json`; one configuration in
-`.vscode/c_cpp_properties.clang.example.json` reads that file for IntelliSense.
+The toolchain requires `clang-cl`, `lld-link`, `llvm-lib`, `llvm-mt`, `llvm-rc`,
+`bash`, and GNU `make` on `PATH`. It exports `compile_commands.json`; one
+configuration in `.vscode/c_cpp_properties.clang.example.json` reads that file
+for IntelliSense.
 
 ## Build from Visual Studio Code
 

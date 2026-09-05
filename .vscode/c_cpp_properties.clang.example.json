@@ -8,6 +8,9 @@
         "WINDOWS_SDK_INCLUDE_DIR": "${env:WindowsSdkDir}/Include/${env:WindowsSDKVersion}",
         // Set this to the CMake binary directory used for the clang-cl build.
         "CLANG_BUILD_DIR": "${workspaceFolder}/build/clang-cl",
+        // FFmpeg configure generates avconfig.h separately for each build configuration.
+        "CLANG_FFMPEG_DEBUG_INCLUDE_DIR": "${CLANG_BUILD_DIR}/thirdparty/ffmpeg-movies/debug",
+        "CLANG_FFMPEG_RELEASE_INCLUDE_DIR": "${CLANG_BUILD_DIR}/thirdparty/ffmpeg-movies/release",
         "CLANG_COMPILER_ARGS": [
             "--target=i686-pc-windows-msvc",
             // Match the 14.44 MSVC toolset; update both together.
@@ -16,6 +19,7 @@
         "CLANG_INCLUDE_PATH": [
             "${workspaceFolder}/code",
             "${workspaceFolder}/thirdparty/**",
+            "${workspaceFolder}/thirdparty/ffmpeg",
             "${CLANG_BUILD_DIR}/generated",
             "${MSVC_TOOLS_DIR}/include",
             "${MSVC_TOOLS_DIR}/atlmfc/include",
@@ -44,7 +48,7 @@
             "intelliSenseMode": "windows-clang-x86",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "includePath": ["${CLANG_INCLUDE_PATH}"],
+            "includePath": ["${CLANG_INCLUDE_PATH}", "${CLANG_FFMPEG_DEBUG_INCLUDE_DIR}"],
             "defines": ["${CLANG_DEFINES}", "_DEBUG", "BX_CONFIG_DEBUG=1"]
         },
         {
@@ -56,7 +60,7 @@
             "intelliSenseMode": "windows-clang-x86",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "includePath": ["${CLANG_INCLUDE_PATH}"],
+            "includePath": ["${CLANG_INCLUDE_PATH}", "${CLANG_FFMPEG_RELEASE_INCLUDE_DIR}"],
             "defines": ["${CLANG_DEFINES}", "NDEBUG", "BX_CONFIG_DEBUG=0"]
         },
         {

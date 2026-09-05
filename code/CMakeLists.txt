@@ -192,6 +192,17 @@ message(STATUS "${PROJECT_NAME}: Applying linker options...")
 #
 
 target_link_libraries(OpenTS PRIVATE
+    $<$<CONFIG:Debug>:FFmpegMoviesDebug_avformat>
+    $<$<CONFIG:Debug>:FFmpegMoviesDebug_avcodec>
+    $<$<CONFIG:Debug>:FFmpegMoviesDebug_avutil>
+    $<$<CONFIG:Debug>:FFmpegMoviesDebug_swscale>
+    $<$<CONFIG:Debug>:FFmpegMoviesDebug_swresample>
+    $<$<CONFIG:Release>:FFmpegMoviesRelease_avformat>
+    $<$<CONFIG:Release>:FFmpegMoviesRelease_avcodec>
+    $<$<CONFIG:Release>:FFmpegMoviesRelease_avutil>
+    $<$<CONFIG:Release>:FFmpegMoviesRelease_swscale>
+    $<$<CONFIG:Release>:FFmpegMoviesRelease_swresample>
+
     bgfx
     bx
     bimg

@@ -1,3 +1,6 @@
 [submodule "thirdparty/bgfx.cmake"]
 	path = thirdparty/bgfx.cmake
 	url = https://github.com/bkaradzic/bgfx.cmake.git
+[submodule "thirdparty/ffmpeg"]
+	path = thirdparty/ffmpeg
+	url = https://github.com/FFmpeg/FFmpeg.git

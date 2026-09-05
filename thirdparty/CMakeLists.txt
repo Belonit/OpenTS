@@ -20,6 +20,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 add_subdirectory(bgfx.cmake)
 
+include("${PROJECT_SOURCE_DIR}/cmake/FFmpegMovies.cmake")
+
 # These libraries support the disabled texture tools and are not linked into OpenTS.
 set_target_properties(bimg_decode bimg_encode PROPERTIES EXCLUDE_FROM_ALL TRUE)
 
