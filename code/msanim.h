@@ -23,7 +23,7 @@ class Surface;
 class BSurface;
 class ShapeSet;
 class SurfaceCacheClass;
-struct VQHandle;
+struct MoviePlayback;
 
 typedef DynamicVectorClass<MSAnim *> MS_ANIM_LIST;
 
@@ -195,11 +195,11 @@ class MSOverlayAnim : public MSFadeAnim
 };
 
 
-class MSVQAnim : public MSAnim
+class MSMovieAnim : public MSAnim
 {
 	public:
-		MSVQAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, bool persistent=false);
-		virtual ~MSVQAnim(void) override;
+		MSMovieAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, bool persistent=false);
+		virtual ~MSMovieAnim(void) override;
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
 		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
@@ -212,7 +212,7 @@ class MSVQAnim : public MSAnim
 		 * Pointer to the movie being played. If the movie could not be created, then this is
 		 * NULL and the anim falls back on its still picture alone.
 		 */
-		VQHandle * Movie;
+		MoviePlayback * Movie;
 
 		/*
 		 * Pointer to the surface the movie is played onto, and the one the still picture is

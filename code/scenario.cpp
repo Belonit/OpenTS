@@ -248,13 +248,13 @@ void ScenarioClass::Reset(void)
 	VeinGrowthTimer = 0;
 	AmbientChangeTimer = 0;
 	Theater = THEATER_NONE;
-	IntroMovie = VQ_NONE;
-	BriefMovie = VQ_NONE;
-	WinMovie = VQ_NONE;
-	LoseMovie = VQ_NONE;
-	ActionMovie = VQ_NONE;
-	PostScoreMovie = VQ_NONE;
-	PreMapSelectMovie = VQ_NONE;
+	IntroMovie = MOVIE_NONE;
+	BriefMovie = MOVIE_NONE;
+	WinMovie = MOVIE_NONE;
+	LoseMovie = MOVIE_NONE;
+	ActionMovie = MOVIE_NONE;
+	PostScoreMovie = MOVIE_NONE;
+	PreMapSelectMovie = MOVIE_NONE;
 	TransitTheme = THEME_NONE;
 	PlayerHouse = HOUSE_FIRST;
 	CarryOverPercent = 0;
@@ -371,7 +371,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 	*/
 	char buffer[25];
 
-	if (Scen->BriefMovie != VQ_NONE) {
+	if (Scen->BriefMovie != MOVIE_NONE) {
 		wsprintf(buffer, "%s.VQA", Movies[Scen->BriefMovie]);
 	}
 
@@ -383,7 +383,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 		Play_Movie(Scen->ActionMovie, Scen->TransitTheme);
 	}
 
-	if (Scen->ActionMovie == VQ_NONE && Scen->TransitTheme != THEME_NONE) {
+	if (Scen->ActionMovie == MOVIE_NONE && Scen->TransitTheme != THEME_NONE) {
 		Theme.Queue_Song(Scen->TransitTheme);
 	} else {
 		Theme.Queue_Song(THEME_PICK_ANOTHER);
@@ -420,7 +420,7 @@ void Pause_Scenario(void)
 		Scen->ElapsedTimer.Stop();
 	}
 
-	Pause_Ingame_Movie(true);
+	Pause_InGame_Movie(true);
 
 	if (ToolTips != NULL) {
 		ToolTips->Activate(false);
@@ -453,7 +453,7 @@ void Resume_Scenario(void)
 		ToolTips->Activate(Options.ToolTips);
 	}
 
-	Pause_Ingame_Movie(false);
+	Pause_InGame_Movie(false);
 }
 
 
@@ -1042,7 +1042,7 @@ void Do_Win(void)
 	TacticalActive = false;
 
 	Scen->ElapsedTimer.Stop();
-	Stop_Ingame_Movie();
+	Stop_InGame_Movie();
 
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Hide_Mouse();
@@ -1090,10 +1090,10 @@ void Do_Win(void)
 			ScoreClass().Presentation();
 		}
 
-		if (Scen->PostScoreMovie != VQ_NONE) {
+		if (Scen->PostScoreMovie != MOVIE_NONE) {
 			Play_Movie(Scen->PostScoreMovie);
 		}
-		if (Scen->PreMapSelectMovie != VQ_NONE) {
+		if (Scen->PreMapSelectMovie != MOVIE_NONE) {
 			Play_Movie(Scen->PreMapSelectMovie);
 		}
 
@@ -1193,7 +1193,7 @@ void Do_Lose(void)
 	TacticalActive = false;
 
 	Scen->ElapsedTimer.Stop();
-	Stop_Ingame_Movie();
+	Stop_InGame_Movie();
 
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Hide_Mouse();
@@ -1279,7 +1279,7 @@ void Do_Restart(void)
 	TacticalActive = false;
 
 	Scen->ElapsedTimer.Stop();
-	Stop_Ingame_Movie();
+	Stop_InGame_Movie();
 
 	/*
 	**	Start a timer going, before we restart the scenario
@@ -1319,7 +1319,7 @@ void Do_Abort(void)
 	Scen->ElapsedTimer.Stop();
 	Scen->Scenario = 1;
 
-	Stop_Ingame_Movie();
+	Stop_InGame_Movie();
 	Keyboard->Clear();
 
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
@@ -3549,13 +3549,13 @@ bool ScenarioClass::Read_INI(CCINIClass const & ini)
 	ini.Get_TextBlock("Briefing", BriefingText, sizeof(BriefingText));
 	ini.Get_String(BASIC, "NextScenario", NextScenarioName, NextScenarioName, sizeof(NextScenarioName));
 	ini.Get_String(BASIC, "AltNextScenario", AltNextScenarioName, AltNextScenarioName, sizeof(AltNextScenarioName));
-	IntroMovie = ini.Get_VQType(BASIC, "Intro", IntroMovie);
-	BriefMovie = ini.Get_VQType(BASIC, "Brief", BriefMovie);
-	WinMovie = ini.Get_VQType(BASIC, "Win", WinMovie);
-	LoseMovie = ini.Get_VQType(BASIC, "Lose", LoseMovie);
-	ActionMovie = ini.Get_VQType(BASIC, "Action", ActionMovie);
-	PostScoreMovie = ini.Get_VQType(BASIC, "PostScore", PostScoreMovie);
-	PreMapSelectMovie = ini.Get_VQType(BASIC, "PreMapSelect", PreMapSelectMovie);
+	IntroMovie = ini.Get_MovieType(BASIC, "Intro", IntroMovie);
+	BriefMovie = ini.Get_MovieType(BASIC, "Brief", BriefMovie);
+	WinMovie = ini.Get_MovieType(BASIC, "Win", WinMovie);
+	LoseMovie = ini.Get_MovieType(BASIC, "Lose", LoseMovie);
+	ActionMovie = ini.Get_MovieType(BASIC, "Action", ActionMovie);
+	PostScoreMovie = ini.Get_MovieType(BASIC, "PostScore", PostScoreMovie);
+	PreMapSelectMovie = ini.Get_MovieType(BASIC, "PreMapSelect", PreMapSelectMovie);
 
 	IsMultiplayerOnly = ini.Get_Bool(BASIC, "MultiplayerOnly", IsMultiplayerOnly);
 	IsInheritTimer = ini.Get_Bool(BASIC, "TimerInherit", IsInheritTimer);
@@ -3692,13 +3692,13 @@ bool ScenarioClass::Write_INI(CCINIClass & ini, bool mplayer) const
 
 	if (!mplayer) {
 		ini.Put_HousesType(BASIC, "Player", PlayerPtr->Class->House);
-		ini.Put_VQType(BASIC, "Intro", IntroMovie);
-		ini.Put_VQType(BASIC, "Brief", BriefMovie);
-		ini.Put_VQType(BASIC, "Win", WinMovie);
-		ini.Put_VQType(BASIC, "Lose", LoseMovie);
-		ini.Put_VQType(BASIC, "Action", ActionMovie);
-		ini.Put_VQType(BASIC, "PostScore", PostScoreMovie);
-		ini.Put_VQType(BASIC, "PreMapSelect", PreMapSelectMovie);
+		ini.Put_MovieType(BASIC, "Intro", IntroMovie);
+		ini.Put_MovieType(BASIC, "Brief", BriefMovie);
+		ini.Put_MovieType(BASIC, "Win", WinMovie);
+		ini.Put_MovieType(BASIC, "Lose", LoseMovie);
+		ini.Put_MovieType(BASIC, "Action", ActionMovie);
+		ini.Put_MovieType(BASIC, "PostScore", PostScoreMovie);
+		ini.Put_MovieType(BASIC, "PreMapSelect", PreMapSelectMovie);
 		ini.Put_ThemeType(BASIC, "Theme", TransitTheme);
 		ini.Put_Float(BASIC, "CarryOverMoney", CarryOverPercent);
 		ini.Put_Bool(BASIC, "TimerInherit", IsInheritTimer);

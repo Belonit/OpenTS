@@ -46,10 +46,10 @@
  *   Main_Loop -- This is the main game loop (as a single loop).                               *
  *   Map_Edit_Loop -- a mini-main loop for map edit mode only                                  *
  *   Message_Input -- allows inter-player message input processing                             *
- *   MixFileHandler -- Handles VQ file access.                                                 *
+ *   MixFileHandler -- Handles movie file access.                                              *
  *   Name_From_Source -- retrieves the name for the given SourceType                           *
  *   Owner_From_Name -- Convert an owner name into a bitfield.                                 *
- *   Play_Movie -- Plays a VQ movie.                                                           *
+ *   Play_Movie -- Plays a movie.                                                              *
  *   Shake_The_Screen -- Dispatcher that shakes the screen.                                    *
  *   Shape_Dimensions -- Determine the minimum rectangle for the shape.                        *
  *   Source_From_Name -- Converts ASCII name into SourceType.                                  *
@@ -450,7 +450,7 @@ void Main_Game(int argc, char * argv[])
 			Ingame_Menu_Dialog();
 		}
 #endif
-		Stop_Ingame_Movie();
+		Stop_InGame_Movie();
 
 		if (ToolTips != NULL) {
 			ToolTips->Activate(false);
@@ -1359,20 +1359,20 @@ void List_Copy(Cell const * source, int len, Cell * dest)
 
 
 /// <summary>
-/// Converts an ASCII name into a VQType.
+/// Converts an ASCII name into a MovieType.
 /// This routine is used when processing the movie names found in the scenario INI file.
 /// </summary>
 /// <param name="name">Pointer to the ASCII movie name to convert.</param>
-/// <returns>Returns with the movie that matches the name. VQ_NONE is returned if there is
+/// <returns>Returns with the movie that matches the name. MOVIE_NONE is returned if there is
 /// no match.</returns>
-VQType VQ_From_Name(char const * name)
+MovieType Movie_From_Name(char const * name)
 {
 	if (name != NULL && strcmpi("<none>", name)) {
 		for (int movie = 0; movie < Movies.Count(); movie++) {
-			if (stricmp(name, Movies[movie]) == 0) return(VQType(movie));
+			if (stricmp(name, Movies[movie]) == 0) return(MovieType(movie));
 		}
 	}
-	return(VQ_NONE);
+	return(MOVIE_NONE);
 }
 
 

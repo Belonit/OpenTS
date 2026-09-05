@@ -24,28 +24,28 @@ void Play_Movie(char const * name, ThemeType, bool, bool, bool)
 }
 
 
-void Play_Movie(VQType vq, ThemeType, bool, bool)
+void Play_Movie(MovieType movie, ThemeType, bool, bool)
 {
-	if (vq != VQ_NONE) {
-		DebugString("[MoviePlaybackStub] Skipping fullscreen movie ID: %d\n", static_cast<int>(vq));
+	if (movie != MOVIE_NONE) {
+		DebugString("[MoviePlaybackStub] Skipping fullscreen movie ID: %d\n", static_cast<int>(movie));
 	}
 }
 
 
-void Play_Ingame_Movie(VQType vq)
+void Play_InGame_Movie(MovieType movie)
 {
-	if (vq != VQ_NONE) {
-		DebugString("[MoviePlaybackStub] Skipping radar movie ID: %d\n", static_cast<int>(vq));
+	if (movie != MOVIE_NONE) {
+		DebugString("[MoviePlaybackStub] Skipping radar movie ID: %d\n", static_cast<int>(movie));
 	}
 }
 
 
-void Stop_Ingame_Movie(void)
+void Stop_InGame_Movie(void)
 {
 }
 
 
-void Pause_Ingame_Movie(bool)
+void Pause_InGame_Movie(bool)
 {
 }
 

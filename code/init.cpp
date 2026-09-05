@@ -1275,7 +1275,7 @@ restart:
 					break;
 
 				/*
-				**	Play a VQ
+				**	Play a movie
 				*/
 				case SEL_INTRO:
 					Theme.Stop();
@@ -1465,7 +1465,7 @@ restart:
 	**	Hide the SeenPage; force the map to render one frame.  The caller can
 	**	then fade the palette in.
 	**	(If we loaded a game, this step will fade out the title screen.  If we
-	**	started a scenario, Start_Scenario() will have played a couple of VQ
+	**	started a scenario, Start_Scenario() will have played a couple of movies
 	**	movies, which will have cleared the screen to black already.)
 	*/
 	Call_Back();
@@ -1511,23 +1511,23 @@ restart:
  *=============================================================================================*/
 static void Play_Intro(bool sequenced)
 {
-	static VQType _counter = VQ_FIRST;
+	static MovieType _counter = MOVIE_FIRST;
 
 	//Keyboard->Clear();
 	if (sequenced) {
-		if (_counter <= VQ_FIRST) _counter = (VQType)Movies.Count();
+		if (_counter <= MOVIE_FIRST) _counter = (MovieType)Movies.Count();
 		if (_counter == Movies.Count()) _counter--;
 		//Hide_Mouse();
 		//VisiblePage.Clear();
 		//Show_Mouse();
-		Play_Movie(VQType(_counter--), THEME_NONE);
+		Play_Movie(MovieType(_counter--), THEME_NONE);
 
 //		Show_Mouse();
 	} else {
 		//Hide_Mouse();
 		//VisiblePage.Clear();
 		//Show_Mouse();
-		//Play_Movie(VQ_TITLE, THEME_NONE, false);
+		//Play_Movie(MOVIE_TITLE, THEME_NONE, false);
 	}
 }
 /***********************************************************************************************

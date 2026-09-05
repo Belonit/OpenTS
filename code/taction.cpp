@@ -1446,7 +1446,7 @@ bool TActionClass::TAction_PLAY_MOVIE(HouseClass * , ObjectClass * , TriggerClas
 /// </summary>
 bool TActionClass::TAction_PLAY_INGAME_MOVIE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	Play_Ingame_Movie(Data.Movie);
+	Play_InGame_Movie(Data.Movie);
 	return(true);
 }
 

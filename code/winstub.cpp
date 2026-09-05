@@ -127,7 +127,7 @@ ThemeType OldTheme = THEME_NONE;
 void Focus_Loss(void)
 {
 	DebugString("Focus_Loss()\n");
-	Pause_Ingame_Movie(true);
+	Pause_InGame_Movie(true);
 	OldTheme = Theme.What_Is_Playing();
 	Theme.Suspend();
 	if (Audio_Available()) Audio.Stop_Primary_Sound_Buffer();
@@ -157,7 +157,7 @@ void Focus_Restore(void)
 	Map.Flag_To_Redraw(GS_REDRAW_ALL);
 	InvalidateRect(MainWindow, 0, 0);
 	Theme.Play_Song(OldTheme);
-	Pause_Ingame_Movie(false);
+	Pause_InGame_Movie(false);
 	if (WS_Top_Window()) {
 		SetActiveWindow(WS_Top_Window());
 		SetFocus(WS_Top_Window());

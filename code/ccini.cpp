@@ -45,7 +45,7 @@
  *   CCINIClass::Get_ThemeType -- Fetch the theme identifier.                                  *
  *   CCINIClass::Get_TriggerType -- Fetch the trigger type identifier from the INI database.   *
  *   CCINIClass::Get_Unique_ID -- Fetch a unique identifier number for the INI file.           *
- *   CCINIClass::Get_VQType -- Fetch the VQ movie identifier from the INI database.            *
+ *   CCINIClass::Get_MovieType -- Fetch the movie identifier from the INI database.             *
  *   CCINIClass::Get_VocType -- Fetch a voc (sound effect) from the INI database.              *
  *   CCINIClass::Get_WarheadType -- Fetch the warhead type from the INI database.              *
  *   CCINIClass::Get_WeaponType -- Fetches the weapon type from the INI database.              *
@@ -67,7 +67,7 @@
  *   CCINIClass::Put_TheaterType -- Store the theater identifier to the INI database.          *
  *   CCINIClass::Put_ThemeType -- Store the theme identifier to the INI database.              *
  *   CCINIClass::Put_TriggerType -- Store the trigger identifier to the INI database.          *
- *   CCINIClass::Put_VQType -- Store the VQ movie identifier into the INI database.            *
+ *   CCINIClass::Put_MovieType -- Store the movie identifier into the INI database.             *
  *   CCINIClass::Put_VocType -- Store a sound effect identifier into the INI database.         *
  *   CCINIClass::Put_WarheadType -- Stores the warhead identifier to the INI database.         *
  *   CCINIClass::Put_WeaponType -- Store the weapon identifier to the INI database.            *
@@ -1293,9 +1293,9 @@ bool CCINIClass::Put_Side(char const * section, char const * entry, SideType val
 
 
 /***********************************************************************************************
- * CCINIClass::Get_VQType -- Fetch the VQ movie identifier from the INI database.              *
+ * CCINIClass::Get_MovieType -- Fetch the movie identifier from the INI database.               *
  *                                                                                             *
- *    Fetches the VQ movie name (identifier) from the INI database.                            *
+ *    Fetches the movie name (identifier) from the INI database.                               *
  *                                                                                             *
  * INPUT:   section  -- Identifier for the section to search for the entry under.              *
  *                                                                                             *
@@ -1303,7 +1303,7 @@ bool CCINIClass::Put_Side(char const * section, char const * entry, SideType val
  *                                                                                             *
  *          defvalue -- The default value to use if the entry could not be located.            *
  *                                                                                             *
- * OUTPUT:  Returns with the VQ movie identifier found. If the entry could not be located,     *
+ * OUTPUT:  Returns with the movie identifier found. If the entry could not be located,        *
  *          then the default value is returned.                                                *
  *                                                                                             *
  * WARNINGS:   none                                                                            *
@@ -1311,14 +1311,14 @@ bool CCINIClass::Put_Side(char const * section, char const * entry, SideType val
  * HISTORY:                                                                                    *
  *   07/03/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-VQType CCINIClass::Get_VQType(char const * section, char const * entry, VQType defvalue) const
+MovieType CCINIClass::Get_MovieType(char const * section, char const * entry, MovieType defvalue) const
 {
 	char buffer[128];
 
 	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
-		VQType vq = VQ_From_Name(buffer);
-		if (vq != VQ_NONE) {
-			return(vq);
+		MovieType movie = Movie_From_Name(buffer);
+		if (movie != MOVIE_NONE) {
+			return(movie);
 		}
 	}
 	return(defvalue);
@@ -1326,24 +1326,24 @@ VQType CCINIClass::Get_VQType(char const * section, char const * entry, VQType d
 
 
 /***********************************************************************************************
- * CCINIClass::Put_VQType -- Store the VQ movie identifier into the INI database.              *
+ * CCINIClass::Put_MovieType -- Store the movie identifier into the INI database.               *
  *                                                                                             *
- *    Use this routine to store the VQ movie identifier into the INI database.                 *
+ *    Use this routine to store the movie identifier into the INI database.                    *
  *                                                                                             *
  * INPUT:   section  -- The section to store the entry under.                                  *
  *                                                                                             *
  *          entry    -- Identifier for the entry to store.                                     *
  *                                                                                             *
- *          value    -- The VQ movie identifier to store to the INI database.                  *
+ *          value    -- The movie identifier to store to the INI database.                     *
  *                                                                                             *
- * OUTPUT:  bool; Was the VQ identifier stored?                                                *
+ * OUTPUT:  bool; Was the movie identifier stored?                                             *
  *                                                                                             *
  * WARNINGS:   none                                                                            *
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   07/03/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool CCINIClass::Put_VQType(char const * section, char const * entry, VQType value)
+bool CCINIClass::Put_MovieType(char const * section, char const * entry, MovieType value)
 {
 	if ((unsigned)value >= (unsigned)Movies.Count()) {
 		return(Put_String(section, entry, "<none>"));

@@ -1135,7 +1135,7 @@ bool SidebarClass::Activate(int control)
 			RadarButton.Zap();
 			Add_A_Button(RadarButton);
 		} else {
-			Stop_Ingame_Movie();
+			Stop_InGame_Movie();
 			Remove_A_Button(Repair);
 			Remove_A_Button(Upgrade);
 			Remove_A_Button(Power);

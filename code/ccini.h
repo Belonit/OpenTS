@@ -69,7 +69,7 @@
 #include "unit.hh"
 #include "voc.hh"
 #include "vox.hh"
-#include "vq.hh"
+#include "movie_type.hh"
 #include "warhead.hh"
 #include "weapon.hh"
 
@@ -137,7 +137,7 @@ class CCINIClass : public INIClass
 		SourceType Get_SourceType(char const * section, char const * entry, SourceType defvalue) const;
 		TheaterType Get_TheaterType(char const * section, char const * entry, TheaterType defvalue) const;
 		ThemeType Get_ThemeType(char const * section, char const * entry, ThemeType defvalue) const;
-		VQType Get_VQType(char const * section, char const * entry, VQType defvalue) const;
+		MovieType Get_MovieType(char const * section, char const * entry, MovieType defvalue) const;
 		VocType Get_VocType(char const * section, char const * entry, VocType defvalue) const;
 		int Get_Owners(char const * section, char const * entry, int defvalue) const;
 		CrateType Get_CrateType(char const * section, char const * entry, CrateType defvalue) const;
@@ -178,7 +178,7 @@ class CCINIClass : public INIClass
 		bool Put_HousesType(char const * section, char const * entry, HousesType value);
 		bool Put_Lepton(char const * section, char const * entry, LEPTON value);
 		bool Put_MPHType(char const * section, char const * entry, MPHType value);
-		bool Put_VQType(char const * section, char const * entry, VQType value);
+		bool Put_MovieType(char const * section, char const * entry, MovieType value);
 		bool Put_Owners(char const * section, char const * entry, int value);
 		bool Put_SourceType(char const * section, char const * entry, SourceType value);
 		bool Put_TheaterType(char const * section, char const * entry, TheaterType value);

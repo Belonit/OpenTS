@@ -11,7 +11,7 @@
 #include "abstype.h"
 
 #include "campaign.hh"
-#include "vq.hh"
+#include "movie_type.hh"
 
 class CCINIClass;
 
@@ -51,7 +51,7 @@ class CampaignClass : public AbstractTypeClass
 		/*
 		 * This is the movie that plays once the last mission of the campaign has been won.
 		 */
-		VQType FinalMovie;
+		MovieType FinalMovie;
 
 		/*
 		 * This is the campaign's title as it appears in the mission selection list. Until the

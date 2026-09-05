@@ -54,7 +54,7 @@
 #include "voc.hh"
 #include "vox.hh"
 #include "voxel.hh"
-#include "vq.hh"
+#include "movie_type.hh"
 #include "weapon.hh"
 
 
@@ -122,7 +122,7 @@ class TActionClass : public AbstractClass
 			HousesType					House;		// House to be affected.
 			SuperWeaponType				Special;	// Special weapon ability.
 			QuarryType					Quarry;		// Preferred target for attack.
-			VQType						Movie;		// The movie to play.
+			MovieType					Movie;		// The movie to play.
 			LightBehaviorType			LightBehavior;
 			ScrollSpeedType				Speed;
 			RadarEventType				RadarEvent;

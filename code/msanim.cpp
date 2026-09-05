@@ -580,7 +580,7 @@ bool MSOverlayAnim::Has_Finished(void) const
 
 
 /// <summary>
-/// Creates an anim that plays a VQA movie.
+/// Creates an anim that plays a movie.
 /// The movie is centered on the surface handed over and plays at the current sound
 /// volume. A PCX picture sharing the movie's name is loaded alongside it where one
 /// exists, and serves as the still image the movie leaves behind when it ends.
@@ -589,7 +589,7 @@ bool MSOverlayAnim::Has_Finished(void) const
 /// <param name="surface">The surface the movie is played onto.</param>
 /// <param name="vector">The list of sibling anims to repair over the movie.</param>
 /// <param name="persistent">Should the anim stay alive after the movie has ended?</param>
-MSVQAnim::MSVQAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, bool persistent) :
+MSMovieAnim::MSMovieAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, bool persistent) :
 	MSAnim(0, 0, false),
 	Anims(vector),
 	Movie(NULL),
@@ -622,7 +622,7 @@ MSVQAnim::MSVQAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, 
 /// Destroys the movie anim.
 /// The movie is shut down and the still image loaded alongside it is released.
 /// </summary>
-MSVQAnim::~MSVQAnim(void)
+MSMovieAnim::~MSMovieAnim(void)
 {
 	if (Background != NULL) {
 		delete Background;
@@ -643,7 +643,7 @@ MSVQAnim::~MSVQAnim(void)
 /// </summary>
 /// <param name="rect">Filled in with the area disturbed, for the caller to update.</param>
 /// <returns>bool; Has the anim finished and become ready for deletion?</returns>
-bool MSVQAnim::Advance(Surface * surface, Rect & rect)
+bool MSMovieAnim::Advance(Surface * surface, Rect & rect)
 {
 	if (Movie != NULL) {
 		bool is_done = false;
@@ -710,7 +710,7 @@ bool MSVQAnim::Advance(Surface * surface, Rect & rect)
 /// A movie that has already run out draws nothing.
 /// </summary>
 /// <param name="rect">The damaged region to draw within, or NULL to draw unconditionally.</param>
-void MSVQAnim::Redraw(Surface * surface, const Rect * rect)
+void MSMovieAnim::Redraw(Surface * surface, const Rect * rect)
 {
 	if (Movie != NULL && !Done) {
 		if (rect == NULL || Intersect(*rect, Movie->StretchRect).Is_Valid()) {
@@ -725,7 +725,7 @@ void MSVQAnim::Redraw(Surface * surface, const Rect * rect)
 /// This routine is used to put the movie's parting picture back onto the backdrop after
 /// something else has drawn over it.
 /// </summary>
-void MSVQAnim::Restore(const Rect & rect)
+void MSMovieAnim::Restore(const Rect & rect)
 {
 	if (Done && Movie != NULL && Background != NULL) {
 		TargetSurface->Blit_From(Movie->InitialRect, *Background, Background->Get_Rect());
@@ -738,7 +738,7 @@ void MSVQAnim::Restore(const Rect & rect)
 /// </summary>
 /// <returns>Returns with the movie's screen rectangle. An empty rectangle is returned
 /// when there is no movie to play.</returns>
-Rect MSVQAnim::Get_Rect(void) const
+Rect MSMovieAnim::Get_Rect(void) const
 {
 	static Rect _rect_none(0,0,0,0);
 	return(Movie != NULL ? Movie->StretchRect : _rect_none);
@@ -749,7 +749,7 @@ Rect MSVQAnim::Get_Rect(void) const
 /// Has the movie finished playing?
 /// </summary>
 /// <returns>bool; Has the movie run to its end?</returns>
-bool MSVQAnim::Has_Finished(void) const
+bool MSMovieAnim::Has_Finished(void) const
 {
 	return(Done);
 }

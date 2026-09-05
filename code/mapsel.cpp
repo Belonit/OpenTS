@@ -238,7 +238,7 @@ bool MapSelect::Presentation(ScenarioClass * scenario)
 		HiddenSurface->Fill(0);
 		VisibleSurface->Blit_From(*HiddenSurface);
 
-		MSAnim * anim = new MSVQAnim(map_stage->Get_Map_VQ_Name(), AlternateSurface, &Anims);
+		MSAnim * anim = new MSMovieAnim(map_stage->Get_Map_VQ_Name(), AlternateSurface, &Anims);
 		Add_Animation(anim);
 
 		int i;

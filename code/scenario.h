@@ -48,7 +48,7 @@
 #include "side.hh"
 #include "theater.hh"
 #include "theme.hh"
-#include "vq.hh"
+#include "movie_type.hh"
 #include "waypoint.hh"
 
 #include <cstdlib>
@@ -243,38 +243,38 @@ class ScenarioClass {
 		/*
 		**	The filename of the introduction movie.
 		*/
-		VQType IntroMovie;
+		MovieType IntroMovie;
 
 		/*
 		**	The filename of the briefing movie.
 		*/
-		VQType BriefMovie;
+		MovieType BriefMovie;
 
 		/*
 		**	The filename of the movie to play if the scenario is won.
 		*/
-		VQType WinMovie;
+		MovieType WinMovie;
 
 		/*
 		**	The filename of the movie to play if the scenario is lost.
 		*/
-		VQType LoseMovie;
+		MovieType LoseMovie;
 
 		/*
 		**	The filename of the movie to play right after the briefing and
 		**	just before the game.
 		*/
-		VQType ActionMovie;
+		MovieType ActionMovie;
 
 		/*
 		 * The filename of the movie to play after the score screen has been shown.
 		 */
-		VQType PostScoreMovie;
+		MovieType PostScoreMovie;
 
 		/*
 		 * The filename of the movie to play just before the map selection screen.
 		 */
-		VQType PreMapSelectMovie;
+		MovieType PreMapSelectMovie;
 
 		/*
 		**	This is the full text of the briefing. This text will be

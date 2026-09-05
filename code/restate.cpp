@@ -347,7 +347,7 @@ bool RestateMission::Presentation(ScenarioClass * scen)
 			if (resume_button != NULL) {
 				resume_button->Enable();
 			}
-			if (scen->BriefMovie != VQ_NONE) {
+			if (scen->BriefMovie != MOVIE_NONE) {
 				MyButton *video_button = Get_Button(BUTTON_VIDEO);
 				if (video_button != NULL) {
 					video_button->Enable();
@@ -492,7 +492,7 @@ bool RestateMission::Init(ScenarioClass * scen)
 	MyButton *resume = Get_Button(BUTTON_RESUME);
 	MyButton *video = Get_Button(BUTTON_VIDEO);
 
-	if (scen->BriefMovie == VQ_NONE) {
+	if (scen->BriefMovie == MOVIE_NONE) {
 		resume->X = CenterX + (640 - resume->Width) / 2;
 		resume->Y += CenterY;
 	} else {

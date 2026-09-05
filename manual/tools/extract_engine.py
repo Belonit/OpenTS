@@ -79,7 +79,7 @@ VALUE_TYPES = {
     "VocType": "sound",
     "VocType_List": "list of sounds",
     "VoxType": "EVA speech",
-    "VQType": "movie",
+    "MovieType": "movie",
     "RGBClass": "colour (R,G,B)",
     "IntList": "list of integers",
     "ArmorType": "ArmorType",

@@ -14,15 +14,15 @@
 #pragma once
 
 #include "theme.hh"
-#include "vq.hh"
+#include "movie_type.hh"
 
 template<class T> class DynamicVectorClass;
 
 extern DynamicVectorClass<char const *> Movies;
 
 void Play_Movie(char const * name, ThemeType theme=THEME_NONE, bool clrscrn_after=true, bool stretch=true, bool clrscrn_before=true);
-void Play_Movie(VQType vq, ThemeType theme=THEME_NONE, bool clrscrn=true, bool stretch=true);
-void Play_Ingame_Movie(VQType vq);
-void Pause_Ingame_Movie(bool pause);
-void Stop_Ingame_Movie(void);
+void Play_Movie(MovieType movie, ThemeType theme=THEME_NONE, bool clrscrn=true, bool stretch=true);
+void Play_InGame_Movie(MovieType movie);
+void Pause_InGame_Movie(bool pause);
+void Stop_InGame_Movie(void);
 bool Has_Ingame_Movies(void);

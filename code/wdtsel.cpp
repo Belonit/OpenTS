@@ -225,7 +225,7 @@ void Selection::Init_Regions(INIClass const & ini, const char * section, bool vq
 	char buffer[64];
 	sprintf(buffer, "%s%s.vqa", faction_name, region_name);
 	if (vq_anim) {
-		RegionAnim = new MSVQAnim(buffer, AlternateSurface, &Anims, true);
+		RegionAnim = new MSMovieAnim(buffer, AlternateSurface, &Anims, true);
 	} else {
 		RegionAnim = new MSPCXAnim(buffer, &Anims, true);
 	}

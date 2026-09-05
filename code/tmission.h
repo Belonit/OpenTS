@@ -24,7 +24,7 @@
 #include "tmission.hh"
 #include "voc.hh"
 #include "vox.hh"
-#include "vq.hh"
+#include "movie_type.hh"
 
 /*
 **	This structure contains one team mission value & its argument.
@@ -54,7 +54,7 @@ class TeamMissionClass
 		union {
 			QuarryType		Quarry;			// Combat quarry type.
 			MissionType		Mission;		// General mission orders.
-			VQType			Movie;
+			MovieType		Movie;
 			VocType			Sound;
 			VoxType			Speech;
 			ScrollSpeedType	Speed;

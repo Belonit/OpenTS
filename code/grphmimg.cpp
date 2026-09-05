@@ -203,7 +203,7 @@ void GraphicMenuImageItem::Action(MSEngine * engine)
 {
 	GraphicMenuItem::Action(engine);
 	if (CCFileClass(SelectVQ).Is_Available()) {
-		MSAnim * anim = new MSVQAnim(SelectVQ, AlternateSurface, engine->Get_Anims(), true);
+		MSAnim * anim = new MSMovieAnim(SelectVQ, AlternateSurface, engine->Get_Anims(), true);
 		if (anim != NULL) {
 			engine->Wait_For_Anim(anim);
 		}

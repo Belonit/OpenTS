@@ -14,14 +14,14 @@
 class Surface;
 
 // Only placement fields remain for the existing menu animation callers.
-struct VQHandle
+struct MoviePlayback
 {
 	Rect InitialRect;
 	Rect StretchRect;
 };
 
-VQHandle * Movie_Create(char const * name, Surface * surface, Rect rect1, Rect rect2, int volume, bool fullscreen);
-void Movie_Destroy(VQHandle * handle);
-bool Movie_Advance_Frame(VQHandle * handle, bool & finished);
+MoviePlayback * Movie_Create(char const * name, Surface * surface, Rect rect1, Rect rect2, int volume, bool fullscreen);
+void Movie_Destroy(MoviePlayback * playback);
+bool Movie_Advance_Frame(MoviePlayback * playback, bool & finished);
 bool Movie_Is_Playing(void);
 void Movie_Update_Visible_Surface(void);

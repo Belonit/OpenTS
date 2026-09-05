@@ -32,7 +32,7 @@
 CampaignClass::CampaignClass(char const * name) :
 	BASECLASS(name),
 	CDNumber(-1),
-	FinalMovie(VQ_NONE),
+	FinalMovie(MOVIE_NONE),
 	RequiredAddon(0)
 {
 	Campaigns.Add(this);
@@ -84,7 +84,7 @@ bool CampaignClass::Read_INI(CCINIClass const & ini)
 {
 	if (BASECLASS::Read_INI(ini)) {
 		CDNumber = ini.Get_Int(IniName, "CD", CDNumber);
-		FinalMovie = ini.Get_VQType(IniName, "FinalMovie", FinalMovie);
+		FinalMovie = ini.Get_MovieType(IniName, "FinalMovie", FinalMovie);
 		ini.Get_String(IniName, "Scenario", ScenarioName, ScenarioName, sizeof(ScenarioName));
 		strupr(ScenarioName);
 		ini.Get_String(IniName, "Description", Description, Description, sizeof(Description));

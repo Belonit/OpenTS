@@ -76,7 +76,7 @@ GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name)
 		strncat(buffer, ".VQA", sizeof(buffer));
 		MSAnim * anim = NULL;
 		if (CCFileClass(buffer).Is_Available()) {
-			anim = new MSVQAnim(buffer, AlternateSurface, menu->Engine.Get_Anims(), true);
+			anim = new MSMovieAnim(buffer, AlternateSurface, menu->Engine.Get_Anims(), true);
 		}
 		if (anim == NULL) {
 			anim = new MSPCXAnim(buffer, menu->Engine.Get_Anims(), true);

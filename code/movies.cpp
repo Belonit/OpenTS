@@ -16,19 +16,19 @@
 DynamicVectorClass<char const *> Movies;
 
 // Returning no movie lets menu animations use their existing PCX fallback.
-VQHandle * Movie_Create(char const * name, Surface *, Rect, Rect, int, bool)
+MoviePlayback * Movie_Create(char const * name, Surface *, Rect, Rect, int, bool)
 {
 	DebugString("[MoviePlaybackStub] Skipping movie animation: %s\n", name != nullptr ? name : "<none>");
 	return(nullptr);
 }
 
 
-void Movie_Destroy(VQHandle *)
+void Movie_Destroy(MoviePlayback *)
 {
 }
 
 
-bool Movie_Advance_Frame(VQHandle *, bool & finished)
+bool Movie_Advance_Frame(MoviePlayback *, bool & finished)
 {
 	finished = true;
 	return(false);

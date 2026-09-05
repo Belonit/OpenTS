@@ -1989,7 +1989,7 @@ bool RulesClass::Do_Movies(CCINIClass const & ini)
 		int count = ini.Entry_Count(MOVIES);
 		for (int i = 0; i < count; i++) {
 			if (ini.Get_String(MOVIES, ini.Get_Entry(MOVIES, i), "<none>", buffer, sizeof(buffer))) {
-				if (VQ_From_Name(buffer) == -1) {
+				if (Movie_From_Name(buffer) == -1) {
 					::Movies.Add(strdup(buffer));
 				}
 			}
