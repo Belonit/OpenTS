@@ -141,6 +141,7 @@
 #include "scheme.h"
 #include "score.h"
 #include "script.h"
+#include "sdl/sdlwindow.h"
 #include "session.h"
 #include "smudge.h"
 #include "spawnhouse.h"
@@ -1033,7 +1034,7 @@ void Post_Load_Game(void)
 	AnimClass::Post_Load_Game();
 
 	Map.Flag_To_Redraw(GS_REDRAW_ALL);
-	InvalidateRect(MainWindow, NULL, FALSE);
+	Main_Window_Request_Repaint();
 }
 
 

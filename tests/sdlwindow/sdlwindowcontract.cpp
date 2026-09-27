@@ -137,6 +137,10 @@ int main(void)
 	}
 	Main_Window_Pump_Events();
 
+	Main_Window_Request_Repaint();
+	Main_Window_Request_Repaint();
+	Check(Pumped(WINDOW_EVENT_EXPOSED).size() == 1, "repaints requested before a pump reach the game as one exposure");
+
 	Push_Key(true, SDL_SCANCODE_A, SDLK_A);
 	Push_Key(true, SDL_SCANCODE_B, SDLK_B);
 	std::vector<Delivered> keys = Pumped(WINDOW_EVENT_KEY_DOWN);
@@ -252,6 +256,15 @@ int main(void)
 		Check(Main_Window_Key_Down(VK_SHIFT), "a Shift held through a drag of the window is held after it");
 		std::memset(state, 0, sizeof(state));
 		SetKeyboardState(state);
+		Pumped(WINDOW_EVENT_NONE);
+
+		HWND focused = CreateWindowExW(0, L"STATIC", L"", WS_POPUP | WS_VISIBLE, 0, 0, 8, 8, NULL, NULL, GetModuleHandleW(NULL), NULL);
+		SetFocus(focused);
+		Pumped(WINDOW_EVENT_FOCUS_LOST);
+		Main_Window_Take_Focus();
+		Check(GetFocus() == window, "the window takes back the keyboard focus from another window");
+		Check(Pumped(WINDOW_EVENT_FOCUS_GAINED).size() == 1, "and the game hears it gained the focus");
+		DestroyWindow(focused);
 		Pumped(WINDOW_EVENT_NONE);
 
 		SDL_Window * const sdlwindow = SDL_GetKeyboardFocus();

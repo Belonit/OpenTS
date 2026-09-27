@@ -161,6 +161,7 @@
 #include "scenario.h"
 #include "scheme.h"
 #include "script.h"
+#include "sdl/sdlwindow.h"
 #include "session.h"
 #include "side.h"
 #include "skirmish.h"
@@ -2840,7 +2841,7 @@ int Main_Menu(unsigned int timeout)
 	GetSystemTime(&stamp);
 	CryptRandom.Seed_Byte(stamp.wMilliseconds);
 
-	SetFocus(MainWindow);
+	Main_Window_Take_Focus();
 	return(retval);
 }
 

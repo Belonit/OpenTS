@@ -56,6 +56,7 @@
 #include "movie.h"
 #include "opents_version.h"
 #include "pcx.h"
+#include "sdl/sdlwindow.h"
 #include "win.h"
 #include "wwmouse.h"
 
@@ -116,7 +117,7 @@ void Focus_Restore(void)
 		MouseCursor->Capture_Mouse();
 	}
 	Map.Flag_To_Redraw(GS_REDRAW_ALL);
-	InvalidateRect(MainWindow, 0, 0);
+	Main_Window_Request_Repaint();
 	Pause_Ingame_Movie(false);
 }
 

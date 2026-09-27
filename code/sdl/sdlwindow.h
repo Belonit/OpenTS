@@ -37,6 +37,12 @@ int Main_Window_Refresh_Rate(void);
 
 void Main_Window_Pump_Events(void);
 
+// Requests made before a pump reach the game as one WINDOW_EVENT_EXPOSED.
+void Main_Window_Request_Repaint(void);
+
+// Does not bring the game in front of another program.
+void Main_Window_Take_Focus(void);
+
 void Main_Window_Capture_Mouse(bool capture);
 bool Main_Window_Mouse_Captured(void);
 void Main_Window_Confine_Cursor(bool confine);

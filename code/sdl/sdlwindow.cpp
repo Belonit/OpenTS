@@ -554,6 +554,25 @@ void Main_Window_Pump_Events(void)
 }
 
 
+void Main_Window_Request_Repaint(void)
+{
+	HWND const window = Window_Handle();
+	if (window != NULL) {
+		InvalidateRect(window, NULL, FALSE);
+	}
+}
+
+
+// SDL_RaiseWindow would take the foreground from another program.
+void Main_Window_Take_Focus(void)
+{
+	HWND const window = Window_Handle();
+	if (window != NULL) {
+		SetFocus(window);
+	}
+}
+
+
 void Main_Window_Capture_Mouse(bool capture)
 {
 	if (_Window == nullptr) {

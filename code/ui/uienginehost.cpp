@@ -135,7 +135,7 @@ class UIEngineHostClass : public UIShellHostClass
 
 		virtual void Focus_Main_Window(void) override
 		{
-			SetFocus(MainWindow);
+			Main_Window_Take_Focus();
 		}
 
 		virtual bool Take_Capture(void) override
