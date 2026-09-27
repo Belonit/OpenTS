@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-Every automatic target scan by an object of this type ends immediately, with no target, while the object belongs to a human-controlled house. A computer house never reads the setting, so the same type scans normally in computer hands.
+While an object of this type belongs to a human player, every [automatic target search](/systems/target-selection/) it makes finds nothing. That includes the search a team's attack mission runs for each of its members. A [`VehicleThief=yes`](/keys/vehiclethief/) infantry type is the exception: its search still finds a vehicle it is already heading for within 15 cells. The same type searches normally under a computer house.
 
-Only the scan is suppressed. A target given by a player order, by a team script or by the retaliation path is unaffected, and the object still fires at whatever it has been handed.
+The object still fires at a target it is given directly, such as a player's attack order or an attacker it retaliates against.

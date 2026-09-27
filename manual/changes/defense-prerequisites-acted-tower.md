@@ -15,4 +15,4 @@ targets:
 credit: [ZivDero]
 ---
 
-A computer house choosing a base defense now excludes every wall tower its acted side lists in `AIWallTowers` from the buildings it tests candidate prerequisites against. `AIWallTowers` is read from the acted side's own section of rules.ini. Previously the test excluded only the single type `WallTower` names, in `[General]`. A house whose side omits that type dropped it from the basis without putting it back, so a defense naming it as a prerequisite was passed over even while the house owned one.
+`WallTower` under `[General]` in `rules.ini` names the wall tower type, and `AIWallTowers` in a side's `rules.ini` section lists the towers that side's computer houses build. When a computer house chose a base defense, it used to ignore an owned tower of the `WallTower` type if the `AIWallTowers` of the side its country belongs to left that type out. It then passed over every defense that required that tower. The owned tower now meets the prerequisite.

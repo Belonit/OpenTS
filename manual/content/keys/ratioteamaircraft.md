@@ -8,4 +8,6 @@ when_omitted:
   value: "75"
 ---
 
-The name promises the share of a computer house's production effort that goes to the aircraft its teams ask for. The figure is stored on the house and can be rewritten while the scenario runs by the [Ratio of team aircraft...](/mapping/actions/taction-set-team-aircraft-ratio/) trigger action, but nothing ever reads it back. Its two companions, [`RatioTeamInfantry`](/keys/ratioteaminfantry/) and [`RatioTeamUnits`](/keys/ratioteamunits/), are equally inert; only [`RatioAITriggerTeam`](/keys/ratioaitriggerteam/), which shares the naming, reaches a decision. No gameplay path reads the share.
+The house stores this value, but nothing uses it. The [Ratio of team aircraft...](/mapping/actions/taction-set-team-aircraft-ratio/) trigger action can change the value during the scenario, also with no effect.
+
+[`RatioTeamInfantry`](/keys/ratioteaminfantry/) and [`RatioTeamUnits`](/keys/ratioteamunits/) are unused in the same way. [`RatioAITriggerTeam`](/keys/ratioaitriggerteam/) is the only one of the four house ratios that has an effect.

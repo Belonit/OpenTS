@@ -12,18 +12,34 @@ when_omitted:
 UndeploysInto=MCV ; Mobile Construction Vehicle
 ```
 
-Selling the structure or ordering it to pack up runs its deconstruction. When that animation finishes, the structure becomes one vehicle of the named type instead of credits and survivors; destroying it does not. It is placed on the structure's own cell when the structure is one of the deployed-vehicle kinds and one cell to the south-east otherwise, facing the direction that kind deploys at. It carries over the structure's health as a proportion of its own full strength, floored at one point. It also takes over the side its artwork follows, its selection group, its experience, any limpet drone clamped to it, its attached tag, its selection, and any move order the structure was holding. Everything that was shooting at the structure retargets onto the vehicle, except an engineer trying to capture it, which loses its target. Only if the vehicle cannot be placed at all is the money refunded instead.
+A structure that names a vehicle type can pack up into one vehicle of that type. Selling the structure or giving it a move order starts its deconstruction, and the vehicle appears when the deconstruction ends. A structure without a destination ends its deconstruction partway through the animation, before the last frame. Destroying the structure never produces the vehicle.
 
-The "structure sold" announcement is suppressed and no crew leaves the building. A structure holding no destination from a move order also becomes ready to finish its deconstruction partway through the animation rather than only at its last frame.
+A structure whose type has no [construction artwork](/keys/buildup/#a-type-with-no-construction-artwork-cannot-be-sold) is never taken down, so a sale or a move order does nothing.
 
-Not every structure that names a type may actually undeploy. The undeploy path also requires the structure to be one of the deployed-vehicle kinds, or a mobile war factory or limpet mine. Outside a campaign game, a structure holding a destination from a move order also passes, as long as it belongs to a human house in a session set up with the MCV redeploy option on. A [`ConstructionYard=yes`](/keys/constructionyard/) structure refuses in a campaign game, refuses for a computer house anywhere, and refuses in any session where redeploying is switched off.
+The structure undeploys only if any of these holds:
 
-Naming a type also makes the structure count as a vehicle rather than a building. It takes the move cursor, it can be given a destination, and it answers a movement test against the target cell. A band selection picks it up the way it picks up a unit instead of requiring a click of its own. A construction yard is deliberately excluded from the selection and vehicle-counting parts of that, so it keeps behaving like a structure, and a band selection also skips an [`IsMobileWar=yes`](/keys/ismobilewar/) structure.
+- It has one of these type flags: [`SensorArray=yes`](/keys/sensorarray/), [`TickTank=yes`](/keys/ticktank/), [`ICBMLauncher=yes`](/keys/icbmlauncher/), [`Artillary=yes`](/keys/artillary/), [`IsMobileStealth=yes`](/keys/ismobilestealth/), [`IsJuggernaut=yes`](/keys/isjuggernaut/), [`IsCoreDefender=yes`](/keys/iscoredefender/#scope-buildingtype) or [`IsLimpetMine=yes`](/keys/islimpetmine/).
+- It is an [`IsMobileWar=yes`](/keys/ismobilewar/) mobile war factory.
+- Outside a campaign, it belongs to a human player in a session with the MCV redeploy option on, and it has a destination. A move order gives it one, and so does a factory's [rally point](/systems/production/#rally-points).
 
-If the structure's [`Factory=`](/keys/factory/) is `UnitType`, `InfantryType` or `AircraftType`, a plain click on the ground sets its [rally point](/systems/production/#rally-points), and the move order needs the force-move key. [`AltToRally=yes`](/keys/alttorally/) swaps the two. Any other structure, including a construction yard, takes the move order on a plain click.
+A structure that meets none of these is sold for its refund. A move order therefore sells a structure outside the first two groups in a campaign, or in a session with the MCV redeploy option off. It also sells one other than a construction yard when the game finds no reachable cell near the clicked point and the structure has no earlier destination.
 
-A name that matches no registered UnitType registers a new, unconfigured vehicle under that name rather than failing. The values `none` and `<none>` resolve to nothing at all, exactly as if the key had been left out.
+The vehicle appears on the structure's cell for a structure with one of those flags, and on the cell to the south-east for any other structure. It faces north for an artillery structure, east for a sensor array, tick tank or ICBM launcher, and south otherwise. If the vehicle cannot be placed, the house receives the structure's refund instead.
+
+The vehicle's health is the structure's fraction of full health applied to the vehicle's maximum, rounded down and never below 1. The vehicle keeps the structure's selection group, experience, attached tag, any limpet drone attached to it, and the country it was built for. It is selected if the structure was. If the structure had a destination, the vehicle moves there.
+
+Everything that was targeting the structure switches its target to the vehicle, except an engineer, which loses its target.
+
+A structure that names a type never lets out a crew and never plays the "structure sold" announcement, whether it undeploys or is sold. Of these structures, only a construction yard plays the sell sound.
+
+Except for a construction yard, a structure that names a type counts as a [deployed vehicle](/systems/capture/#an-engineer-over-a-structure). It counts toward its house's vehicles instead of its buildings, cannot be repaired, and does not start the [base-attacked response](/systems/base-attacked/). A [band selection](/systems/band-selection/) picks it up unless it is an `IsMobileWar=yes` structure.
+
+Except while an EM pulse has stunned it, the player can give the structure a move order. The move cursor appears over an empty cell that the structure's type could be built on, and over any cell of the playable area while Shift is held. A [`ConstructionYard=yes`](/keys/constructionyard/) structure takes a move order only outside a campaign, for a human player, in a session with the MCV redeploy option on.
+
+If the structure's [`Factory=`](/keys/factory/) is `UnitType`, `InfantryType` or `AircraftType`, a plain click on the ground sets its rally point, and a move order needs the force-move key. [`AltToRally=yes`](/keys/alttorally/) swaps the two. Any other structure, including a construction yard, takes the move order on a plain click.
+
+A name that matches no registered UnitType registers a new, unconfigured vehicle type under that name. The values `none` and `<none>` clear the key, so the structure names no vehicle.
 
 :::caution[Only a structure's section is read]
-The key is accepted in an AircraftType, BuildingType, InfantryType or UnitType section, but every reader runs on structures alone, so a value set on any other type is stored and never read.
+The key is accepted in an AircraftType, BuildingType, InfantryType or UnitType section, but only structures use it. A value set on any other type has no effect.
 :::

@@ -1,12 +1,21 @@
 ---
 key: BaseDefenseDelay
-summary: Minutes an attacker is ignored after it has already drawn a full base defense response.
+summary: Minutes during which no house calls up base defenders again against an attacker that a call-up has already covered.
 see_also: ["system:base-attacked", ComputerBaseDefenseResponse]
 when_omitted:
   kind: value
   value: ".25"
 ---
 
-The countdown is stored on the attacking object rather than on the house that answered. While that attacker's countdown is still running, [the call-up](/systems/base-attacked/#when-the-call-up-is-refused) refuses outright. One satisfied response therefore stops every other house, not just the one that was hit, from answering that same attacker until it expires.
+When a computer house's call-up against an attacker is more than covered, no house calls up defenders against that attacker again for this many minutes. A call-up is more than covered in either of two cases:
 
-The countdown is set only when the ratings of the dispatched defenders, or of defenders already fighting the attacker, pushed the budget below zero. A budget cancelled to exactly zero leaves no countdown, and neither does an attacker whose own rating is zero. A response that ran out of qualifying candidates before covering its budget leaves no countdown at all. Such a response runs again on the attacker's next hit.
+- the `ThreatPosed` of the defenders it orders adds up to more than its [strength budget](/systems/base-attacked/#the-strength-budget);
+- objects already targeting the attacker push the budget below zero, so it orders no defenders.
+
+The cooldown belongs to the attacker, not to the house that answered. While it runs, every house [refuses the call-up](/systems/base-attacked/#when-the-call-up-is-refused) against that attacker, including the house that set it.
+
+These call-ups set no cooldown, and the next hit from the attacker triggers another:
+
+- a call-up that ran out of qualifying defenders before their total exceeded the budget;
+- a call-up whose budget is exactly zero, from the start or once objects already targeting the attacker are counted;
+- a call-up against an attacker with `ThreatPosed=0`.

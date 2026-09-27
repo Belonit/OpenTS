@@ -7,11 +7,13 @@ when_omitted:
   value: "yes"
 ---
 
-The setting lives in a mission's own section and is read from the mission the candidate is currently in, not from the mission of anything doing the recruiting. At `no` a team passes the object over, and so does the tally that decides what a computer house builds to fill its teams.
+At `Recruitable=no`, no team can [recruit](/systems/ai-team-production/#recruitment) an object while it is on this mission. The setting is read from the mission the object is currently in.
 
 ```ini title="rules.ini"
 [Sleep]
 Recruitable=no
 ```
 
-The [base defense call-up](/systems/base-attacked/#which-objects-qualify) reads it as well, but only in a campaign game. Outside a campaign that one test is skipped, so an object parked in a mission marked this way is still pulled back to fight an attacker even though no team may recruit it.
+A computer house also leaves such an object out when it counts [the objects it already has for its teams](/systems/ai-team-production/#production-demand). It may therefore build another object of the same type to fill a team.
+
+In a campaign, the [base defense call-up](/systems/base-attacked/#which-objects-qualify) also skips an object on a `Recruitable=no` mission. In skirmish and multiplayer games the call-up ignores the setting, so such an object can still be called back if it qualifies otherwise.

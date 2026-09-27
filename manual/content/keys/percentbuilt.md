@@ -1,6 +1,6 @@
 ---
 key: PercentBuilt
-summary: Parsed base completion figure that the engine never uses.
+summary: A base completion figure that is read but has no effect.
 no_effect: true
 see_also: [NodeCount, "system:ai-base-building"]
 when_omitted:
@@ -8,4 +8,6 @@ when_omitted:
   value: "0"
 ---
 
-The name promises the share of a house's prebuilt base that is already standing when the scenario opens. The engine reads the figure from the house's own section and stores it with the base's node list. A save game preserves it. How much of the plan exists at the start instead follows from the objects the scenario places; everything after that is left to the base planner. [`NodeCount`](/keys/nodecount/) covers the plan itself. On a map that sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/) the figure is read from the spawn house sections as well, to the same lack of effect.
+The name suggests the share of a house's base plan that already stands when the scenario starts, but no part of the game uses the value. A house starts with the structures the scenario places, and [Where the plan comes from](/systems/ai-base-building/#where-the-plan-comes-from) explains how those count against its plan.
+
+`PercentBuilt` is read from the same section as [`NodeCount`](/keys/nodecount/). That includes a spawn house section on a map that sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/), where it has no effect either.

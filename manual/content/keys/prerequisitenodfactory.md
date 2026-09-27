@@ -7,8 +7,12 @@ when_omitted:
   value: ""
 ---
 
-Owning at least one live structure of any type on this list satisfies a `NODFACTORY` entry in a [`Prerequisite=`](/keys/prerequisite/) list. The entries are alternatives, not requirements: the first one the house owns ends the search, and order has no other meaning.
+A player meets a `NODFACTORY` entry in a [`Prerequisite=`](/keys/prerequisite/) list by owning a structure of any type on this list. One is enough, and the order of the list does not matter.
 
-The computer's [base planner](/systems/ai-base-building/#building-the-plan) treats the group the same way: while the plan is assembled, any listed type already queued satisfies the entry.
+A computer house skips prerequisites when it produces, but its [base planner](/systems/ai-base-building/#building-the-plan) checks this list. There, `NODFACTORY` is met once any listed type is in the plan.
 
-The list is read as BuildingType IDs without regard to case, and a name matching none is dropped. An empty list leaves `NODFACTORY` impossible to satisfy, which blocks every type naming it, in the plan and in a player's [production](/systems/production/) alike.
+Separate the BuildingType IDs with commas and no spaces. IDs are matched without regard to case, and an ID that matches no BuildingType is dropped. An empty value leaves the list already loaded in place.
+
+List only BuildingType IDs. A group name such as `POWER` or `FACTORY` stays in the list but never satisfies it. When a computer house plans a structure that needs `NODFACTORY`, such an entry can be read as an invalid BuildingType, which stops a Debug build of the game.
+
+If the list holds no valid ID, `NODFACTORY` can never be met. A player cannot build any type that names it, and the base planner leaves such types out of the plan.

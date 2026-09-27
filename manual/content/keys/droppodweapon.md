@@ -7,8 +7,10 @@ when_omitted:
   value: none
 ---
 
-The configured weapon drives both airborne effects of a descending pod: the smoke trail behind it and the covering fire on the landing cell. Without a weapon, pods fall silently and deliver no covering fire; every other part of the descent and landing is unaffected. [Descent and airborne effects](/systems/drop-pods/#descent-and-airborne-effects) covers what a configured weapon does.
+The weapon gives a falling pod two effects: a `SMOKEY` smoke trail, and repeated shots at its landing cell. Without a weapon, the pod leaves no trail and fires nothing, and the rest of its fall and landing is unchanged. [Descent and airborne effects](/systems/drop-pods/#descent-and-airborne-effects) describes the shots.
 
-:::danger[This assignment can change weapon numbering]
-A weapon the rules [`[Weapons]` list](/formats/rules-registries/) leaves out is numbered where it is first named, and `[General]` is read before any object type names its own weapons. Adding, removing or renaming an unlisted weapon here therefore shifts the weapon numbers stored in [Do Explosion At](/mapping/actions/taction-do-explosion/) trigger actions. Listing the weapon settles its number instead.
+Give the weapon a nonzero `Damage` and a warhead that lists at least one `AnimList` animation. Otherwise the game crashes on the pod's first shot.
+
+:::danger[Register this weapon to keep weapon numbers stable]
+A weapon missing from the rules [`[Weapons]` list](/formats/rules-registries/) is numbered where it is first named, and `[General]` is read before any object type names its weapons. Adding, removing or renaming an unlisted weapon here therefore shifts the weapon numbers stored in [Do Explosion At](/mapping/actions/taction-do-explosion/) trigger actions. Listing the weapon in `[Weapons]` fixes its number.
 :::

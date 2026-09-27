@@ -12,8 +12,8 @@ when_omitted:
 AIDetectDisguise=yes
 ```
 
-With `AIDetectDisguise=yes`, a [`Disguised=yes`](/keys/disguised/) soldier no longer escapes the scan a computer-controlled house makes. A computer opponent will acquire and fire on a spy walking into its base. A house a player controls still passes the disguised soldier over, so the disguise works against the player exactly as before.
+With `AIDetectDisguise=yes`, the units and structures of a computer house can pick a [`Disguised=yes`](/keys/disguised/) soldier as a target when they scan for one. A computer opponent will then attack a spy walking into its base. The units and structures of a player-controlled house still pass the disguised soldier over, unless their type sets `DetectDisguise=yes`.
 
-The distinction is drawn on who controls the house, not on which house is local. Every machine in a networked game reaches the same answer. In a campaign a house the mission has handed to the player counts as player-controlled for this purpose.
+The test is on who controls the house, not on which house is local, so every machine in a network game makes the same choice. In a campaign, a house the mission gives to the player counts as player-controlled.
 
-To give the ability to particular units instead of a whole side, set [`DetectDisguise=yes`](/keys/detectdisguise/) on those types. The two work independently, and either one is enough.
+To give the ability to particular types instead of a whole side, set [`DetectDisguise=yes`](/keys/detectdisguise/) on those types. The two settings work independently, and either one is enough.

@@ -7,17 +7,19 @@ when_omitted:
   value: "2"
 ---
 
-The figure is whole cells, not leptons. Every cell whose offset from the impact cell falls inside a circle of that radius is covered, which at the built-in `2` is a rounded block of thirteen cells. Each covered cell releases one particle from the warhead's [`Particle`](/keys/particle/) system and hands zero damage to everything standing in it, which is what pins the infantry there.
+The radius is in whole cells, not leptons. A web covers every cell whose offset from the impact cell falls inside a circle of this radius. At `2` that is a rounded block of 13 cells, and at `3` it is 29 cells.
 
 ```ini title="rules.ini"
 [MyWebWH] ; example WarheadType
 Webby=yes
 Particle=MyWebSys ; example ParticleSystemType
-WebRadius=3 ; twenty-nine cells
+WebRadius=3 ; 29 cells
 ```
 
-At `0` only the impact cell is covered. A negative figure covers nothing at all: no particle is released and no object is touched, and since the blast has already been given over to the web, the shot leaves only its impact animation behind.
+[`Webby`](/keys/webby/) covers what the web does in each covered cell. Which objects in a cell it catches depends on the cell's height. A covered cell whose ground lies within three height levels of the impact point catches the objects on its ground, not those on a bridge above it. A cell three or more levels above or below catches only the objects on a bridge there, so infantry on the ground in that cell is not webbed.
 
-Every covered cell is given a particle system of its own, so the cost of a detonation grows with the square of this figure.
+At `0` only the impact cell is covered. A negative figure covers no cells: no particle is released, nobody is webbed, and the shot shows only its impact animation.
 
-The setting is read only while [`Webby=yes`](/keys/webby/) stands in the same section.
+Every covered cell creates a separate particle system, so the number of systems one detonation creates grows with the square of this figure.
+
+The setting is read only while the warhead is [`Webby=yes`](/keys/webby/).

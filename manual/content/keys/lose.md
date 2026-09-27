@@ -1,6 +1,6 @@
 ---
 key: Lose
-summary: The movie played when a campaign mission is lost.
+summary: The movie played when the player loses the mission.
 see_also: [Win, Intro]
 when_omitted:
   kind: value
@@ -12,6 +12,8 @@ when_omitted:
 Lose=KILLMECH
 ```
 
-The movie is shown after the defeat announcement has finished speaking and before the offer to replay the mission. Accepting that offer restarts the scenario without its briefing, so [`Intro`](/keys/intro/), [`Brief`](/keys/brief/) and [`Action`](/keys/action/#scope-scenarios) do not play again. Multiplayer and skirmish games end their own way and reach the movie only when the launch file asked for movies, and then after their own score screen; [multiplayer movies](/systems/multiplayer-movies/) owns that.
+In a campaign, the movie plays once the defeat announcement has finished speaking, or after five seconds if it is still speaking. The game then offers to replay the mission. A replay restarts the scenario without its briefing, so [`Intro`](/keys/intro/), [`Brief`](/keys/brief/) and [`Action`](/keys/action/#scope-scenarios) do not play again.
+
+In skirmish and multiplayer games, the movie plays after the score screen, or straight after the announcement when the score screen is skipped. It plays only when the launch file asks for movies. [Multiplayer movies](/systems/multiplayer-movies/) covers that path.
 
 [`Intro`](/keys/intro/) covers how a movie name is resolved and what happens to one that cannot be found.

@@ -21,6 +21,10 @@ targets:
 credit: [ZivDero, hacklex, dkeeton]
 ---
 
-The veterancy filter narrows a mixed selection to its highest rank and, pressed again, moves on to the next rank of the selection it started from. The health filter does the same with the red, yellow and green condition bands, starting from the most damaged units. The add-lower forms grow a filtered selection back by one tier instead of replacing it. Select One Less drops an unarmed object such as a harvester before any armed one. With the whole selection armed, the earliest-selected object is dropped. All five arrive unbound in `KEYBOARD.INI`, and neither filter acts while a structure is being placed.
+`VeterancyFilter` narrows a mixed selection to its highest rank; each further press selects the next lower rank from the selection it started with, returning to the highest after the lowest. `HealthFilter` does the same with the red, yellow and green health bands, most damaged first. `VeterancyFilterAddLower` and `HealthFilterAddLower` add the next rank or band to a filtered selection instead of replacing it. Neither filter works while a structure is being placed.
+
+`SelectOneLess` deselects the most recently selected unarmed object, such as a harvester. When every selected object is armed, it deselects the one selected first.
+
+None of the five has a default key. Bind them in the keyboard options or under `[Hotkey]` in `KEYBOARD.INI`.
 
 hacklex is credited for the Vinifera filters this follows and dkeeton for the ts-patches command that removes one unit.

@@ -4,9 +4,11 @@ summary: Drop-pod descent angle in radians, clamped to 22.5-67.5 degrees when ru
 see_also: [DropPodHeight, DropPodSpeed, "system:drop-pods"]
 ---
 
-The angle divides a pod's movement between horizontal and vertical travel. It also controls how far from the landing cell the pod begins: the horizontal offset is `DropPodHeight / tan(DropPodAngle)`.
+`DropPodAngle` is the angle of a pod's fall above the horizontal, in radians. A larger angle gives a steeper, shorter fall that starts closer to the landing cell. A smaller angle gives a flatter, longer approach.
 
-Values read from `[General]` are clamped to `pi/8` through `3*pi/8` radians (22.5-67.5 degrees). A smaller angle produces a longer, shallower approach; a larger angle produces a shorter, steeper approach.
+The angle also sets how far to the side the pod starts, as [Approach selection](/systems/drop-pods/#approach-selection) describes.
+
+The engine clamps the value to `pi/8` through `3*pi/8` radians (22.5 to 67.5 degrees) whenever it reads a `[General]` section. Leaving the key unset therefore gives a 67.5-degree fall.
 
 ```ini title="rules.ini"
 [General]

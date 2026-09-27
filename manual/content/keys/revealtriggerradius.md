@@ -7,6 +7,6 @@ when_omitted:
   value: "5"
 ---
 
-[Reveal around waypoint...](/mapping/actions/taction-reveal-some/) is the only reader. The reveal is centered on the waypoint's own ground level, raised by the bridge height when the waypoint lies under a bridge. The [height test](/keys/revealbyheight/) that blocks a reveal behind high ground applies, so a waypoint at the foot of a cliff uncovers less than the radius names.
+Only the [Reveal around waypoint...](/mapping/actions/taction-reveal-some/) trigger action uses this value. The action uncovers the ground within this many cells of its waypoint for every human player who has not already been given full vision. A value above `10` uncovers ten cells, the most any sight scan reaches, and `0` uncovers nothing.
 
-The value is a plain count of cells and shares the sight scan's cap of ten cells, so a larger value uncovers ten. The action uncovers the ground for every human player except one who has already been given full vision.
+The reveal is centered on the waypoint's ground level, raised by the bridge height when the waypoint lies under a bridge. With [`RevealByHeight=yes`](/keys/revealbyheight/), cells behind high ground stay covered, so a waypoint at the foot of a cliff uncovers less than the radius names.

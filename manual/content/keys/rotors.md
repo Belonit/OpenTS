@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-No drawing path reads the flag. Rotor blades are not drawn over an aircraft at any setting, so a helicopter shows only the frames its own artwork supplies.
+OpenTS draws no separate rotor blades over an aircraft at any setting. A helicopter shows only the frames its own artwork supplies, so spinning blades must be part of that artwork.

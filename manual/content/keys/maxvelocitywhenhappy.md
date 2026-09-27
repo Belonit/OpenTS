@@ -1,16 +1,18 @@
 ---
 key: MaxVelocityWhenHappy
-summary: The speed above which a wandering levitating unit stops thrusting again.
+summary: The speed a wandering levitating unit must slow below before it can thrust again.
 see_also: ["AccelerationProbability", "MaxVelocityWhenFollowing", "MaxVelocityWhenPissedOff", "Drag"]
 when_omitted:
   kind: value
   value: "4"
 ---
 
-This is the wandering mood: the unit has neither a target nor a destination and is coasting. While its speed is below this figure and no thrust is already running, it rolls [`AccelerationProbability`](/keys/accelerationprobability/) each frame for a fresh thrust in a random direction. Once its speed is at or above the figure the rolls stop and it simply coasts. The figure is therefore a soft ceiling on aimless drifting: the unit can still overshoot it, because a thrust already begun is never cut short by it. A figure of `2` ends the rolls once the unit's speed passes two leptons per frame.
+A levitating unit with neither a target nor a destination wanders. While it coasts after a thrust, it may start a new thrust only once its speed has fallen below this figure. Below the figure, it rolls [`AccelerationProbability`](/keys/accelerationprobability/) each frame for a thrust in a random direction; at or above it, it keeps coasting.
 
-A unit that has slowed below a hundredth of a lepton per frame with nothing to head for comes to rest and reclaims its cell instead, whatever this figure says.
+The figure does not limit speed. A thrust is never cut short by it, so a thrust can carry the unit well past the figure. A figure above the speed a thrust ends at lets the unit thrust again at any point in its coast, and each new thrust adds to the motion the unit already has.
 
-The other two moods use their figures the other way about, as the speed at which a coast is abandoned rather than continued; [`MaxVelocityWhenFollowing`](/keys/maxvelocitywhenfollowing/) covers that.
+A wandering unit that slows below a hundredth of a lepton per frame comes to rest and reclaims its cell, whatever this figure is. At `0` or below, a wandering unit never thrusts while coasting. It comes to rest first, and thrusts again from rest if its mission allows, as `AccelerationProbability` describes.
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+[`MaxVelocityWhenFollowing`](/keys/maxvelocitywhenfollowing/) and [`MaxVelocityWhenPissedOff`](/keys/maxvelocitywhenpissedoff/) work the other way round. There, falling below the figure ends the coast and makes the unit brake.
+
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

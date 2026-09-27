@@ -12,10 +12,10 @@ when_omitted:
 IonBlast=MYIONRING ; an AnimType registered in [Animations]
 ```
 
-The animation is created five leptons above the impact point on the frame the strike lands, centered on that point and pinned to the view, ahead of the damage and the combat lighting. A strike that comes down on water takes the last entry of [`SplashList`](/keys/splashlist/) in its place, so this is the land effect only; [`IonBeam`](/keys/ionbeam/) is drawn over both.
+The ring plays centered on the impact point on the frame an ion cannon blast lands on land. A blast that lands on water plays the last entry of [`SplashList`](/keys/splashlist/) instead. [`IonBeam`](/keys/ionbeam/) plays with either.
 
-The GDI Ion Cannon superweapon and the scripted ion-blast trigger action both arrive through the same routine, so both draw it.
+A superweapon with [`Type=IonCannon`](/keys/type/#scope-superweapontype) and the [Ion-cannon strike...](/mapping/actions/taction-ion-cannon/) trigger action both set off the same blast, so both play the ring.
 
-:::danger[An unset animation crashes the game at the first strike on land]
-The ring is created without first checking that an animation was named, so with the key unset the game crashes as soon as an ion cannon comes down anywhere but water.
+:::danger[Name an animation before an ion cannon can fire]
+With the key unset, the game crashes as soon as an ion cannon blast lands anywhere but water.
 :::

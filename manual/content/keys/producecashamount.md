@@ -8,13 +8,13 @@ when_omitted:
 ---
 
 ```ini title="rules.ini"
-[CAOILD]
+[MYDERRICK] ; example BuildingType registered in [BuildingTypes]
 ProduceCashAmount=100 ; credits
 ProduceCashDelay=750  ; frames between payments
 ```
 
-Each time the interval [`ProduceCashDelay`](/keys/producecashdelay/) sets runs out, this many credits go to whichever house owns the structure. They go straight to that house's credits: no refinery, nothing counted as harvested, no silo cap. Health does not scale the payment; a half-damaged structure pays the same as an intact one.
+Each time the [`ProduceCashDelay`](/keys/producecashdelay/) interval runs out, this many credits go to the house that owns the structure. They go straight to its credits: they pass through no refinery, are not counted as harvested, and ignore the silo limit. A damaged structure pays the full amount.
 
-A negative figure takes the money instead. Spending drains the owner's credits first, then liquidates Tiberium out of the house's own structures to cover the rest, stopping at zero rather than going into debt.
+A negative value takes that many credits each interval instead. The charge comes out of the owner's credits first, then out of Tiberium stored in its structures. Once both run out, the rest of the charge is dropped, so the owner never goes into debt.
 
 Zero produces nothing. [Buildings that produce cash](/systems/produce-cash/) owns the interval, the budget, the power test, and everything else that stops a structure paying.

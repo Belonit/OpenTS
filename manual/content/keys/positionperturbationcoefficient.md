@@ -7,7 +7,9 @@ when_omitted:
   value: "0.0"
 ---
 
-Each of the three axes is offset independently by a fresh amount running from half the figure one way to half the other. A setting of `30` therefore moves a particle up to fifteen leptons along each axis from where the corkscrew put it. The offsets are in leptons, the same units as [`SpiralRadius`](/keys/spiralradius/), and are applied on top of it. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+A `Railgun` system moves each particle of its trace off its place on the spiral by a random offset on each of the three axes. Each axis gets its own offset, anywhere from minus half to plus half of this figure, in leptons. `30` moves a particle up to fifteen leptons along each axis. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+
+The offset is added to the spiral position that [`SpiralRadius`](/keys/spiralradius/) sets and uses the same units. A figure more than twice `SpiralRadius` can therefore scatter a particle farther from its place than the coil's radius.
 
 ```ini title="rules.ini"
 [MyRailgunSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -17,4 +19,4 @@ SpiralRadius=6
 PositionPerturbationCoefficient=20 ; scatter of up to ten leptons, wider than the coil
 ```
 
-This is the trace's placement scatter and nothing else. Where each particle then travels is [`MovementPerturbationCoefficient`](/keys/movementperturbationcoefficient/)'s business and how fast is [`VelocityPerturbationCoefficient`](/keys/velocityperturbationcoefficient/)'s, and a value here changes neither.
+The figure changes only where each particle starts. A particle then travels outward from the coil's center line at its particle type's `Velocity`. [`MovementPerturbationCoefficient`](/keys/movementperturbationcoefficient/) varies its direction at random, and [`VelocityPerturbationCoefficient`](/keys/velocityperturbationcoefficient/) varies its speed.

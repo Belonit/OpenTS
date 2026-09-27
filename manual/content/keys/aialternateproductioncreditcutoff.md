@@ -7,17 +7,24 @@ when_omitted:
   value: "1000"
 ---
 
-The figure is compared against the house's loose credits plus the value of the Tiberium it holds in storage, and the comparison is made again every time one of the house's factories delivers something.
+A computer house with money at or above this figure orders structures, vehicles, infantry and aircraft at the same time. Below it, the house orders one group at a time: either structures, or vehicles, infantry and aircraft. A higher figure makes a computer house start alternating while it still has more money.
 
-At or above the figure the house orders structures, vehicles, infantry and aircraft in the same pass. Below it the house orders one group per pass, either structures or vehicles, infantry and aircraft. A structure delivery puts it on the unit group, and a vehicle, infantry or aircraft delivery puts it on the structure group. A house already on the unit group returns to structures on a vehicle, infantry or aircraft delivery only under **Any of:**
+The house's money here is its credits plus the value of the Tiberium in its storage. The house compares it with the figure each time one of its factories delivers something.
 
-- it owns none of the [`BuildWeapons`](/keys/buildweapons/) types;
-- it owns none of the [`BuildBarracks`](/keys/buildbarracks/) types;
-- it is [drawing more power than it makes](/systems/power/);
-- it wins a one-in-two draw.
+Below the figure, each delivery decides the next group:
 
-The narrowed pass is not a hard block. A house restricted to structures falls through to vehicles, infantry and aircraft as soon as no owned factory can produce the structure it wants. A house restricted to vehicles, infantry and aircraft falls through to structures once it has nothing pending at all, or once it has an item pending that it cannot build. While the vehicle it has pending is one of the [`HarvesterUnit`](/keys/harvesterunit/) types, that restricted house skips infantry and aircraft entirely. [Choosing what to build next](/systems/ai-base-building/#choosing-what-to-build-next) covers how the structure half of the pass picks its target.
+- A structure delivery switches the house to vehicles, infantry and aircraft.
+- A vehicle, infantry or aircraft delivery switches the house to structures. A house that is already ordering vehicles, infantry and aircraft switches only when **any of** these holds:
+  - it owns none of the [`BuildWeapons`](/keys/buildweapons/) types;
+  - it owns none of the [`BuildBarracks`](/keys/buildbarracks/) types;
+  - it is [drawing more power than it makes](/systems/power/);
+  - it wins a one-in-two draw.
 
-:::note[Campaign games never narrow the pass]
-The mode is only ever moved in a skirmish or multiplayer game, and the pass ignores it outright in a campaign. A computer house in a campaign orders every class together whatever its credits, so the figure decides nothing there.
+A house limited to one group still orders from the other in these cases:
+
+- A house ordering structures also orders vehicles, infantry and aircraft when it has chosen no structure, or when no factory it owns can build the structure it chose. [Choosing what to build next](/systems/ai-base-building/#choosing-what-to-build-next) covers that choice.
+- A house ordering vehicles, infantry and aircraft skips infantry and aircraft while the vehicle it has on order is one of the [`HarvesterUnit`](/keys/harvesterunit/) types. It also orders structures when it has nothing on order, or when no factory it owns can build something it has on order.
+
+:::note[Campaign games never alternate]
+In a campaign, a computer house orders every class at the same time whatever its money, so the figure has no effect.
 :::

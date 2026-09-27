@@ -12,12 +12,19 @@ when_omitted:
 Official=yes
 ```
 
-In a multiplayer or skirmish game, this assignment decides which of the placed waypoints `0` through `7` the [start positions](/systems/starting-forces/#the-start-position) are drawn from. It does so only when no seat in the launch file named a position by number. Those waypoints are the pool each house draws from: the first house takes one at random, and every house after it takes whichever open one lies furthest from those already held.
+`Official=yes` limits which of the placed waypoints `0` through `7` can be [start positions](/systems/starting-forces/#the-start-position) in a multiplayer or skirmish game. Only placed waypoints numbered below a cutoff are eligible. The cutoff is the larger of these two numbers:
 
-Marked official, the pass draws from waypoint `0` onward up to a cutoff. The cutoff is the larger of two numbers: how many houses have to be seated, and how many waypoints are placed in an unbroken run starting at `0`. A placed waypoint beyond the cutoff is not drawn from. Left at the default, every placed waypoint is drawn from. A generated random map is always treated as marked official. A seat that named a position makes every placed waypoint eligible whatever this assignment says.
+- the number of playing houses;
+- the number of waypoints placed in an unbroken run starting at `0`.
 
-A house left over once the eligible waypoints have all been taken starts on a random cell of open ground, found as the scenario finishes loading.
+With `Official=no`, every placed waypoint from `0` to `7` is eligible.
 
-:::danger[A map that cannot host a starting position hangs the load]
-Each open-ground position is searched for until the search succeeds. On a map where no cell can take a starting position the search never ends and the scenario never finishes loading.
+For example, take a map with waypoints `0`, `1`, `2`, `5` and `6` placed, played by four houses. With `Official=yes` the cutoff is 4, so only `0`, `1` and `2` are eligible and the fourth house starts on open ground. With `Official=no`, all five waypoints are eligible.
+
+The limit does not apply when any playing seat in the [launch file](/formats/spawn-ini/#who-is-playing) names a start position. Every placed waypoint is then eligible. A generated random map counts as `Official=yes`, whatever its file sets.
+
+[The start position](/systems/starting-forces/#the-start-position) covers how houses choose among the eligible waypoints.
+
+:::danger[Leave open ground for houses without a waypoint]
+A house left without an eligible waypoint needs open ground (see [the start position](/systems/starting-forces/#the-start-position)). The game searches until it finds some, so on a map without it the scenario never finishes loading.
 :::

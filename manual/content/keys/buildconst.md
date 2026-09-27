@@ -7,8 +7,26 @@ when_omitted:
   value: ""
 ---
 
-A building of any listed type counts towards its house's construction yards. As a factory it produces only for the country its own record says it [acts as](/keys/actslike/), so a house whose yard is a later entry builds as one whose yard is entry 0 does. [`ConstructionYard=yes`](/keys/constructionyard/) on a type not listed here does not stand in for it. While [the base plan](/systems/ai-base-building/#building-the-plan) is assembled, a [`Prerequisite`](/keys/prerequisite/) naming any entry counts as already met, and the plan is seeded with the first of the listed types that the plan's candidate scan accepts. A UnitType whose [`DeploysInto`](/keys/deploysinto/) names any entry is an MCV a base-building computer house acts on. Outside a campaign game it sends one out to hunt while it owns no construction yard. An MCV standing guard is ordered to deploy instead of staying put.
+Structures of the listed types are a house's construction yards for structure production and for every effect below. [`ConstructionYard=yes`](/keys/constructionyard/) on an unlisted type gives only the behaviors that page lists.
+
+A house can build structures only while it owns a listed yard that acts for a country in the structure's [`Owner`](/keys/owner/) list, as [Ownership](/systems/production/#ownership) describes. A listed yard also produces only for the country it [acts as](/keys/actslike/), and it keeps that country when captured, so a captured yard goes on building its original owner's structures. [`MultiMCV=yes`](/keys/multimcv/) removes both restrictions.
+
+A computer house starts structures from its base plan only while it owns a listed yard. The list also shapes [a generated plan](/systems/ai-base-building/#building-the-plan):
+
+- The plan starts with the first candidate, in `[BuildingTypes]` order, that the list names.
+- A [`Prerequisite`](/keys/prerequisite/) naming a listed type always counts as met. This also holds when the house picks a base defense or an advanced power plant.
+- The planner never inserts [a power plant](/systems/ai-base-building/#power-and-money-interventions) ahead of a listed yard.
+
+A vehicle whose [`DeploysInto`](/keys/deploysinto/) names a listed type is an MCV to a computer house:
+
+- Outside a campaign game, a base-building computer house that owns no listed yard sends its MCVs on the hunt mission.
+- On the hunt mission, a computer house's MCV drives to open ground and deploys there instead of attacking.
+- A base-building computer house's MCV that is on guard tries to deploy where it stands. If the spot is refused, the MCV goes on the hunt mission outside a campaign game; in a campaign game it stays on guard and tries again.
+
+The list also decides where the [Center Base](/commands/centerbase/) command goes, whether the player hears the [low-power warning](/systems/power/#player-feedback), which vehicles the computer values as MCVs when it [aims an ion cannon](/keys/aiioncannonmcvvalue/), and where a house that [passes to the computer](/systems/ai-base-building/#where-the-plan-comes-from) centers its new plan.
 
 :::caution[Building lists are split on commas alone]
-Names are matched without regard to case, and while the value is trimmed at its ends, the split is on commas alone, so `GAPOWR, NAPOWR` looks for a type whose ID begins with a space. A name matching no BuildingType ID (an existing UnitType or InfantryType ID included) adds a new BuildingType with nothing but that name, which no house may own, instead of reporting a problem. Every building list in `[AI]` is read like this, and a scenario with its own `[AI]` section replaces each list it names.
+Names are matched without regard to case. The value is trimmed at its ends, but the split is on commas alone, so `GAPOWR, NAPOWR` looks for a type whose ID begins with a space. A name that matches no BuildingType ID adds a new BuildingType with that name. When no section of that name exists, no house may own the new type. When one does, such as a UnitType's section, it is read as a BuildingType, `Owner` included.
+
+To empty a list, write `none`. A key written with an empty value keeps the list an earlier file set. Every building list in `[AI]` is read this way, and a scenario with an `[AI]` section replaces each list it names.
 :::

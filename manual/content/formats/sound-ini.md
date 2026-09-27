@@ -20,9 +20,11 @@ source_files:
   - code/voc.cpp
 ---
 
-Startup reads `SOUND.INI` and `SOUND01.INI` into one database, the expansion's file over the base one. Either file alone is enough, and initialization stops only when neither can be read. A key both files set takes the value from `SOUND01.INI`; a key only `SOUND.INI` sets is kept. That merge covers `[General]`, `[Defaults]`, `[SoundList]` and the sound sections alike. Whether Firestorm is installed does not decide which file is read.
+The game reads `SOUND.INI` and `SOUND01.INI` at startup and combines them into one set of sound definitions. Both files are read whether or not Firestorm is installed. The `Sound` and `SoundExpansion` keys in [OPENTS.INI](/formats/opents-ini/) can name other files.
 
-`[SoundList]` values register sound IDs. The number on the left is only the entry's name; the value names the sound. Each ID names a section; a section that does not exist or has no `Sounds=` gives a sound that plays the sample of the same name with the defaults.
+Either file on its own is enough. If neither file can be read, the game does not start.
+
+Any section or key can appear in either file. When both files set the same key in the same section, the value from `SOUND01.INI` is used. A key that only one file sets keeps that file's value. This applies to `[General]`, `[Defaults]` and `[SoundList]` as well as to the sound sections.
 
 ```ini title="SOUND.INI"
 [General]
@@ -42,70 +44,57 @@ Priority=100
 [MYLOOP]
 Sounds=LOOPIN LOOPBODY1 LOOPBODY2 LOOPOUT
 Control=LOOP RANDOM ATTACK DECAY
+Loop=4
 Delay=250 750
 Range=20
 Limit=1
 ```
 
-The whole sound list is discarded and rebuilt from the merged files at startup, and the entries are registered in the order the section lists them. An ID that is already registered is filled in again rather than added a second time, so naming the same sound twice leaves one sound rather than two.
+`MYALERT` has no `Sounds=`, so it plays the sample named `MYALERT`, with priority 100 and every other value from `[Defaults]`. `MYLOOP` plays `LOOPIN`, then one of `LOOPBODY1` and `LOOPBODY2` four times with 250 to 750 milliseconds of silence between the cycles, then `LOOPOUT`. The body sample is chosen once, so all four cycles play the same one. Only one copy of `MYLOOP` plays at a time, and when it plays at a place on the map it fades out over the 20 cells beyond the edge of the view.
+
+## `[SoundList]`
+
+Each value in `[SoundList]` registers one sound ID. The name to the left of `=` only identifies the entry. Keys that name a sound use this ID, in any letter case. An unregistered name is ignored. A key that takes one sound keeps the value it had, and a list of sounds leaves the name out.
+
+A sound's settings come from the section named after its ID. Without such a section, the sound plays the sample named like the ID, with the values from `[Defaults]`.
+
+Entries merge by the name to the left of `=`, as every other key does. An entry `0=MYSOUND` in `SOUND01.INI` therefore replaces the entry named `0` in `SOUND.INI`, and the sound that the `SOUND.INI` entry named is registered only if another entry also lists it. Give entries you add to one file names the other file does not use. An entry with an empty value is ignored, so it cannot remove an entry from the other file.
+
+Sounds are numbered from 0 in the order they are registered. The `SOUND.INI` entries that `SOUND01.INI` does not replace come first, in their order, followed by every `SOUND01.INI` entry in its order. An ID listed twice is registered once, at its first position. A map trigger that plays a sound stores this number, and so does a save game for each endlessly looping sound a trigger left at a waypoint. Adding, removing or moving an entry ahead of a sound changes which sound those triggers and saves play.
 
 ## Samples
 
-A sound holds no sample from startup. Each name in its list is looked up when the sound first plays, through the ordinary file layer. A loose file in the game directory and a member of any mounted archive both serve, and the loose file wins. The formats tried, in order, are `.WAV`, `.OGG`, `.FLAC`, `.MP3` and `.AUD`. A decoded sample stays in memory while the sound plays and for as long as the memory is not needed for another. A name that resolves to nothing is skipped, and a sound whose whole list is missing plays nothing.
+Each name in [`Sounds=`](/keys/sounds/) is a sample file name without its extension. A sound without `Sounds=` has one sample, named like its ID. [Sound effects](/systems/sound-effects/#samples) gives the order in which the game tries the extensions, and covers missing samples, the size limit, and how long a decoded sample stays in memory.
+
+A loose file is used instead of an archive member with the same name and extension. The extension order comes first, so an archived `MYGUN.WAV` is used before a loose `MYGUN.AUD`.
 
 ## `[General]`
 
-`Channels=` is the number of sound effects that may play at once, from 4 to 32; 16 when the section or the key is absent. Music, speech and movie sound are outside it. When it is full, a new sound takes the voice of the sound with the lowest [`Priority=`](/keys/priority/), and among equals the quietest, but only when it outranks it.
+`[General]` holds [`Channels=`](/keys/channels/), the number of sound effects that can play at once.
 
 ## `[Defaults]`
 
-Every key of a sound section except `Sounds=` may appear here and becomes the value a sound section omits. Without the section, the engine's own defaults apply: those are the values listed under each key below.
+`[Defaults]` sets the value that every sound section uses for a key it omits. It accepts every sound-section key except `Sounds=`. A key that `[Defaults]` also omits takes the default shown for it under [Accepted settings](/formats/sound-ini/#accepted-settings).
+
+A key that a sound section sets replaces the `[Defaults]` value. The flags in `Type=` and `Control=` are not added to those in `[Defaults]`.
+
+A sound section that sets `Control=` without `Attack=` has one attack sample when its `Control=` includes `ATTACK`, and none otherwise, whatever `[Defaults]` sets for `Attack=`. `Decay=` and `DECAY` work the same way.
 
 ## Sound sections
 
-| Key | Default | Meaning |
-| --- | --- | --- |
-| [`Sounds=`](/keys/sounds/) | the section name | The samples, without extension, separated by spaces or commas; up to 32. The first `Attack=` names are attack samples and the last `Decay=` names decay samples. |
-| [`Priority=`](/keys/priority/) | `10` | A number from 0 to 255, or `LOWEST`, `LOW`, `NORMAL`, `HIGH` or `CRITICAL` for 0, 10, 50, 100 or 255. |
-| [`Volume=`](/keys/volume/) | `1.0` | A fraction of full loudness. A value above 1 is read as a percentage. |
-| [`MinVolume=`](/keys/minvolume/) | `0` | The floor a `GLOBAL` sound never drops below with distance, in the same units. |
-| [`Range=`](/keys/range/) | `28` | Cells from the edge of the view over which the sound fades to nothing. |
-| [`Limit=`](/keys/limit/) | `3` | How many of this sound may play at once; 0 for no limit. |
-| [`Loop=`](/keys/loop/) | `0` | With `LOOP`, how many times the body plays; 0 plays it until the sound is ended. `LoopLimit=` is accepted as well. |
-| [`Delay=`](/keys/delay/) | `0` | One or two numbers, the silence between loop cycles in milliseconds, drawn at random from the pair. A number with a decimal point is in seconds. With `PREDELAY` the silence comes once, before the first sample. |
-| [`FShift=`](/keys/fshift/) | `0` | One or two percentages of pitch shift, drawn once per play. A single value spans both ways. |
-| [`VShift=`](/keys/vshift/) | `0` | One or two percentages of volume change, drawn once per play. A single value quietens by up to that much; a pair is a signed range. |
-| [`Type=`](/keys/type/) | `SCREEN` | Where the sound is heard from; see below. |
-| [`Control=`](/keys/control/) | `NORMAL` | How the samples are put together; see below. |
-| [`Attack=`](/keys/attack/) | `1` with `ATTACK`, else `0` | How many leading samples are attack samples. |
-| [`Decay=`](/keys/decay/) | `1` with `DECAY`, else `0` | How many trailing samples are decay samples. |
+A sound section is read only when its name is a sound ID registered in `[SoundList]`. Its keys are listed under [Accepted settings](/formats/sound-ini/#accepted-settings), and each key's page gives its values and default.
 
-The flag values follow Yuri's Revenge, so its documentation of `Type=` and `Control=` applies. Flags are separated by spaces or commas; one the engine does not know is ignored.
+The keys and the flag names in [`Type=`](/keys/type/#scope-sounds) and [`Control=`](/keys/control/) follow Yuri's Revenge. Separate flags with spaces or commas. A flag the game does not recognize is left out. A value in which no flag is recognized still replaces the `[Defaults]` flags, leaving the sound with none.
 
-`Type=` flags:
-
-- `NORMAL` or `SCREEN`: the sound fades with the distance of its place from the edge of the view, vertical distance counting double, and is panned by where that place is across the view.
-- `LOCAL`: as `SCREEN`, but measured from the center of the view.
-- `GLOBAL`: the fade stops at `MinVolume=`.
-- `SHROUD` or `UNSHROUDED`: silent unless the cell of its place has been revealed.
-- `SHROUDED`: silent unless the cell of its place is still unrevealed.
-- `UNSHROUD`, `VIOLENT`, `MOVEMENT`, `QUIET`, `LOUD`, `PLAYER`, `NOISE_SHY`, `GUN_SHY` and `AMBIENT` are read and kept but decide nothing.
-
-`Control=` flags:
-
-- `NORMAL`: one sample, played once.
-- `LOOP`: the body repeats, `Loop=` times or until ended.
-- `RANDOM`: the body is one sample drawn at random, the same one for every cycle of a loop.
-- `SEQUENTIAL`: the body is the next sample in turn each time the sound plays.
-- `ALL`: the body is every body sample in order. `ALL` wins over `RANDOM`, which wins over `SEQUENTIAL`.
-- `PREDELAY`: the `Delay=` silence comes before the first sample instead of between cycles.
-- `INTERRUPT`: when `Limit=` is reached by a sound as loud as the new one, the oldest gives way instead of the new one being refused.
-- `ATTACK`, `DECAY`: the list has attack or decay samples; `Attack=` and `Decay=` say how many.
-- `QUEUE`: a sound refused for want of a voice or by `Limit=` waits up to two seconds for one instead.
-- `AMBIENT` is read and kept but decides nothing.
+[Sound effects](/systems/sound-effects/) explains how the keys work together when a sound plays: which samples play, how a sound at a place on the map fades and pans, and how sounds compete for voices.
 
 ## Files written for Tiberian Sun
 
-The shipped `SOUND.INI` and `SOUND01.INI` hold `[SoundList]` and one section per sound with at most `Priority=`, and they read unchanged. An integer priority is kept as written, so the order in which those sounds give way to one another is what it was. Every other key takes its default, so such a sound is a one-shot at full volume that fades from the edge of the view over 28 cells, with three copies allowed at once. Sections copied from a Yuri's Revenge file read as well, with two differences: `Volume=1` is full volume rather than one percent, and a `Delay=` without a decimal point is in milliseconds.
+The sound files shipped with Tiberian Sun and Firestorm read without changes. Their sound sections set at most `Priority=`. An integer priority is kept as written, so a sound with a higher number still wins a voice over one with a lower number. Every other key takes its default. Each shipped sound is therefore a one-shot at full volume, with up to three copies playing at once. When it plays at a place on the map, it fades out over the 28 cells beyond the edge of the view.
 
-Earlier OpenTS releases and the original game read `Volume=` as a multiplier and let a value above 1 make a sound louder than its sample. That value is now a percentage, so `Volume=2` is two percent. Remove such values or write `Volume=100`.
+Sections copied from a Yuri's Revenge file also read, with two differences:
+
+- `Volume=1` is full volume, where Yuri's Revenge reads it as one percent.
+- A `Delay=` number without a decimal point is in milliseconds. Write a delay in seconds with a decimal point, such as `Delay=5.0 15.0`.
+
+A `Volume=` above 1 written for an earlier OpenTS release now reads as a percentage; [`Volume=`](/keys/volume/) explains what to change.

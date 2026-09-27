@@ -7,8 +7,11 @@ when_omitted:
   value: "4"
 ---
 
-A house whose [`IQ`](/keys/iq/) is below this level puts idle objects into plain Guard, which scans only out to the object's guard radius and holds position. At or above it an object takes Area Guard instead, which scans out to twice the guard range from the spot it was left at and pursues what it finds. When the guard range is unset, the scan falls back to twice the longer weapon range.
+A computer house whose [`IQ`](/keys/iq/) is at least this level sends its idle infantry and vehicles to Area Guard instead of Guard. Area Guard scans out to the area radius from the spot where the object was left and pursues what it finds. Guard scans only out to the guard radius. [Scan radius](/systems/target-selection/#scan-radius) gives both distances.
 
-Only the infantry path tests for a weapon. An infantry unit takes Area Guard for having one, an unarmed engineer and an unarmed vehicle thief take it as well, and any other unarmed soldier takes plain Guard. A vehicle takes Area Guard whatever it is armed with. A member of a team always takes plain Guard.
+A member of a team always takes Guard. Outside a team, the level applies differently to infantry and vehicles:
 
-A vehicle holding the `GUARD_AREA` ability takes Area Guard whatever the level says. For infantry the test is computer-only, but the vehicle path has no such gate: a human house whose map-given `IQ` reaches this level sends its idle vehicles into Area Guard too.
+- **Infantry.** Only a computer house's infantry is tested. At or above the level, an armed soldier, an engineer or a vehicle thief takes Area Guard, and any other unarmed soldier takes Guard. A human house's infantry takes Area Guard only through the `GUARD_AREA` [veterancy ability](/systems/veterancy/#abilities), whatever the house's `IQ`.
+- **Vehicles.** An armed vehicle takes Area Guard when its house reaches the level or when it holds the `GUARD_AREA` ability. An unarmed vehicle is never sent to Area Guard.
+
+The vehicle test does not check who owns the vehicle. A human house whose map sets its `IQ` to this level or higher sends its idle armed vehicles to Area Guard as well.

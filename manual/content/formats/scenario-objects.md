@@ -31,24 +31,41 @@ related:
   id: UseMPAIBaseNodes
 ---
 
-Scenario INI files store placed objects as comma-separated entries in `[Units]`, `[Infantry]`, `[Aircraft]`, and `[Structures]`. Every row begins with an owner, an ObjectType ID, and strength; the remaining positional fields hold the location, facing, mission, tag, and type-specific state. The engine writes each section entry name as that row's own number, while the loader ignores the name and processes rows in their section order.
+Scenario INI files store placed objects as comma-separated rows in `[Units]`, `[Infantry]`, `[Aircraft]`, and `[Structures]`. Every row begins with the owner, the ObjectType ID, and the strength, where `256` is undamaged. The location comes next: X and Y fields when [`NewINIFormat`](/keys/newiniformat/) is 4 or higher, or a single cell number, Y × 128 + X, in older layouts. The fields after the location differ by section, and a `[Structures]` row has no mission field.
+
+The loader reads rows in section order and ignores their keys. Still give each row a distinct key: a repeated key replaces the earlier row and moves it to the end of the section, as [INI syntax](/formats/ini-syntax/#repeats-and-later-files) describes.
+
+In a campaign, every vehicle, infantry, and aircraft starts the mission its row names. Outside a campaign, only objects owned by a human player start their mission, and the rest start idle.
 
 ## Runtime owners
 
-A HouseType definition and a live house are different things. Rules can register a HouseType that the current campaign or multiplayer session never instantiates. A vehicle, infantry, aircraft, or structure row is created only when its first field names a registered HouseType with a live house in the current session, or a [spawn house](#spawn-houses) whose position somebody holds. The row is skipped before an object is allocated when its owner is unknown or has no live house. The type, location, and remaining fields are not used. Other validation, including whether the object can be placed at its requested location, still applies afterwards, and an object that cannot be placed is deleted. Every machine in a multiplayer game creates the same rows, the ones owned by the house it plays included.
+An object row creates an object only when its owner names a house playing in the current game. The owner can be written two ways:
 
-Trigger definitions in `[Triggers]` use the same live-owner rule, and a trigger is bound to the live house it resolved to as the scenario loads. The legacy `<none>` owner selects the first house type the rules register and is accepted only when that house has a live instance. Trigger names are registered before their bodies are read so links may point forward, but a definition whose owner does not resolve is deleted. A link naming a missing or rejected definition remains empty, and a `[Tags]` row naming one receives no trigger and remains inert. Owner names resolve only through registered HouseTypes, the houses in the session, and the spawn houses below.
+- A country, by its ID or its [`Name=`](/keys/name/) string. It names the first house in the game that plays that country. A country that the rules define but nobody plays in this game names no house.
+- A [spawn house](#spawn-houses), which names the house that starts at that position.
+
+A row is skipped when its owner names no house or its ObjectType ID names no type of that section's kind. Nothing is created and the rest of the row is not read. An object that is created but cannot be placed at its location is deleted.
+
+`[Triggers]` definitions follow the same owner rule. They also accept the owner `<none>`, which names the house playing the first country the rules register. A definition whose owner names no house is deleted.
+
+A trigger can link to a definition that appears later in `[Triggers]`. A link to a definition that is missing or was deleted stays empty. A `[Tags]` row that names such a definition has no trigger and never fires.
 
 ## Spawn houses
 
-A spawn house names whoever starts at one of the eight numbered start positions, waypoints `0` through `7`. It is written `Spawn1` through `Spawn8` or `<Player @ A>` through `<Player @ H>`. Both spellings mean the same position, are matched without regard to case, and must be spelled exactly, so `Spawn 1` and `Spawn9` name nothing. No HouseType is registered under these names and a scenario cannot define one. Which house holds each position is settled as the scenario loads, before any team, trigger, or object row is read. A spawn owner therefore resolves to the house that starts there. [Starting forces](/systems/starting-forces/#the-start-position) owns how positions are handed out. An observer and a house of a passive country never hold one, and a campaign never assigns any.
+A spawn house names whoever starts at one of the eight numbered start positions, waypoints `0` through `7`. It is written `Spawn1` through `Spawn8` or `<Player @ A>` through `<Player @ H>`, so `Spawn1` and `<Player @ A>` both name waypoint `0`. Case does not matter, but the spelling must be exact: `Spawn 1` and `Spawn9` are read as country names. Spawn house names are checked before country names, so a country called `Spawn1` cannot be named that way.
 
-A vehicle, infantry, aircraft, or structure row owned by a spawn house is created for that house. A spawn house nobody holds, such as `Spawn3` in a two-player game, resolves to nothing. The row is skipped like any other row without a live owner. A `[Triggers]` definition owned by it is deleted, and a [TeamType](/keys/house/) owned by it raises no team. Each owner dropped this way is written to the debug log.
+In a skirmish or multiplayer game, start positions are assigned as the scenario loads, before any team, trigger, or object row is read. A spawn house in any of those rows therefore names the house that starts at that position. [Starting forces](/systems/starting-forces/#the-start-position) explains how positions are assigned. An observer, or a house whose country sets [`MultiplayPassive`](/keys/multiplaypassive/), never holds a position, and no house holds one in a campaign.
 
-A spawn house may also have a section of its own, `[Spawn1]` through `[Spawn8]`, read for the house holding that position once positions are settled. It sets [`Allies=`](/keys/allies/) in every skirmish or multiplayer game, and the base node keys, [`NodeCount`](/keys/nodecount/) with its numbered entries, when the map sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/). A section for a position nobody holds is ignored, and the engine does not write these sections back.
+A spawn house that nobody holds, such as `Spawn3` in a two-player game, names no house. Object rows it owns are skipped, and `[Triggers]` definitions it owns are deleted. A TeamType whose [`House=`](/keys/house/) names it creates no team through a trigger action. The [AI trigger pass](/systems/ai-team-production/#from-suggestion-to-team) can still raise that team, and the team then belongs to the house running the pass.
 
-Trigger event, trigger action, and team mission parameters that take a house by number accept `50` through `57`, or `4475` through `4482`, as `Spawn1` through `Spawn8`. Any other number that is not the index of a registered HouseType names nothing, `58` through `60` included. An event that needs the house never trips, and an action or mission that needs it does nothing. When the engine writes a scenario, a spawn owner is written as the country of the house it resolved to.
+A scenario can add a section named after a spawn house, `[Spawn1]` through `[Spawn8]`, to configure the house that holds that position. The section is ignored when nobody holds the position. It can set [`Allies=`](/keys/allies/). When the map sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/), it can also set the base nodes: [`NodeCount`](/keys/nodecount/) and its numbered entries.
+
+Trigger events, trigger actions, and team script missions that take a house by number read `50` through `57`, and `4475` through `4482`, as `Spawn1` through `Spawn8`. Any other number selects the country with that index, so `58` through `60` have no special meaning.
+
+A house number can name no house, because nobody holds the position or nobody plays the country. What happens then depends on the entry. Some events are never satisfied and others are always satisfied. Most actions and missions do nothing, but [Winner is...](/mapping/actions/taction-win/) makes the player lose and [Loser is...](/mapping/actions/taction-lose/) makes the player win. Each entry's page states its case.
 
 ## Vehicle follower IDs
 
-The follower field, which follows the flag marking a `[Units]` row as standing on a bridge, is the zero-based source-row position of the vehicle that follows it, or `-1` for no follower. OpenTS resolves these links only after every unit row has been considered. Each successfully placed vehicle remains mapped to its original section position, so rejecting an earlier row does not renumber the rows after it. A follower position that is negative, outside the section, skipped for its owner or type, or rejected during placement produces no link. It is never redirected to whichever vehicle happened to occupy the compacted runtime list position.
+The follower field comes after the on-bridge flag in a `[Units]` row. It holds the zero-based position, within `[Units]`, of the row whose vehicle follows this one, or `-1` for none. Positions count every row in section order, including rows that were skipped or could not be placed, so a rejected row does not shift the positions after it. The follower can be an earlier or a later row.
+
+No link is made when the position is negative, past the end of the section, or names a row whose vehicle was not created or could not be placed.

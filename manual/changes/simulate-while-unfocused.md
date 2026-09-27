@@ -11,4 +11,4 @@ credit: [ZivDero, dkeeton]
 
 `SimulateWhileUnfocused=yes` under `[Options]` in `sun.ini` keeps a campaign or skirmish running while another program has the focus, without sound or input.
 
-Returning to a paused game is also quicker: the game now checks for the focus every 10 milliseconds instead of every 500.
+Without the setting, a campaign or skirmish still stops while out of focus, but it resumes sooner when the player returns: the game now checks for the focus every 10 milliseconds instead of every 500.

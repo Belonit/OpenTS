@@ -13,8 +13,10 @@ targets:
 credit: [ZivDero]
 ---
 
-A distribution can now sort its files into folders and name them in an `OPENTS.INI` beside its game data. With no such file the game searches `INI`, `MIX` and `Maps`, so a deployment sorted that way needs no configuration.
+A deployment can now keep its files in folders and list them in `SearchPaths` under `[Paths]` in `OPENTS.INI`. Without that setting the game searches the `INI`, `MIX` and `Maps` folders, so a deployment sorted into those folders needs no configuration.
 
-A wildcard search stopped at the first folder holding a match. Rules files, battle files, map packets, loose maps, and the map and movie archives are now gathered across every searched folder in a fixed order. Which copy of a repeated name is used no longer depends on the file system. The loose `PATCH.MIX` and `EXPAND??.MIX` archives are looked for in every searched folder rather than the game's own directory alone, and are still required to be loose.
+A search by file pattern used to stop at the first folder holding a match. The searches for rules files, campaign files, map packs, loose multiplayer maps, and map and movie archives now collect matches from every searched folder. A name found in more than one folder is taken from the folder searched first, whatever order the file system lists files in. The loose `PATCH.MIX` and `EXPAND??.MIX` archives are now found in any searched folder, where only the game's own directory used to count, and are still never read from inside another archive.
 
-The settings file, the hotkey file, the hall of fame and a saved random map were opened through the search before being written. A copy shipped in a searched folder could therefore be overwritten, and the hotkey reset could delete it. The game now never writes into or deletes from a searched folder. The settings written when the intro is first shown are saved again. Reopening the file for reading beforehand had left the save with a file it could not write through.
+The settings file, the hotkey file, the hall of fame and a saved random map used to be written back to whichever copy the search found. A copy shipped in a searched folder could therefore be overwritten, and resetting the hotkeys could delete it. The game now writes and deletes files only in the user data directory, or in the game's own directory when there is none.
+
+When the first-run intro is due, the game now saves `PlayIntro=no` under `[Intro]` in the settings file, so the intro plays only once. That save used to fail, so the intro played again at every start.

@@ -6,13 +6,15 @@ see_also: ["system:difficulty"]
 when_omitted:
   kind: value
   value: "1"
-  note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section without this key restores 1 rather than keeping the earlier value.
+  note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section but not this key resets the figure to 1.
 ---
 
-`[Easy]`, `[Normal]` and `[Difficult]` each set their own figure, and a house takes the one for [the difficulty slot it is assigned](/systems/difficulty/#from-the-setting-to-a-slot). Damage arriving at one of that house's objects is divided by this figure together with the object's own armor multiplier, not multiplied, so a figure above 1 makes the house tougher and one below 1 more fragile. The division runs only on positive damage the source has not forced through. It lands ahead of the veteran armor bonus and of type immunity, and the result of both reductions is floored at 1, so no figure here can bring incoming damage to nothing.
+Damage to a house's vehicles, infantry, aircraft and structures is divided by this figure, so a figure above 1 makes the house tougher and one below 1 more fragile. `[Easy]`, `[Normal]` and `[Difficult]` each set a figure, and a house uses the one for [the difficulty slot it is assigned](/systems/difficulty/#from-the-setting-to-a-slot).
 
-The product is worked out once, when the house is given its slot, alongside the [country's own figure](/keys/armor/#scope-housetype) outside campaign games. In a campaign game the country's figure is dropped and this one stands alone.
+Outside a campaign, the figure is multiplied by the house's [country `Armor=`](/keys/armor/#scope-housetype) when the house is given its slot. In a campaign, the country figure is ignored and this one is used alone. [How the figures are combined](/systems/difficulty/#how-the-figures-are-combined) covers both cases.
+
+The division skips healing and forced damage. Any armor crate bonus the object has picked up divides the damage in the same step, and the veteran armor bonus divides it afterward. If these divisions leave less than one point, the hit deals one point, so no figure here can reduce a hit to nothing. [What the target loses](/systems/warheads/#what-the-target-loses) lists the remaining steps.
 
 :::caution[A zero makes the house nearly invulnerable]
-The figure is a divisor. The difficulty sections start at zero and are read only out of a file that contains them. A rules tree in which one of the three sections never appears leaves that slot at zero, as does assigning `0` directly. Every hit a house in that slot takes then divides by zero, and the result lands below the floor the engine applies afterwards. Each hit costs exactly 1 point of strength however heavy the shot was.
+Keep all three difficulty sections present and the figure above `0`. A difficulty section missing from every rules file leaves its figure at `0`, and so does writing `0` directly. A house in that slot has every hit cut to one point before the warhead's [`Verses`](/keys/verses/) apply, so even the heaviest shot deals no more than a one-point hit would.
 :::

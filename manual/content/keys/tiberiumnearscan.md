@@ -1,10 +1,15 @@
 ---
 key: TiberiumNearScan
-summary: Distance a harvester searches for more Tiberium once it is already working a field.
+summary: Distance a harvester searches for the next Tiberium cell once the cell it is working runs out.
 see_also: ["system:tiberium", "TiberiumFarScan"]
 when_omitted:
   kind: value
   value: "6"
 ---
 
-The value is given in cells, with fractions accepted, and sets the limit of the outward ring search, so the default reaches 5 cells from the harvester. The outermost ring searched sits one cell inside the value, after the value is truncated to whole cells. It applies after a cell runs out: a harvester with room left hops to the nearest patch inside it, and a full one records that patch as the place to come back to. The same figure bounds a [weeder's](/systems/veins/) search for veins.
+A harvester that has emptied its cell, or has just filled up, searches for Tiberium up to one cell less than this distance. The value is in cells and is truncated to a whole number, so the default `6` reaches 5 cells from the harvester.
+
+- A harvester with room left drives to the cell the search finds. If the search finds nothing, it heads home with a partial load.
+- A full harvester records the cell the search finds as the patch to drive back to after unloading, then heads home.
+
+A [weeder](/systems/veins/) uses the same limit while it works a field of veins. [Loading](/systems/tiberium/#loading) describes the harvesting cycle around these searches.

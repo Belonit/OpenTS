@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-A vehicle whose weapon repairs its own side now shows the deploy cursor over itself, so clicking it deploys it. It used to show a plain select cursor. No shipped vehicle both repairs and deploys.
+A vehicle that can deploy and whose weapon repairs allied units used to show the select cursor over itself, so clicking it did not deploy it. It now shows the deploy cursor, or the no-deploy cursor where it cannot deploy, as other deployable vehicles do. No shipped vehicle both repairs and deploys.

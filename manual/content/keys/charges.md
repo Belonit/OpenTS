@@ -7,17 +7,38 @@ when_omitted:
   value: "no"
 ---
 
-The flag is read on structures only, and only in the first weapon slot. A structure holding a charging weapon there refuses every shot until it is charged, so the wind-up sits in front of the shot rather than behind it as a reload would.
-
-Charging begins once the structure has a target, its house has full power and the structure is switched on, and it is barred while the structure is still building itself. [`TurretChargeAnimRate`](/keys/turretchargeanimrate/) covers the pace of the wind-up, which completes when the turret animation reaches its loop-end frame. The stage count is kept separately from the animation, so an animation cycling on its own neither delays the charge nor blocks the shot. Losing the target, dropping below full power or switching the structure off discharges it, and the wind-up starts again from nothing when the conditions return.
-
-Firing does not always spend the charge. Only an [`IsLaser=yes`](/keys/islaser/) weapon discharges the turret, and only when the structure is down to its last round. An [`Ammo`](/keys/ammo/) left unset counts as the last round, since an unlimited pool is stored as a count below zero. A structure with a stock of rounds keeps its charge until the last of them. A charging weapon that draws no laser never discharges by firing at all: it winds up once and then pays only [`ROF`](/keys/rof/) between shots for as long as it holds its target.
+A structure with a `Charges=yes` weapon in its first weapon slot must charge its turret before it can fire. Each wind-up adds its time to the weapon's reload delay.
 
 ```ini title="rules.ini"
-[MyObelisk] ; example WeaponType
+[MyChargeLaser] ; example WeaponType
 Charges=yes
 IsLaser=yes
 ROF=120
 ```
 
-The flag has no effect on a vehicle, an infantry or an aircraft. Such an object fires the weapon at once and pays only its ordinary reload.
+The flag works only on structures and only in the first weapon slot. A vehicle, infantry or aircraft with the weapon fires at once and pays only its ordinary reload.
+
+## Starting and losing the charge
+
+The structure starts charging when all of these hold:
+
+- it has a target, and one of its weapons could fire at that target once the turret faced it;
+- its reload delay has run out;
+- its house has full power, and the structure is switched on;
+- it is not still being built.
+
+The weapon test in the first condition includes range, whether the weapon can hit an air or ground target, [ion storms](/keys/ionsensitive/), and cloaking of the structure or its target. It ignores ammunition, so a structure with no rounds left still charges.
+
+Charging plays the structure's [`TurretAnim`](/keys/turretanim/) and the [`TeslaCharge`](/keys/teslacharge/) sound. [`TurretChargeAnimRate`](/keys/turretchargeanimrate/) sets how long the wind-up takes.
+
+If the structure loses its target, its house drops below full power, or the structure is switched off, the turret discharges. It charges again from the start once the conditions return.
+
+:::danger[Give the structure a turret animation]
+A charging structure needs a `TurretAnim` that names a registered AnimType, and a `TurretAnimDamaged` that does too if it can charge while damaged. Otherwise the game crashes when the structure starts charging. [`TurretAnim`](/keys/turretanim/) gives the details.
+:::
+
+## When a shot spends the charge
+
+Only an [`IsLaser=yes`](/keys/islaser/) weapon spends the charge, and only when the structure fires its last round. A structure with the default unlimited [`Ammo`](/keys/ammo/) counts every shot as its last, so it recharges before each shot. A structure with a stock of rounds keeps its charge until it fires the last one.
+
+A charging weapon that is not a laser never spends its charge by firing. The structure winds up once, then fires at its ordinary reload rate for as long as it keeps its target.

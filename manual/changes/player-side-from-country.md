@@ -13,4 +13,6 @@ targets:
 credit: [ZivDero]
 ---
 
-A mission's art, interface and voices now follow the side of the country `Player=` names, and in a lobby game they follow the side of the country the player chose. The choice was a text comparison against `GDI`: anything else, a third country included, was presented as Nod. A third side could be reached only by naming it in `SpeechSide=`, and only for voices. A side without archives of its own is presented with the first side's instead of abandoning the load. A saved game now records the player's country and its side in place of a flag.
+A mission's artwork, interface and voices now follow the side of the country that `Player=` names in the scenario's `[Basic]` section, and in a skirmish or network game the side of the country the player chose. Only GDI or Nod could be presented before: a mission checked whether `Player=` said `GDI`, a skirmish or network game used a GDI-or-Nod choice, and a country on a third side was presented as Nod. `SpeechSide=` in a campaign mission's `[Basic]` section, which picks the side whose voices play, could reach a third side, but only for voices. A saved game now records the player's country and side, so it loads with the same presentation.
+
+A side whose archives are missing is now presented with the first side's archives. The scenario or saved game used to fail to load.

@@ -8,8 +8,8 @@ when_omitted:
   value: ""
 ---
 
-Scorch marks are not chosen from this list. When an animation that scorches the ground settles on it, the engine gathers every registered smudge type with [`Burn=yes`](/keys/burn/) that will fit the cell. It weighs the size of the marks against the size of the blast and picks one of the survivors at random. A smudge type reaches that pool through its own setting alone, whether or not it is named here.
+The game does not choose scorch marks from this list. Wherever an animation or a destroyed structure scorches the ground, the game gathers every smudge type with [`Burn=yes`](/keys/burn/) that fits the spot. It prefers the marks whose size suits the blast and picks one of them at random. If none suits the blast, it picks from all the marks that fit the spot. A smudge type joins that pool through `Burn=yes` alone, whether or not this list names it.
 
-The section sets five of these lists (this one and [`Scorches1`](/keys/scorches1/) through [`Scorches4`](/keys/scorches4/)), and each is stored in its own place. Nothing reads any of them, and nothing distinguishes one from another.
+The section holds five of these lists: this one and [`Scorches1`](/keys/scorches1/) through [`Scorches4`](/keys/scorches4/). None of them is used.
 
-Naming a smudge the game does not already know still registers one of that name, so an entry here can add an artless smudge type to the game without the list ever placing it.
+Naming a smudge type the game does not know yet, in any of the five lists, still registers a smudge type of that name. The list never places it.

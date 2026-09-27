@@ -7,6 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-When a target scan arrives with no target category of its own, each of the object's weapon slots contributes the categories its projectile allows. A projectile marked anti-vehicle contributes vehicles and returns immediately, so [`AA`](/keys/aa/) and [`AG`](/keys/ag/) on that same projectile contribute nothing at all.
+When an object scans for a target, its primary and secondary weapons can add the kinds of target their projectiles are able to attack. A weapon whose projectile is `AV=yes` adds vehicles only. [`AA`](/keys/aa/) and [`AG`](/keys/ag/) on that projectile then add nothing to the scan.
 
-That is the whole of the setting. It places no restriction on what the weapon may fire at: a target reached by an order, a team script or retaliation is still governed by `AA` and `AG`.
+Infantry and vehicles add their weapons' kinds only when the scan names no kind. Structures always add them, and aircraft never do. [What each kind of object considers](/systems/target-selection/#what-each-kind-of-object-considers) gives the full rules.
+
+`AV` does not limit what the weapon may fire at. A target from any other source, such as a player's order, a team script or retaliation, is checked against `AA` and `AG` only.

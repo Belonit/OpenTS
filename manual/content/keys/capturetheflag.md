@@ -8,14 +8,8 @@ when_omitted:
   value: "no"
 ---
 
-As the rules are read, the value seeds a multiplayer session option of the same name, alongside the other `[MultiplayerDefaults]` options. That option is sent to the other machines during setup and a guest takes the host's, but nothing writes it into the scenario flag the game logic reads.
+`CaptureTheFlag` sets the starting value of the multiplayer capture-the-flag option, like the other `[MultiplayerDefaults]` options. The option is shared with the other players during setup, and a guest takes the host's value. The game never copies it into the scenario setting that turns the mode on, and no scenario file sets that either, so capture-the-flag stays off in every game.
 
-:::caution[The mode cannot be turned on]
-The scenario flag starts false and no routine sets it. The one screen that used to write it belonged to modem play and went with it, and no scenario file sets the flag either.
-:::
+Part of the mode remains in the engine. If it were on in a game with [`Bases`](/keys/bases/) on, each house's [`BaseUnit`](/keys/baseunit/) would carry that house's flag from the start. Carrying a flag halves a vehicle's speed and stops it from cloaking fully, so it shimmers instead. The flag drops onto the ground when the vehicle deploys or is otherwise taken off the map, and a house that is defeated loses its flag.
 
-With the flag on, and with [`Bases`](/keys/bases/) on as well, each house's [`BaseUnit`](/keys/baseunit/) is given that house's own flag as it is placed. Carrying it halves the unit's speed and stops it cloaking (it shimmers instead), and the flag drops back onto the ground when the unit deploys or is otherwise taken off the map. A house that is defeated has its flag taken away.
-
-:::caution[Nothing captures a flag]
-No routine moves a flag from one house to another, and no victory condition reads one. Turning the mode on would mark the starting base units and slow them down; the contest the name describes is not in the engine.
-:::
+Nothing moves a flag from one house to another, and no victory condition checks flags. The contest the name describes does not exist in the engine.

@@ -1,24 +1,38 @@
 ---
 key: Cyborg
-summary: Lets the soldier survive a killing hit on its stumps, and exposes it to EM pulses.
+summary: Lets a standing soldier survive a killing hit and crawl on, and exposes it to EM pulses.
 see_also: [Strength, BerzerkAllowed, ConditionRedSparkingProbability, CollateralDamageCoefficient, "system:emp-pulse"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-Damage that would take a standing cyborg to zero strength does not kill it. Its strength is set to a quarter of its [`Strength`](/keys/strength/) instead, never below `1`. The reprieve forces it prone and into the crawl animation, and `[AudioVisual] InfantryExplode` plays at its position. The hit is reported as the transition into condition red rather than as a destruction, so nothing that watches for a kill sees one. Damage delivered as unavoidable, such as the impact that kills anything dropped from a height, skips all of that and kills outright.
+## Surviving a killing hit
 
-Once it is prone the reprieve is spent: the next killing hit plays [`InfantryExplode`](/keys/infantryexplode/) again and removes the soldier immediately, with no death animation and no corpse.
+A standing cyborg is not killed by damage that would take it to zero strength. Instead:
 
-Two more behaviors attach to the flag. With [`BerzerkAllowed=yes`](/keys/berzerkallowed/) in `[CombatDamage]`, the hit that first takes a cyborg below half strength turns it berzerk once and puts it on Area Guard; a berzerk soldier [ignores allegiance](/systems/target-selection/#why-a-candidate-is-rejected) when it picks targets. And a cyborg is the only infantry an [EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) stuns; ordinary soldiers walk through one untouched.
+- its strength is set to a quarter of its [`Strength`](/keys/strength/), and never below `1`;
+- [`InfantryExplode`](/keys/infantryexplode/) plays at its position;
+- it drops prone and starts to crawl.
 
-The flag also settles two type-level figures as the section is read. It is what makes an InfantryType eligible for [damage sparks](/keys/conditionredsparkingprobability/) at all, and it selects the starting [`CollateralDamageCoefficient`](/keys/collateraldamagecoefficient/).
+The hit counts as a drop into condition red, not as a kill, so nothing that reacts to a destruction sees one.
 
-:::caution[A prone cyborg does not get up when re-ordered]
-Ordering a prone soldier of a player-controlled house to the same destination twice normally makes it stand and run. A cyborg is excluded from that, as a [`Fraidycat=yes`](/keys/fraidycat/) soldier is, so it crawls the whole way.
-:::
+A prone cyborg gets no reprieve. The next killing hit plays `InfantryExplode` and removes the soldier at once, with no death animation and no corpse. The exception is a cyborg knocked off a height that dies just above water, which leaves a splash instead. [`InfantryExplode`](/keys/infantryexplode/) lists the order of these cases.
 
-:::caution[The collateral figure is chosen before the flag is read]
-The shared object-type block runs before an InfantryType reads its own flags, so the coefficient is picked from the value the flag held on the *previous* rules layer. A section that first declares `Cyborg=yes` is given the non-cyborg figure of `0.66` on that pass and only takes `0.33` on a later layer that contains the section again. A layer is one pass of the whole type read: the main rules file first, then any language and Firestorm rule files, then the scenario's own INI when the scenario loads. Writing [`CollateralDamageCoefficient`](/keys/collateraldamagecoefficient/) in the same section settles it either way, because that key is read immediately afterward.
-:::
+Forced damage, such as Tiberium damage to a soldier standing in it, skips the reprieve even for a standing cyborg. The soldier is removed at once and leaves no corpse. A warhead with [`InfDeath`](/keys/infdeath/) `3`, `4` or `5` still plays its death animation, and a laser fence kill plays the electrocution animation. `InfantryExplode` also plays if the soldier was falling.
+
+## Getting up again
+
+A human player's prone infantry normally stands and runs when ordered twice to the same destination. A cyborg does not, so it crawls the whole way. A [`Fraidycat=yes`](/keys/fraidycat/) soldier is excluded the same way.
+
+A cyborg stands up again only as its fear wears off. A type that sets [`Fearless=yes`](/keys/fearless/) never gains fear, so after the reprieve it crawls until it dies. A cyborg type without `Fearless=yes` gains fear from hits like other infantry. Fear can drop it prone, and a killing hit on it then gets no reprieve. It stands up once its fear falls low enough, and a standing cyborg can survive another killing hit.
+
+## Other effects
+
+With [`BerzerkAllowed=yes`](/keys/berzerkallowed/) in `[CombatDamage]`, a cyborg can go berserk once, on a hit that takes it below half strength, and then switches to Area Guard. `BerzerkAllowed` covers which hits count. A berserk soldier [ignores allegiance](/systems/target-selection/#why-a-candidate-is-rejected) when it picks targets.
+
+A cyborg is the only infantry an [EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) stuns.
+
+`Cyborg=yes` is the only way to give an InfantryType [damage sparks](/keys/conditionredsparkingprobability/).
+
+It also selects a lower starting [`CollateralDamageCoefficient`](/keys/collateraldamagecoefficient/) for the type, except on the first rules layer that names the section. That key's page gives both values. A section that writes `CollateralDamageCoefficient` gets that value only on that rules layer, so repeat the key in every rules file that names the section.

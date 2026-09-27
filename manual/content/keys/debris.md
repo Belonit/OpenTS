@@ -8,4 +8,6 @@ when_omitted:
   note: An empty list, which leaves nothing behind after a chain reaction.
 ---
 
-An animation with [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) clears the Tiberium in the cell it occupies. One time in three it also creates one entry of this list, picked at random, ten leptons above the cell and recolored through the type's [`Color`](/keys/color/#scope-tiberium). That is the only path that reads the list; an empty list simply leaves nothing behind.
+When an animation with [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) clears a cell of this type, it has a one-in-three chance of leaving one animation from this list, picked at random. The debris starts 10 leptons above the animation's position and is recolored with the type's [`Color`](/keys/color/#scope-tiberium).
+
+A cell that detonates through an overlay's [`ChainReaction=yes`](/keys/chainreaction/) leaves no debris.

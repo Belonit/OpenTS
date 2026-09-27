@@ -7,9 +7,11 @@ when_omitted:
   value: ".05"
 ---
 
-A sweeping beam adds [`SpotlightAcceleration`](/keys/spotlightacceleration/) to its turn rate every frame for as long as the rate is still below this figure, in whichever direction it is traveling. The test is made before the step, so the rate settles at the first value that reaches or passes this figure. It can end up one acceleration step beyond it: with both keys left at their defaults, the rate settles at `.055`.
+`SpotlightSpeed` is the top turn rate of a sweeping spotlight, in radians per frame. Only a structure whose type sets [`HasSpotlight=yes`](/keys/hasspotlight/) has a beam.
 
-A beam [set to circle its structure](/mapping/actions/taction-change-spotlight-behavior/) reads the figure differently. It reads neither the acceleration nor [`SpotlightAngle`](/keys/spotlightangle/), and advances four times this figure in radians every frame, wrapping at a full turn. At the `.015` the shipped rules set, such a beam comes round in about a hundred and five frames. The beam itself belongs to a structure whose type sets [`HasSpotlight=yes`](/keys/hasspotlight/).
+A sweeping beam speeds up by [`SpotlightAcceleration`](/keys/spotlightacceleration/) each frame, in either direction, until its rate reaches this value. The rate is checked before each increase, so the final rate can exceed this value by up to one acceleration step. With both keys at their built-in values, the rate settles at `.055`.
+
+A beam [set to circle its structure](/mapping/actions/taction-change-spotlight-behavior/) turns at four times this value every frame from the start. It uses neither `SpotlightAcceleration` nor [`SpotlightAngle`](/keys/spotlightangle/). At the `.015` the shipped rules set, a circling beam completes a turn in about 105 frames.
 
 ```ini title="rules.ini"
 [General]

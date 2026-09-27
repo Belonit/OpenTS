@@ -7,18 +7,20 @@ when_omitted:
   value: ".5"
 ---
 
-The value is a fraction, weighed against a random figure between 0 and 1 and passing only while it is the larger, so `0` never produces a crew. The roll is taken once and yields at most one soldier, whose type comes from [`Crew`](/keys/crew/) or [`Technician`](/keys/technician/). That soldier appears at the wreck with a strength between 5 and half its own maximum, hunting for a computer house and standing guard for a human one.
+The value is a probability from `0` to `1`: `.5` gives an even chance, and `0` never produces a crew. A destroyed vehicle rolls once and produces at most one soldier, whose type comes from [`Crew`](/keys/crew/) or [`Technician`](/keys/technician/). The soldier appears at the wreck with strength between 5 and half its type's maximum. It hunts for a computer house and stands guard for a human one.
 
-Only a vehicle reaches the roll, and only under **All of:**
+A vehicle takes the roll only when **all of** these hold:
 
-- the hit that destroyed it was not flagged as leaving no crew (an energizing laser fence, a collapsing bridge and a crashing aircraft all set that flag);
-- it is [`Crewed=yes`](/keys/crewed/);
-- it declares no [`Passengers`](/keys/passengers/) at all.
+- it was not destroyed in one of the ways listed below that leave no crew;
+- its type has [`Crewed=yes`](/keys/crewed/);
+- its type declares no [`Passengers`](/keys/passengers/) capacity.
 
-A transport is therefore excluded by its capacity even when it is crewed and empty. A structure never reads the setting; its own count comes from [`SurvivorRate`](/keys/survivorrate/) and [`SurvivorDivisor`](/keys/survivordivisor/) instead.
+A transport therefore never produces a crew, even when it is crewed and empty. Structures do not use this setting; their survivor count comes from [`SurvivorRate`](/keys/survivorrate/) and [`SurvivorDivisor`](/keys/survivordivisor/).
 
-A vehicle that was taken by a hijacker skips the roll entirely. [The hijacker steps back out](/systems/capture/#stealing-a-vehicle) in the crew's place, at any setting and without the `Crewed=yes` requirement.
+Several kinds of destruction leave no crew, whatever this setting says. They include an energizing laser fence, a firestorm wall, an aircraft crashing onto the vehicle, and a bridge collapse, for a vehicle on the deck, beneath it, or driving onto it.
 
-:::caution[A death animation removes the crew altogether]
-A vehicle whose artwork declares [`DeathFrames`](/keys/deathframes/) is not finished off by the hit that destroys it. It drops to one point of strength, plays the animation out, and is then exploded and deleted from its own update. That path never reaches the crew roll, so such a vehicle produces no crew at any setting, and drops no truck crate either.
+A vehicle taken by a hijacker skips the roll. [The hijacker steps back out](/systems/capture/#stealing-a-vehicle) in the crew's place, whatever this setting, `Crewed=` or the cause of destruction.
+
+:::caution[A death animation removes the crew]
+A vehicle whose artwork declares [`DeathFrames`](/keys/deathframes/) survives the killing hit at one point of strength, plays its death animation, and is then exploded and removed. That path skips the crew roll, so such a vehicle never produces a crew or a hijacker, and never drops a crate it carries.
 :::

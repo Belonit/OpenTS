@@ -8,6 +8,6 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-Only the set's first tile is used, as the unbroken green ground that [`ClearToGreenLat`](/keys/cleartogreenlat/) blends against and the tile a green cell reverts to when it is surrounded by green.
+Only the set's first tile is used. It is the plain green ground that [`ClearToGreenLat`](/keys/cleartogreenlat/) blends against, and a green transition cell whose four neighbors are all green ground or green transitions turns back into this tile.
 
-The random map generator paints it in patches on temperate and mutated maps; the desert weight is zero. It tests its chance first, before rough and sand, so a cell that draws green never gets the chance to become either of those. Tundra and taiga maps never place it.
+The [random map generator](/systems/map-generation/) paints this tile in patches over open clear ground on temperate and mutated maps. Each cell rolls for green before it rolls for rough ground or sand, so a cell that starts a green patch never starts either of the others. The chance grows with the map's vegetation setting. Desert, tundra and taiga maps never get green patches.

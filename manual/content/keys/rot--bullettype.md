@@ -7,8 +7,18 @@ when_omitted:
   value: "0"
 ---
 
-Any figure above zero makes the projectile a homing one, and that is the switch between the engine's two flight models. A homing projectile is flown by the missile autopilot, which steers it toward its target and lifts it over terrain in the way. Everything else follows the arc it was launched along until it hits something.
+Any figure above `0` makes the projectile a homing one. A homing projectile steers toward its target and over terrain in the way. A projectile at `0` follows the path it was launched on until it hits something. [Steered flight](/systems/projectile-flight/#steered-flight) describes the homing flight model.
 
-The figure is not applied flat. [`MissileROTVar`](/keys/missilerotvar/) swings the rate of turn upward from the written figure over a fifteen-frame cycle, running between the written figure and one plus twice that share of it, never below it. The projectile's own identifier is mixed into the cycle's phase, so missiles fired together do not all weave in unison. Over the last cell of the approach the turn rate is raised by half, so that a target dodging at the last moment can still be caught.
+The figure is how far the projectile may turn in one game frame, in 256ths of a full turn. The turn is not constant: [`MissileROTVar`](/keys/missilerotvar/) swings it above the written figure so that missiles weave, and a projectile within a cell of its target turns half again as fast. A newly fired projectile turns only slightly until it has accelerated to its speed. [Steered flight](/systems/projectile-flight/#steered-flight) describes this launch phase and the fast shots that skip it.
 
-Homing changes the launch as well. The shot leaves along the firer's turret facing rather than pointing at the target, and it takes the weapon's [`Speed=`](/keys/speed/#scope-weapontype) as written instead of having that speed recomputed from the weapon's range. Two figures are special-cased for aircraft. At `ROT=0` the shot takes the aircraft's own apparent speed and turret yaw. At `ROT=1` the aircraft aims the shot straight at its target and gives it the primary weapon's speed. Only a projectile at `ROT=1` or below is considered suited to a strafing run.
+Homing also changes the launch:
+
+- The shot leaves in the direction the firer faces, such as its turret's facing, instead of being aimed at the target.
+- The projectile accelerates to the weapon's [`Speed`](/keys/speed/#scope-weapontype) as written. A weapon whose projectile has `ROT=0` has that speed replaced by one worked out from its [`Range`](/keys/range/).
+
+Aircraft treat two figures specially:
+
+- At `ROT=0`, the shot leaves level along the aircraft's heading at the aircraft's current speed.
+- At `ROT=1`, the aircraft aims the shot straight at its target and launches it at the speed of the aircraft's primary weapon.
+
+An aircraft makes strafing runs only when the projectile of its first weapon has a `ROT` of `1` or less.

@@ -7,6 +7,8 @@ when_omitted:
   value: "7"
 ---
 
-The value is used twice while a damaged object's [`RadarCombatFlashTime`](/keys/radarcombatflashtime/) timer runs. The blip is repainted each time the frames remaining are an exact multiple of it, and the color plotted alternates between the house color and its inverse from one block of this many frames to the next. The value therefore sets the beat of the flash rather than its length.
+When one of the local player's objects takes damage, its radar blip flashes for [`RadarCombatFlashTime`](/keys/radarcombatflashtime/) frames. The blip alternates between the house color and its inverse, holding each color for this many frames, until the flash ends. The first color depends on `RadarCombatFlashTime`; with both keys at their defaults, the flash starts on the house color.
 
-Both halves are gated on the object belonging to the local player's own house, so an enemy object takes damage without its blip changing at all. `FlashFrameTime=0` is used as a divisor with no guard.
+Only the local player's objects flash. An enemy or allied object's blip does not change when it takes damage.
+
+Keep the value above `0`. At `0` the game crashes as soon as one of the local player's objects takes damage. Damage to any other object can also crash it, if the radar redraws that object's blip within `RadarCombatFlashTime` frames of the hit.

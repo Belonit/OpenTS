@@ -7,10 +7,19 @@ when_omitted:
   value: "1"
 ---
 
-Two parts of a dig read this value. A unit whose [`Locomotor`](/keys/locomotor/) tunnels first turns to face its destination. It then tips nose down for `(64 ÷ ROT) ÷ TunnelSpeed` frames before the descent begins, so a larger figure shortens that pause. The descent and the ascent then move it its full travel speed times this value, in leptons of height, each frame.
+A higher value makes a tunneling unit dig in sooner and sink and rise faster. It does not change how fast the unit travels underground.
 
-Nothing else in the dig reads it. A unit under the ground advances a fixed 19 leptons a frame toward its destination however this is set. The wait while it rights itself on the surface is `64 ÷ ROT` frames undivided. Raising the value shortens the dig-in and the two vertical legs and leaves the length of the underground crossing exactly as it was.
+A unit whose [`Locomotor`](/keys/locomotor/) tunnels goes through these steps:
 
-:::caution[The vertical rate has a floor]
-A descent or ascent of fewer than five leptons a frame is raised to five. Lowering this value therefore cannot stall a dig, and once a unit's travel speed times the value falls under that floor, lowering it further changes nothing. `0` is the exception: the dig-in timer divides by this figure, so a zero divides by zero.
+1. It turns to face its destination.
+2. It tips nose down for `(64 ÷ ROT) ÷ TunnelSpeed` frames, where [`ROT`](/keys/rot/#scope-aircrafttype) is the unit's rate of turn.
+3. It sinks, moving its travel speed times `TunnelSpeed` in leptons of height each frame.
+4. It crosses underground at a fixed 19 leptons a frame.
+5. It rises at the same rate it sank.
+6. It levels out on the surface for `64 ÷ ROT` frames, which `TunnelSpeed` does not divide.
+
+The sink and the rise never move less than 5 leptons a frame. Once a unit's travel speed times `TunnelSpeed` falls below 6, lowering the value further no longer slows them. The dig-in wait has no such limit: the closer the value gets to `0`, the longer the wait.
+
+:::caution[Keep the value above 0]
+A negative value skips the dig-in wait, and at `0` the length of the wait is undefined.
 :::

@@ -7,8 +7,8 @@ when_omitted:
   value: ".5"
 ---
 
-The fraction is the level of the music group in the mixer, set as the file is read and again whenever the slider moves. A track already playing turns to the new volume without being restarted. A track is not started at all while the resulting volume is zero or below. The request is remembered as pending instead, so raising the volume later starts the track that was waiting.
+`0` silences the music and `1` plays it at full volume. A change applies at once to the track already playing, without restarting it. At zero, no new track starts; [Focus and volume](/systems/music/#focus-and-volume) describes what happens to queued and playing tracks until the volume is raised.
 
-The read holds the fraction to `1` at the top but not at the bottom, so a negative figure is stored as written and leaves every track pending.
+A value above `1` is read as `1`. A negative value is kept as written, and no track starts until the slider in the sound options dialog is moved above zero.
 
-The sound options dialog offers the fraction as a ten-step slider, and leaving the options screen behind it writes the setting back to `sun.ini`. The credits screen raises a fraction of zero to `.4` for the length of its own theme and puts the stored figure back afterward.
+The sound options dialog sets the volume with a ten-step slider. The change is written to `sun.ini` when the player leaves the options menu or, during a game, closes the game controls dialog with OK. While the volume is zero, the credits screen plays its track at `.4` and restores the stored volume when it closes.

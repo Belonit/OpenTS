@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-One system of the type named in [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) is spawned at the muzzle and aimed at the target as the shot leaves. Unlike a fire weapon, a spark weapon keeps its projectile's damage: [`Damage=`](/keys/damage/#scope-weapontype) is delivered on impact as usual and the spray is added on top of it.
+Each shot spawns one system of the type named in [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) at the muzzle, aimed at the target as the shot leaves. The projectile keeps its damage: [`Damage=`](/keys/damage/#scope-weapontype) is delivered on impact as usual, and the spray adds its own effect on top.
 
 ```ini title="rules.ini"
 [MySparkGun] ; example WeaponType
@@ -16,10 +16,14 @@ AttachedParticleSystem=SparkSys ; a ParticleSystemType registered in [ParticleSy
 ROF=30
 ```
 
-A vehicle refuses the shot while it has anywhere to go. An infantry is held only by the ordinary bar on firing while actually in motion. Unlike a [`UseFireParticles=yes`](/keys/usefireparticles/) weapon, this one may still be fired by a soldier standing still with a destination pending. Neither of the object's weapons may fire again while the spray is alive. The reload delay is exactly [`ROF`](/keys/rof/), with the house's rate of fire bias, the burst gaps and the random padding all skipped. A structure with more than one round left waits a single frame instead, so only the effect's own lifetime paces it.
+A vehicle with a destination refuses to fire the weapon, even before it starts moving. Infantry follow only the limits that apply to every infantry weapon, so a soldier with a destination can still fire this weapon while it is standing still. This differs from a [`UseFireParticles=yes`](/keys/usefireparticles/) weapon, which infantry also cannot fire while they have a destination.
 
-A weapon that also sets [`UseFireParticles=yes`](/keys/usefireparticles/) spawns the same particle system type twice over, once into the firer's fire slot and once into its spark slot, and must wait for both to burn out.
+While the spray is alive, neither of the object's weapons can fire, as [Firing geometry](/systems/firing-geometry/#effects-that-hold-the-weapon-shut) describes. The next shot waits for the spray to end and for [`ROF`](/keys/rof/#scope-weapontype) to pass. The weapon's `ROF` is used as written, without the house multiplier, burst gaps or random extra frames. A structure that had more than one round of ammunition when it fired waits a single frame instead, so only the spray's lifetime paces it.
 
-:::danger[A spark weapon with no particle system named crashes the game]
-Nothing checks that [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) resolved to anything before the spray is spawned, and the game stops the first time such a weapon fires.
+The spray shares its place on the object with the sparks a damaged object gives off from [`DamageParticleSystems`](/keys/damageparticlesystems/). While those damage sparks are running, the object cannot fire either of its weapons, as [Particle systems](/systems/particle-systems/#the-five-holds-an-object-keeps) describes.
+
+A weapon that also sets `UseFireParticles=yes` spawns two systems of the same type, one as a fire stream and one as a spray. It cannot fire again until both have ended.
+
+:::danger[Name a particle system for every spark weapon]
+If [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) is missing or names no registered particle system, the game crashes the first time the weapon fires.
 :::

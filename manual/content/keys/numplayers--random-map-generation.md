@@ -6,10 +6,10 @@ see_also: [Width, Height, Seed, TiberiumLayout, Tiberium]
 when_omitted:
   kind: value
   value: "2"
-  note: Two start points, and the first row of the size tables that Height interpolates within.
+  note: Two start points, and the first row of the size table that Width and Height pick a size within.
 ---
 
-The figure is the number of start points the generator must find. It also chooses the row of the size tables that [`Height`](/keys/height/#scope-random-map-generation) interpolates within, so it decides how large a map of a given size index comes out. [Map seed files](/formats/map-seed/) covers the section it is written in.
+`NumPlayers` sets how many start points the generator places, one for each player. It also selects the row of the map size table that [`Width`](/keys/width/#scope-random-map-generation) and [`Height`](/keys/height/#scope-random-map-generation) pick a size within, so the same size settings give a larger map for more players. [Map seed files](/formats/map-seed/) has the table and covers the `[RandomMap]` section.
 
 ```ini title="map seed file"
 [RandomMap]
@@ -18,10 +18,10 @@ Width=2
 Height=2
 ```
 
-Finding the start points comes late in generation, after the terrain and its regions are settled. Fifteen candidate cells per player are gathered from the largest regions reachable from one another, the most widely separated of them are taken, and the first of those become the start points. Each start point then has to flood exactly four hundred clear cells around itself. If any player's flood runs dry sooner, the start points are all discarded and picked again from the next state of the random sequence; the terrain itself is kept. Nothing caps that retry, so a player count the terrain cannot seat leaves the generator picking forever.
+Before a map is built, a value below `2` becomes `2` and a value above `8` becomes `8`.
 
-A seed file that leaves the figure out cannot be started at all. The skirmish and lobby screens size a game by the start points recorded in the file itself, take a missing `NumPlayers` as `0`, and turn every lineup away as too small.
+The generator places the start points after the terrain is finished, spread as far apart as the terrain allows. Each start point needs 400 clear cells around it. If any start point falls short, the generator picks a new set of start points on the same terrain and tries again. The number of tries has no limit, so generation never finishes on terrain that cannot fit that many start points. [Start points and the layout spread](/systems/map-generation/#start-points-and-the-layout-spread) covers the placement.
 
-The figure reaches the tiberium as well. The spread that supplied the start points supplies the map's tiberium fields from what is left over. The amount of tiberium each field is grown to is multiplied by the player count, so a map built for more players is not left thinner. [`TiberiumLayout`](/keys/tiberiumlayout/) covers how many fields there are, which the player count does not change.
+The player count also scales the tiberium. The tiberium fields away from the start points share an amount set by [`Tiberium`](/keys/tiberium/#scope-random-map-generation) and `NumPlayers`, so a map built for more players gets more tiberium in those fields. The number of those fields comes from [`TiberiumLayout`](/keys/tiberiumlayout/) and does not depend on the player count.
 
-When a map is [generated from a file](/systems/map-generation/#the-dialog-path-and-the-scenario-path), a value below `2` becomes `2` and one above `8` becomes `8`.
+Write `NumPlayers` in every seed file you distribute. The skirmish setup and the multiplayer lobby read it as the map's player limit and treat a missing value as `0`, so the map cannot be started. [Start positions a lobby counts](/keys/numplayers/#scope-random-map-generation-2) covers that read.

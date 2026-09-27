@@ -7,4 +7,6 @@ when_omitted:
   value: "yes"
 ---
 
-The value becomes the [`AIBuildsWalls`](/keys/aibuildswalls/#scope-side) of the second side in the rules' [`[Sides]`](/formats/rules-registries/) list, as each rules file sets it. An `AIBuildsWalls=` in that side's own section of the same file overrides it. The first side has no matching key in `[General]`, and nothing else reads this one.
+When a rules file sets this key, its value becomes the [`AIBuildsWalls`](/keys/aibuildswalls/#scope-side) setting of the second side listed in [`[Sides]`](/formats/rules-registries/). An `AIBuildsWalls=` in that side's section of the same file overrides it. A file that omits this key leaves the side's value as it was. Nothing else reads the key.
+
+No `[General]` key does the same for the first side; set `AIBuildsWalls=` in its section instead. Computer houses build walls only when both their side's setting and [`AIBuildsWalls`](/keys/aibuildswalls/#scope-global-rules) in `[General]` allow it.

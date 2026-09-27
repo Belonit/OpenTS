@@ -9,6 +9,4 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-The name promises the option that lets a construction yard fold back into the vehicle it came from. The flag is parsed into the scenario's special options, and no gameplay path reads it.
-
-Undeploying is decided by the structure type instead, through [`UndeploysInto`](/keys/undeploysinto/).
+Nothing in the game reads this flag, so it does not let a construction yard pack back up into a vehicle. [`UndeploysInto`](/keys/undeploysinto/) decides whether a structure can undeploy, and its page covers the extra conditions for a construction yard.

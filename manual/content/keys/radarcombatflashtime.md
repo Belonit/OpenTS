@@ -7,6 +7,6 @@ when_omitted:
   value: "21"
 ---
 
-Any damage that registers a result reloads the object's flash timer with this many frames. Fresh damage restarts the count rather than extending it. The timer is set on every object that takes damage, but only an object of the local player's own house is repainted from it. The value therefore governs how long the player's own damaged objects stay marked on the radar.
+When damage has any effect on one of the local player's objects, its radar blip flashes for this many game frames. Fresh damage restarts the count instead of adding to it. Other houses' objects do not flash.
 
-While the timer runs the blip is repainted every [`FlashFrameTime`](/keys/flashframetime/) frames. At the default the timer covers three such repaints.
+While the count runs, the blip is repainted every [`FlashFrameTime`](/keys/flashframetime/) frames, alternating between its inverted and normal colors, and the last repaint restores the normal color. At the defaults of 21 and 7, the blip turns inverted 7 frames after the hit and returns to normal 7 frames later. Keep this value at least twice `FlashFrameTime`; below that, a blip that stays in place never shows the inverted color.

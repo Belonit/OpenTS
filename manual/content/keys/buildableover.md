@@ -21,4 +21,4 @@ The flag has no effect on a [`Wall=yes`](/keys/wall/#scope-overlaytype) overlay,
 
 The flag belongs to the overlay, so it applies to every structure type, whether a player places it or a computer house builds its base or its walls.
 
-Placing a structure does not remove the overlay, so the overlay is still there after the structure is gone.
+Placing a structure leaves the overlay on its cells, so the overlay is still there after the structure is gone. A structure that lays pavement tiles through `ToTile=` is the exception: it removes the overlay from each cell it paves.

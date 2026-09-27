@@ -12,8 +12,12 @@ when_omitted:
 DamageLevels=3
 ```
 
-The engine reads the count from the overlay's section in `art.ini`. Each [landed hit](/systems/walls-and-gates/#whether-a-hit-lands) advances a wall cell by one stage, and the segment is removed once the stage reaches this count. At the default of `1` the first landed hit removes the segment outright, so a wall survives damage only when the value is above one. A segment with no [connections](/systems/walls-and-gates/#connection-frames) is removed one stage early, at the stage below this count.
+Each [landed hit](/systems/walls-and-gates/#whether-a-hit-lands) advances a wall segment by one damage stage. A segment is removed when its stage reaches `DamageLevels`. A segment with no [connections](/systems/walls-and-gates/#connection-frames) to neighboring walls is removed one stage earlier.
 
-Two other rules read the count. The [cascade](/systems/walls-and-gates/#stepping-through-the-stages) that spreads damage into the neighboring segments fires when a cell reaches the stage below this count, and only when the count is above `2`. And a wall cell whose stored stage is exactly this count is a hole that infantry walk through unopposed. The damage path never leaves that state behind, because it removes the segment at that stage. A map's own overlay data can write it directly.
+At the default of `1`, the first landed hit removes any segment. A connected segment survives a hit only when the value is `2` or more, and an unconnected one only when it is `3` or more.
 
-Higher counts need matching artwork. The engine deletes an unconnected segment of a stock wall overlay that reaches a stage the shipped art does not cover, without any damage being applied. [The collapse table](/systems/walls-and-gates/#damage-stages-with-no-artwork) has the stages per overlay.
+When a segment reaches the stage one below `DamageLevels`, it [damages its undamaged neighbors](/systems/walls-and-gates/#stepping-through-the-stages) of the same overlay type. This happens only when `DamageLevels` is above `2`.
+
+Infantry walk through a wall cell whose stage equals `DamageLevels` exactly, as though it were a hole. Damage never leaves a segment at that stage, because it removes the segment there, so only a map's overlay data can create such a cell.
+
+Higher counts need artwork for every stage. For the overlays at certain `[OverlayTypes]` positions, the game also deletes an unconnected segment at a stage the stock artwork does not cover, as soon as its connection frames are rebuilt. [Damage stages with no artwork](/systems/walls-and-gates/#damage-stages-with-no-artwork) lists the positions and stages.

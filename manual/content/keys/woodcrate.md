@@ -7,6 +7,8 @@ when_omitted:
   value: Money
 ---
 
-Campaign crates are not drawn at random: the overlay determines the result outright. This setting is the result for a crate whose overlay is the one named by [`WoodCrateImg`](/keys/woodcrateimg/). The value is one of the [crate result](/reference/enums/crate/) tokens. A value the engine does not recognize resolves to `Money` with no diagnostic, so a misspelled token is indistinguishable from writing `Money`.
+`WoodCrate` is the result of every campaign crate whose overlay is the one [`WoodCrateImg`](/keys/woodcrateimg/) names. Campaign crates are not drawn at random; the overlay alone decides the result. Outside a campaign this setting is not used.
 
-The campaign lookup runs this test last. A rules file that names the same OverlayType in `WoodCrateImg` and [`CrateImg`](/keys/crateimg/) therefore makes this setting the result for every campaign crate.
+The value is one of the [crate result](/reference/enums/crate/) tokens. An unrecognized token gives `Money`, so a misspelled result behaves exactly like `Money`.
+
+When `WoodCrateImg` and [`CrateImg`](/keys/crateimg/) name the same OverlayType, every crate of that overlay gives this result. [In a campaign](/systems/crates/#in-a-campaign) explains why.

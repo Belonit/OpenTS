@@ -8,9 +8,11 @@ when_omitted:
   note: "`ISOTEMP` for TEMPERATE and `ISOSNOW` for SNOW, which keep their original settings; for any other theater, the theater's own name."
 ---
 
-`<IsoRoot>.MIX` is the archive the isometric tile artwork is read from. It is separate from [`Root`](/keys/root/) because the tile artwork of a theater is far larger than the rest of it and ships in an archive of its own.
+`IsoRoot` names the archive `<IsoRoot>.MIX`, which the game opens together with the theater's other two archives, `<Root>.MIX` from [`Root`](/keys/root/) and `<Suffix>.MIX` from [`Suffix`](/keys/suffix/#scope-theater). The original theaters keep their isometric tile artwork in it.
 
 ```ini title="rules.ini"
 [DESERT]
 IsoRoot=ISODES  ; ISODES.MIX
 ```
+
+The game reads up to 16 characters of the value and cuts a longer one short.

@@ -12,4 +12,4 @@ when_omitted:
 GDIPowerTurbine=GAPOWRUP
 ```
 
-The named BuildingType becomes the first side's [`PowerTurbine`](/keys/powerturbine/) as each rules file that has the key sets it; a `PowerTurbine=` in that side's own section of the same file overrides it. It has no other effect.
+The value becomes the [`PowerTurbine`](/keys/powerturbine/) of the first side in the rules' [`[Sides]`](/formats/rules-registries/) list, in each rules file that sets this key. A `PowerTurbine=` in that side's own section of the same file overrides it. A file that omits this key leaves the side's value alone. No key seeds a turbine for any other side, and nothing else reads this key.

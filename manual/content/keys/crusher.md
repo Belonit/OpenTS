@@ -7,8 +7,18 @@ when_omitted:
   value: "no"
 ---
 
-A vehicle with the flag treats a cell holding a [`Crushable=yes`](/keys/crushable/#scope-aircrafttype) object as passable rather than as something to shoot or route around. So does one whose crew has earned the crusher ability from [`VeteranAbilities`](/keys/veteranabilities/). An unarmed vehicle needs the flag to act on enemy infantry at all: with it, a move order onto them ends in the vehicle driving over them. It is also what lets the pathfinder count a friendly crushable wall as destroyable rather than solid. Driving onto a crushable wall overlay destroys the segment outright, ignoring ownership and damage stage; [Crushing, clearing and selling](/systems/walls-and-gates/#crushing-clearing-and-selling) covers what that does to the wall.
+A vehicle with the flag drives over a non-allied [`Crushable=yes`](/keys/crushable/#scope-aircrafttype) object and treats its cell as passable. Without the flag, the vehicle must shoot the object or go around it. A vehicle whose rank grants the crusher ability from [`VeteranAbilities`](/keys/veteranabilities/) crushes the same way.
 
-The flag also has one effect that has nothing to do with crushing. A UnitType whose [terrain speed class](/reference/enums/speed-type/) no file has settled yet is given `Track` when the flag is set and `Wheel` when it is not. A [`SpeedType=`](/keys/speedtype/) in the same section then overrides that. Leaving both keys out therefore costs a crusher against the tracked movement table and a non-crusher against the wheeled one.
+The flag also lets a vehicle that cannot fire act on a crushable enemy. Clicking the enemy gives a move order, and the vehicle drives over it. Without the flag the click only selects the enemy.
 
-Two further settings sit on top of it. [`Crush=`](/keys/crush/) sets how close a target must be before a crusher drives over it instead of firing. The rules-wide [`AutoCrush=`](/keys/autocrush/#scope-global-rules) sets the computer-house IQ below which a vehicle stops answering attacks by running the attacker over; the per-type [`AutoCrush`](/keys/autocrush/#scope-aircrafttype) flag reaches no live branch. [`TiltsWhenCrushes`](/keys/tiltswhencrushes/) decides whether the hull lurches while it does.
+A crushable wall of another house is passable to a crusher. When routes are planned, a crushable wall of the crusher's own house or an ally counts as an obstacle the crusher can destroy, not as solid wall. Driving onto any crushable wall removes the segment, whatever its owner and damage stage. [Crushing, clearing and selling](/systems/walls-and-gates/#crushing-clearing-and-selling) covers the rest.
+
+On a UnitType, the flag also sets the default [terrain speed class](/reference/enums/speed-type/). The first rules file that contains the type's section gives it `Track` with the flag and `Wheel` without it. A [`SpeedType=`](/keys/speedtype/) in the same section overrides that choice, and a later change to `Crusher=` does not change the class.
+
+Other settings build on the flag:
+
+- [`Crush=`](/keys/crush/) sets how close a crushable target must be before a computer-controlled crusher drives over it instead of firing.
+- [`[IQ] AutoCrush=`](/keys/autocrush/#scope-global-rules) sets the IQ a computer house needs before its crushers run over their attackers. The per-type [`AutoCrush`](/keys/autocrush/#scope-aircrafttype) flag has no effect.
+- [`TiltsWhenCrushes`](/keys/tiltswhencrushes/) decides whether the hull tilts while the vehicle crushes sandbag wall.
+
+A BuildingType accepts the key, but it has no effect. On an InfantryType or AircraftType it has an effect only when the type's [`Locomotor`](/keys/locomotor/) is the drive or mech locomotor, and then only on sandbag walls.

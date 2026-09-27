@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-An `.AUD` file using the Westwood delta compression now decodes and plays. A file with a compression code the game does not know is refused and stays silent; both used to play as noise.
+An `.AUD` file compressed with the Westwood delta codec used to play as noise, and so did a file whose compression code the game does not recognize. A delta-compressed file now plays correctly, and a file with an unrecognized code does not play.

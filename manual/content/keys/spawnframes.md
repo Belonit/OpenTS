@@ -7,7 +7,7 @@ when_omitted:
   value: "1"
 ---
 
-A system emits on the frames whose number divides by this interval, so a smoke plume set to `10` puts out a particle roughly once every two thirds of a second. Only the `Smoke` and `Fire` [behaviors](/keys/behaveslike/#scope-particlesystemtype) reach it.
+A `Smoke` or `Fire` system emits a particle on each game frame whose number is a multiple of this interval. `10` emits on every tenth frame. At the default [game speed](/keys/gamespeed/), that is twice a second in a multiplayer game and three times a second in a campaign mission or skirmish. Only the `Smoke` and `Fire` [behaviors](/keys/behaveslike/#scope-particlesystemtype) read it.
 
 ```ini title="rules.ini"
 [MySmokeSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -18,12 +18,14 @@ Slowdown=.0025
 SpawnCutoff=15.0
 ```
 
-A smoke system keeps a working interval of its own that starts here and is stretched by [`Slowdown`](/keys/slowdown/) every frame, so the setting is only the plume's opening rate. Two other settings are read against that stretched interval rather than against this one: [`SpawnCutoff`](/keys/spawncutoff/) retires the system once the interval passes it, and [`SpawnTranslucencyCutoff`](/keys/spawntranslucencycutoff/) starts thinning the new particles. This figure is also the mark the plume's slowing is measured from: each frame the working interval has grown past it subtracts `0.35` leptons a frame from the speed a new particle is created with. That subtraction bottoms out at a speed of `2`, so no particle is ever created slower than that. A plume set to `10` and retired at `15` therefore puts out its last particles `1.75` slower than its first.
+A smoke system starts its working interval at this figure and lengthens it by [`Slowdown`](/keys/slowdown/) every frame, so this figure sets only the plume's opening rate. Two settings are compared with the working interval, not with this figure. [`SpawnCutoff`](/keys/spawncutoff/) ends the plume once the interval passes it, and [`SpawnTranslucencyCutoff`](/keys/spawntranslucencycutoff/) makes new particles more translucent once the interval passes it.
 
-A fire system holds the interval fixed at this figure; `Slowdown` never reaches it. It also emits on one more schedule: while its firer has a target and is still turning, a particle goes out every third frame, so a stream thickens as the shooter comes around.
+New smoke particles also rise more slowly as the working interval grows. A new particle starts `0.35` leptons a frame slower for each frame by which the working interval exceeds this figure, and no new particle starts slower than `2` leptons a frame. A plume set to `10` and ended at `15` starts its last particles up to `1.75` slower than its first, less if that floor applies.
 
-A structure that is knocked to half strength stretches its [`NaturalParticleSystem`](/keys/naturalparticlesystem/)'s working interval by half again on the spot, so the plume immediately thins and reaches its cutoff sooner than an undamaged one would.
+A fire system keeps its interval at this figure, and `Slowdown` does not apply. While its firer has a target and is still turning toward it, the system also emits on every third frame, so the stream thickens as the firer comes around.
 
-:::danger[`SpawnFrames=0` crashes the game]
-Both routines divide the frame counter by the interval without checking it first. A `Smoke` or `Fire` system set to zero crashes the game on the first frame one of its systems runs.
+When a blow takes a structure from half strength or above to below half, the working interval of its [`NaturalParticleSystem`](/keys/naturalparticlesystem/) is multiplied by `1.5`. A smoke plume then thins at once and moves closer to its `SpawnCutoff`, which it may pass straight away.
+
+:::danger[Keep SpawnFrames above zero]
+A `Smoke` or `Fire` type with `SpawnFrames=0` crashes the game with a division by zero on the first frame a system of that type runs.
 :::

@@ -7,12 +7,18 @@ when_omitted:
   value: "no"
 ---
 
-The array marks every cell within [`CloakRadiusInCells`](/keys/cloakradiusincells/) as sensed for its house when the structure first opens, if it is operational at that moment. An array that is not operational when it opens marks nothing, and its power returning does not mark the cells either. Its cells are marked the next time any house's cloak field finishes growing while the array is operational, so on a map without cloak generators it never marks them.
+A sensor array marks every cell within [`CloakRadiusInCells`](/keys/cloakradiusincells/) of it as sensed for its owner. That house sees cloaked objects and fully faded enemy structures on a sensed cell as shadowy outlines, and can target the cloaked objects. [What sensing changes](/systems/cloaking/#what-sensing-changes) lists the full effect.
 
-Coverage is lifted when the structure is taken off the map. A cell that another array of the same house also covers stays sensed. Capturing the array moves its coverage: the old owner stops sensing the cells, and the new owner senses them at once if the array is operational.
+The array marks its cells at these times, each only if the array is [operational](/systems/power/#defenses) then:
 
-Marking a cell reveals a cloaked object standing on it to the array's house, and a fully faded enemy structure on a marked cell is made visible again as a shadowy outline.
+- when its construction finishes and it first opens;
+- when it is captured, for the new owner;
+- whenever any house's cloak generator finishes growing its field.
 
-:::caution[A shortfall does not lift sensor coverage]
-Unlike a [cloak generator](/keys/cloakgenerator/), whose field collapses the moment the base runs short of power, an array keeps every cell it has marked until it is taken off the map or captured. Low power matters only to an array that has not marked its cells yet: the marking that runs when a cloak field finishes growing skips an array that is switched off, stunned or short of power.
+An array that is not operational when it opens therefore marks nothing until a cloak field next finishes growing. On a map without cloak generators it never marks its cells, even after its power returns, unless it is captured while operational.
+
+Coverage is lifted only when the array is taken off the map or captured. Capturing moves the coverage: the old owner stops sensing the cells, and the new owner senses them at once if the array is operational. A cell that another array of the same house also covers stays sensed.
+
+:::caution[Power loss does not lift coverage]
+A [cloak generator](/keys/cloakgenerator/)'s field collapses when its base runs short of power, but an array keeps every cell it has marked through a power shortfall, a stun or being switched off. Those conditions matter only to an array that has not marked its cells yet.
 :::

@@ -13,4 +13,4 @@ credit:
 - ZivDero
 ---
 
-A skirmish or multiplayer map may now write `Allies=` in `[Spawn1]` through `[Spawn8]`, naming spawn houses or countries. The house starting at that position begins the match allied to them, one way, in addition to whatever the launch file arranged. Only a campaign read the key before. A section for a position nobody holds is ignored.
+A skirmish or multiplayer map can now set `Allies=` in `[Spawn1]` through `[Spawn8]`, listing spawn houses or countries. The house at that start position begins the match allied to each listed spawn house and to every player of each listed country, in addition to the alliances the launch settings make. The alliance is one way: the listed houses are not allied back. A section for a position nobody holds is ignored.

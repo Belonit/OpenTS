@@ -8,6 +8,11 @@ when_omitted:
   note: Uses the AnimType ID as the animation Image ID.
 ---
 
-An animation loads its artwork from `<AnimType ID>.SHP` as soon as its type is created. This setting takes effect only while the type holds no shape. Either the first load found no file under the AnimType ID, or the type sets [`DemandLoad=yes`](/keys/demandload/#scope-animtype) and loads the name given here on demand. In both cases the animation draws `<Image ID>.SHP`. An animation that never found a shape under either name draws nothing and is otherwise undisturbed.
+The animation draws `<Image ID>.SHP` when that file exists. If it does not, the animation falls back to `<AnimType ID>.SHP`, and if neither file exists it draws nothing. After a saved game is loaded there is no fallback, so an animation whose `<Image ID>.SHP` is missing draws nothing. An animation with [`DemandLoad=yes`](/keys/demandload/#scope-animtype) loads `<Image ID>.SHP` the first time it is needed and has no fallback.
 
-The stage count comes from the first shape the type holds and is not re-measured when another shape loads. The [`End`](/keys/end/) key overrides the count. The two theater paths treat this setting differently in turn: [`Theater=yes`](/keys/theater/#scope-animtype) loads the artwork under a theater-suffixed name, while [`NewTheater=yes`](/keys/newtheater/#scope-animtype) keeps the name given here and rewrites its theater letter.
+An `Image=` that selects a different shape does not change the frame count; see [`End`](/keys/end/).
+
+The theater settings treat this key differently:
+
+- [`Theater=yes`](/keys/theater/#scope-animtype) names the artwork after the AnimType ID when the theater differs from the previous scenario's or a saved game is loaded. When the theater repeats, it uses the Image ID.
+- [`NewTheater=yes`](/keys/newtheater/#scope-animtype) rewrites the theater letter in the name given here.

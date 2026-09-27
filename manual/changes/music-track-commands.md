@@ -12,6 +12,6 @@ targets:
 credit: [ZivDero, CCHyper]
 ---
 
-Two commands step backwards or forwards through the music tracks the current game allows, wrapping at either end. The new track is named on screen for a few seconds. A track the scenario has not yet unlocked, or that belongs to the other side, is skipped. Both arrive unbound.
+Two commands play the previous or next music track, wrapping at either end of the list, and name the new track on screen for four seconds. They skip a track whose file is missing, one marked `Normal=no` in `theme.ini`, one reserved for another side, and in a campaign one the current mission has not yet unlocked. Neither command has a default key.
 
 CCHyper is credited for the Vinifera commands this follows.

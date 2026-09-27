@@ -8,17 +8,19 @@ when_omitted:
   value: "no"
 ---
 
-Four separate firestorm tests read this flag:
+`IgnoresFirestorm=yes` lets objects of this type pass a raised firestorm wall unharmed. The wall tests only vehicles, infantry, aircraft and projectiles, so the flag has no effect on any other type. The wall skips flagged objects in four checks:
 
-- the sweep of a raised section's own cell
-- the sweep of the cells around it for anything walking toward it
-- the crossing test a flying object runs as it passes over a section
-- the check a projectile makes on entering a section's cell
+- when it destroys the vehicles, aircraft and infantry standing in a raised section's cell;
+- when it destroys vehicles and infantry moving into that cell from nearby;
+- when an object on the flying locomotor moves over a raised section's cell;
+- when a projectile enters a raised section's cell.
 
-An exempt type is skipped by all four. [What a raised section destroys](/systems/laser-fences/#what-a-raised-section-destroys) covers the payload it is being spared.
+[What a raised section destroys](/systems/laser-fences/#what-a-raised-section-destroys) describes what the wall does to everything it does not skip.
 
-Exemption is per type, not per object, and it does not extend to anything else the wall does. A projectile type whose flight is invisible is tested on a different path that does not read this flag, so it is consumed regardless. An exempt vehicle still cannot path through a raised section's cell, because the cell is impassable to movement whatever stands on it.
+An [`Inviso=yes`](/keys/inviso/) projectile is checked along its line of fire instead of cell by cell. That check ignores the flag and destroys the projectile at the first raised section on the line.
+
+The flag does not open the wall to ground movement. A raised section's cell stays closed to vehicles, so an exempt vehicle still cannot drive through it.
 
 :::caution[A jumpjet is destroyed anyway]
-Which of the two crossing tests a type meets follows from its [`Locomotor=`](/keys/locomotor/) setting: the Flyer locomotion class runs the test that reads this flag, and the Jumpjet locomotion class runs one that does not. A type on the Jumpjet class with `IgnoresFirestorm=yes` is still destroyed when it moves onto a raised section's cell.
+A type whose [`Locomotor=`](/keys/locomotor/) is the jumpjet locomotor is still destroyed when it moves over a raised section's cell, even with `IgnoresFirestorm=yes`. The jumpjet's check does not read this flag.
 :::

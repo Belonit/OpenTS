@@ -12,4 +12,4 @@ targets:
 credit: [ZivDero]
 ---
 
-`[General] MultiMCV=yes` lets a construction yard produce for every country in a structure's `Owner` list. Without the key, a yard produces only for the country it was built by. The sidebar and the factory search alike honor the key. The key, its default of `no` and its meaning are Vinifera's, so a rules set written for it carries over.
+A construction yard [acts as](/keys/actslike/) the country of the house that created it, or of the MCV it deployed from, and keeps that country when captured. `MultiMCV=yes` under `[General]` in `rules.ini` lets it also build structures whose `Owner` list does not include that country, both on the sidebar and in the choice of which yard builds. The key and its meaning match Vinifera's, so rules written for Vinifera carry over.

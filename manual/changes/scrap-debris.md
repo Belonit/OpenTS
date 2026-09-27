@@ -1,5 +1,5 @@
 ---
-title: Honour the scrap debris option
+title: Honor the scrap debris option
 category: feature
 release: 0.2.0
 targets:
@@ -18,4 +18,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-`ScrapMetal=yes`, in a launch file or a scenario's `[SpecialFlags]`, makes a destroyed object leave the animations its type gives `ScrapExplosion=` instead of the ones it gives `Explosion=`. A type that names no scrap animations keeps its ordinary ones, so a ruleset can convert part of its arsenal at a time. The option reaches a campaign as readily as a match.
+`ScrapMetal=yes` in `[Settings]` of the client launch file, `SPAWN.INI`, makes a destroyed object play the animations its type lists in `ScrapExplosion=` instead of those in `Explosion=`. A type with no `ScrapExplosion=` list keeps its `Explosion=` animations, so a ruleset can convert part of its arsenal at a time. The setting applies to campaign missions as well as matches, and a campaign mission can set or override it with `ScrapMetal=` in its `[SpecialFlags]` section.

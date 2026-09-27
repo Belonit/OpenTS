@@ -7,4 +7,6 @@ when_omitted:
   value: "100"
 ---
 
-A roll of `1` to `100` must come out at or below the value. Failing it ends the [team pass](/systems/ai-team-production/#when-the-pass-runs) with no suggestion and restarts the countdown; nothing else is raised in the AI triggers' place, so lowering the value only makes a house raise teams less often. The [Ratio of AI trigger teams...](/mapping/actions/taction-set-ai-trigger-team-ratio/) trigger action overwrites the value while the scenario is running, and takes the value it is given without clamping it.
+Each time the house's [team pass](/systems/ai-team-production/#when-the-pass-runs) runs, it rolls a number from `1` to `100`. The pass draws an AI trigger only when the roll is at or below this value and the house's [AI-trigger switch](/systems/ai-team-production/#when-the-pass-runs) is on. A failed roll raises no team and restarts the countdown, so a lower value makes the house raise AI trigger teams less often. At `100` or above the roll always passes, and at `0` or below the house never raises an AI trigger team.
+
+Only a campaign mission reads its house records, so this is a campaign setting. The [Ratio of AI trigger teams...](/mapping/actions/taction-set-ai-trigger-team-ratio/) trigger action replaces the value during the scenario, in any game type.

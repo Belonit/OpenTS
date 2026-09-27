@@ -7,4 +7,4 @@ when_omitted:
   value: "no"
 ---
 
-House color reaches a drawn object through the color scheme its owner has, and no drawing path tests this flag before applying that scheme. Marking a type therefore adds no house color to artwork that has none, and clearing it keeps none off a civilian type that has some.
+`Remapable` has no effect on house color. `Remapable=yes` adds no house color to artwork that has none, and `Remapable=no` does not remove house color from artwork that has it, even on a civilian type.

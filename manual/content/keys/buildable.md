@@ -12,4 +12,7 @@ when_omitted:
 Buildable=yes
 ```
 
-Two tests read the flag: whether a cell can take a building foundation, and whether a cell will [accept new Tiberium](/systems/tiberium/#spread). A land type left at `no` blocks both at once. Each land type keeps its own setting, and a land type whose section is absent from the rules is not read at all.
+A land type set to `no` refuses both buildings and new Tiberium:
+
+- A cell can take part of a building's foundation only when its land type is buildable. Two placements skip this test. A [laser fence segment](/keys/laserfence/) may cross Tiberium or veins, and a wall, gate or wall tower may go on a cell holding a wall its house owns, under the conditions in [Walls and gates](/systems/walls-and-gates/). A [`DeployToFire=yes`](/keys/deploytofire/) vehicle also deploys to attack only from a buildable cell.
+- A cell accepts [new Tiberium](/systems/tiberium/#spread) only when its land type is buildable.

@@ -12,6 +12,10 @@ when_omitted:
 DigSound=DIGIN1 ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the tunnel locomotor, so only a unit that travels underground reaches it. It is played from the unit's own position three times in a trip. Going down it sounds twice: once as the unit finishes turning toward its destination and tips nose first into the ground, and once again as the dig-in rotation completes and the descent proper begins. Coming up it sounds as the unit rises back through the last fifty leptons to the surface. The [`Dig`](/keys/dig/) animation is raised alongside it on all three.
+A vehicle with the tunnel [`Locomotor`](/keys/locomotor/) plays this sound at its position at three points of a trip underground, each time with the [`Dig`](/keys/dig/) animation:
 
-A fourth call exists, taken when the unit reaches the point it will surface at. Its guard asks whether the unit is within fifty leptons of the surface. At that moment the unit still holds a full cell height below sea level, so the test never passes and the call never sounds.
+1. when it has turned to face its destination and starts to dig in;
+2. when the nose-down dig-in finishes and it starts to sink;
+3. when, rising at its destination, it comes within 50 leptons of ground level.
+
+[`Dig`](/keys/dig/) lists the points a cancelled move skips.

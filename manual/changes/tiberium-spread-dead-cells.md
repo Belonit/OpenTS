@@ -10,4 +10,4 @@ credit:
 - ZivDero
 ---
 
-A cell whose Tiberium has gone since it was queued to spread is now dropped from the spread queue. It was previously re-queued at the head of the queue whether or not it still had anything to seed from. A handful of harvested cells could come back first on every pass and leave that Tiberium type looking as though it had stopped spreading.
+A queued Tiberium cell that cannot spread when its turn comes is now dropped from the spread queue. This covers a cell whose Tiberium is gone or has been harvested too low, and a cell with an object standing on it. Such a cell used to use up one of the pass's spreads, and went back to the head of the queue when two or more neighboring cells could take Tiberium. A handful of harvested cells could then use up the spreads of every pass and make that Tiberium type look as though it had stopped spreading.

@@ -17,4 +17,6 @@ values:
   - { constant: PIP_BLUE, value: 5, input: "blue", meaning: "Blue filled pip." }
 ---
 
-A **pip** is one of the small markers drawn in a row beneath a selected object, and these six colors are what [`Pip`](/keys/pip/) may name; the match ignores case. The engine's own list runs on past them, with a medic's cross, a veteran mark, an elite mark and three health colors it picks for itself. No rules file can ask for any of them.
+A **pip** is one of the small markers drawn in a row beneath a selected object. These six colors are the values [`Pip`](/keys/pip/) accepts, in any letter case. `Pip` sets the color of the pips a transport draws for an infantry passenger.
+
+The engine also draws a medic cross and the veteran and elite marks. No rules key can select those.

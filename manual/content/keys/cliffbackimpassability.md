@@ -12,8 +12,14 @@ when_omitted:
 CliffBackImpassability=2
 ```
 
-`0` skips the rule. `2` is the only value that changes anything: it replaces the cell's [land type](/reference/enums/land-type/) with `Rock`, which is what the movement cost table and the buildable test then read. Any other value runs the height test and then does nothing with the result. The setting is kept as a single signed byte, so a figure outside `-128` to `127` wraps before it is compared.
+`CliffBackImpassability=2` turns a cell into `Rock` when a nearby cell stands at least a full cliff step, four height levels, above it. Movement costs and the buildable test then read `Rock` in place of the cell's earlier [land type](/reference/enums/land-type/).
 
-The test asks whether a neighbor stands at least a full cliff step (four height levels) above the cell. Six neighbors are examined, and the list is not the eight cells around it. The cells at `(0,-1)`, `(-1,0)`, `(+1,-1)`, `(-1,+1)` and `(+1,+1)` are tested, along with `(+2,+2)` two steps away, while the cells at `(+1,0)`, `(0,+1)` and `(-1,-1)` are never tested.
+Only `2` changes anything. `0` turns the rule off, and any other value runs the height test and ignores the result. The value is stored as a single signed byte, so a number outside `-128` to `127` wraps before it is compared. For example, `258` acts as `2`.
 
-The rewrite is the last step of a cell's attribute pass, so it overrides whatever earlier rules decided. Which land types it may overwrite depends on how the cell reached that point. A cell with an overlay that reports `Wall` or `Railroad`, or one set to [`NoUseTileLandType=yes`](/keys/nousetilelandtype/), is rewritten whatever land type the overlay gave it. A cell whose tile turned out to hold no artwork at that subtile has already been reset to `Clear` and is rewritten too. On the ordinary path only `Clear`, `Water`, `Beach` and `Ice` are rewritten, so a cell already reporting `Road`, `Rough`, `Tiberium`, `Weeds`, `Tunnel`, `Wall` or `Railroad` from its own tile keeps what it had.
+The test covers six cells, not the eight that surround the cell. Written as (x, y) offsets from the cell, it checks `(0,-1)`, `(-1,0)`, `(+1,-1)`, `(-1,+1)` and `(+1,+1)`, and also `(+2,+2)`, two steps away. The cells at `(+1,0)`, `(0,+1)` and `(-1,-1)` are never checked.
+
+The rule is the last step in working out a cell's land type, so it overrides the earlier steps. Whether it replaces the land type the cell has so far depends on where that land type came from:
+
+- **An overlay whose land type is `Wall` or `Railroad`, or one set to [`NoUseTileLandType=yes`](/keys/nousetilelandtype/):** the cell becomes `Rock` whatever land type the overlay gave it.
+- **A tile with no artwork for that part of the tile:** the cell has already been reset to `Clear`, and it becomes `Rock`.
+- **Any other cell:** only `Clear`, `Water`, `Beach` and `Ice` become `Rock`. A cell that is already `Road`, `Rough`, `Tiberium`, `Weeds`, `Tunnel`, `Wall` or `Railroad` keeps its land type.

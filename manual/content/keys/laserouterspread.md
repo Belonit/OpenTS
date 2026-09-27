@@ -1,25 +1,25 @@
 ---
 key: LaserOuterSpread
-summary: How far each channel of a laser beam's glow may wander from its color, redrawn every frame.
+summary: How far each channel of a laser beam's glow color may shift at random on each frame.
 see_also: ["IsLaser", "LaserOuterColor", "LaserInnerColor"]
 when_omitted:
   kind: value
   value: "0,0,0"
 ---
 
-Three channel figures, each the largest step the matching channel of [`LaserOuterColor`](/keys/laseroutercolor/) may take in either direction. A fresh offset is picked for every channel on every frame the beam is drawn, and the result is held to the 0-to-255 range. The glow shimmers over the beam's life instead of sitting at one flat color. The offset applies to the whole glow at once, not per pixel, and the beam's core is never touched by it.
+Each of the three numbers is the most that the matching channel of [`LaserOuterColor`](/keys/laseroutercolor/) may shift up or down. On every frame the beam is drawn, a new random shift is picked for each channel, and the result is kept within 0 to 255. The glow therefore shimmers for as long as the beam lasts. Both glow lines take the same shifted color, and the beam's core is not affected.
 
 ```ini title="rules.ini"
 [MyObeliskRay] ; example WeaponType
 IsLaser=yes
 LaserOuterColor=128,0,0
-LaserOuterSpread=40,0,0 ; the glow's red wanders between 88 and 168
+LaserOuterSpread=40,0,0 ; the glow's red varies between 88 and 168
 ```
 
-At normal detail the glow is drawn by blending its red alone, so only the red figure has a visible result there. The green and blue figures shimmer a color that is never put on the screen. All three show at the lowest detail setting, which draws the glow flat in its full color. A glow suppressed by a `LaserOuterColor` of `0,0,0` is not brought back by any spread.
+At normal detail the glow changes only the red of the pixels beneath it, so only the first number has a visible effect. The green and blue numbers show only at the lowest detail setting, which draws the glow as solid lines in its full color. A glow turned off by `LaserOuterColor=0,0,0` stays off whatever the spread.
 
-The figures are read from the weapon in the object's first slot whichever slot fired.
+The numbers always come from the weapon in the object's [first weapon slot](/systems/firing-geometry/#what-each-part-of-a-shot-reads), even when a laser in the second slot fires.
 
 :::note[A partial triplet reads as the default]
-`LaserOuterSpread=40` names one channel where three are needed, so the spread keeps its default figures and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.
+`LaserOuterSpread=40` names one channel where three are needed, so the spread keeps its default and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.
 :::

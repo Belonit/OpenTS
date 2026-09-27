@@ -7,15 +7,17 @@ when_omitted:
   value: "no"
 ---
 
-The setting lives in a mission's own section and is read from the mission the object is currently in.
+`Paralyzed` is set in a mission's section and applies to every object while it is on that mission.
 
 ```ini title="rules.ini"
-[Sticky]
+[Sticky]      ; the section of the Sticky mission
 Paralyzed=yes
 ```
 
-When a soldier, or a vehicle with a first-slot weapon, runs out of orders (no target left and nowhere left to go), it normally switches to a guard mission. If its current mission sets `Paralyzed=yes`, it stays on that mission instead. Vehicles with `Harvester=yes` or `Weeder=yes`, and vehicles without a weapon, ignore the setting: when idle, they go back to harvesting, unload or take guard, whatever their mission. An object on Guard or Area Guard stays on that mission anyway, so the setting matters only on other missions.
+A soldier, or a vehicle with a weapon in its first weapon slot, normally switches to a guard mission when it has no target and no destination left. If its current mission sets `Paralyzed=yes`, it stays on that mission instead. An object on Guard, Area Guard or Patrol stays on that mission anyway, so the setting matters only for other missions.
 
-A vehicle also refuses to scatter while on such a mission, but only partly. The refusal is tested *after* the branch that handles a scatter with no threat coordinate, so a vehicle told to get out of the way of nothing in particular still picks a nearby cell and moves to it. Infantry never test the flag when scattering, and neither do aircraft.
+Vehicles with `Harvester=yes` or `Weeder=yes`, and vehicles without a weapon, ignore the setting. When they run out of orders, they switch to harvesting, unloading or guard under the same conditions as on a mission without the setting.
 
-Despite the name, nothing else immobilizes the object. A player order, a team script or an override mission moves it as usual.
+A vehicle on a `Paralyzed=yes` mission does not scatter away from a threat. A scatter with no threat to move away from, such as the player's scatter command, still sends it to a nearby cell. Infantry ignore the setting when they scatter.
+
+Despite its name, the setting does not stop the object from moving. A player order, a team script or an override mission moves it as usual.

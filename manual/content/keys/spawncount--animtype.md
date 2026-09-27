@@ -8,6 +8,6 @@ when_omitted:
   value: "0"
 ---
 
-The number of children is the sum of two independent picks from zero up to this figure, so it runs from none to twice the setting and averages the setting itself. A figure of zero or below spawns nothing, whatever [`Spawns`](/keys/spawns/#scope-animtype) names.
+The number of [`Spawns`](/keys/spawns/#scope-animtype) animations created at the impact is the sum of two random picks, each from `0` to this value. With `SpawnCount=3`, for example, an impact creates between 0 and 6 animations, 3 on average. A value of `0` or below creates none.
 
-Only a thrown animation spawns at all: one with [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype), and not one that ends low over water.
+Only a thrown animation spawns anything: one with [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype). A thrown animation that lands in water creates nothing, unless it lands on a bridge.

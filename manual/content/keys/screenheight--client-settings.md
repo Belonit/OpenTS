@@ -6,7 +6,9 @@ see_also: [ScreenWidth, Fullscreen]
 when_omitted:
   kind: value
   value: "480"
-  note: The earlier read has already replaced any pair with a missing half by 640 by 480 and opened the display at that size, so this read falls back to the height the screen runs at.
+  note: The startup read has already opened the screen, so this read keeps the height the screen runs at. That height is 480 unless the command line gave one.
 ---
 
-This is the later of the two reads of the assignment, made with the rest of the client settings once the display is already open. [`ScreenWidth`](/keys/screenwidth/#scope-client-settings) covers what the pair settles at that point: the mode the display options screen starts from, and the size the game falls back to when a mode tried there is declined. Writing `-1` rather than leaving the assignment out is not the same thing, for the reason given there.
+The game reads this height a second time with the rest of its settings, after the display is already open. This read does not resize the screen. It sets the height the display options screen starts from, and the height the game returns to when a mode tried there is declined.
+
+[`ScreenWidth`](/keys/screenwidth/#scope-client-settings) covers the stored pair in full, including why writing `-1` is not the same as leaving the assignment out.

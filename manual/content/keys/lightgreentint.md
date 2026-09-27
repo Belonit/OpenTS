@@ -16,8 +16,8 @@ LightGreenTint=1.5
 LightBlueTint=0.01
 ```
 
-The figure is a fraction of full brightness on the same scale the map's own color grading uses. `1` adds as much green at the structure's center as a fully lit map already has, and the addition falls away to nothing at [`LightVisibility`](/keys/lightvisibility/), exactly as [`LightIntensity`](/keys/lightintensity/) does. A negative figure takes green out of the cells instead.
+The value is how much green the structure's light adds to the ground around it. At the structure's center, `LightGreenTint=1` adds as much green as a map at [`Green=1`](/keys/green/) already has. The addition falls off in a straight line to nothing at [`LightVisibility`](/keys/lightvisibility/), like [`LightIntensity`](/keys/lightintensity/). A negative value takes green out instead.
 
-What reaches the screen is the balance between the three tints rather than their size, which [`LightRedTint`](/keys/lightredtint/) covers.
+The balance between the three tints gives a light its color; [`LightRedTint`](/keys/lightredtint/) explains how they combine. Set all three tints on any structure with a light. [`LightIntensity`](/keys/lightintensity/) explains what the built-in `1000` does to the ground.
 
-A file read after `rules.ini` that names the same section without this key cuts the stored figure back to a whole number before storing it again. A `1.5` green drops to `1`; a `0.01` green drops out of the light altogether.
+A later rules file can wipe out a fractional value. If any later rules file, such as the expansion's rules or a map's own rules, contains the structure's section but not this key, the stored value loses its fraction. A `1.5` green drops to `1`, and a `0.01` green drops to `0`, which removes it from the light.

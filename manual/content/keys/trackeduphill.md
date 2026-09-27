@@ -7,10 +7,18 @@ when_omitted:
   value: "1"
 ---
 
-Each cell of a vehicle's journey is costed as a fraction of full speed, drawn from the movement table its [`SpeedType`](/keys/speedtype/) selects. That fraction is multiplied by this value when the ground under the destination cell stands higher than the ground under the vehicle. A step of two or more terrain levels is costed from the Road row of that table rather than from the destination's own land type. Ground heights are what is compared, so a ramp counts as a climb exactly as a cliff edge does. A step between cells of equal height takes neither this multiplier nor [`TrackedDownhill`](/keys/trackeddownhill/).
+A tracked vehicle climbs into a higher cell at the speed the terrain allows, multiplied by this value. The stock `.5` halves its speed on a climb.
 
-The multiplier reaches vehicles only, and among them only those with `SpeedType=Track`; every other SpeedType on a vehicle takes [`WheeledUphill`](/keys/wheeleduphill/) instead, whatever its name suggests. It is also the ordinary ground drive's rule alone, so a vehicle given any other [`Locomotor`](/keys/locomotor/), such as hover or tunnel, climbs at an unmodified speed. Only the speed of the step changes: the route search does not read this value, so a slower climb does not push a vehicle to route around the hill.
+The speed the terrain allows is the vehicle's [`SpeedType`](/keys/speedtype/) figure in the [terrain table](/systems/movement-and-terrain/#the-terrain-table) section for the destination cell's land type. When the destination's ground is two or more levels from the height the vehicle travels at, as on a bridge deck, the `[Road]` figure is used instead.
 
-:::caution[The multiplier is applied after the terrain cost is capped]
-The terrain cost is clamped to full speed first, and this value is applied afterwards. A figure above `1` therefore moves a tracked vehicle uphill faster than it moves on the flat, and nothing clamps the product from above. The stock `.5` halves the speed the terrain would otherwise allow. A product of exactly zero is then replaced with half of full speed, so `TrackedUphill=0` does not forbid a climb.
+This value applies when the ground at the destination cell is higher than the ground under the vehicle. A ramp counts as a climb just as a cliff edge does. A step between cells of equal height takes neither this value nor [`TrackedDownhill`](/keys/trackeddownhill/).
+
+Only vehicles with `SpeedType=Track` use this value. A vehicle with any other SpeedType uses [`WheeledUphill`](/keys/wheeleduphill/) instead, whatever its name suggests, and infantry and aircraft use neither. The multiplier belongs to the ordinary driving [`Locomotor`](/keys/locomotor/), so a vehicle with any other locomotor, such as hover or tunnel, climbs at the unmodified speed.
+
+Only the speed of the step changes. The route search does not read this value, so a slow climb does not make a vehicle route around a hill.
+
+The terrain speed is capped at full speed before this value applies, and the result is capped at full speed again. A value above `1` therefore speeds up a climb only across terrain slower than full speed, and never beyond full speed.
+
+:::caution[Keep TrackedUphill above 0]
+A climb whose speed works out to exactly zero is made at half speed instead, so `TrackedUphill=0` does not forbid climbing. A negative value leaves the vehicle no speed for the step, and it slows to a stop on the slope.
 :::

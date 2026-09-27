@@ -8,11 +8,15 @@ when_omitted:
   value: ".016"
 ---
 
-The value is the fraction of a minute a mission waits between one servicing pass and the next. It is read from the mission's own rules section (`[Sleep]`, `[Guard]`, `[Repair]` and the rest) and multiplied out to game frames at 900 to the minute; at the default that is 14 frames. An idle service building counts its work in these passes; [an armory's promotion clock](/systems/repair/#hospitals-and-armories) is the visible case.
+`Rate=` sets how often an object on this mission runs the mission's logic again. The value is a fraction of a minute of game time. The game multiplies it by 900 and drops any fraction to get the interval in game frames, so the default `.016` gives 14 frames. The game stores the value with limited precision, so a value meant to land on a whole frame count can come out one frame lower: `.030` gives 26 frames, not 27. Many missions add a random 0 to 2 frames to each interval.
+
+Each mission reads its own `Rate=`, from its section such as `[Guard]` or `[Repair]`.
 
 ```ini title="rules.ini"
 [Guard]
-Rate=.030  ; 27 frames between passes
+Rate=.050  ; 45 frames between passes
 ```
 
-[`AARate`](/keys/aarate/) in the same section is the counterpart used by armed buildings on guard, and it falls back to this value when it is absent or zero.
+Work that a mission counts in passes slows down or speeds up with this setting. The visible case is the armory, whose promotion count advances once per `[Repair]` pass; see [Hospitals and armories](/systems/repair/#hospitals-and-armories).
+
+[`AARate`](/keys/aarate/) in the same section is the interval an armed structure on guard uses instead. When `AARate` is absent or `0`, it takes this value.

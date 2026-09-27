@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-A team running Goto nearby shroud now heads for cells its own house has not uncovered. Before, it searched the shroud of the player at each machine: a campaign team scouted toward whatever the player had not seen, and in a network game each machine could send the team somewhere different and fall out of sync.
+A team running Goto nearby shroud now heads for cells that the team's house has not uncovered. Before, each machine searched the shroud of the player it was running. A campaign team scouted toward whatever the player had not seen, and in a network game each machine could send the team somewhere different and fall out of sync.

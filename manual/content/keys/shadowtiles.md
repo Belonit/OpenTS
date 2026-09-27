@@ -8,7 +8,7 @@ when_omitted:
   note: No tile of the set is marked as a caster, though the set still takes one of the five caster slots.
 ---
 
-The key is only looked for on a set that already sets [`ShadowCaster=yes`](/keys/shadowcaster/); on any other set it is not read at all. What the figure then does is decided by whether it is zero, and nothing else: any non-zero figure marks every tile of the set as a caster, and zero marks none of them.
+Any non-zero value lets the tiles of a [`ShadowCaster=yes`](/keys/shadowcaster/) set cast shadows, and `0` stops all of them. The key is read only on a set with `ShadowCaster=yes`.
 
 ```ini title="TEMPERAT.INI"
 [TileSet0010]      ; example cliff set
@@ -16,7 +16,7 @@ SetName=Cliffs
 FileName=CLIFF
 TilesInSet=40
 ShadowCaster=yes
-ShadowTiles=40     ; any non-zero figure has the same effect
+ShadowTiles=40     ; any non-zero value has the same effect
 ```
 
-The name suggests a count of the tiles at the front of the set that cast a shadow. There is no such count. Which tiles cast what is fixed by the shadow table [`ShadowCaster`](/keys/shadowcaster/) describes, and the figure here never reaches it.
+Despite its name, the value is not a count and cannot limit shadows to some of the set's tiles. Which tiles cast a shadow, and which shadow each draws, depends only on the tile's position in the set, as [`ShadowCaster`](/keys/shadowcaster/) describes.

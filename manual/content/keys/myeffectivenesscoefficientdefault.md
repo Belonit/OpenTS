@@ -7,6 +7,9 @@ when_omitted:
   value: "0"
 ---
 
-The value is substituted whenever a type's own [`MyEffectivenessCoefficient`](/keys/myeffectivenesscoefficient/) is zero and the section being read omits the key. An explicit `0` in a section survives its own pass. It is replaced only when a later rules layer contains the section without the key. `[General]` is read before the object types in each pass over the rules, so a value written here reaches every type in the same file.
+A type that does not set [`MyEffectivenessCoefficient`](/keys/myeffectivenesscoefficient/) uses this value instead. A positive value makes the types that use it prefer candidates their warhead damages well. [The threat score](/systems/target-selection/#the-threat-score) shows how it combines with the other coefficients.
 
-Raising it therefore switches this term of the threat score on for every type that never sets the key itself.
+Each rules layer reads `[General]` before the object types, so the value reaches every type whose section appears in the same file. A type takes the value only while its coefficient is `0`:
+
+- An explicit `MyEffectivenessCoefficient=0` counts as unset, so a later rules layer can replace it with this value. The [`MyEffectivenessCoefficient`](/keys/myeffectivenesscoefficient/) page shows how to keep a `0`.
+- A type that already took a nonzero value, from its own section or from an earlier default, keeps it when a later layer changes this default.

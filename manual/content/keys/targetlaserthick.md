@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-A second copy of the line is drawn one row below the first, and the squares on its ends grow from two pixels to four. The sighting laser is the line a firing vehicle with [`TargetLaser=yes`](/keys/targetlaser/) draws to where its shot is aimed; [Action lines](/systems/action-lines/) covers when it is drawn.
+A second copy of the line is drawn one row below the first. The squares on the laser's ends grow from two pixels wide to four, or to three when [`TargetLaserDropShadow=yes`](/keys/targetlaserdropshadow/) is also set.
+
+The sighting laser is the line a firing vehicle with [`TargetLaser=yes`](/keys/targetlaser/) draws to where its shot is aimed. [Action lines](/systems/action-lines/) covers when it is drawn.

@@ -7,4 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-The bias that decides whether the third slot's animation is drawn over the structure or behind it. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers which direction each sign moves it and the byte the figure has to fit in.
+`ActiveAnimThreeZAdjust` shifts the depth at which the [`ActiveAnimThree`](/keys/activeanimthree/) animation is drawn. A negative value brings the animation toward the viewer, and a large enough value draws it over the structure. A positive value pushes it back, and a large enough value lets the structure cover it.
+
+Keep the value between -128 and 127. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers what happens outside that range and how the depth bias differs from the sorting bias.

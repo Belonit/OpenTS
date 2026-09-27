@@ -8,6 +8,8 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The role covers four consecutive tiles, and two tests read them. A water test counts every one of the four as holding water, so a vehicle standing on any of them refuses to take a passenger aboard. A cliff test counts them as rock face, sparing only the subtiles at the ends of the fall that spill out onto ordinary ground. On this set those are subtiles `0` and `1` of its first and last piece. The pieces are laid by the [random map generator](/formats/map-seed/), which puts the first and last at the two ends of a south-running fall and fills the drop between them with the middle two.
+The role names the tile set whose four tiles make a south-running waterfall. The [random map generator](/systems/map-generation/#water) lays the first and last tile at the two ends of the fall and fills the stretch between them with the second and third.
 
-[`WaterfallEast`](/keys/waterfalleast/) covers both tests as all four roles share them, including the order the roles are taken in, what an unresolved role accepts, and why the moving water is not this key's doing.
+Every tile in the set counts as holding water, so a transport vehicle standing on one refuses to take on a passenger. Random map generation also treats the set as rock face, except where the fall spills out onto ordinary ground. For this set those are subtiles `0` and `1` of the first and last tile.
+
+[`WaterfallEast`](/keys/waterfalleast/) covers what the four roles share: the order the cliff test checks them in, what an unresolved role does, and where the falling water's animation comes from.

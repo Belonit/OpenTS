@@ -8,8 +8,24 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-Laying one of these pieces down builds a tunnel. As a cell's terrain is worked out, a cell whose tile reports the [`Tunnel` land type](/reference/enums/land-type/) and that has no tunnel yet is matched against the four tunnel roles in turn: this one, then [`TrackTunnels`](/keys/tracktunnels/), then [`DirtTunnels`](/keys/dirttunnels/), then [`DirtTrackTunnels`](/keys/dirttracktunnels/). The first role whose four pieces contain the tile wins. A tunnel is then created at that cell. The piece's place in the set names the facing it is entered from: the first piece from the east, the second from the south, the third from the west, the fourth from the north.
+A cell holding one of these four pieces becomes a tunnel entrance, provided its tile artwork reports the [`Tunnel` land type](/reference/enums/land-type/). The engine checks each such cell that has no tunnel yet whenever it works out the cell's terrain.
 
-The land type comes from the artwork rather than from this key, so a set named here whose tiles do not report `Tunnel` builds nothing at all. The artwork gate also settles the unresolved role: a theater with no tile reporting `Tunnel` land matches nothing, so nothing is misread. Where tiles do report `Tunnel` land and the role is unresolved, the theater's first three tiles match as its second, third, and fourth pieces, entered from the south, west, and north. What the key settles is which of the four facings each piece of the set stands for.
+The piece's position in the set sets the tunnel's entry facing:
 
-A tunnel joins the ground on either side of it. Once the cell has tunnel cells on both sides along one axis, the entrance and the exit are registered as a crossing between two otherwise unconnected pieces of ground. Route-finding uses it the way it uses a [bridge](/keys/bridgeset/) span.
+| Piece | Entry facing |
+| --- | --- |
+| First | East |
+| Second | South |
+| Third | West |
+| Fourth | North |
+
+A tile can fall inside more than one of the four tunnel roles. The engine tests them in this order and uses the first that contains the tile:
+
+1. `Tunnels`
+2. [`TrackTunnels`](/keys/tracktunnels/)
+3. [`DirtTunnels`](/keys/dirttunnels/)
+4. [`DirtTrackTunnels`](/keys/dirttracktunnels/)
+
+With the role unresolved, the theater's first three tiles match as the second, third and fourth pieces, but only if their artwork reports `Tunnel` land.
+
+Route-finding links a tunnel cell to its tunnel's exit when the cell's two neighbors along one axis are also tunnel cells, so a route can pass through the tunnel.

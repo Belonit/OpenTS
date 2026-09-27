@@ -9,4 +9,4 @@ when_omitted:
   note: The role stays unresolved, because no tile set number can match it.
 ---
 
-The value is resolved to a live tile index alongside every other `[General]` role of the theater control file.
+The engine resolves this number to a tile set like every other `[General]` role of the [theater control file](/formats/theater-control/), then never uses the result.

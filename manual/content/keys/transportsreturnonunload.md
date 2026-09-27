@@ -1,18 +1,22 @@
 ---
 key: TransportsReturnOnUnload
-summary: Releases each transport from the team at unload and sends it on the Move mission with whatever return point its record holds.
+summary: Releases each transport from the team when an Unload mission finishes and puts it on the Move mission.
 see_also: [Passengers, "system:ai-team-execution"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The behavior belongs to the team rather than to the transport type. The team keeps one return point per transport in a shared record field, and three steps govern what that field holds.
+With this set, once an [Unload](/mapping/missions/tmission-unload/) mission has emptied every transport, each transport leaves the team and is put on the Move mission. A transport is a member whose type sets [`Passengers`](/keys/passengers/) above zero. When the team's TaskForce includes an aircraft that carries passengers, only aircraft count as transports, and a ground transport is treated like any other member.
 
-1. Each time the team coordinates a move toward a target, every member whose type sets [`Passengers`](/keys/passengers/) above zero and has no return point yet stamps the cell it is standing in. The record survives later passes within the same script mission, because a member that already holds one is passed over. A reinforcement therefore records its entry position on its first move.
-2. When the team advances to the next line of its script, including the advance into the Unload mission, it wipes every member's record and drops its own move target.
-3. Once an [Unload](/mapping/missions/tmission-unload/) mission has emptied every transport, each transport is dropped from the team, given its record as destination, and put on the Move mission. Its record is cleared so a later trip can take a fresh one.
+The Unload mission's argument, the number on its script line, still decides what happens to the members that are not transports. It has no effect on the transports, which are released whatever it names.
 
-Unload itself records nothing: the move coordination that stamps records needs a team target, and the unload mission leaves the team with none. The approach stamps from step 1 are therefore gone by the time step 3 reads the record. Normally the record is empty at release, and the transport is sent on the Move mission with no destination. Whatever another order wrote into the shared field between the wipe and the release is what the transport receives instead.
+Despite the key's name, a released transport normally has no destination and does not travel back. With no destination, the Move mission sends it straight to its idle behavior.
 
-The unload mission's own argument (the number on its script line) still decides what becomes of the members that have no passengers. It has no say over the transports: they are released whichever setting it names.
+The destination comes from a return point the team keeps for each transport:
+
+1. Each time the team moves toward a target, every transport that has no return point yet records the cell it stands in.
+2. When the team advances to the next line of its script, it erases every member's return point. This includes the advance onto the Unload line, and the Unload mission records nothing.
+3. On release, the transport is sent to its return point, and the point is cleared.
+
+The points recorded on the approach are therefore already gone at release. A transport goes somewhere only if some other order stored a destination for it between the advance onto the Unload line and the release.

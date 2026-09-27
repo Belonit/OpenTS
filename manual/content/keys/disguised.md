@@ -7,10 +7,26 @@ when_omitted:
   value: "no"
 ---
 
-The disguise is a property of the type alone, so it is permanent. A soldier of the type is disguised from the moment it appears until it dies, and nothing during its life can add or drop the disguise. The identity a disguised soldier shows comes from the InfantryType named by [`Disguise`](/keys/disguise/) in `[General]`, which covers the two ownership tests behind the substituted name and shape. On top of that substitution the soldier is drawn in the local player's own color scheme whenever the local player does not own it. On the radar it is plotted in the local player's color with no ownership test at all.
+Every soldier of a `Disguised=yes` type is disguised for its whole life. The disguise belongs to the type, so nothing can add it to one soldier or take it away.
 
-The disguise also keeps automatic fire away. A disguised soldier is rejected outright while [a candidate is being scored](/systems/target-selection/#why-a-candidate-is-rejected), unless the scanning object's type sets [`DetectDisguise=yes`](/keys/detectdisguise/), or the scanning object belongs to a computer house and [`AIDetectDisguise=yes`](/keys/aidetectdisguise/) is set. No vehicle choosing on its own whether to run something down will pick one, whoever owns it. An infantryman routing through a cell a disguised soldier occupies treats that cell as temporarily blocked rather than closed, so it waits rather than going around. Neither of those two follows the detection settings.
+## What other players see
 
-:::caution[A disguised soldier is passed over by every scan that cannot see through it]
-Apart from the two detection settings, the rejection reads only the candidate's type: it applies to every scanning object of every house, the disguised soldier's own owner included. A player order, retaliation against a shot the soldier fired, and area damage all still reach it; only the automatic scan does not.
-:::
+A disguised soldier shows the name and artwork of the InfantryType that [`Disguise`](/keys/disguise/) names in `[General]`. That key's page gives the ownership test for each.
+
+The soldier is also drawn in the local player's color whenever the local player does not own it. On the radar it is always plotted in the local player's color, whoever owns it.
+
+## Automatic targeting
+
+[Target selection](/systems/target-selection/#why-a-candidate-is-rejected) rejects a disguised soldier as a candidate, whichever house the scanning object belongs to. It is still considered when **any of** these holds:
+
+- the scanning object's type sets [`DetectDisguise=yes`](/keys/detectdisguise/);
+- the scanning object belongs to a computer house and [`AIDetectDisguise=yes`](/keys/aidetectdisguise/) is set.
+
+Only the automatic scan is affected. A player's attack order, retaliation against a shot the soldier fired, and area damage all still reach it.
+
+## Movement around it
+
+Two more effects ignore the detection settings:
+
+- A computer-owned vehicle outside a team that is shot by a disguised soldier never tries to run it over in reply.
+- An armed infantry routing past a disguised soldier it is not allied with treats that soldier's cell as temporarily blocked. An enemy soldier without a disguise does not block the cell this way.

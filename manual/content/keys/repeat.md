@@ -13,8 +13,8 @@ Name=Intro
 Repeat=yes
 ```
 
-Two places read it, and between them they close the loop. Starting the track queues the same track as the one to play next, and the routine that would otherwise advance the playlist hands back the track it was given rather than choosing another. The track therefore plays until something else replaces it, and neither the sequential order nor the shuffle ever moves off it.
+`Repeat=yes` plays the track again each time it ends, whether shuffle is on or off. The game does not move on to another track by itself. The track keeps playing until something else changes the music, such as a new scenario. [Choosing the next track](/systems/music/#choosing-the-next-track) lists what can interrupt a repeating track.
 
-The loop closes only around a track the game actually holds. A track whose audio file is missing from the mixfiles is advanced past like any other, rather than being handed back and asked for again.
+The setting matters most for a track that is [started immediately](/systems/music/#choosing-the-next-track), such as the map selection, score screen or ion storm track, or the main menu track when the menu first opens. When such a track ends, the music stops unless it repeats or another track has been queued.
 
-The repeat button on the sound options screen does the same thing for every track at once. Either is enough on its own: a track marked this way repeats whether or not the button is on.
+The repeat option on the sound options screen, stored as [`IsScoreRepeat`](/keys/isscorerepeat/), repeats every track. A track with `Repeat=yes` repeats whether that option is on or off.

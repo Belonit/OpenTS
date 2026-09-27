@@ -1,6 +1,6 @@
 ---
 key: BlackTile
-summary: Tile-set number that resolves to a tile index nothing reads.
+summary: Tile-set number whose first tile the engine looks up and never uses.
 no_effect: true
 when_omitted:
   kind: value
@@ -8,4 +8,4 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The role resolves like every other in the [theater control file](/formats/theater-control/): when the numbered sections are read, the named set's first tile is recorded. No part of the engine reads the result afterwards.
+The engine looks up the named set's first tile, as it does for every other role in the [theater control file](/formats/theater-control/), and never uses it.

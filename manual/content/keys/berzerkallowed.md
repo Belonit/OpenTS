@@ -7,8 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-The hit must leave a [`Cyborg=yes`](/keys/cyborg/) infantryman alive and take it from at or above half its strength to below half. A hit heavy enough to cross [`ConditionRed`](/keys/conditionred/) in the same blow is classed as the graver of the two and does not send the soldier berserk. A single heavy hit that takes a cyborg past both marks at once leaves it sane. The state is set once per soldier and is never cleared.
+With `BerzerkAllowed=yes`, a [`Cyborg=yes`](/keys/cyborg/) infantryman goes berserk when one hit takes it from at least half its maximum strength to below half. The hit must not be one that would destroy it. If the same hit also takes it below [`ConditionRed`](/keys/conditionred/), it does not go berserk. Once berserk, a soldier stays berserk.
 
-A berserk soldier stops recognizing its own side. Allied objects are no longer excluded from its target search, and an ally standing in a cell it sweeps is accepted as a target. It is put on the guard-area mission as it turns.
+A berserk soldier attacks allies as well as enemies. Its target search no longer skips allied objects, including allies standing in the cells it scans. A soldier that goes berserk from damage is also put on the guard-area mission.
 
-The [Go Berzerk](/mapping/actions/taction-go-berzerk/) trigger action and the [Go Berzerk](/mapping/missions/tmission-berzerk/) team mission set the same state directly. Neither reads this setting, and neither requires the infantry to be a cyborg or to be damaged.
+The [Go Berzerk](/mapping/actions/taction-go-berzerk/) trigger action and the [Go Berzerk](/mapping/missions/tmission-berzerk/) team mission make infantry berserk directly. Neither reads this setting, and neither requires the infantry to be a cyborg or to be damaged.

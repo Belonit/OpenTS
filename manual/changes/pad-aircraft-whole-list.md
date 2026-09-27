@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-The share of a pad's price that stands for its aircraft is now the average of every `PadAircraft` entry. An empty list bundles no price and leaves a hoverpad without its free aircraft. The engine read entries 0 and 1 whatever the list held. An empty list was therefore read past its end the first time a building price was worked out, and the game crashed before a match could start.
+Unless `SeparateAircraft=yes` is set, a new pad comes with the first aircraft that `PadAircraft=` in the `[General]` section of `rules.ini` lists, and the pad's price includes a share of the list's cost. That share is now the average cost of every entry in the list. It used to average the first two entries whatever the list held, so an empty list crashed the game, and a one-entry list could crash it or misprice the pad. An empty list now adds nothing to the price and gives a pad no free aircraft.

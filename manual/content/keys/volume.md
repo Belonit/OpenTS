@@ -7,7 +7,14 @@ when_omitted:
   value: "1.0"
 ---
 
-The value is a fraction of the sample's own loudness. A value above 1 is read as a percentage, so `0.5` and `50` mean the same thing, and `1` and `100` are both full loudness. The result is clamped between silence and full loudness; a sound cannot be made louder than its sample. Four factors scale it further: the loudness the game asks for when it plays the sound, the distance fade of a placed sound, the random [`VShift=`](/keys/vshift/), and the player's [`SoundVolume`](/keys/soundvolume/) setting. The sound effect path falls silent altogether when that setting is at zero. The voice path leaves the setting out.
+`Volume=` sets how loud the sound plays, as a fraction of its sample's recorded loudness. A value above 1 is read as a percentage, so `0.5` and `50` mean the same thing, and `1` and `100` are both full loudness. `Volume=1.5` is therefore 1.5 percent. The value is held between silence and full loudness, so no sound plays louder than its sample.
+
+Each play multiplies the value by two more factors, and the product is again held at full loudness:
+
+- the distance fade of a sound played at a place in the world, or the loudness the game asks for when the sound has no place;
+- the play's random [`VShift=`](/keys/vshift/) draw.
+
+The [`SoundVolume`](/keys/soundvolume/) option then scales every sound effect, and while it is at zero no sound effect starts. The one exception is the beep the voice volume slider plays outside a game, which follows [`VoiceVolume`](/keys/voicevolume/) instead.
 
 ```ini title="sound01.ini"
 [SCOLD8]
@@ -15,8 +22,8 @@ Priority=75
 Volume=0.5
 ```
 
-A `[Defaults]` entry can supply the value for every sound section that omits the key.
+A `Volume=` in the `[Defaults]` section of [SOUND.INI](/formats/sound-ini/) applies to every sound section that omits the key.
 
 :::caution[A value above 1 no longer raises the loudness]
-Earlier releases multiplied by the value as written and clamped only the product, so `Volume=2` played a quiet sample at up to twice its loudness. The same line now means two percent. Remove such values or write `Volume=100`.
+In earlier releases, a value above 1 made a sound louder than its sample, so `Volume=2` played a quiet sample at up to twice its loudness. The same line now means two percent. Remove such values or write `Volume=100`.
 :::

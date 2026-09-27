@@ -12,4 +12,4 @@ when_omitted:
 GDIHunterSeeker=GHUNTER
 ```
 
-The named UnitType becomes the first side's [`HunterSeeker`](/keys/hunterseeker/#scope-side) as each rules file that has the key sets it; a `HunterSeeker=` in that side's own section of the same file overrides it. It has no other effect.
+The value becomes the [`HunterSeeker`](/keys/hunterseeker/#scope-side) of the first side in the rules' [`[Sides]`](/formats/rules-registries/) list, in each rules file that sets this key. A `HunterSeeker=` in that side's own section of the same file overrides it. A file that omits this key leaves the side's value alone. [`NodHunterSeeker`](/keys/nodhunterseeker/) does the same for the second side, and nothing else reads this key.

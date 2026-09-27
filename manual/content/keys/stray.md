@@ -8,6 +8,15 @@ when_omitted:
   note: "512 leptons."
 ---
 
-The figure is written in cells, with fractions accepted, and multiplied by 256 as it is read. Every test that holds a team's formation together applies this tolerance. A member that has drifted farther than this is ordered back rather than left where it is. The distance is measured from the team's center, from the nearest other member, or from the destination the team is moving to. Until that member is back, the team does not count as gathered or as having arrived. An aircraft is allowed three times the distance, and one team mission measures twice it. [Team execution](/systems/ai-team-execution/#keeping-the-members-together) sets out the individual tests and which of the two distances each one measures.
+`Stray` is how far a team member may be from where the team wants it before the team orders it there. The value is in cells, and fractions are accepted. A larger value lets a team spread out more before it pulls members back.
 
-One test outside teams reads it. An infantryman or vehicle that starts a path search toward a temporarily blocked cell heads for a passable cell nearby instead, but only while it is farther from that cell than its check distance. A team member measures that distance against this figure, and every other object measures it against [`CloseEnough`](/keys/closeenough/).
+The team applies this distance in several tests:
+
+- A newly recruited member farther than this from the team's center is sent to the center. Until it comes within this distance, it holds up the team's arrival at a move target.
+- While the team regroups, any member farther than this from the center is sent back to it.
+- While the team moves, a member farther than this from the move target is ordered toward it. An aircraft is allowed three times the distance.
+- One team mission sends a member back to the center only once it is more than twice this distance away.
+
+[Team execution](/systems/ai-team-execution/#keeping-the-members-together) sets out each test and the exceptions to it.
+
+One path test outside team coordination also reads this key. When an infantry unit or vehicle searches for a path to a cell that is temporarily blocked, it may head for a reachable free cell nearby instead, but only while it is farther from the blocked cell than its check distance. A team member uses this key as its check distance. Every other object uses [`CloseEnough`](/keys/closeenough/). A train never takes the detour.

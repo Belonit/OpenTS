@@ -1,14 +1,24 @@
 ---
 key: Capturable
-summary: Allows a structure to take the enter cursor and to change hands when an engineer walks in.
+summary: Lets an engineer capture the structure, and shows the enter cursor over it.
 see_also: ["system:capture"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-Three paths read it: the engineer's own cursor over a [`Repairable=yes`](/keys/repairable/) structure, the enter cursor every [`Infiltrate=yes`](/keys/infiltrate/) soldier is offered over a non-allied structure, and the capture itself. Because the last of the three is a separate test from the first two, a structure that somehow receives the order without the cursor still refuses to change hands. The engineer is consumed and nothing happens.
+An engineer that walks into a non-allied `Capturable=yes` structure takes it for its own house. At `Capturable=no` the engineer is used up and the structure stays with its owner, however the engineer was sent there.
 
-Two paths bypass it entirely. A structure that undeploys into a vehicle is [captured through the vehicle branch](/systems/capture/#the-vehicle-branch), which tests nothing but the destination. And the skirmish branch that has an engineer damage a structure instead of taking it does not read the setting either, so `Capturable=no` does not protect a structure from that damage.
+The flag also decides which cursors a player's soldiers get over a non-allied structure. [The cursor](/systems/capture/#the-cursor) gives the full rules.
 
-A computer house's scan reads it too, as the filter on [a request for capturable structures](/systems/target-selection/#why-a-candidate-is-rejected).
+- Over a visible [`Repairable=yes`](/keys/repairable/) structure, an engineer gets the enter cursor only when this is set. While the structure is above [`EngineerCaptureLevel`](/keys/engineercapturelevel/), the engineer gets the damage action instead. Over a fogged record of a `Repairable=yes` structure, the enter cursor appears whatever `Capturable` says.
+- Every [`Infiltrate=yes`](/keys/infiltrate/) soldier, a spy included, gets the enter cursor over a `Capturable=yes`, [`LegalTarget=yes`](/keys/legaltarget/) structure.
+
+An unarmed `Infiltrate=yes` soldier that has no other destination walks to a `Capturable=yes` structure given to it as a target.
+
+A computer house's scan for structures to capture considers only `Capturable=yes` ones, as [a rejected candidate](/systems/target-selection/#why-a-candidate-is-rejected) describes.
+
+Two outcomes ignore the flag:
+
+- A structure that undeploys into a vehicle, other than a [`ConstructionYard=yes`](/keys/constructionyard/) type, is [taken through the vehicle branch](/systems/capture/#the-vehicle-branch), which changes its owner whatever this is set to.
+- Outside campaign games, the multiplayer engineer option has engineers [damage a structure instead of taking it](/systems/capture/#damaging-it-instead). `Capturable=no` does not protect a structure from that damage.

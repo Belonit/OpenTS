@@ -8,6 +8,8 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The set has the same shape and the same treatment as [`Ice1Set`](/keys/ice1set/), which covers the layout the three share.
+The set has the same layout and treatment as [`Ice1Set`](/keys/ice1set/), which describes the layout the three ice sets share and how the engine picks tiles from them. Ice growth thickens this set's edge pieces as it does those of `Ice1Set`; see [`Ice3Set`](/keys/ice3set/) for the set it skips.
 
-It has one role the others do not. The test that asks whether a cell is ice runs from the start of the first set to sixty-four tiles past the start of *this* one. With the three sets registered in order it accepts the first two and stops before [`Ice3Set`](/keys/ice3set/). Placing this set anywhere other than directly after the first therefore moves the boundary of what counts as ice.
+This set's position also ends one range of tiles treated as ice. After the [random map generator](/systems/map-generation/) lays an ice sheet, it scatters patches of cracked ice and edge pieces over it. A patch spreads only into cells whose tile lies between the first tile of `Ice1Set` and the last tile of this set. With the three sets consecutive in order, that range covers the first two sets.
+
+Place this set directly after `Ice1Set`. Anywhere else, patches either stop at their first cell or spread onto cells holding unrelated tiles that fall inside the range.

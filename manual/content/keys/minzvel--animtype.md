@@ -8,12 +8,21 @@ when_omitted:
   value: "3.5"
 ---
 
-Leptons per frame: 256 leptons to a cell, 15 frames to the second. A thrown animation goes up at this speed plus a whole number of leptons, so this is the slowest launch the type can produce.
+The value is in leptons per game frame, and a cell is 256 leptons across. A [`Bouncer=yes`](/keys/bouncer/) animation is thrown upward at this speed plus a random whole number, so the setting is its slowest launch speed.
 
-The span that whole number comes from is the truncated value of `4.5` minus this setting, and that `4.5` is built in: an animation has no setting of its own to raise it with. The pick hands back a non-negative offset whichever side of zero that lands on, so the speeds always run upward from the setting and the band grows wider the further the setting sits from `4.5`. A setting of `20` launches at `20` through `34`; `40` launches at `40` through `74`; the default `3.5` leaves a span of one and launches at `3.5` exactly, every time.
+The number of possible launch speeds is the whole-number part of the gap between the setting and `4.5`, a figure no animation type key changes:
 
-A meteor takes the figure as its vertical speed outright, with no pick at all. The sign then decides the approach, as [`IsMeteor`](/keys/ismeteor/#scope-animtype) describes.
+| Setting | Launch speeds |
+| --- | --- |
+| `3.5` (the default) | exactly `3.5` every time |
+| `0` | `0` to `3` |
+| `20` | `20` to `34` |
+| `40` | `40` to `74` |
 
-:::danger[A setting just above the default stops the game]
-Any value above `3.5` and below `5.5` truncates the span to zero. The division faults, and the game stops the moment a [`Bouncer=yes`](/keys/bouncer/) animation of the type is created. A meteor never makes the pick and is unaffected, and so is an animation that neither flag throws.
+Below `3.5`, speeds run from the setting up to at most `3.5`. Above `5.5`, the range widens as the setting grows.
+
+A meteor drops 1.4 leptons per frame more than this value, with no random part. The value decides where the meteor comes from and how far short of its target it lands, as [`IsMeteor`](/keys/ismeteor/#scope-animtype) describes.
+
+:::danger[A value between 3.5 and 5.5 crashes the game]
+A value above `3.5` and below `5.5` leaves the random range empty and causes a division by zero. The game crashes when a `Bouncer=yes` animation of the type is created. An `IsMeteor=yes` animation draws no random vertical speed and is unaffected.
 :::

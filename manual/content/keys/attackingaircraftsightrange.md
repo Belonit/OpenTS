@@ -7,9 +7,15 @@ when_omitted:
   value: "5"
 ---
 
-When a human player's aircraft fires, it reveals this many cells around its own position for its owner, in place of its [`Sight=`](/keys/sight/), if any of these lies under the owner's shroud: the aircraft's own position, three points two cells from it on the diagonals, or the target's center. In a campaign, an aircraft of any player-controlled house qualifies, and the player's own shroud is tested.
+When a human player's aircraft fires, it reveals the ground within this many cells of its position if any of these points lies under its owner's shroud:
 
-The radius is a plain count of cells and is not converted from a lepton distance.
+- the aircraft's position;
+- any of three points two cells from the aircraft on the diagonals;
+- the center of the target.
+
+The reveal uncovers the ground for the aircraft's owner and for the houses that [share its view](/systems/map-visibility/#whose-looks-count). It is made in addition to the aircraft's regular looks with its [`Sight=`](/keys/sight/). In a campaign, an aircraft of any player-controlled house qualifies, and the test reads the player's own shroud.
+
+The value counts cells, like `Sight=`. A reveal reaches at most ten cells, so a value above `10` acts as `10`, as [Sight range](/systems/map-visibility/#sight-range) explains. At `0` the aircraft reveals nothing when it fires.
 
 ```ini title="rules.ini"
 [General]

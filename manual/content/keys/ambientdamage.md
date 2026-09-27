@@ -7,22 +7,24 @@ when_omitted:
   value: "0"
 ---
 
-Only two weapon kinds deliver the figure as damage. An [`IsSonic=yes`](/keys/issonic/) weapon delivers it in the wave that rolls out to the target, and an [`IsRailgun=yes`](/keys/israilgun/) weapon delivers it in the line the beam punches through the world. Both apply it through the weapon's [`Warhead=`](/keys/warhead/#scope-weapontype) at a measured distance of zero, so the warhead's falloff never thins it and only its [`Verses`](/keys/verses/) percentage against the victim's armor applies.
+Only two kinds of weapon deal this damage: an [`IsSonic=yes`](/keys/issonic/) weapon through its wave, and an [`IsRailgun=yes`](/keys/israilgun/) weapon through its beam. Both deal it as a direct hit through a weapon's [`Warhead=`](/keys/warhead/#scope-weapontype). A railgun beam uses the `AmbientDamage` and `Warhead` of the weapon that fired. A sonic wave uses those of the weapon in the firing object's first weapon slot, whichever slot fired. The warhead's [`Verses`](/keys/verses/) percentage against the victim's armor applies, but its reduction with distance does not.
 
 ```ini title="rules.ini"
 [MySonicGun] ; example WeaponType
-Damage=0        ; the wave has no projectile damage
-AmbientDamage=3 ; taken by everything the wave rolls over
+Damage=0        ; the projectile deals nothing
+AmbientDamage=3 ; dealt to everything the wave covers, every frame
 IsSonic=yes
 Range=6
 ```
 
-The wave damages afresh on every frame it covers a cell, so an object the wave lingers over is hit many times before it passes. Wall overlay in a covered cell is worn down by the same figure, and chain reactive overlay standing there is set off. The firing object itself is skipped.
+A sonic wave deals the damage on every frame to each object on the ground in a cell it covers, so an object that stays under the wave is hit many times. The firing object is skipped. Wall overlay in a covered cell takes a hit of the full `AmbientDamage` each frame, whatever the warhead, as [Walls and gates](/systems/walls-and-gates/#taking-damage) describes. Chain reactive overlay in a covered cell is set off. [`IsSonic`](/keys/issonic/) covers how long the wave lasts and how far it reaches.
 
-A railgun beam is a single event at the moment of firing. Every object whose center lies within [`[CombatDamage] RailgunDamageRadius`](/keys/railgundamageradius/) of the beam line takes the figure once. The object aimed at takes it too, whether or not the line actually crossed it. A structure in a crossed cell is never measured against that radius and always counts.
+At elite rank, the wave uses the elite first-slot weapon. Put a sonic weapon in the first slot, or give the first-slot weapon the values the wave should use.
 
-The figure is also added to the weapon's [`Damage=`](/keys/damage/#scope-weapontype) whenever the engine works out how hard an object hits. That average is what [decides whether an object is treated as a healer and whether it answers fire](/systems/target-selection/#retaliation). A positive ambient figure on a healing weapon can therefore lift the average back above zero and cost the object its healer behavior.
+A railgun beam deals the damage once to each victim, at the moment the weapon fires. [`IsRailgun`](/keys/israilgun/) and [`RailgunDamageRadius`](/keys/railgundamageradius/) cover which objects count as victims. If ground higher than the beam cuts it short, the beam deals no damage to anything, including objects it passed before reaching the hill.
 
-:::caution[Later occupants of a cell take a reduced figure]
-A sonic wave damages the occupants of a cell one after another through a single working figure. Each object leaves that figure reduced to what its own armor let through; when the blow killed it, the figure falls to the strength it had left. Only the first object in the cell is damaged with the weapon's own figure. Every object behind it in the same cell takes whatever the object before it was reduced to. Wall overlay is unaffected, since it is worn down from the weapon's figure directly.
+`AmbientDamage` also counts toward the object's attack strength, which is the weapon's [`Damage=`](/keys/damage/#scope-weapontype) plus this value, averaged over the object's two weapon slots. That strength [decides whether an object is treated as a healer and whether it fires back](/systems/target-selection/#retaliation). A positive `AmbientDamage` on a healing weapon can raise the average to zero or more, and the object then stops behaving as a healer.
+
+:::caution[Later occupants of a cell take reduced wave damage]
+On each frame, the first object a sonic wave hits in a cell is hit with the full `AmbientDamage`. Each later object in that cell is hit with the damage the previous hit actually dealt, and the later object's armor then reduces it again. If the previous hit destroyed its object, the next object is hit with only the strength that object had left. Wall overlay always takes the full `AmbientDamage`.
 :::

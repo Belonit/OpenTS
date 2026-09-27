@@ -8,4 +8,4 @@ when_omitted:
   value: "5"
 ---
 
-No code identifies an airstrip, so there is no count for a ceiling to bound, and none for [`AirstripRatio`](/keys/airstripratio/) to size a share of either.
+No computer base decision counts airstrips, so this ceiling limits nothing. [`AirstripRatio`](/keys/airstripratio/) has no effect either.

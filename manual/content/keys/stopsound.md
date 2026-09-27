@@ -7,11 +7,11 @@ when_omitted:
   value: none
 ---
 
+The [Stop Object](/commands/stopobject/) command plays `StopSound` once each time it is used with anything selected, however many objects the selection holds. The sound is not tied to a place on the map, so it plays at full volume wherever the view is.
+
 ```ini title="rules.ini"
 [AudioVisual]
 StopSound=STOPCMD ; a sound ID registered in SOUND.INI
 ```
 
-The [Stop Object](/commands/stopobject/) command plays this once after it has walked the selection, at full volume rather than faded from a place on the map. One sound covers the whole selection however many objects were in it.
-
-It is the sound of the key being pressed rather than of an order being taken. The command only sends its stop event for an object the player may move or fire, but the sound is played whenever the selection holds anything at all. A selection of objects that all refused the order is heard exactly like one that took it. Only an empty selection is silent.
+The command sends a stop order only to objects the player can move or fire with, but the sound plays for any selection that is not empty. It therefore plays even when no selected object received the order.

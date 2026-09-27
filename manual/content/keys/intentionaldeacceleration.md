@@ -7,8 +7,15 @@ when_omitted:
   value: "0.15"
 ---
 
-The figure replaces [`Drag`](/keys/drag/) as the per-frame loss whenever the unit decides to stop rather than merely coast. That happens when a thrust or a coast brings its target inside [`ProximityDistance`](/keys/proximitydistance/), and when a coast falls below the speed figure for the mood the unit is in. Like `Drag` it is subtracted from the speed outright, and once it is as large as the speed held the motion is zeroed on the spot.
+A levitating unit that brakes loses this much speed per frame in place of [`Drag`](/keys/drag/). A larger figure shortens braking, and with it the pause between one thrust and the next. Like `Drag`, the loss is subtracted from the speed, and the unit stops dead once the loss is at least as large as its speed.
 
-Braking ends when the unit is under a hundredth of a lepton per frame. It then steers at whatever it was heading for, or comes to rest and reclaims its cell if it has nothing left to head for. The figure therefore sets how long the pause between two thrusts lasts. A unit slowing from five leptons per frame stops in thirty-four frames at a loss of `0.15` and in five at a loss of `1.0`.
+A unit brakes in two cases:
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+- Its target or destination comes within [`ProximityDistance`](/keys/proximitydistance/) during a thrust or a coast.
+- While coasting, it slows below [`MaxVelocityWhenPissedOff`](/keys/maxvelocitywhenpissedoff/) if it has a target, or below [`MaxVelocityWhenFollowing`](/keys/maxvelocitywhenfollowing/) if it has only a destination.
+
+A wandering unit, with neither a target nor a destination, never brakes. It coasts to rest under `Drag`.
+
+Braking ends when the unit's speed falls below a hundredth of a lepton per frame. The unit then steers at its target or destination again, or comes to rest and reclaims its cell if it has lost both. A unit braking from 5 leptons per frame stops in 34 frames at `0.15` and in 5 frames at `1.0`.
+
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

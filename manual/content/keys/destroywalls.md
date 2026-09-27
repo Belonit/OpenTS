@@ -8,6 +8,10 @@ when_omitted:
   note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section without this key restores yes rather than keeping the earlier value.
 ---
 
-`[Easy]`, `[Normal]` and `[Difficult]` each set their own flag, and an object reads the one for [the difficulty slot its house holds](/systems/difficulty/#from-the-setting-to-a-slot). `no` is the second gate on [wall targeting](/systems/target-selection/#picking-the-winner), immediately after the gate that restricts the whole behavior to computer houses. It cannot change anything for a house under player control. It stops walls being weighed while an object scans for something to shoot at, but it does not stop an object attacking a wall it is put onto by an order or a script.
+`[Easy]`, `[Normal]` and `[Difficult]` each set their own flag. An object uses the flag of [the difficulty slot its house holds](/systems/difficulty/#from-the-setting-to-a-slot).
 
-Unlike the multipliers in the same section, this flag is not folded into a figure the house keeps. It is read from the section each time a cell is weighed, so a house that changes slot changes behavior at once.
+With `no`, a computer house's objects stop considering walls when they [scan for a target](/systems/target-selection/#picking-the-winner). Objects of a human player's house never scan for walls, so the flag changes nothing for them.
+
+The flag affects only that scan. An object whose target is already a wall still attacks it.
+
+A house copies the seven difficulty figures when it gets its slot, but this flag always follows the current difficulty section. A section read later, such as one in a campaign's companion INI, therefore changes wall targeting for every computer house in that slot. [What one difficulty section sets](/systems/difficulty/#what-one-difficulty-section-sets) gives the read order.

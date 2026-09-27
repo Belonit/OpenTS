@@ -1,14 +1,14 @@
 ---
 key: Scenario
 scope: themes
-label: Track unlock mission
+label: Track unlock level
 see_also: [Normal, Side]
 when_omitted:
   kind: value
   value: "0"
 ---
 
-The music track is withheld from the playlist until the campaign has reached the mission number written here, compared against the number the running scenario holds. The test applies to campaign games only. A skirmish or multiplayer session skips it, so no track is withheld by this key there.
+`Scenario=` holds the music track back until a single-player game reaches this [campaign level number](/systems/campaign-progression/#the-campaign-level-number). The track is allowed once the number is equal to or higher than the value. The number is `1` when the game starts and goes up by one with each campaign mission won, so `Scenario=3` allows the track from the third mission of the first campaign played after the game starts. A campaign started later in the same run can begin with a higher number and allow the track sooner.
 
 ```ini title="theme.ini"
 [VALVES1B]
@@ -17,4 +17,6 @@ Length=3.27
 Scenario=1
 ```
 
-Withheld means withheld from the automatic playlist and from the sound options track list alike. A track can still be started outright by name whatever this is set to.
+A track held back is missing from the automatic playlist and from the sound options track list, and the [next track](/commands/nexttheme/) and [previous track](/commands/prevtheme/) commands skip it. Other ways of starting the track, listed under [`Normal`](/keys/normal/), still play it.
+
+Skirmish and multiplayer games skip the test, so this key holds back no track there.

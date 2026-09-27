@@ -8,6 +8,6 @@ when_omitted:
   value: "no"
 ---
 
-The flag is one of the eight that make a structure [one of the deployed-vehicle kinds](/keys/deploysinto/). Such a structure is put down on the deploying vehicle's own cell rather than one cell away and returns to that cell when it undeploys. It may be taken back down whether or not the session allows redeploying.
+`IsCoreDefender=yes` makes the structure one of the [deployed-vehicle kinds](/keys/deploysinto/). A vehicle that deploys into it places it on the vehicle's cell, not one cell away, and the structure undeploys back onto that cell. It can be undeployed whether or not the session allows redeploying.
 
-When the type omits [`ImmuneToEMP`](/keys/immunetoemp/), the flag also makes the structure immune to [EM pulses](/systems/emp-pulse/#what-a-pulse-reaches). A pulse that powers off and stuns other structures leaves it running and only springs its [Paralyzed](/mapping/events/tevent-paralyzed/) trigger event. `ImmuneToEMP=no` removes the immunity.
+When the type leaves out [`ImmuneToEMP`](/keys/immunetoemp/), the flag also makes the structure immune to [EM pulses](/systems/emp-pulse/#what-a-pulse-reaches). A pulse that powers off and stuns other structures leaves it running and only springs its [Paralyzed](/mapping/events/tevent-paralyzed/) trigger event. Set `ImmuneToEMP=no` to remove the immunity.

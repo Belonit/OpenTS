@@ -1,18 +1,25 @@
 ---
 key: IsMobileWar
-summary: Marks a deployed structure as a mobile war factory, which an engineer may work on and which may pack up at any time.
+summary: Marks a deployed structure as a mobile war factory, which an engineer may work on and which may pack up even where redeploying is off.
 see_also: ["system:capture"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A structure that names an [`UndeploysInto`](/keys/undeploysinto/) type is otherwise treated as a vehicle and left out of the engineer's cursor entirely (a construction yard excepted, which is carved out of that rule already). This setting covers both requirements at once: the structure counts as not a deployed vehicle, and as [`Repairable=yes`](/keys/repairable/). A mobile war factory therefore offers the engineer's cursor whether or not it is repairable.
+`IsMobileWar=yes` marks a structure that sets [`UndeploysInto`](/keys/undeploysinto/) as a mobile war factory.
 
-:::caution[The cursor promises a restore and delivers a capture]
-The structure still counts as a vehicle at the moment the engineer arrives, and [that branch](/systems/capture/#the-vehicle-branch) tests neither ownership nor [`Capturable`](/keys/capturable/). An allied mobile war factory below full strength offers the engineer's repair cursor, and the resulting order changes its owner instead.
+An engineer gets [the structure cursors](/systems/capture/#an-engineer-over-a-structure) over a mobile war factory, whatever its [`Repairable`](/keys/repairable/) setting. Without the flag, a structure that sets `UndeploysInto` and is not a construction yard counts as a vehicle, and an engineer gets none of those cursors over it.
+
+:::caution[Do not send engineers to repair a mobile war factory]
+When the engineer arrives, the mobile war factory still counts as a vehicle, and [the vehicle branch](/systems/capture/#the-vehicle-branch) checks neither ownership nor [`Capturable`](/keys/capturable/). A damaged allied mobile war factory therefore shows the engineer's repair cursor, but the engineer takes it over instead of repairing it. An engineer sent to the player's own damaged mobile war factory is used up and repairs nothing.
 :::
 
-Three smaller effects follow the setting. The structure may undeploy in circumstances that would otherwise forbid it. Band-box selection passes it over as it does a construction yard. A vehicle thief chasing the vehicle loses its target outright when that vehicle deploys; every other object chasing it is handed the new structure instead. Opening for business also toggles the structure's primary-factory state for its production kind.
+The flag has these further effects:
 
-Because a mobile war factory both builds vehicles and packs up, a plain click on the ground sets its [rally point](/systems/production/#rally-points) and the force-move key packs it up. [`AltToRally=yes`](/keys/alttorally/) swaps the two.
+- The structure can be undeployed whether or not the session allows redeploying, and the [Deploy Object](/commands/deployobject/) command accepts it.
+- Drag selection passes it over, as it does a construction yard. The player's other structures that set `UndeploysInto` are picked up.
+- When a vehicle deploys into a mobile war factory, a [`VehicleThief=yes`](/keys/vehiclethief/) infantryman targeting that vehicle drops its target. Every other object targeting the vehicle switches to the new structure.
+- The first time the structure finishes deploying, its [primary factory](/systems/production/#the-primary-factory) status is toggled.
+
+A mobile war factory that sets [`Factory=UnitType`](/keys/factory/) has a [rally point](/systems/production/#rally-points). A plain click on the ground sets the rally point, and a click with the force-move key held packs the structure up and drives it to the clicked point. [`AltToRally=yes`](/keys/alttorally/) swaps the two clicks.

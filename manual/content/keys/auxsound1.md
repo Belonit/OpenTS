@@ -12,15 +12,15 @@ when_omitted:
 AuxSound1=MYHELI_Takeoff ; a sound ID registered in SOUND.INI
 ```
 
-Two unrelated paths read the same slot:
+Two unrelated events play this sound at the object's position:
 
-- A **structure** plays it at its own position the moment its build-up animation begins, whichever house owns it.
-- An object flown by the [flyer locomotor](/keys/locomotor/) plays it at its own position when it lifts off, unless it is stunned at the time.
+- A **structure** plays it when its build-up animation starts, whichever house owns it.
+- An object moved by the flyer [locomotor](/keys/locomotor/) plays it each time it takes off, unless it is stunned.
 
-Nothing else reads the slot, so on a ground vehicle or an infantryman the setting is inert.
+On any other vehicle or infantry type the key has no effect.
 
 :::caution[A structure's `DeploySound` wins]
-[`DeploySound`](/keys/deploysound/#scope-buildingtype) is stored in this same slot and is read afterward, so a BuildingType that sets both keeps only `DeploySound`. Setting them to different sounds does not give a structure two.
+[`DeploySound`](/keys/deploysound/#scope-buildingtype) sets the same sound and is read after `AuxSound1`. A BuildingType section that sets both plays only the `DeploySound`. A rules file read later that sets only `AuxSound1` replaces it.
 :::
 
-A name that matches no registered sound leaves the previous value in place rather than clearing it, so a misspelling here is silent in a different way from a misspelling in a voice list.
+A name that matches no sound ID is ignored and the sound set earlier stays. Writing `none` therefore cannot clear a sound that an earlier rules file set.

@@ -1,6 +1,6 @@
 ---
 key: MultiplayerAICM
-summary: The percentage of its own starting money added to each computer house outside a campaign, one entry per difficulty.
+summary: The percentage of its starting money added to each computer house outside a campaign, one entry per difficulty.
 see_also: ["system:difficulty"]
 when_omitted:
   kind: value
@@ -8,6 +8,12 @@ when_omitted:
   note: The list stays empty and the difficulty slot is used to index it anyway, reading storage that was never allocated.
 ---
 
-The grant is worked out once, as a scenario outside a campaign finishes loading, for every computer house that is not [`MultiplayPassive=yes`](/keys/multiplaypassive/). The house's credits plus the value of the Tiberium it holds are multiplied by the entry as a percentage, and the result is handed to it **on top of** what it already had. An entry of `100` therefore leaves the house with twice its starting money, not the same amount, and an entry of `0` changes nothing.
+Outside a campaign, each computer house gets extra credits as the scenario finishes loading. The house's credits plus the value of its stored Tiberium are multiplied by its entry as a percentage, and the result is added to what it already has. An entry of `100` doubles the house's starting money, and `0` adds nothing.
 
-Only the first three entries are ever read: entry 0 is the hardest game setting and entry 2 the easiest. Each computer house reads the entry at its own [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot), which outside a campaign is the setting chosen for the session, inverted. Once the session holds more than one human entry, the [easy-game bonus](/systems/difficulty/) moves that house one entry nearer entry 0, so a skirmish never takes that step. A campaign game never reaches this list.
+Houses whose type sets [`MultiplayPassive=yes`](/keys/multiplaypassive/) get nothing.
+
+Each computer house reads the entry for its [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot). Entry 0 is used at the Hard setting and entry 2 at Easy. [`CompEasyBonus`](/keys/compeasybonus/) and a [launch file's](/formats/spawn-ini/#who-is-playing) handicaps can move a house to another slot.
+
+:::caution[Give the list three entries]
+A computer house whose slot has no entry reads past the end of the list and receives an unpredictable amount, or the game crashes when the list is empty.
+:::

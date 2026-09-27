@@ -7,6 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-Without it a team recruits only until it starts moving, and losses are never made good. With it a team that is short of full strength keeps [looking for members](/systems/ai-team-production/#recruitment) for the rest of its life, and it keeps asking the house's production for the ones it is missing. A team of any other type counts toward that demand only until it is [forced active](/systems/ai-team-execution/#the-state-flags), reaches full strength, or is set in motion.
+`Reinforce=yes` lets a team replace its losses. Without it, a team [recruits](/systems/ai-team-production/#recruitment) only until it starts moving, and members it loses afterward are never replaced. With it, a computer house's team that is short of full strength keeps recruiting for the rest of its life. A human house's team stops recruiting once it has reached full strength or started, whatever this setting says.
 
-The setting also decides whether a team can ever be pulled back off its Script. A `Reinforce=no` team stops counting as under strength the moment it first reaches full strength or is set in motion, and stays that way however many members it afterward loses. The step that sends a team back to regroup is reached only by a team that is under strength, so such a team is never sent back. A `Reinforce=yes` team falls under strength again once it is down to a third of full strength or fewer. Where its roster asks for two members or one, it falls under strength as soon as it is short of full. Either way the team is then stopped and sent to gather. That is worth setting deliberately rather than for the recruiting alone, because [a regroup rewinds the team's Script to its first line](/systems/ai-team-execution/#every-regroup-rewinds-the-script).
+The same rule decides which teams add to the house's [production demand](/systems/ai-team-production/#production-demand). A `Reinforce=yes` team asks for its missing members whenever it is short of full strength. Any other team asks only until it is [forced active](/systems/ai-team-execution/#the-state-flags), reaches full strength, or starts moving.
+
+`Reinforce=yes` also lets a team be pulled back off its Script to regroup. A team is sent back only while it is under strength:
+
+- A `Reinforce=no` team is never under strength after it first reaches full strength or starts moving, however many members it loses afterward. It is therefore never sent back.
+- A `Reinforce=yes` team becomes under strength when it is down to a third of full strength, rounded down, or fewer. If its TaskForce asks for only one or two members, it becomes under strength as soon as it is short of full.
+
+An under-strength team is stopped and sent to regroup. It sets out again once recruitment has brought it back to full strength. A team created by a reinforcement trigger action is forced active and sets out again at once. Either way, [it restarts its Script from the first line](/systems/ai-team-execution/#every-regroup-rewinds-the-script). Set `Reinforce=yes` only on a TeamType whose Script can safely start over.

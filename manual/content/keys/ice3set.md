@@ -8,8 +8,8 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The set has the same shape as [`Ice1Set`](/keys/ice1set/), which covers the layout the three share, but not the same treatment. Ice growth thickens only tiles of the first two sets, so a stretch laid from this one never grows.
+The set has the same layout as [`Ice1Set`](/keys/ice1set/), which describes the layout the three ice sets share and how the engine picks tiles from them. Cracking, breaking and refreezing treat it like the other two.
 
-Its start plus sixty-four marks the end of the run the shore pass treats as ice. When [`IceShoreSet`](/keys/iceshoreset/) works out the land-side piece for a cell, a neighbor counts as ice when it falls anywhere between the start of the first set and that point. The pass assumes the three sets sit one after another in registration order, so a gap or a reordering between them either drops ice out of that window or sweeps unrelated tiles into it.
+Ice growth never thickens this set. Where the map has [`IceGrowthEnabled`](/keys/icegrowthenabled/) on, growth turns edge pieces of `Ice1Set` and [`Ice2Set`](/keys/ice2set/) into full ice in cells whose map data allows ice growth, but an edge piece from this set stays an edge piece. The last edge piece of each set, offset 63, never grows either.
 
-This is not the same span as the test that asks whether an individual cell is ice, which [`Ice2Set`](/keys/ice2set/) covers and which stops one set short of this one.
+This set's position ends the range of tiles that [`IceShoreSet`](/keys/iceshoreset/) treats as ice. When the shore pieces are chosen, a neighbor counts as ice if its tile lies between the first tile of `Ice1Set` and the last tile of this set. Keep the three sets consecutive in order. A gap or a different order either drops ice out of that range or counts unrelated tiles as ice.

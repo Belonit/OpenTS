@@ -12,10 +12,10 @@ when_omitted:
 OnFire=MYFIRE_SM,MYFIRE_MD,MYFIRE_LG ; AnimTypes registered in [Animations]
 ```
 
-The gameplay path reads exactly three slots and reads them by position: the first two are the common flames and the third is the rare one. [`Sparky`](/keys/sparky/) covers the roll that selects between them and what an incomplete list does there. Entries past the third are never reached by it, so a longer list only wastes names.
+The game uses the first three entries, by position. The first two are the common flames and the third is the rare one; [`Sparky`](/keys/sparky/) covers the roll that picks between them. Entries after the third are never used.
 
-The rest of the game's fires come from elsewhere. [`SmallFire`](/keys/smallfire/) and [`LargeFire`](/keys/largefire/) cover the flames a structure shows without a sparky warhead and while it is being destroyed, and [`TreeFire`](/keys/treefire/) covers a burning terrain object.
+[`SmallFire`](/keys/smallfire/) and [`LargeFire`](/keys/largefire/) supply the other structure fires, and [`TreeFire`](/keys/treefire/) supplies the flames on a burning terrain object.
 
-:::danger[Fewer than three entries makes the sparky path read past the list]
-Nothing checks the list length before the three slots are taken, and the list starts empty before the rules fill it. [`Sparky`](/keys/sparky/) states the outcome in full: the game either crashes or creates an animation from whatever the missing slot happened to point at.
+:::danger[Give `OnFire` three entries]
+The sparky roll takes each entry by position without checking the list length, and the list is empty until a rules file sets it. A roll that lands on a missing entry either crashes the game or creates an animation from unrelated memory. [`Sparky`](/keys/sparky/) gives the odds.
 :::

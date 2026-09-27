@@ -12,6 +12,6 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-A player can now queue a type with a positive `BuildLimit` up to the limit while one is in production. The object under construction used to count twice, once among the objects owned and once in production, so the queue refused an order one object early. With `BuildLimit=3` and one in production, only one more could be queued; now two can.
+A player can now queue a vehicle, infantry or aircraft type up to its positive `BuildLimit` while one of that type is in production. A positive `BuildLimit` in the type's `rules.ini` section caps how many of the type a house can own and have queued at once. The queue used to refuse an order one object early: with `BuildLimit=3`, none on the map and one in production, only one more could be queued; now two can.
 
 Rampastring is credited for the ts-patches fix this follows.

@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero, dkeeton]
 ---
 
-A selection box now starts once the pointer has moved the drag distance Windows reports, on either axis, instead of four pixels in any direction. The distance follows the display scale and the pointer accessibility settings; on a standard display it is still four pixels.
+A selection box used to start once the pointer had moved more than four pixels from where the button was pressed. It now starts once the pointer has moved farther than the Windows drag distance along either axis. On a standard display that distance is four pixels; display scaling and the Windows drag setting can change it.

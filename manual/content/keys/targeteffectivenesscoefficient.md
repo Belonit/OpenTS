@@ -7,12 +7,12 @@ when_omitted:
   note: Takes the value of TargetEffectivenessCoefficientDefault in [General], which is itself 0 when that key is absent too.
 ---
 
-The coefficient multiplies the [`Verses`](/keys/verses/) percentage of the weapon the candidate would choose against this object, measured against this object's own [armor class](/reference/enums/armor/): how badly the candidate could hurt the object that is choosing. A positive value draws fire toward dangerous candidates. It is read from the type of the object doing the choosing, never from the candidate's type. A candidate with no weapon, or one whose weapon has no warhead, contributes nothing to this term.
+The coefficient multiplies how badly a candidate target could hurt the object that is choosing. That measure is the [`Verses`](/keys/verses/) value of the candidate's warhead against the chooser's [armor class](/reference/enums/armor/), as a fraction, so `100%` counts as `1`. The warhead is the one on the weapon the candidate would use against the chooser. A candidate with no such weapon, or whose weapon has no warhead, adds nothing to this term.
 
-:::caution[The sign flips for a candidate that is already shooting at this object]
-This is the one term whose result is negated rather than added when the candidate's current target is this object. An otherwise identical bystander therefore outscores the object's own attacker by twice the term. A positive coefficient, set to make an object prefer whatever can hurt it, therefore steers it away from the thing hurting it.
-:::
+The coefficient comes from the type of the object doing the choosing, never from the candidate's type.
 
-:::caution[Zero cannot be pinned on one type]
-The value is read with a fallback that substitutes [`TargetEffectivenessCoefficientDefault`](/keys/targeteffectivenesscoefficientdefault/) whenever the stored figure is zero, and the rules are read again for each later layer. An explicit `0` therefore lasts only until the first later layer that contains the type's section without this key, which puts the global default back.
+A positive value draws fire toward candidates that can hurt the chooser, except a candidate that is already targeting the chooser. For that candidate the term is subtracted instead of added. Of two otherwise identical candidates, the one targeting something else outscores the chooser's attacker by twice the term, so a positive coefficient steers the chooser away from whatever is attacking it.
+
+:::caution[An explicit `0` does not last]
+A `0` written on a type is replaced by [`TargetEffectivenessCoefficientDefault`](/keys/targeteffectivenesscoefficientdefault/) at the next rules layer, such as a map, whose copy of the type's section omits this key. To keep a type at zero while that default is not zero, write `0` in every layer that contains the section.
 :::

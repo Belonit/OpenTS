@@ -7,10 +7,12 @@ when_omitted:
   note: The name of the section that declares the superweapon.
 ---
 
-The value is completed with a `.SHP` extension and looked up in the mix files as the rules are read. A name that resolves to nothing falls back to the generic `XXICON.SHP` icon, so a section that exists never shows a blank cameo. A weapon declared with no section at all is a different case: its read is skipped whole, so no artwork is fetched when the rules are read. Loading a saved game refetches artwork for every superweapon, and such a weapon then falls back on the generic icon like any other. Only the first 24 characters are kept.
+Write the name without an extension. The engine adds `.SHP` and looks the file up in the mix files when the rules are read, so a value that already ends in `.SHP` is not found. When no file matches, the cameo falls back to the generic `XXICON.SHP`. Only the first 24 characters are kept.
 
 ```ini title="rules.ini"
 [MyIonStrike]      ; example superweapon section
 Type=IonCannon
 SidebarImage=IONCICON
 ```
+
+A weapon listed in `[SuperWeaponTypes]` with no section of its own has no cameo artwork. Loading a saved game gives it one: the engine then looks up the section name and falls back to `XXICON.SHP` in the same way.

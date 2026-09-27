@@ -12,8 +12,8 @@ credit:
 - dkeeton
 ---
 
-Screen captures are now PNG files in a `Screenshots` folder, beside the game or in the user data directory when one is set. They used to be PCX files among the game's own files. Captures from earlier builds are not moved.
+Screen captures are now saved as PNG files in a `Screenshots` folder, beside the game or in the user directory when one is named. They used to be PCX files saved beside the game. Captures from earlier releases are not moved.
 
-A capture is now the frame as the game renders it. It used to be scaled and offset at some window sizes.
+A capture now shows the frame at the resolution the game renders, whatever the window size. It used to be scaled and offset at some window sizes.
 
 Rampastring and dkeeton are credited for the ts-patches patches that first moved captures into a folder and saved them as PNG.

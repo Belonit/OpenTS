@@ -7,6 +7,17 @@ when_omitted:
   value: "no"
 ---
 
-This is not the setting behind the vehicle hijacker; [`VehicleThief=yes`](/keys/vehiclethief/) is, and the two are separate features with separate cursors and separate limits. Nothing offers a cursor for this one. The steal runs on the soldier's own pass whatever mission it is on, and needs only a non-allied vehicle as its movement destination. Further out the soldier keeps re-aiming at the vehicle as it moves. Within half a cell and one height level of it, the vehicle changes hands and the soldier is consumed: it is deleted on the spot and never becomes a passenger. The two features meet in what the steal leaves behind, because the vehicle keeps a record of the type that took it. When that vehicle dies, a new soldier of the recorded type appears at the wreck, owned by whoever holds the vehicle at that moment. It arrives at a random strength between `5` and half its maximum, and only if the wreck cell has room for it.
+A `Thief=yes` soldier takes any non-allied vehicle that is its movement destination, whatever mission it is on. Aircraft, and vehicles that have deployed into structures, do not count. Nothing offers a cursor for the steal.
 
-The setting also [widens what its owner scans for](/systems/target-selection/#what-each-kind-of-object-considers), adding capturable structures and Tiberium processors to the request. The widening changes only which object the scan picks as a target. Reaching one is an ordinary attack: an armed thief fires on the structure, and an unarmed thief can do nothing there. No structure entry, credit theft, or drain follows; only the vehicle steal consumes a soldier.
+[`VehicleThief=yes`](/keys/vehiclethief/) is a separate setting, with a cursor and limits this flag lacks.
+
+While the soldier is farther away, it keeps re-aiming at the vehicle as the vehicle moves. Once it is within half a cell and less than one height level of the vehicle, the vehicle changes to the soldier's owner. The soldier is deleted on the spot and never becomes a passenger. [Stealing a vehicle](/systems/capture/#stealing-a-vehicle) lists each step of the takeover.
+
+The vehicle records the thief's type, as a hijacked vehicle does. When the vehicle is destroyed, a soldier of that type appears at the wreck, owned by whoever holds the vehicle at that moment. It has a random strength between `5` and half its maximum. It appears only if the wreck's cell has room for it.
+
+The flag also [widens what the soldier scans for](/systems/target-selection/#what-each-kind-of-object-considers) to capturable structures and Tiberium processors. It changes only which target the scan picks:
+
+- an armed thief fires on the structure it picks;
+- an unarmed thief scans for nothing, unless it is also `Infiltrate=yes` or `VehicleThief=yes`.
+
+A `Thief=yes` soldier never enters a structure or takes credits because of this flag. Only the vehicle steal consumes the soldier.

@@ -15,4 +15,6 @@ credit:
 - dkeeton
 ---
 
-The object under the mouse pointer now draws its condition indicator, which used to want a selection. Veterancy insignia and the healer's cross stand without one, for a viewer allied to the object's owner or spying on that house. Both obey the same visibility rule the pointer applies, so shroud, fog and an unsensed cloak hide an indicator with the object it belongs to. `EnemyHealth`, in `[AudioVisual]` of `rules.ini`, does not gate either indicator. Cargo pips, the group number and the "Primary" tag still wait for a selection.
+A selectable object under the mouse pointer now shows its health bar without being selected. Veterancy insignia and the medic's cross on an infantry healer now show without a selection too, when the viewer is allied to the object's owner, has spied on that house, or is an observer. Neither shows on an object under shroud or fog, or on another house's object that is invisible or is cloaked and undetected.
+
+`EnemyHealth=no` under `[AudioVisual]` in `rules.ini` hides neither, because the key has no effect. Cargo pips, the group number and the "Primary" tag still show only on a selected object.

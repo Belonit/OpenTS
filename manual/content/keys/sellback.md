@@ -7,6 +7,8 @@ when_omitted:
   value: "2"
 ---
 
-Despite living among the intelligence settings, the comparison is against the house's tech level rather than its [`IQ`](/keys/iq/). The same tech level is then drawn against: a random number from `0` through `50` inclusive must come up below it. A house at tech level 5 therefore goes through with the sale on roughly one consideration in ten, and only a tech level above 50 never fails the draw.
+A computer house sells a badly damaged building it cannot afford to repair only if its tech level is at or above this value. The comparison is with the house's tech level, not its [`IQ`](/keys/iq/).
 
-Among the further conditions are a shortfall against [`CreditReserve`](/keys/creditreserve/), damage from a non-ally, no trigger tag, and health below [`ConditionRed`](/keys/conditionred/); the full list is traced under [when the computer repairs](/systems/repair/#when-the-computer-repairs).
+The same tech level also sets how soon the sale happens. On each frame that the other conditions hold, a random number from `0` through `50` must come out below the tech level. At tech level 5 that happens on about one frame in ten, and above tech level 50 it happens every time. Because the draw repeats, a low tech level delays the sale but does not prevent it. A house at tech level `0` never passes the draw.
+
+The other conditions include money below [`CreditReserve`](/keys/creditreserve/), damage from a house that is not an ally, no trigger tag on the building, and health below [`ConditionRed`](/keys/conditionred/). [When the computer repairs](/systems/repair/#when-the-computer-repairs) lists all of them in order.

@@ -8,6 +8,6 @@ when_omitted:
   value: "2147483647"
 ---
 
-The sync-bug settings are read only as the multiplayer menu is entered, and only while recording playback is armed. The name promises the frame from which the engine starts hunting for the object the rest of them describe, so that a debugger can be pointed at it.
+The value names the game frame from which the object described by the other sync-bug settings would be watched. The watching code is built into neither configuration, so reaching the frame changes nothing.
 
-From that frame on the hunt is indeed called once per game frame, but its body is compiled out of the build, so it examines nothing and stores nothing. Nothing else reads the number, and reaching the frame changes nothing.
+`Frame` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/playback/).

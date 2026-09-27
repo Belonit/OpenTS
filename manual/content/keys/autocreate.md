@@ -7,8 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-A team of an unmarked TeamType accepts only an object whose ordinary team-recruitable state is set and pays no attention to its autocreate-recruitable state; a marked one does exactly the reverse. Both states start set on every object, so the choice matters only once a scenario or an earlier team has cleared one of them.
+`Autocreate=yes` marks the TeamType as autocreated. The mark decides which of an object's two recruitable states a team of this type checks when it [recruits](/systems/ai-team-production/#recruitment):
 
-:::caution[Being suggested sets the mark for the rest of the session]
-The mark is not only an input. Every TeamType an AI trigger suggests is marked as autocreated at the moment of suggestion and stays marked, so `Autocreate=no` survives only until the first pass that names the type. Nothing in [trigger selection](/systems/ai-team-production/#which-triggers-are-eligible) reads the value.
+- a team of an unmarked TeamType takes only objects whose ordinary recruitable state is set;
+- a team of a marked TeamType takes only objects whose autocreate-recruitable state is set.
+
+Each kind of team ignores the other state. Both states start set on every object, so the mark makes a difference only after one of them is cleared. A map's [placed-object record](/formats/scenario-objects/) can clear either state, and joining a team whose TeamType sets [`AreTeamMembersRecruitable=no`](/keys/areteammembersrecruitable/) clears the autocreate-recruitable state.
+
+:::caution[An AI trigger marks its TeamTypes for the rest of the scenario]
+Every TeamType the AI trigger pass [goes on to create teams from](/systems/ai-team-production/#from-suggestion-to-team) is marked as autocreated and stays marked for the rest of the scenario. `Autocreate=no` therefore lasts only until the AI trigger pass first goes on to create teams from the TeamType. [Trigger selection](/systems/ai-team-production/#which-triggers-are-eligible) does not read the mark.
 :::

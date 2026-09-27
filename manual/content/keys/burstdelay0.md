@@ -7,12 +7,14 @@ when_omitted:
   value: "-1"
 ---
 
+`BurstDelay0` is the wait, in game frames, after the first shot of a burst and before the second. `-1` gives a random three to five frames instead.
+
 ```ini title="rules.ini"
 [MyTwinCannon] ; example WeaponType
 Burst=2
 BurstDelay0=4 ; four frames between the first shot and the second
 ```
 
-The value is the reload delay the firing object is given once its first shot of a burst has gone off, in game frames. `-1` asks for a random three to five frames instead, and so does any burst whose [`Burst`](/keys/burst/) is not above `1`. The first shot is then also the last, and it pays [`ROF`](/keys/rof/).
+The wait applies only when [`Burst`](/keys/burst/) is above `1`. With `Burst=1`, the first shot is the last of the burst and is followed by [`ROF`](/keys/rof/#scope-weapontype) instead.
 
-The gap is taken as written, without the house rate-of-fire bias, the random padding or the veteran rate-of-fire ability that the burst's closing [`ROF`](/keys/rof/) is subject to. [`Burst`](/keys/burst/) covers how the shots of a burst are counted and which weapons ignore the short gap altogether.
+Any value other than `-1` is used as written. The house rate-of-fire bias, the random extra frames and the veteran rate-of-fire ability change only the `ROF` wait. [`Burst`](/keys/burst/) lists the weapons and structures that never use the short gap.

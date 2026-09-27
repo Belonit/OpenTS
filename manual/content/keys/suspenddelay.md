@@ -7,9 +7,18 @@ when_omitted:
   value: "2"
 ---
 
-The team object is not destroyed when a base attack [suspends it](/systems/base-attacked/#teams-are-emptied-first). It is stripped of its members, and then does nothing at all until this countdown expires. The end of the countdown does not put the team back to work. A team that had once reached full strength, meaning the member count its TaskForce asks for, is deleted at that moment. A team that never reached it gets one pass at recruiting, and is then dissolved by the unfilled-team rules if it is still empty. That dissolving happens outside a campaign only; in a campaign the empty team stays and keeps trying to recruit. Every team the same attack suspends receives the same countdown, and a later attack while the countdown is still running restarts it from the top. A shorter countdown brings that ending forward: a team that never filled starts recruiting again sooner, and one that had filled is deleted sooner. [`SuspendPriority`](/keys/suspendpriority/) decides which teams are suspended in the first place.
+`SuspendDelay` is how long a team stays suspended after a base defense call-up [empties it](/systems/base-attacked/#teams-are-emptied-first). A suspended team loses all its members but is not deleted. It does nothing until the delay runs out. [`SuspendPriority`](/keys/suspendpriority/) decides which teams are suspended.
 
 ```ini title="rules.ini"
 [General]
 SuspendDelay=.5  ; suspended teams sit out half a minute
 ```
+
+When the delay runs out, the outcome depends on whether the team has ever started. A team has started once it has held every member its TaskForce asks for, or once it was brought in as a reinforcement.
+
+- A team that has started is deleted.
+- A team that never started begins recruiting again. Outside a campaign, it is deleted if it is still empty and older than [`DissolveUnfilledTeamDelay`](/keys/dissolveunfilledteamdelay/). In a campaign, it stays and keeps recruiting.
+
+A shorter delay brings either outcome sooner.
+
+Every team suspended by the same call-up gets the same delay. A later call-up restarts the delay from the beginning for every team it suspends, including teams that are still suspended.

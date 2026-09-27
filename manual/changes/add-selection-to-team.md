@@ -36,6 +36,6 @@ targets:
 credit: [ZivDero, dkeeton]
 ---
 
-Ten Add To Team commands select a team the way Add Select Team does, keeping whatever was already selected, and then make that whole selection the team. An object that belonged to another team leaves it, because an object holds one team at a time. An object in limbo, such as a passenger in a transport, is left in the team it already has. All ten arrive unbound.
+Ten Add To Team commands, one per team number, add the current selection to that team and then select the whole team. An object that was in another team leaves it, since an object belongs to one team at a time. A passenger inside a transport, or any other object that is off the map, keeps the team it had. None of the ten has a default key.
 
 dkeeton is credited for the ts-patches command this follows.

@@ -7,7 +7,7 @@ when_omitted:
   value: none
 ---
 
-Everything [`SuperWeapon=`](/keys/superweapon/) does, this does independently and at the same time: the availability scan, the removal scan, the [`AuxBuilding=`](/keys/auxbuilding/) test, the plug slots and the missile-silo match all read both keys. A structure may therefore grant two weapons, as the stock Nod missile silo does with the multi missile and the chem missile. There is no third slot.
+`SuperWeapon2=` works exactly like [`SuperWeapon=`](/keys/superweapon/), independently and at the same time. Granting and removing the weapon, the [`AuxBuilding=`](/keys/auxbuilding/) test, plugs and the missile-silo match all read both keys. A structure can therefore grant two superweapons, as the stock Nod missile silo does with the multi missile and the chem missile. There is no third key.
 
 ```ini title="rules.ini"
 [NAMISL]        ; Missile Silo

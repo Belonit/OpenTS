@@ -1,9 +1,21 @@
 ---
 key: MessageDelay
-summary: Minutes a message stays on screen.
+summary: How long most on-screen messages stay visible.
 when_omitted:
   kind: value
   value: ".6"
 ---
 
-The value is the lifetime given to the messages the engine posts itself: the low power warning, alliance and defeat announcements, text sent by a trigger action, and the notices raised during network play. Chat that a player types during a network game has the same lifetime, not a fixed one. Some other engine notices have fixed lifetimes of their own instead, among them the ion storm warnings. The value does not govern how often a message is raised, only how long each one stays visible.
+Each whole unit keeps a message on screen for 14.4 seconds of real time, so the default `.6` shows a message for about 8.6 seconds and `1` for 14.4 seconds. Game speed does not change it. A message leaves sooner when the list of messages is full, because each new message then removes the oldest one.
+
+It sets how long these messages stay visible:
+
+- the low power warning;
+- alliance and defeat announcements;
+- text shown by a trigger action;
+- notices about saving the game, such as the autosave announcement;
+- the difficulty announcement at the start of a campaign mission;
+- notices during network play, such as a player leaving or changing the game speed;
+- chat that players type.
+
+Some other notices have fixed lifetimes instead, among them the ion storm warnings.

@@ -8,8 +8,10 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-The switch is the first half of the test a blast makes when it reaches a span; the other half is [`Wall=yes`](/keys/wall/#scope-warheadtype) on the warhead. With the switch off, spans absorb everything and no bridge on the map can be brought down by fire. Once both halves pass, the span still comes down only when a chance roll against [`BridgeStrength`](/keys/bridgestrength/) favors the blast: a number picked between one and the figure lands below the blast's own damage. The ion cannon's warhead skips the roll. A trigger action that damages or destroys its target brings the span down regardless of the switch.
+With `DestroyableBridges=no`, no blast can damage a bridge span. With `yes`, a blast from a warhead with [`Wall=yes`](/keys/wall/#scope-warheadtype) can damage the span in its cell. [`BridgeStrength`](/keys/bridgestrength/) sets the chance that each such blast succeeds, and the ion cannon's warhead skips that roll.
+
+Two trigger actions damage a bridge span whatever this key says: [Destroy attached building](/mapping/actions/taction-destroy-object/) and [Apply 100 damage at...](/mapping/actions/taction-damage/).
 
 :::caution[The entry is read in campaigns only]
-The `[SpecialFlags]` block is read from the map only in a single-player mission. Every other game type replaces the scenario's whole set of flags with the set the game options carry once the map has been read. Outside a campaign, bridge destruction follows the game options.
+Only a single-player mission reads `[SpecialFlags]` from the map. In every other game type, the [`BridgeDestruction`](/keys/bridgedestruction/) option decides whether bridges can be destroyed, whatever the map says.
 :::

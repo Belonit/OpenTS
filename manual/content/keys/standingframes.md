@@ -6,19 +6,23 @@ when_omitted:
   kind: computed
   note: 1 for a vehicle whose FiringFrames is above 0, and 0 otherwise.
 ---
-At `0` the vehicle has no standing artwork of its own and is drawn from the first frame of its facing's walk run instead. Above `0` a vehicle at rest in a cell it occupies is drawn at [`StartStandFrame`](/keys/startstandframe/) plus its facing block times this count. The count is also the stride the engine assumes between one facing's standing run and the next. The count is kept in a single signed byte, so `256` stores as zero and any figure above `127` stores as a negative number.
+The standing artwork is what a vehicle shows while it stands still in its cell and is neither firing nor dying.
 
-On a [`Turret=yes`](/keys/turret/) vehicle with firing frames the default eight facings and standing count put the derived [`StartStandFrame`](/keys/startstandframe/) at `8 × WalkFrames`, the exact frame the turret strip starts at. The engine moves neither block: a resting body is drawn straight out of the strip's frames with the turret layered on top. Artwork that wants a distinct standing frame writes the value out.
+At `0` the vehicle has no standing artwork, and it is drawn from the first frame of its facing's walk run instead. At any other value it is drawn at frame [`StartStandFrame`](/keys/startstandframe/) plus its facing number times this count. The count is therefore also the spacing between one facing's standing run and the next.
+
+The count is stored in a single signed byte, so it wraps every 256: `128` to `255` store as negative numbers and `256` stores as `0`. A negative count still selects the standing run, but each facing after the first is then drawn from a frame before `StartStandFrame`.
+
+On a [`Turret=yes`](/keys/turret/) vehicle with firing frames, the defaults collide. The default eight facings and one standing frame put the default [`StartStandFrame`](/keys/startstandframe/) at `8 × WalkFrames`, the same frame where the turret frames start unless [`StartTurretFrame`](/keys/startturretframe/) moves them. The engine does not separate them, so a resting body is drawn from the turret's frames with the turret drawn on top. Set `StartStandFrame` to give such a vehicle a separate standing frame.
 
 ```ini title="art.ini"
-[REAPER] ; the Image ID of the stock Cyborg Reaper, which has no turret, so no strip competes for these frames
+[REAPER] ; the Image ID of the stock Cyborg Reaper, which has no turret frames to collide with
 Facings=8
 StandingFrames=1
 StartStandFrame=0 ; frames 0-7
 WalkFrames=12
-StartWalkFrame=8  ; the walk block follows the standing strip, frames 8-103
+StartWalkFrame=8  ; the walk block follows the standing frames, frames 8-103
 ```
 
 :::caution[The standing artwork never animates]
-Only the first frame of a facing's standing run is ever drawn. Nothing advances a resting vehicle through the run, so a count above `1` reserves frames that the vehicle never shows and pushes the derived [`StartFiringFrame`](/keys/startfiringframe/) further up the file for nothing.
+Only the first frame of a facing's standing run is ever drawn. A count above `1` reserves frames the vehicle never shows, and it pushes the default [`StartFiringFrame`](/keys/startfiringframe/) further into the file.
 :::

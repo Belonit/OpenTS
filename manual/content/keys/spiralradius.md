@@ -7,7 +7,9 @@ when_omitted:
   value: "25.0"
 ---
 
-Every particle of the trace is placed this far out from the line between the muzzle and the target, at the angle [`SpiralDeltaPerCoord`](/keys/spiraldeltapercoord/) gives it, so the figure is the visible thickness of the corkscrew. It is in leptons, 256 to a cell, which puts the stock traces at `6` and `15`, a small fraction of a cell out from the beam. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+Each particle of the trace is placed this far from its point on the beam, at the angle [`SpiralDeltaPerCoord`](/keys/spiraldeltapercoord/) gives it. The value is in leptons, 256 to a cell, so the stock traces' radii of `6` and `15` keep the coil well inside a cell's width. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+
+The radius is only where the particles start. Each `Railgun` particle then travels away from the beam at its speed, as [`MovementPerturbationCoefficient`](/keys/movementperturbationcoefficient/) describes, so the coil widens over the trace's life while that speed stays positive. The speed starts at the particle type's [`Velocity`](/keys/velocity/), `.4` and `.3` for the stock traces, plus the offset [`VelocityPerturbationCoefficient`](/keys/velocityperturbationcoefficient/) adds, and drifts a little each frame. A `Spark` particle ignores its speed and falls under gravity, and particles of other behaviors stay where they were created.
 
 ```ini title="rules.ini"
 [MyRailgunSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -15,7 +17,7 @@ BehavesLike=Railgun
 HoldsWhat=MyRailgunPart ; a ParticleType registered in [Particles]
 SpiralRadius=15
 SpiralDeltaPerCoord=.03
-PositionPerturbationCoefficient=30
+PositionPerturbationCoefficient=10 ; example value: scatter of up to 5 leptons, a third of the radius
 ```
 
-[`PositionPerturbationCoefficient`](/keys/positionperturbationcoefficient/) is applied on top and is measured in the same leptons, so a scatter set larger than this radius buries the coil in its own noise. The stock traces do exactly that, which is why they read as ragged streaks rather than as springs. Setting the scatter below this radius reverses it: the windings are then the larger displacement, and the trace reads as a corkscrew.
+[`PositionPerturbationCoefficient`](/keys/positionperturbationcoefficient/) then moves each particle by up to half its value along each axis, in the same leptons. The coil keeps its shape only while that scatter stays well inside this radius. Both stock traces scatter at least as far as their radius: up to `10` leptons along each axis against a radius of `6`, and up to `15` against `15`.

@@ -1,5 +1,5 @@
 ---
 key: WaterBound
-summary: Picks the movement kind a type's ground is tested against when it is placed.
+summary: Makes a BuildingType or TerrainType stand on ground that floating objects can cross, in place of land.
 see_also: [Buildable]
 ---

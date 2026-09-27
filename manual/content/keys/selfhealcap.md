@@ -10,11 +10,11 @@ when_omitted:
 
 ```ini title="rules.ini"
 [General]
-SelfHealCap=50%
+SelfHealCap=75% ; example value
 ```
 
-A tick is refused once the object stands above this share of its maximum strength, so [self-healing](/systems/repair/#self-healing) ends one step past it. A percentage and a plain fraction read the same. A type that states [`SelfHealingCap`](/keys/selfhealingcap/) uses its own figure instead.
+`SelfHealCap` sets how far an object can [heal itself](/systems/repair/#self-healing), as a share of its maximum strength. A higher value lets it heal further. A type that sets [`SelfHealingCap`](/keys/selfhealingcap/) uses that value instead.
 
-Left alone the ceiling is [`ConditionYellow`](/keys/conditionyellow/), half strength at the engine default. `100%` mends an object completely, and nothing heals past maximum strength whatever the cap says.
+A tick heals only while the object's strength is at or below this share, so healing stops one step past it. `100%` heals an object to maximum strength, and no value heals past it. A percentage and a plain fraction are read the same way, so `75%` equals `.75`.
 
-`ConditionYellow` still decides when the damage smoke goes out, so a cap below it leaves an object smoking at its ceiling and one above it puts the smoke out partway up.
+[`ConditionYellow`](/keys/conditionyellow/) still decides when an object counts as damaged. A ceiling below it leaves a healed object in its damaged state, and a structure keeps its damage smoke. A ceiling above it heals the object out of that state partway up. [Self-healing](/systems/repair/#self-healing) describes what else stays damaged.

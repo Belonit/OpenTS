@@ -1,14 +1,16 @@
 ---
 key: SortCameoAsBaseDefense
-summary: Sorts a BuildingType's cameo with the base defenses at the end of the structures strip.
+summary: Sorts a BuildingType's cameo into the base-defense group of the structures strip.
 see_also: ["system:sidebar", "SidebarSorting"]
 when_omitted:
   kind: inherited
   note: "Follows [`IsBaseDefense=`](/keys/isbasedefense/#scope-buildingtype)."
 ---
 
-The defense group is the last of the four the structures strip is arranged in; [the order of the strips](/systems/sidebar/#the-order-of-the-strips) gives them all. A wall or a gate is settled by its own flags first, so this key moves neither.
+With `yes`, the structure's cameo sorts after ordinary structures, walls and gates that share its [`CameoSortOrder`](/keys/cameosortorder/). The group decides only between cameos with equal `CameoSortOrder` values, so a base defense with a lower value still comes before an ordinary structure with a higher one. [The order of the strips](/systems/sidebar/#the-order-of-the-strips) gives the full comparison.
 
-A structure the computer plans its defenses by sets [`IsBaseDefense=`](/keys/isbasedefense/#scope-buildingtype), and a mod that uses that flag to steer the computer can write `SortCameoAsBaseDefense=no` to leave the cameo among the ordinary structures.
+A wall or a gate stays in its own group whatever this key says, because those groups are tested first.
 
-[`SidebarSorting=no`](/keys/sidebarsorting/) leaves the strips unsorted, and nothing reads this key.
+A mod that sets [`IsBaseDefense=yes`](/keys/isbasedefense/#scope-buildingtype) only so the computer rates a structure as a base defense can write `SortCameoAsBaseDefense=no` to keep its cameo among the ordinary structures.
+
+With [`SidebarSorting=no`](/keys/sidebarsorting/), the strips are not sorted and this key has no effect.

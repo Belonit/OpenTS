@@ -8,4 +8,4 @@ when_omitted:
   value: ".1"
 ---
 
-Nothing weighs a computer base by proportion. A war factory reaches the plan because [the plan assembly](/systems/ai-base-building/#building-the-plan) moves the first `BuildWeapons` entry the country this house [acts as](/keys/actslike/) [may own](/keys/owner/) to the second slot of the candidate array, behind the barracks. The expansion pass appends every candidate whose own [`Prerequisite`](/keys/prerequisite/) list the queue already satisfies. Nothing reserves a share of the base for it.
+Nothing in the computer's base planning sets aside a share of the base for war factories. A war factory enters a generated plan like any other type, once its [`Prerequisite`](/keys/prerequisite/) list is met. The only special treatment goes to the first [`BuildWeapons`](/keys/buildweapons/) entry the house may own: it moves to second place in the order the planner tests types, as [Building the plan](/systems/ai-base-building/#building-the-plan) describes.

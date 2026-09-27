@@ -7,8 +7,15 @@ when_omitted:
   value: none
 ---
 
-An animation whose [`Damage`](/keys/damage/#scope-animtype) is above zero adds that figure to a running total on each frame it advances. It spends the whole points of the total as a blast at its own center, carrying the fraction over. Every one of those blasts uses this warhead. An animation attached to a terrain object accrues five times as fast. A fire burning on a tree spends its damage five times as quickly as the same fire on open ground.
+Every animation whose [`Damage`](/keys/damage/#scope-animtype) is above zero deals that damage through this warhead. The one exception is the animation whose ID is exactly `INVISO`, which uses [`C4Warhead`](/keys/c4warhead/) instead.
 
-The one exception is the animation whose ID is exactly `INVISO`, which delivers its damage through [`C4Warhead`](/keys/c4warhead/) instead. A bouncing animation takes no part in this at all; it does its damage where it comes down.
+Each time the animation advances a frame, it adds its `Damage` to a running total. Whenever the total reaches one point or more, the whole points go off as a blast at the animation's center, and the fraction carries over to the next frame. A new animation's total starts at one point, so the first frame it advances always sets off a blast. When the animation chains into its next type, the total starts again from zero.
 
-With no warhead named, the blast is abandoned before anything is damaged, so every damaging animation in the game becomes harmless while its artwork still plays.
+An animation attached to a terrain object adds five times its `Damage` each frame. A fire burning on a tree therefore deals its damage five times as fast as the same fire on open ground.
+
+These animations take no part in this:
+
+- a [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype) animation, which is removed when it lands. Any damage it deals on landing goes through its [`Warhead=`](/keys/warhead/#scope-animtype);
+- an animation placed by the [Play Anim At](/mapping/actions/taction-play-anim/) trigger action, which deals no damage.
+
+With the key unset, every damaging animation except `INVISO` deals no damage, though its artwork still plays.

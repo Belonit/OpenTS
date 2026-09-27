@@ -8,28 +8,27 @@ when_omitted:
   value: "no"
 ---
 
-On an AircraftType this flag does nothing. A voxel aircraft has no shape file for the rewrite to touch. A shape aircraft fetches its plain `<Image ID>.SHP` once more, immediately after the rewrite, and keeps whatever that fetch returns, so the rewritten name never survives the read. Marking [`Theater=yes`](/keys/theater/) as well changes nothing here.
+`NewTheater=yes` looks for the type's shape under a theater-specific name. The name is `<Image ID>.SHP` with its second letter replaced by the scenario theater's [`ImageLetter`](/keys/imageletter/): `T` in temperate and `A` in snow. A name is rewritten only when its second letter is already the image letter of some declared theater, ignoring case. Any other name, such as `CITY01` with the stock theaters, is looked up as written in every theater.
 
 ```ini title="art.ini"
-[APACHE] ; the Image ID of an AircraftType
-NewTheater=yes ; no effect: the aircraft keeps drawing APACHE.SHP
+[GAFENC] ; example Image ID of an OverlayType
+NewTheater=yes ; draws GTFENC.SHP in temperate and GAFENC.SHP in snow
 ```
 
-No stock aircraft art section carries this flag or [`Theater`](/keys/theater/); every shipped aircraft section sets [`Voxel=yes`](/keys/voxel/).
+Whether the renamed shape is drawn depends on the kind of type:
 
-On other scopes the flag renames real shape files. The file keeps its `.SHP` extension, and the second letter of its name is rewritten to the theater's [`ImageLetter`](/keys/imageletter/) instead: `T` in temperate and `A` in snow. The rewrite happens only where that second letter is already the image letter of some declared theater, and the comparison ignores case. Any other name is left exactly as written. The shipped civilian artwork sets the flag and gains nothing from it. `CITY01` through `CITY22`, `ABAN01` through `ABAN18` and `BBOARD01` through `BBOARD16` set it in `art.ini`, and `MWAR`, its `_A` through `_C` variants, and `OBL1` carry it in the Firestorm art file `artfs.ini`. Their second letters match no theater's image letter.
+- Overlays, projectiles and particles draw the renamed shape.
+- Structures are renamed whether or not the flag is set. The rename covers the structure's shape and the art named by [`Buildup`](/keys/buildup/), [`DeployingAnim`](/keys/deployinganim/), [`DoorAnim`](/keys/dooranim/), [`UnderDoorAnim`](/keys/underdooranim/), [`SpecialZOverlay`](/keys/specialzoverlay/) and [`BibShape`](/keys/bibshape/).
+- Aircraft, infantry, vehicles, smudges and terrain objects ignore the flag in a new game. They draw `<Image ID>.SHP`, and have no shape if only the renamed file exists.
 
-```ini title="art.ini"
-[GACNST] ; the Image ID of a BuildingType
-NewTheater=yes ; draws GTCNST.SHP in temperate and GACNST.SHP in snow
-```
+Where the renamed shape is drawn, it is the only name tried. A type whose file for the current theater is missing has no shape, so provide one file for each theater.
 
-A [`Voxel=yes`](/keys/voxel/) InfantryType or UnitType is in the same position as an aircraft: no shape to rename. A BuildingType resolves and loads a theater-named shape either way.
+:::caution[A loaded game can draw different art]
+Loading a saved game fetches shapes again. These types can then draw a different file from the one the saved game drew:
 
-:::caution[Only some of these types keep the rewrite]
-An AircraftType, InfantryType, or UnitType looks its unrewritten `<Image ID>.SHP` up again immediately after the rename and keeps whatever that returns. Those three, a BulletType, a ParticleType, a ParticleSystemType and a VoxelAnimType also leave their artwork as it stands when the scenario theater changes. A SmudgeType and a TerrainType do too: their theater pass handles [`Theater`](/keys/theater/) alone.
-:::
+- A flagged aircraft, infantry or vehicle type draws its renamed shape when that file exists. Otherwise it keeps `<Image ID>.SHP`.
+- A flagged smudge or terrain type draws its renamed shape when that file exists. Otherwise it has no shape.
+- Every OverlayType that sets neither [`Theater=yes`](/keys/theater/) nor [`DemandLoad=yes`](/keys/demandload/#scope-overlaytype) is renamed whether or not it sets this flag. It has no shape when the renamed file is missing.
 
-:::note[A building is renamed whether or not the flag is set]
-A BuildingType runs its shape, its buildup, and its door, deploy, bib, and Z-overlay animations through the same rewrite every time its rules section is read. The flag is what makes a building resolve those names again against a new theater.
+To make a loaded game draw the same art, leave `NewTheater=yes` off aircraft, infantry, vehicle, smudge and terrain types, where it has no effect in a new game. Give each such overlay its file under the renamed name as well as `<Image ID>.SHP`.
 :::

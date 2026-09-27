@@ -8,7 +8,7 @@ when_omitted:
   value: "0"
 ---
 
-The value is written in cells and a fraction is accepted; it is held as 256 units to the cell. Before any comparison the engine takes 85 of those units off the figure, a third of a cell. The reach is therefore always that much shorter than the number written, and a target sitting exactly at the written distance is out of range.
+The weapon reaches a third of a cell less than the distance written. A target exactly at the written distance is therefore out of range. The value is in cells, and a fraction is accepted.
 
 ```ini title="rules.ini"
 [MyCannon] ; example WeaponType
@@ -16,14 +16,32 @@ Range=10.5
 MinimumRange=2
 ```
 
-The distance compared against it is the full three-dimensional separation between the firing coordinate and the target's center. An AircraftType is the exception and measures the horizontal separation only, ignoring how far below it the target lies. Against a structure the reach is stretched back out by a quarter of a cell for every cell of the structure's width and height added together, so a wide building can be hit from further away than a vehicle.
+The distance runs from the firer's center to the target's center and includes the height difference, with two exceptions:
 
-Three further refusals ride on the same test. The first two apply only to a projectile that is not [`Arcing=yes`](/keys/arcing/). A weapon whose projectile is not [`AA=yes`](/keys/aa/) refuses a target raised above the firer by at least the horizontal distance between them. A firer standing beneath a bridge cannot reach a target standing on top of one. The third holds whichever projectile is fired. A shot is refused when the firer sits above the target by at least the horizontal distance between them, unless the firer is itself off the ground.
+- An aircraft measures the horizontal distance only, however far below it the target lies.
+- Any other object in the air is measured as though it were at the target's height, so for it too only the horizontal distance counts.
 
-:::caution[An arcing projectile does not use the figure as a range at all]
-When the weapon's [`Projectile=`](/keys/projectile/) sets [`Arcing=yes`](/keys/arcing/), the distance comparison is skipped entirely. Whether the target can be reached is then decided by solving the shot's ballistic arc from its launch speed. That launch speed is itself worked out from this figure for any unguided projectile, so `Range=` still governs the reach, indirectly: through the speed rather than through a limit. [`Speed=`](/keys/speed/#scope-weapontype) covers that substitution.
+Against a structure, the reach gains an allowance of a quarter of a cell for each cell of the structure's width plus its depth. A structure 2 cells wide and 2 deep adds one cell, so it can be hit from farther away than a vehicle.
+
+The same test refuses a target in three more cases:
+
+- The target is higher than the firer by at least the horizontal distance between them, and the projectile has neither [`Arcing=yes`](/keys/arcing/) nor [`AA=yes`](/keys/aa/).
+- The firer stands beneath a bridge, the target is at or above the height of that bridge's deck, and the projectile does not have `Arcing=yes`.
+- The firer is higher than the target by at least the horizontal distance between them, and the firer is on the ground. A firer standing on a bridge counts as on the ground.
+
+:::caution[An arcing projectile does not use the value as a range limit]
+When the weapon's [`Projectile=`](/keys/projectile/) has [`Arcing=yes`](/keys/arcing/), the distance comparison and the structure allowance are skipped. The target is in range when the shot's ballistic arc can reach it at the weapon's launch speed. [`MinimumRange=`](/keys/minimumrange/) and the third case above still apply, and a target in a bridge cell that stands three or more terrain levels above the firer is always out of range. For a projectile that does not home, that launch speed is worked out from `Range=`, so `Range=` still sets the reach through the speed. [`Speed=`](/keys/speed/#scope-weapontype) covers how the speed replaces the written one.
 :::
 
-Outside the range test the figure is read in several places. It is the scan radius an object falls back on when its [`GuardRange`](/keys/guardrange/) is zero, and it is the distance the threat score is measured against; [target selection](/systems/target-selection/#scan-radius) covers both. It is capped at four cells when a computer house rates a base defense against armor or infantry. A superweapon cannon takes it, in whole cells, as the reach of its strike. A weapon named as a projectile's [`AirburstWeapon=`](/keys/airburstweapon/) hands it to each bomblet as fuel rather than as a firing distance.
+`Range=` is also used outside the firing test:
 
-A figure of exactly `-1` is read as though the key were absent, leaving whatever an earlier rules file set. A figure of `0` leaves the reach at less than nothing, so an ordinary weapon set that way can never fire at all.
+- An object whose [`GuardRange`](/keys/guardrange/) is zero takes its scan radius from its weapons' range, and the threat score measures distance against the range; [target selection](/systems/target-selection/#scan-radius) covers both.
+- When a house rates its base defenses against armor and infantry, the range counts for at most four cells.
+- An EM pulse cannon can be aimed only at cells within its weapon's range, rounded down to whole cells.
+- A weapon named as a projectile's [`AirburstWeapon=`](/keys/airburstweapon/) gives its range to each bomblet as fuel. It is not a firing distance there.
+
+`-1` counts as not set, so it keeps whatever an earlier rules file set.
+
+`Range=0` leaves the reach below zero. A weapon without an arcing projectile can then fire only at structures, and only within the structure allowance above.
+
+A structure whose first-slot weapon has `Range=0` counts as unable to shoot back. A human player's objects outside a team, other than engineers, therefore do not pick it as a target on their own; [target selection](/systems/target-selection/#why-a-candidate-is-rejected) lists the rule and its exceptions.

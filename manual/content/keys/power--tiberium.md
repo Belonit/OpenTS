@@ -8,8 +8,12 @@ when_omitted:
   note: A damage figure of zero.
 ---
 
-The value is the damage this Tiberium deals, and all three paths that spend it apply their result through [`C4Warhead`](/keys/c4warhead/):
+The value sets the damage this Tiberium deals in the four cases below.
 
-- An infantry object without [`TiberiumProof=yes`](/keys/tiberiumproof/) and without the Tiberium-proof veteran ability takes `Power / 10` on every cell of this Tiberium it steps into. The damage is rounded down and never below 1. It is forced, so armor class and [`Immune=yes`](/keys/immune/) do not soften it.
-- A chain reaction consumes half the growth stacked in the cell and deals that many stages multiplied by this value at the cell. A result of zero creates no explosion animation and deals no damage; the consumed growth and neighboring reaction checks still proceed.
-- With [`TiberiumExplosive=yes`](/keys/tiberiumexplosive/) in `[CombatDamage]`, a harvester destroyed while carrying Tiberium explodes over one and a half cells, unless the scenario grants harvesters immunity. The blast deals the sum, across every Tiberium type in its hold, of the amount carried multiplied by that type's `Power`.
+Infantry take `Power / 10` damage, rounded down and at least 1, each time they finish moving into a cell of this type. Infantry whose type sets [`TiberiumProof=yes`](/keys/tiberiumproof/), or that have the Tiberium-proof [veteran ability](/systems/veterancy/#abilities), take none. The damage uses [`C4Warhead`](/keys/c4warhead/) and is forced, so armor and [`Immune=yes`](/keys/immune/#scope-aircrafttype) do not reduce it.
+
+A cell that detonates in a [chain reaction](/systems/tiberium/#damage) loses half its growth stages, rounded down, and deals that many stages multiplied by this value through `C4Warhead`. At a result of zero the detonation shows no explosion and deals no damage, but it still removes the stages and can still set off neighboring cells.
+
+With [`TiberiumExplosive=yes`](/keys/tiberiumexplosive/#scope-global-rules) in `[CombatDamage]`, a destroyed vehicle carrying Tiberium, such as a harvester, explodes through `C4Warhead` over a radius of one and a half cells. The damage is the sum, over every Tiberium type it carries, of the amount carried multiplied by that type's `Power`. The blast goes off only if the vehicle has a death explosion animation, such as one from its [`Explosion`](/keys/explosion/) list. A scenario with [`HarvesterImmune=yes`](/keys/harvesterimmune/) prevents it. [Spilled harvester loads](/systems/destruction-and-debris/#spilled-harvester-loads) covers which deaths set it off.
+
+A destroyed structure that is [`Explodes=yes`](/keys/explodes/#scope-aircrafttype), or has the explodes [veteran ability](/systems/veterancy/#abilities), adds the same sum for the Tiberium in its [`Storage`](/keys/storage/) to its [collateral figure](/keys/collateraldamagecoefficient/). That blast uses the warhead of the structure's primary weapon, not `C4Warhead`. A structure with no primary weapon deals no blast damage, so its stored Tiberium adds nothing.

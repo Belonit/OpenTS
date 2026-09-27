@@ -6,6 +6,6 @@ targets: []
 credit: [ZivDero, CCHyper]
 ---
 
-Sound effects, speech and music now play through a mixer OpenTS provides, built on the miniaudio device layer. It replaces the DirectSound buffers a timer thread used to drive. Up to sixteen sound effects play at once, where five did before. Changing the headphone or output device no longer silences the game, because playback moves to the new device by itself.
+Sound effects, speech and music now play through a mixer built into OpenTS on the miniaudio library, in place of DirectSound. By default, up to sixteen sound effects play at once, where five did before. Switching to headphones or another output device no longer silences the game, because playback moves to the new device.
 
-CCHyper is credited for the Vinifera audio system, which put the game on miniaudio first and whose loudness curve and movie clock this engine keeps.
+CCHyper is credited for the Vinifera audio system, which first moved the game to miniaudio and whose loudness curve and movie timing this engine keeps.

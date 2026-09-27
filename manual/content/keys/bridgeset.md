@@ -8,7 +8,9 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The value is a tile-set number, resolved into the index of that set's first tile while [the theater control file](/formats/theater-control/) is read. Every road-bridge test then works in offsets from that index. The position of a cell's piece is its tile index minus the resolved index plus one. The ten `Bridge` position keys name which of the sixteen positions holds which piece.
+`BridgeSet` names the tile set that holds the road bridge pieces. The sixteen tiles that start at that set's first tile count as road bridge pieces, and the ten `Bridge` position keys say which of them draws each part of a span. The value is a tile-set number, the `NNNN` of a `[TileSetNNNN]` section in the [theater control file](/formats/theater-control/).
+
+The retail temperate theater lays out its road bridge set like this:
 
 ```ini title="TEMPERAT.INI"
 [General]
@@ -25,8 +27,12 @@ BridgeMiddle1 = 7       ; positions 7 through 11
 BridgeMiddle2 = 12      ; positions 12 through 16
 ```
 
-Two things beyond artwork follow from a cell answering as a road bridge. Its span is registered as a crossing between the two banks, which is how a route is found from one side to the other over ground that is otherwise unconnected. The same crossing list includes the map's tunnels. Tunnel pieces come from their own control-file roles, not from this set. A cell hit by combat damage is offered to the road-bridge handler before the [rail one](/keys/trainbridgeset/). The road set is what decides which of the two brings a span down.
+Damage, collapse and engineer repairs follow the position keys, as [`BridgeMiddle1`](/keys/bridgemiddle1/) describes. Road bridge pieces also link the two banks for route-finding, so units plan paths across the span.
+
+:::caution[Route-finding assumes the retail piece order]
+Route-finding locates a span's two ends from the piece order shown above, whatever the position keys say. The same holds for the [railway set](/keys/trainbridgeset/). A set that orders its pieces differently is still damaged and repaired by its keys, but route-finding misreads where its spans start and end.
+:::
 
 :::caution[An unresolved set claims the theater's first tiles]
-Nothing guards the road-bridge test against a role that no tile set answered. Left unresolved, the test accepts every tile index from `0` through `14`. The first fifteen tiles the theater loads then answer as road bridge pieces wherever it is asked.
+If `BridgeSet` is missing, or names a set the theater never reads, the first fifteen tiles the theater loads count as road bridge pieces.
 :::

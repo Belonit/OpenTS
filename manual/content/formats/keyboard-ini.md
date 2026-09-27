@@ -11,7 +11,7 @@ source_files:
   - code/options.cpp
 ---
 
-`[Hotkey]` keys are the exact [registered command](/commands/) names. Each value is an integer keyboard identifier: the key's Windows virtual-key code, plus 256 for Shift, 512 for Control and 1024 for Alt.
+Each assignment in `[Hotkey]` binds a key to a command. The name before `=` is the command's exact [registered name](/commands/), including its case. The value is a keyboard identifier: the key's Windows virtual-key code, plus 256 for Shift, 512 for Control and 1024 for Alt.
 
 ```ini title="KEYBOARD.INI"
 [Hotkey]
@@ -20,14 +20,18 @@ ToggleRepair=338    ; R with Shift
 ScatterObject=88    ; X
 ```
 
-After the file loads, OpenTS clears the current hotkey table and adds entries whose command name is registered and whose keyboard identifier is not zero. Unknown command names and zero values are ignored, and a name has to match the registered spelling exactly, including its case.
+A command name can appear only once in the section, so the file gives each command at most one key. If a name is repeated, the later value is used.
 
-The table is cleared only once the file has been read. A file that is missing or that cannot be parsed leaves the table as it stands rather than emptying it. OpenTS looks the file up through the ordinary file layer, so a loose `KEYBOARD.INI` in the game directory stands in for an archived one. The keyboard dialog writes the bindings the player accepted back to a loose `KEYBOARD.INI`, and canceling it drops the edits. Its reset control deletes that file at once, even if the dialog is then canceled, and loads `KEYBOARD.INI` again, which clears and rebuilds the table only when the file layer still finds one.
+The game reads the file at startup. A loose `KEYBOARD.INI` in the game directory replaces one inside an archive. An entry is ignored if its command name is not registered or its value is `0`.
 
-Two commands are bound again once the file has been processed, taking their keys back from whatever the file gave them: [`DeleteWaypoint`](/commands/deletewaypoint/) takes Delete and [`Options`](/commands/options/) takes Escape. The file's own binding for either command is left alone, so it can end up answering to two keys.
+A file that holds at least one section header replaces all current bindings. If no `KEYBOARD.INI` is found, or the file has no section header, the current bindings stay. At startup that leaves only the built-in keys described below.
 
-Two commands take a key by default instead: [`ChatToAll`](/commands/chattoall/) takes Enter and [`ChatToAllies`](/commands/chattoallies/) takes Backspace, each only when the file binds neither that command nor that key. A file that binds the command to another key, or gives the key to another command, is left as written.
+The keyboard dialog saves the bindings the player accepts to a loose `KEYBOARD.INI`, and canceling it discards the changes. Its reset control deletes the loose file at once, even if the dialog is then canceled, and reads `KEYBOARD.INI` again. The bindings are replaced only if the game still finds one, such as a copy inside an archive.
 
-:::caution[Two commands on one key are both kept]
-Nothing rejects an entry for a key that is already bound. Both entries are added to the table, and the key runs one of the two commands without regard to the order they appear in the file.
+After reading the file at startup, the game binds Delete to [`DeleteWaypoint`](/commands/deletewaypoint/) and Escape to [`Options`](/commands/options/). If the file binds either key, one binding for that key is removed, so a key the file binds once goes only to the built-in command. A key the file gives either command is kept, so that command can have two keys.
+
+At startup the game also binds Enter to [`ChatToAll`](/commands/chattoall/) and Backspace to [`ChatToAllies`](/commands/chattoallies/), each only when the file binds neither that command nor that key. A file that binds the command to another key, or gives the key to another command, keeps its binding.
+
+:::caution[Bind each key once]
+Give each key to only one command. If two entries bind the same key, both are kept, and pressing the key runs only one of the two commands. Which one runs cannot be predicted from the file.
 :::

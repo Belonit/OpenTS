@@ -12,10 +12,10 @@ when_omitted:
 OmniHealer=yes
 ```
 
-Where [`Mechanic=yes`](/keys/mechanic/) exchanges one kind of patient for the other, this key adds one: the healer keeps infantry and gains the vehicles, landed aircraft and deployed buildings that [`Mechanic`](/keys/mechanic/) lists. Setting both is the same as setting this one alone.
+`OmniHealer=yes` lets a healer mend both infantry and vehicles. A healer is an object whose weapon [`Damage`](/keys/damage/#scope-weapontype) plus [`AmbientDamage`](/keys/ambientdamage/) averages below zero across its weapon slots. On any other object the key does nothing.
 
-Like `Mechanic`, it redirects a healer rather than creating one, and does nothing without a weapon whose [`Damage`](/keys/damage/#scope-weapontype) averages below zero.
+[`Mechanic=yes`](/keys/mechanic/) switches an infantry healer from infantry to vehicles. This key keeps infantry and adds the vehicles, landed aircraft and deployed buildings that `Mechanic` covers. Setting both has the same effect as setting `OmniHealer` alone.
 
-The cursor follows the patient: a damaged allied soldier draws the heal cursor and a damaged allied vehicle draws the repair cursor, from the same object, and the [automatic scan](/systems/target-selection/) picks up both.
+The healer shows the heal cursor over a damaged allied infantry and the repair cursor over a damaged allied vehicle. Its [automatic target search](/systems/target-selection/) looks for both.
 
-An infantry or a vehicle acts on the key. On a healing vehicle it is the only route to infantry.
+Infantry and vehicle healers use the key. For a healing vehicle it is the only way to heal infantry.

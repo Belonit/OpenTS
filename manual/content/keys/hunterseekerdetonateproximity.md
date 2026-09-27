@@ -7,8 +7,18 @@ when_omitted:
   value: "0"
 ---
 
-A [hunter seeker](/systems/superweapons/#hunter-seeker) closing on a target detonates the frame it comes nearer than this to the coordinate it is flying to, measured flat across the map. The stock rules use `150`, about three-fifths of a cell. The test is made before the dive test, so a figure at or above [`HunterSeekerDescendProximity`](/keys/hunterseekerdescendproximity/) leaves no range in which the drone descends.
+A [hunter seeker](/systems/superweapons/#hunter-seeker) detonates on the first frame it is closer than this to its target, measured flat across the map. The stock rules use `150`, about three-fifths of a cell. At `0` the drone never detonates on its target.
 
-Detonation applies the drone's Primary weapon three times over. The target takes that weapon's damage through its warhead, with the drone recorded as the attacker. The drone takes the same damage through the same warhead, with no attacker recorded. A blast of the same strength also goes off at the drone's coordinate, again with no attacker, chaining into whatever it destroys. The flash of light is sized by that same damage figure but is thrown by [`C4Warhead`](/keys/c4warhead/), so it appears only if that warhead sets [`Bright=yes`](/keys/bright/). The weapon's own warhead has no say in it.
+Detonation is tested before the dive. A value at or above [`HunterSeekerDescendProximity`](/keys/hunterseekerdescendproximity/) therefore detonates the drone before it reaches the dive range, so it never dives.
 
-Detonation also requires the drone to have been aimed at an object rather than at a bare coordinate. At `0` the measured distance can never fall below it, so the drone never goes off this way. A drone that leaves the playable area still applies its Primary weapon's damage to its target once before it is removed.
+Detonation uses the drone's Primary weapon, or its [`Elite`](/keys/elite/) weapon once the drone is elite. The weapon's [`Damage`](/keys/damage/#scope-weapontype) is applied three times through its warhead:
+
+- the target takes it, credited to the drone;
+- the drone takes it, credited to no one;
+- an explosion at the drone's position deals it to nearby objects, credited to no one.
+
+Give every drone type a Primary weapon. A drone without one crashes the game when it detonates.
+
+The detonation also makes a flash of light sized by the same damage. The flash uses [`C4Warhead`](/keys/c4warhead/), not the weapon's warhead, so it appears only if `C4Warhead` names a warhead with [`Bright=yes`](/keys/bright/#scope-warheadtype).
+
+A drone that leaves the playable area is removed. Before removal it applies the same weapon's damage to its target once, whatever this setting.

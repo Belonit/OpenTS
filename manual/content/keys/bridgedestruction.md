@@ -7,8 +7,10 @@ when_omitted:
   value: "yes"
 ---
 
-The value seeds the match's bridge option as the rules are read, and the setup screen then writes over it. The resulting option replaces the scenario's own [`DestroyableBridges`](/keys/destroyablebridges/) flag once the map has been read. That flag is the first half of the test a blast makes when it reaches a span; [`BridgeStrength`](/keys/bridgestrength/) covers the roll that follows. A campaign game never reads the option and takes the flag from the map instead.
+`BridgeDestruction` sets the destroyable-bridges option when the game starts. The skirmish setup screen, the network lobby or the spawn settings then replace it for each match, so the value decides only how the option starts out.
 
-:::caution[A skirmish played with bridges off leaves them off]
-The option is copied into the scenario flag only when it is off, and the flag starts on and is not reset between matches. One skirmish with the box cleared therefore leaves bridges indestructible in every later skirmish of the same run of the game, whatever the box says. A network game writes the flag from the agreed option either way, so it both turns the flag off and turns it back on.
+Outside a campaign, the option decides whether blasts can damage bridges, and the map's [`DestroyableBridges`](/keys/destroyablebridges/) entry is not read. This is the first half of the test a blast makes on a bridge span. [`BridgeStrength`](/keys/bridgestrength/) covers the roll that follows. A campaign mission ignores the option and uses the map's `DestroyableBridges` entry.
+
+:::caution[One skirmish with bridges off turns them off until restart]
+A skirmish applies the option only when it is off, and nothing in a skirmish turns bridge destruction back on. After one skirmish with the option cleared, bridges stay indestructible in every later skirmish until the game is restarted, whatever the option says. A network game applies the agreed option either way, so it turns bridge destruction back on as well as off.
 :::

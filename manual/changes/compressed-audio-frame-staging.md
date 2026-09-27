@@ -10,4 +10,4 @@ credit:
 - ZivDero
 ---
 
-A sound effect that starts while the music track or another compressed sound is being refilled no longer corrupts that other stream. The other stream used to play as loud static for the rest of the sound or track. A compressed frame whose sizes do not fit the decoder now ends the sample there, the same as a frame with a bad marker.
+A sound effect that started while the music track or another compressed sound was decoding its next block could turn that other sound into loud static until it ended. Each sound now decodes on its own, so a new sound effect no longer affects one already playing. A compressed block whose sizes exceed the decoder's limits now ends the sample before that block, as a block without the marker does.

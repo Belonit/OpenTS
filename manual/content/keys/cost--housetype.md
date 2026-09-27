@@ -8,11 +8,19 @@ when_omitted:
   value: "1.0"
 ---
 
-Everything a house of this country builds costs [the object's own `Cost=`](/keys/cost/#scope-aircrafttype) multiplied by this value, so a figure above 1 pays more. The price of repairing an object does not use the multiplier. Selling an object back refunds that same multiplied price, cut down by [`RefundPercent=`](/keys/refundpercent/) for a house a human is playing. The product is worked out once, [when the house is given its difficulty slot](/systems/difficulty/#how-the-figures-are-combined), and not per order.
+A house of this country pays [each object's `Cost=`](/keys/cost/#scope-aircrafttype) multiplied by this value, so a value above 1 makes everything it builds more expensive. Build times do not change, because they come from the unmultiplied `Cost=`.
 
 ```ini title="rules.ini"
 [NOD]
-Cost=1.25 ; NOD pays 25% more for everything it builds
+Cost=1.25 ; example: NOD pays 25% more for everything it builds
 ```
 
-A campaign game drops the country's contribution, so this value shapes skirmish and multiplayer games only; the [difficulty setting's own multiplier](/keys/cost/#scope-difficulty-settings) applies in both. Prices and build times are separate axes: this value changes what everything costs without changing how long it takes.
+The multiplied price also applies where the game values an object the house owns:
+
+- Selling refunds the multiplied price, reduced by [`RefundPercent=`](/keys/refundpercent/) when a human plays the house. A captured object is valued at its new owner's multiplier.
+- A house that destroys or captures one of its objects adds the multiplied price to its score.
+- A structure's [survivor count](/keys/survivordivisor/) is worked out from the multiplied price, so a higher value gives more survivors, still no more than 5.
+
+Repairs do not use the multiplier.
+
+Outside a campaign game, the house multiplies this value by [the difficulty section's `Cost=`](/keys/cost/#scope-difficulty-settings) once, [when it is given its difficulty slot](/systems/difficulty/#how-the-figures-are-combined). A campaign game leaves the country's value out, so it affects skirmish and multiplayer games only.

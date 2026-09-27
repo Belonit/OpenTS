@@ -13,7 +13,9 @@ values:
   - { constant: SOURCE_EAST, value: 1, input: "East", meaning: "Enter from the east edge." }
   - { constant: SOURCE_SOUTH, value: 2, input: "South", meaning: "Enter from the south edge." }
   - { constant: SOURCE_WEST, value: 3, input: "West", meaning: "Enter from the west edge." }
-  - { constant: SOURCE_AIR, value: 4, input: "Air", meaning: "Names no boundary; nothing in the engine reads it." }
+  - { constant: SOURCE_AIR, value: 4, input: "Air", meaning: "Names no edge. Reinforcements enter along the north edge." }
 ---
 
-Only four of the five name a boundary. `Air` names none: nothing in the engine reads it, so a house that stores it places reinforcements as though the edge were `North`. The routine that turns a source into a cell to scan along has a case for the four compass values alone. [`Edge`](/keys/edge/) covers what each route does with the source a house holds.
+A house's [`Edge`](/keys/edge/) setting takes one of these values to choose the map edge its reinforcements enter from. That page covers which kinds of reinforcement use it.
+
+Only the four compass values name an edge. With `Edge=Air`, reinforcements enter along the north edge and face the same way as with `Edge=North`. When the team names no waypoint, though, `Air` can pick a different entry cell on that edge than `North` would, so set `North` for north-edge reinforcements.

@@ -13,8 +13,10 @@ CarryOverMoney=0.5
 CarryOverCap=5000
 ```
 
-The figure is a credit total, compared against the money [`CarryOverMoney`](/keys/carryovermoney/) worked out and used in its place whenever it is smaller. A cap of exactly `-1` is the one value treated as "no ceiling" and lets the full share through. Every other negative figure is a ceiling like any other and hands the player a debt.
+The cap is a number of credits. The player receives the carried-over amount from [`CarryOverMoney`](/keys/carryovermoney/) or the cap, whichever is smaller.
 
-:::caution[The default cap cancels the carry-over]
-Leaving the key out stores `0`, and a ceiling of zero holds any share to nothing. A mission that wants money carried forward has to state both keys, and a mission that wants the whole share has to write `CarryOverCap=-1`.
+`-1` removes the cap and lets the full amount through. Any other negative value is still a cap, so the player receives that negative amount and starts with fewer credits.
+
+:::caution[Set the cap to carry money over]
+Leaving this key out cancels the carry-over. A mission that carries money forward must set both keys, and a mission that carries the full amount must set `CarryOverCap=-1`.
 :::

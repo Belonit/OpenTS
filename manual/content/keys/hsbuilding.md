@@ -7,15 +7,18 @@ when_omitted:
   value: ""
 ---
 
-Firing a [`Type=HunterSeeker`](/keys/type/) weapon scans every structure the house owns against this list and keeps the *last* match, not the first. The drone therefore leaves whichever qualifying structure was created most recently. The drone then appears at the nearest cell to that structure that infantry could stand in, and only when that cell lies inside the playable area.
+When a [`Type=HunterSeeker`](/keys/type/#scope-superweapontype) superweapon fires, the drone leaves the firing house's structure of a listed type. If the house owns several, the drone uses the one created most recently, not the first listed type. It appears on the nearest cell to that structure that infantry could stand in.
+
+A listed building that is still being built on the sidebar, or is ready and waiting to be placed, already counts as owned. Being the newest, it is the one chosen. It is not on the map yet, so the drone either appears away from the house's base or does not launch. A failed launch still spends the charge.
 
 ```ini title="rules.ini"
 [SpecialWeapons]
-HSBuilding=GAPLUG,NATMPL   ; GDI Upgrade Center and Nod Temple of Nod
+HSBuilding=GAPLUG,NATMPL   ; the stock list: GDI Upgrade Center and Temple of Nod
 ```
 
-Nothing is created, and the discharge still spends the charge, when **any of:**
+Nothing launches, and the charge is still spent, when **any of:**
 
-- the list is empty;
-- the house owns none of the named types;
-- the side's [`HunterSeeker=`](/keys/hunterseeker/#scope-side) names no drone.
+- the list is empty, or the house owns none of the listed types;
+- the chosen cell lies outside the playable area;
+- the house [acts as](/keys/actslike/) no side, or that side names no drone in its [`HunterSeeker=`](/keys/hunterseeker/#scope-side);
+- the drone cannot be placed on the chosen cell.

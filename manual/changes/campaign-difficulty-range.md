@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-`Difficulty=` under `[Options]` in `sun.ini` is now held to the three campaign difficulties the game has, rather than to five. A value above the three is read as the hardest, and one below them as the easiest. A file edited by hand to name a fourth or fifth could start a mission whose computer difficulty fell below the easiest one. That mission then read the difficulty table from outside itself. A difficulty chosen in the game is unaffected.
+`Difficulty=` under `[Options]` in `sun.ini` sets the campaign difficulty. A hand-edited `3` or `4` used to be accepted, which put both the player and the computer outside the three difficulties the game defines, so the mission ran on undefined difficulty settings. A value above `2` now reads as Hard. A difficulty chosen in the game is unaffected.

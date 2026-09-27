@@ -8,9 +8,7 @@ when_omitted:
   value: "1"
 ---
 
-The figure is how many cells wide the smudge is. [`Height`](/keys/height/#scope-smudgetype) covers the block the two figures describe together: its placement test, the way one image is stamped across it, and the size grouping that decides which blast draws which smudge.
-
-The width also numbers the cells of the block. Each covered cell records its position as the column plus the row times this figure. The draw, the terrain-flattening cleanup and the pavement-laying cleanup all divide that number back down to find the block's origin cell from any cell in it.
+`Width` is the number of cell columns the smudge covers. [`Height`](/keys/height/#scope-smudgetype) sets its rows and describes the block the two sizes form: where it fits, how its artwork is drawn, and which requests prefer it.
 
 ```ini title="rules.ini"
 [MYCRATER]     ; example two-by-two crater
@@ -19,6 +17,4 @@ Width=2
 Height=2
 ```
 
-:::caution[A figure below one places no smudge and still crowds out the ones that would]
-The stamping loop runs once per column, so a figure of `0` or less writes to no cell at all. The type is not skipped, though: it passes the placement test for every location, because that test runs over the same empty loop. It then joins the pool a blast picks from. Picking it leaves no mark, and the mark a well-formed smudge would have left is not drawn instead.
-:::
+Keep `Width` at `1` or more. A smaller value makes a type that can still be picked but leaves no mark, as [`Height`](/keys/height/#scope-smudgetype) explains.

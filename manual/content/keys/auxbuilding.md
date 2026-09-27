@@ -7,7 +7,11 @@ when_omitted:
   value: none
 ---
 
-The named type is counted across the house's standing structures when a structure offers this weapon [through its own `SuperWeapon=` or `SuperWeapon2=`](/systems/superweapons/#from-a-structure-or-a-plug). A count of zero withholds the weapon, and losing the last one takes it away again. A name matching no BuildingType counts as a type that can never stand, so it withholds the weapon outright; `none` is the spelling that removes the requirement. The stock chem missile names the Nod waste facility this way.
+A structure grants this weapon [through its own `SuperWeapon=` or `SuperWeapon2=`](/systems/superweapons/#from-a-structure-or-a-plug) only while its house owns at least one standing structure of the named BuildingType. Losing the last one removes a weapon that structures granted, together with any charge it had built, unless a plug still grants it. A later grant starts the charge from the beginning. A one-time copy and a weapon from the [Add repeating special weapon](/mapping/actions/taction-full-special/) trigger action are kept.
+
+`none` removes the requirement. A misspelled name is not rejected; it withholds the weapon for good, because no structure of that type is ever built.
+
+The stock chem missile requires the Nod waste facility:
 
 ```ini title="rules.ini"
 [ChemicalSpecial]
@@ -15,6 +19,6 @@ Type=ChemMissile
 AuxBuilding=NAWAST   ; Nod Waste Facility
 ```
 
-:::caution[A plug is never checked against this value]
-The upgrade slots of a structure are matched straight against [`SuperWeapon=`](/keys/superweapon/) and [`SuperWeapon2=`](/keys/superweapon2/). The test that a structure's own grant goes through never runs for them. A weapon supplied by a plug ignores this setting both when it is granted and when the removal pass decides whether to keep it. In the stock set the ion cannon and the drop pods arrive only through plugs. The hunter seeker also has a direct grant from the Nod temple, where this setting is tested normally.
+:::caution[A plug ignores this value]
+A plug fitted to a structure grants its [`SuperWeapon=`](/keys/superweapon/) and [`SuperWeapon2=`](/keys/superweapon2/) weapons without this check. In the stock rules the ion cannon and the drop pods come only from plugs, so `AuxBuilding=` has no effect on them. The hunter seeker comes both from a plug and from the Nod temple, and only the temple's grant is checked.
 :::

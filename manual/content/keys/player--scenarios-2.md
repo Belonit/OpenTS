@@ -13,6 +13,8 @@ when_omitted:
 Player=Nod
 ```
 
-Long before the house is resolved, the same assignment is read as a country name, matched against the country IDs the rules declare without regard to case. The side of that country selects the mission's artwork, interface and sidebar, and seeds the voice set before [`SpeechSide`](/keys/speechside/) can change it. A value naming no country is presented as the first country. Outside a campaign the country comes from the lobby instead.
+In a campaign mission, the country named by `Player` also selects the side the mission is presented as. The side supplies the interface and sidebar artwork. It also supplies the voice set, unless [`SpeechSide`](/keys/speechside/) names another side.
 
-A side with no artwork archives of its own is presented with the first side's; the load is given up only when the first side's archives cannot be mounted either. The same applies to the voice set prepared immediately afterwards.
+A name that matches no country is presented as the first country's side, and a country with no side is presented as the first side.
+
+If the side's artwork files cannot be loaded, the first side's artwork is used. If that fails too, the mission does not load. The voice set falls back the same way.

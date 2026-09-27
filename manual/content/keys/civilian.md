@@ -1,14 +1,16 @@
 ---
 key: Civilian
-summary: Counts the soldier as a civilian evacuation candidate and drops it from the surviving-infantry report.
+summary: Counts the soldier as a civilian evacuee when it boards an aircraft transport.
 see_also: [Nominal, Fraidycat, Disguised]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A soldier of such a type counts as a civilian evacuation unless it is a technician. Technician is the state an infantry of a [`Nominal=yes`](/keys/nominal/) type takes when a structure throws it out: on every sale, but only on the destruction of a structure that has buildup artwork. Two behaviors hang off that test, and both belong to aircraft alone. The moment one of these soldiers reports itself aboard an aircraft transport, the transport is put on the Retreat mission, whatever it was doing before. For an aircraft that mission is empty: the handler does nothing, so the transport never steers for the map edge, and it carries on with whatever movement it already had. The evacuation is a separate check, and the assignment alone never brings it about. It runs only when an aircraft on Retreat is outside the playable area, and it then deletes every passenger aboard. For each deleted passenger that counts as a civilian evacuation, it sets a flag on the *passenger's* house rather than the transport's. The flag is never cleared again, and nothing acts on it except the [Civilians Evacuated](/mapping/events/tevent-evac-civilian/) trigger event. That event is never announced to a trigger, so it is never satisfied, and its own condition would read the flag on the house owning the trigger rather than on the passenger's house. What a player sees, then, is a transport that goes nowhere new and a trigger that never springs.
+A soldier of a `Civilian=yes` type counts as a civilian evacuee unless it is a technician. A **technician** is an infantry of a [`Nominal=yes`](/keys/nominal/) type that a structure produced as a survivor when it was sold, or when it was destroyed and has build-up artwork.
 
-The setting has no behavior of its own beyond that. Running from danger is [`Fraidycat=yes`](/keys/fraidycat/) and wearing another type's identity is [`Disguised=yes`](/keys/disguised/); neither follows from this one.
+When an evacuee boards an aircraft transport, the transport switches to the Retreat mission. Retreat gives an aircraft no orders, so the transport does not head for the map edge. It drops the mission it had and carries on with any movement already under way.
 
-The surviving-infantry figures a multiplayer session reports at its end count every infantry a house still owns except these. A civilian on the map is invisible to that tally.
+An aircraft on the Retreat mission that is outside the playable area is removed together with everything aboard. Each evacuee removed this way marks its own house, not the transport's, as having evacuated a civilian. The mark is never cleared. Only the [Civilians Evacuated](/mapping/events/tevent-evac-civilian/) trigger event reads it, and that event [can never be satisfied](/systems/trigger-springing/#three-events-that-cannot-be-reached).
+
+This setting does nothing else. Running from danger is [`Fraidycat=yes`](/keys/fraidycat/), and showing another type's identity is [`Disguised=yes`](/keys/disguised/).

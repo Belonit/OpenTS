@@ -7,4 +7,4 @@ when_omitted:
   value: "no"
 ---
 
-The name promises a turret that does not step back as it fires. Nothing reads the stored flag. A structure's voxel turret and barrel still step backward on the frames after a shot, whatever the flag says.
+A structure's voxel turret and barrel still move back briefly after each shot, whatever this key says.

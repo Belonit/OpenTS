@@ -18,6 +18,6 @@ targets:
 credit: [ZivDero, CCHyper, dkeeton]
 ---
 
-Four commands queue another of the last item of their kind that finished for the player: a structure, an infantry unit, a vehicle or an aircraft. The item must still be offered on the sidebar. A structure is refused while one is under construction or waits to be placed, and the other kinds queue behind whatever the factory is doing, as a click on the cameo would. All four arrive unbound and take whatever key the keyboard options assign.
+Four new commands each queue another copy of the last structure, infantry unit, vehicle or aircraft the player produced, as long as its cameo is still on the sidebar. Infantry, vehicles and aircraft join the factory's queue, as a click on the cameo would add them. A structure is refused while another structure is being built, is on hold or waits to be placed. The commands have no key until one is assigned in the keyboard options.
 
 CCHyper is credited for the Vinifera commands this follows, and dkeeton for the ts-patches building hotkey.

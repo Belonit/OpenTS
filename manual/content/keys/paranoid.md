@@ -1,19 +1,19 @@
 ---
 key: Paranoid
-summary: Whether the computer houses close ranks against the human players when the game turns against them.
+summary: Whether the computer houses band together against the human players when the game turns against them.
 see_also: [MaxIQLevels, IQ]
 when_omitted:
   kind: value
   value: "yes"
 ---
 
-Two events read the switch, and both do the same thing. Every computer house that is still in the game allies with every other computer house that is still in the game, and declares every surviving human house an enemy. Alliances broken this way are broken on both sides, and each such declaration stokes the anger that decides which house a computer treats as its target.
+When the switch is on, two events make the computer houses band together against the human players. Every computer house still in the game allies with every other computer house still in the game, and declares war on every surviving human house. Each alliance this breaks is broken on both sides. Each declaration also adds to the computer house's anger at that human house, which steers the computer's choice of enemy.
 
-- A human house forms an alliance with a house that is not multiplayer-passive, an alliance with a computer house included. The check does not run while the scenario is being set up, so alliances a map or a launch file declares in advance never set it off.
-- A computer house is defeated while holding exactly [`MaxIQLevels`](/keys/maxiqlevels/) as its [`IQ`](/keys/iq/), which outside a campaign game is the level every computer house is given.
+Outside a campaign, a [`MultiplayPassive=yes`](/keys/multiplaypassive/) house such as Neutral takes no part in the war declarations. An alliance is also refused when it would leave the computer house with no enemy left in the game.
 
-Setting this to `no` leaves both events alone; nothing else in a played match bands the computer houses together. Replaying a recording is the exception: a player leaving the recorded session hands that house to the computer and bands the computer houses together on the spot, without reading the switch.
+The two events are:
 
-:::caution[The entry is spelled `Paranoid`]
-`ComputerParanoid` is not read anywhere. Only `Paranoid` in `[AI]` reaches this switch, and a rules file spelling it any other way leaves the behavior on.
-:::
+- A human house forms an alliance with any house that is not [`MultiplayPassive=yes`](/keys/multiplaypassive/), a computer house included. Alliances made while the scenario is being set up, such as those a map or launch file declares, do not count.
+- A computer house is defeated while its [`IQ`](/keys/iq/) equals [`MaxIQLevels`](/keys/maxiqlevels/). Every computer player in a skirmish or multiplayer game has that IQ.
+
+With `Paranoid=no`, neither event makes the computer houses band together, and nothing else does during a played match. Playing back a recording is the one exception. When a recorded player leaves the game, the playback hands that house to the computer and makes the computer houses band together at once, whatever this switch says.

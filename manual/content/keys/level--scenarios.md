@@ -1,19 +1,17 @@
 ---
 key: Level
 scope: scenarios
-label: Height brightness
-see_also: [Ground, IonLevel, "system:ion-storms"]
+label: Map height offset
 when_omitted:
   kind: value
   value: "0"
-  note: The engine starts each scenario with about a sixtieth of full light here. When the key is absent, the fallback divides two whole numbers and truncates to zero, so the engine stores zero rather than that fraction.
 ---
 
 ```ini title="map file"
-[Lighting]
-Level=.016
+[Map]
+Level=1
 ```
 
-Cell brightness is the ambient level, plus this figure for each height level the cell stands above the ground, minus [`Ground`](/keys/ground/). The same figure also scales the height bonus drawn onto aircraft and onto elevated units and infantry. At `0` the map is shaded flat, with no cliff or hill standing out from the ground around it.
+`Level` raises the map's cells by that many height levels before the terrain is read. Each cell that the map's [terrain data](/formats/scenario-terrain/) lists then takes its height from that data, so the offset remains only on cells the data leaves out. A map whose terrain data lists every cell is not raised at all.
 
-[`IonLevel`](/keys/ionlevel/) replaces this value for the length of [an ion storm](/systems/ion-storms/#lighting), and it truncates on omission in the same way.
+This key is unrelated to [`Level`](/keys/level/#scope-scenarios-2) in the `[Lighting]` section, which sets brightness.

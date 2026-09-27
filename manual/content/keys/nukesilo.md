@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-A missile weapon looking for somewhere to fire from scans the declared BuildingTypes for the first one with this flag that also names the weapon in [`SuperWeapon=`](/keys/superweapon/) or [`SuperWeapon2=`](/keys/superweapon2/). The scan stops at that type, so a second matching silo type is never reached, even when the house has no structure of the first. It then looks for one of the firing house's structures of the first type. The flag also selects the launch sequence the structure plays: the door opens, holds while the missile leaves, and closes again.
+A `NukeSilo=yes` structure is the launch site for a repeating `Type=MultiMissile` or `Type=ChemMissile` superweapon that its type names. When such a weapon is fired, the game takes the first declared BuildingType that has this flag and names the weapon in [`SuperWeapon=`](/keys/superweapon/) or [`SuperWeapon2=`](/keys/superweapon2/). One of the firing house's structures of that type launches the missile.
 
 ```ini title="rules.ini"
 [NAMISL]        ; Missile Silo
@@ -16,6 +16,10 @@ SuperWeapon2=ChemicalSpecial
 NukeSilo=yes
 ```
 
+Only that first type is searched. A later silo type that grants the same weapon never launches it, even when the house owns no structure of the first type.
+
+The silo opens its door, holds it open while the missile leaves, then closes it and returns to guard. [Multi missile and chem missile](/systems/superweapons/#multi-missile-and-chem-missile) covers the missile itself, which does not always come from the fired weapon's own `WeaponType=`.
+
 :::caution[Without a silo the shot is spent for nothing]
-The scan is the only way an ordinary missile weapon reaches a launch. A weapon whose granting structure is not `NukeSilo=yes`, or whose house has none standing at that moment, still discharges: the charge is consumed and the timer restarts, and no missile is created. A one-time missile (one whose superweapon is removed once it fires) is the exception, being built from the map edge instead of from a silo.
+A repeating missile weapon can launch only from a silo. If no `NukeSilo=yes` type grants the weapon, or the house has no structure of that type on the map when it fires, the weapon still discharges. Its charge is used up and no missile is launched. Its countdown then restarts as after any shot, or stays stopped for a [`ManualControl=yes`](/keys/manualcontrol/) weapon. A one-time missile, whose superweapon is removed once it fires, needs no silo; it enters from the map edge nearest the target.
 :::

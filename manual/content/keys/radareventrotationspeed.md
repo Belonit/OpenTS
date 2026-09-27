@@ -1,16 +1,18 @@
 ---
 key: RadarEventRotationSpeed
-summary: Radians a radar event's box turns each frame.
+summary: Radians a radar event's box turns each time the screen is redrawn while it closes in.
 see_also: ["system:map-visibility", RadarEventSpeed, RadarEventMinRadius]
 when_omitted:
   kind: value
   value: ".1"
 ---
 
-Every [radar event](/reference/enums/radar-event/) starts with this turn step and spins its box by the current step each frame. While the box is still closing in, the step stays at the configured value, and [`RadarEventSpeed`](/keys/radareventspeed/) sets how long that sweep lasts. The default of a tenth of a radian is a little under six degrees a frame, a full turn in about sixty-three frames. One degree a frame is about `.017`. Once the radius has reached [`RadarEventMinRadius`](/keys/radareventminradius/), each further frame that fails to settle the box turns it and then cuts the step. Each cut is two percent of the configured value, and the step never falls below a third of it. A box that has to come round again therefore turns more slowly each lap.
+A [radar event](/reference/enums/radar-event/)'s box turns by this many radians each time the screen is redrawn while it closes in. The default of `.1` is a little under 6 degrees per redraw, a full turn in about 63 redraws. One degree is about `.017`. [`RadarEventSpeed`](/keys/radareventspeed/) sets how long the closing sweep lasts.
 
-The box stops turning on the first frame at that radius when it stands less than the current step past the orientation it opened in. A quarter turn counts as that same orientation, because the box is square. It then turns by that leftover angle once more and comes to rest. That frame is also when [`RadarEventDurations`](/keys/radareventdurations/) and [`RadarEventVisibilityDurations`](/keys/radareventvisibilitydurations/) are loaded, and only an event that has stopped turning is ever removed.
+Once the box has shrunk to [`RadarEventMinRadius`](/keys/radareventminradius/), it settles on the first redraw on which it stands less than one step past upright. The box opens upright, and because it is square, every quarter turn from there counts as upright too. Each redraw that misses turns the box again and cuts its step by 2 percent of this value, down to a third of it. A box that has to come round another quarter turn therefore turns more slowly.
 
-:::caution[A non-positive step never settles]
-At zero the box never turns, so the angle past that orientation stays a hair above zero and the test can never pass. Its timers are never loaded and the event is never removed. It goes on being drawn for the rest of the match, and for the three suppressible kinds goes on swallowing later events of its kind. A negative step still settles, because it drives that angle negative and the test passes as soon as the angle falls below the step.
+On the redraw it settles, the box turns once more by the angle it stood past upright, then stops. It can therefore come to rest tilted by up to twice its last step. Settling starts the event's [`RadarEventDurations`](/keys/radareventdurations/) and [`RadarEventVisibilityDurations`](/keys/radareventvisibilitydurations/) counts, and an event that has not settled is never removed.
+
+:::caution[Keep the value above 0]
+At `0` the box never turns and can never stand less than zero past upright, so it never settles. The event stays on the radar for the rest of the game, and a combat, harvester-attacked or enemy-sensed event goes on [suppressing](/keys/radareventsuppressiondistances/) later events of its kind nearby. A negative value turns the box the other way. It still settles, but not before the box has turned back more than a quarter turn from where it opened.
 :::

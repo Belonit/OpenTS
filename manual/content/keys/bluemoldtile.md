@@ -8,6 +8,10 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-Only the set's first tile is used, as the unbroken mold that [`ClearToBlueMoldLat`](/keys/cleartobluemoldlat/) blends against and the tile a mold cell reverts to when mold surrounds it.
+The set's first tile is the plain blue mold ground. Only that tile is used. On any map, a mold cell whose four orthogonal neighbors are all mold shows it; a cell at the edge of a patch shows a [`ClearToBlueMoldLat`](/keys/cleartobluemoldlat/) transition piece instead.
 
-Blue mold is a mutated-biome feature of the random map generator, and a mutated map uses the temperate theater. A cell is molded when all four of its orthogonal neighbors are clear or already molded. The cell's own tile is never examined, so mold can overwrite whatever was there. The generator then makes up to five random draws among the molded cells, dressing each drawn cell with a mutated terrain object or a patch of large Tiberium.
+The random map generator lays blue mold only on mutated maps, a biome it offers only with Firestorm and builds in the temperate theater.
+
+Each patch starts on a clear spot and spreads only into cells whose four orthogonal neighbors are all clear ground or mold. The cell's own tile is not checked, so mold can cover whatever tile was there.
+
+After laying a patch, the generator makes up to four random picks among its plain mold cells. A picked cell with no terrain object and no overlay gets one of the terrain objects `FONA01` to `FONA05` three times in four, and a large Tiberium overlay otherwise.

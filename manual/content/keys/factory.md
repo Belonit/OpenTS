@@ -7,11 +7,15 @@ when_omitted:
   value: "none"
 ---
 
-Only `UnitType`, `InfantryType`, `AircraftType` and `BuildingType` make the structure produce for a player. The short names `Unit`, `Infantry`, `Aircraft` and `Building` also parse. A computer house's structures pick what to build on their own without a player order, and that path accepts the short names, so a structure with one produces for the computer but never for a player. The value is matched against the engine's object-kind names without regard to case, and a value the engine does not recognize leaves the type a non-factory.
+Write `UnitType`, `InfantryType`, `AircraftType` or `BuildingType` to make the structure produce vehicles, infantry, aircraft or structures. The name is matched without regard to case.
 
 ```ini title="rules.ini"
 [MYWEAP] ; example war factory BuildingType
 Factory=UnitType
 ```
 
-The value also picks which of its house's four production slots the structure serves, so two structures naming the same kind share one slot and cannot build two objects at once. What a second one buys is the [multiple-factory speed-up](/systems/production/#more-than-one-factory). [What counts as a factory](/systems/production/#what-counts-as-a-factory) covers the other recognized names, which raise that speed-up without ever producing anything.
+A player's house has one production slot for each of these four kinds. All its structures that name the same kind share that slot, so they build one object at a time between them. A second such structure can shorten build times instead, depending on [`MultipleFactory`](/keys/multiplefactory/); see [More than one factory](/systems/production/#more-than-one-factory).
+
+A computer house has no shared slot. Each of its factories builds separately, choosing whatever the house wants next of that kind.
+
+The short names `Unit`, `Infantry`, `Aircraft` and `Building` also parse, but only a computer house's structures produce with them. A player's structure with a short name never produces anything, although it still counts toward the multiple-factory speed-up. Any other value, including an unrecognized one, leaves the structure producing nothing. [What counts as a factory](/systems/production/#what-counts-as-a-factory) covers how a player's order picks among the house's factories.

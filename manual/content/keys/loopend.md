@@ -7,14 +7,14 @@ when_omitted:
   note: The frame count of the shape the type first gets hold of, or zero if it never gets one.
 ---
 
-The value is a frame number in the shape rather than a count of stages, which is how it differs from [`End`](/keys/end/). The frame itself is not displayed: the pass ends and the animation jumps back to [`LoopStart`](/keys/loopstart/) in the same logic pass that reaches it.
+The value is a frame number in the shape. [`End`](/keys/end/), by contrast, counts stages from [`Start`](/keys/start/). When a pass reaches this frame, the animation jumps back to [`LoopStart`](/keys/loopstart/) before the frame is drawn, so the `LoopEnd` frame itself never appears.
 
-It bounds the middle passes only. The final pass, the one during which the last of the [`LoopCount`](/keys/loopcount/) is spent, runs to the stage count in `End` instead. An animation whose two figures disagree plays a different length of artwork on its way out than it did on the way round.
+It ends every pass except the last. The last of the [`LoopCount`](/keys/loopcount/) passes runs to the end of the `End` stage count instead. If the two settings disagree, the last pass plays a different stretch of the shape than the passes before it.
 
-A [`Reverse=yes`](/keys/reverse/) animation begins here rather than ending here, and returns here at the start of every pass.
+Setting `End=` alone does not shorten the loop. An omitted `LoopEnd` is taken from the shape's full frame count before `End` is read, so the middle passes still run over the whole shape. To shorten a looping animation, set both keys.
 
-Shortening an animation with `End=` does not move this figure. The stage count and the loop end are both taken from the artwork before either key is read, and this key is read after `End=`. An animation that states only the shorter stage count therefore still loops over the full length of its shape. Both have to be stated together to shorten a looping animation.
+`LoopEnd=-1` takes the `End` stage count instead, when the first animation of the type is created. That count is then treated as a frame number, so with a nonzero `Start` the middle passes stop `Start` frames short of where the last pass ends.
 
-`-1` marks the figure unset, and it is taken from the animation's stage count again the next time an animation of the type is created.
+A [`Reverse=yes`](/keys/reverse/) animation starts every pass on frame `Start` plus `LoopEnd` and steps backward. With a nonzero `Start` and more than one pass, each reversed pass ends at its first frame advance, as [`Start`](/keys/start/#what-is-counted-from-here-and-what-is-not) describes.
 
-A structure whose weapon charges up measures the charge against the frame number belonging to the animation in its [`TurretAnim`](/keys/turretanim/) slot. The turret is charged once the charge sequence reaches that frame, or once it reaches frame 12 if the structure runs no turret animation at all.
+A structure with a charging weapon ([`Charges=yes`](/keys/charges/)) uses this value from the animation in its [`TurretAnim`](/keys/turretanim/) slot. The weapon is charged once the charge sequence reaches that frame.

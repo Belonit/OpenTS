@@ -12,6 +12,8 @@ when_omitted:
 Nominal=yes
 ```
 
-Holding the cursor over an object names it. An object belonging to a house the player is allied with always gives its own [`Name=`](/keys/name/). One belonging to anybody else is normally reduced to a generic label: "Enemy Soldier" for infantry, "Enemy Vehicle" for a vehicle or an aircraft, "Enemy Structure" for a building. This key is what exempts a type from that reduction, so a civilian or story structure keeps its real name for every player on the map. A structure placed by a map file can have the same exemption on the individual building, whatever its type says.
+Holding the cursor over an object shows its name. That is normally the type's [`Name=`](/keys/name/), though a technician (below) and a [disguised](/keys/disguise/) soldier can show another name. The player sees the name on objects that the player or an ally owns, and an [observer](/systems/observers/) sees it on every object. Any other object normally shows a generic label instead: "Enemy Soldier" for infantry, "Enemy Vehicle" for a vehicle or aircraft, and "Enemy Structure" for a structure. `Nominal=yes` exempts the type, so a civilian or story structure shows its real name to every player.
 
-The flag has a second, unrelated use on InfantryTypes. A structure's [survivor](/systems/capture/#survivors) is marked a technician when its own InfantryType sets `Nominal=yes`. That relabels it, keeps it out of its house's infantry tally, and bars it from being lifted out as a civilian evacuee. [`Technician`](/keys/technician/) covers which structures mark their survivors that way.
+A structure placed by a map can carry the same exemption on that one building, whatever its type sets.
+
+On an InfantryType, the key has a second, unrelated effect. A structure's [survivor](/systems/capture/#survivors) of this type can be marked as a technician. A technician is named "Technician", does not count toward its house's infantry total, and cannot be picked up as a civilian evacuee. [`Technician`](/keys/technician/) lists when a sold or destroyed structure marks its survivors.

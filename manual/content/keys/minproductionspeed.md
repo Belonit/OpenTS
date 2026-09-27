@@ -7,6 +7,10 @@ when_omitted:
   value: ".5"
 ---
 
-A house short of power builds at a multiplier taken from its power fraction, and build time is divided by that multiplier; `0.5` doubles it. This value is the floor that multiplier is raised to, so it fixes the worst production speed a shortfall can cause. Raising it to `1` removes the production penalty entirely.
+This value sets the slowest a power shortfall can make production. A house's build time is divided by a production multiplier that falls as its power drops, and the multiplier is never lower than this value. A multiplier of `.5` doubles build time, and `1` removes the low-power penalty entirely.
 
-At the default the floor coincides with the lowest step the ladder itself produces, so it changes nothing until it is moved. [The production ladder](/systems/power/#production) lists the steps it is applied to.
+[The production ladder](/systems/power/#production) never drops below `.5`, so the default and any smaller value change nothing.
+
+:::caution[Values above 1 speed up every house]
+The floor also applies at full power. With `MinProductionSpeed=2`, every house builds in half the time, whether or not it is short of power.
+:::

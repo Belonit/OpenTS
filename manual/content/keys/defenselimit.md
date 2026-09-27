@@ -8,4 +8,4 @@ when_omitted:
   value: "40"
 ---
 
-No routine counts the defenses a computer house owns against a maximum. The number of defense placeholders in a plan follows from [the build cost accumulated as the plan is assembled](/systems/ai-base-building/#building-the-plan), and each placeholder is filled in later by [the defense planner](/systems/ai-base-building/#base-defenses) or deleted when it cannot be.
+This value does not limit how many defensive structures a computer house builds. The number of defenses a computer house plans follows from [the plan's cost, the side's defense settings and the difficulty](/systems/ai-base-building/#building-the-plan). [The defense planner](/systems/ai-base-building/#base-defenses) later fills each defense placeholder, or deletes it when it cannot.

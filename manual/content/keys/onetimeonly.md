@@ -12,8 +12,8 @@ when_omitted:
 OneTimeOnly=yes
 ```
 
-The setting is read after the score screen and both after-mission movies have been shown. When it is set, the game is shut down there and the player is returned to the main menu: no map selection, no campaign advance, and no closing movie.
+Winning a campaign mission that sets `OneTimeOnly=yes` ends the game. The player returns to the main menu, or the game exits if a client launched it. The score screen and the [`PostScore`](/keys/postscore/) and [`PreMapSelect`](/keys/premapselect/) movies still play first. The campaign does not advance: there is no map selection, no next mission, and no closing movie.
 
-:::caution[It is tested before the end-of-game handling]
-A mission that sets both this and [`EndOfGame`](/keys/endofgame/) takes this path, so the campaign's closing movie and the credits are never reached.
+:::caution[Do not combine it with EndOfGame]
+A mission that sets both `OneTimeOnly` and [`EndOfGame`](/keys/endofgame/) ends as a `OneTimeOnly` mission. The campaign's closing movie and the credits never play.
 :::

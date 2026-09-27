@@ -7,21 +7,31 @@ when_omitted:
   value: "0,0,0"
 ---
 
-Three whole numbers, `X,Y,Z`. A [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building places its barrel with five moves in order. First the assembly moves out from the building by this offset; a turn to the building's facing comes next, then out by [`VoxelBarrelOffsetToRotatePivotPoint`](/keys/voxelbarreloffsettorotatepivotpoint/). The barrel then elevates to its pitch and moves out by [`VoxelBarrelOffsetToPitchPivotPoint`](/keys/voxelbarreloffsettopitchpivotpoint/), with the model itself hanging off the end of that.
+Three whole numbers, `X,Y,Z`, that move the whole barrel assembly of a [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building away from its turret position. The turret position is the point the building is drawn at, moved by [`TurretAnimX`](/keys/turretanimx/) and [`TurretAnimY`](/keys/turretanimy/). At `0,0,0` the assembly sits on the turret position.
 
-This one is applied before the turn, so it holds still while the gun swings and its axes are the map's rather than the gun's. `X` runs toward the lower right of the screen, `Y` toward the upper right, and `Z` upward. It is the offset that seats the whole assembly on the structure.
+The building places its barrel in five steps, in this order:
+
+1. Move by `VoxelBarrelOffsetToBuildingPivotPoint`.
+2. Turn to the gun's current facing.
+3. Move by [`VoxelBarrelOffsetToRotatePivotPoint`](/keys/voxelbarreloffsettorotatepivotpoint/).
+4. Tilt to the barrel's current pitch.
+5. Move by [`VoxelBarrelOffsetToPitchPivotPoint`](/keys/voxelbarreloffsettopitchpivotpoint/).
+
+The barrel model is drawn at the point these steps reach, at the size [`VoxelBarrelScale`](/keys/voxelbarrelscale/) sets.
+
+This offset comes before the turn, so it stays put while the gun turns, and its axes are the map's. `X` runs toward the lower right of the screen, `Y` toward the upper right, and `Z` up.
 
 ```ini title="rules.ini"
 [MYARTILLERY] ; a BuildingType registered in [BuildingTypes]
 BarrelAnimIsVoxel=yes
-VoxelBarrelOffsetToBuildingPivotPoint=4,2,3 ; the mount, drawn an eighth of a cell out
+VoxelBarrelOffsetToBuildingPivotPoint=4,2,3 ; measured from the TurretAnimX and TurretAnimY point
 VoxelBarrelOffsetToRotatePivotPoint=2,0,0
 VoxelBarrelOffsetToPitchPivotPoint=15,0,-8
 VoxelBarrelOffsetToBarrelEnd=350,75,0
 ```
 
-The three pivot offsets are read at two scales. Drawing places the barrel with them as raw model units, while the firing point consumes the same matrix and reads the result as leptons, 256 to a cell. The same value therefore moves the drawn barrel farther than it moves the shot. [`VoxelBarrelOffsetToBarrelEnd`](/keys/voxelbarreloffsettobarrelend/) is the exception to the split: the firing point is the only place it is read, so it is leptons alone.
+The barrel model is drawn with the three pivot offsets in voxel model units, but shots start from a point that uses the same numbers as leptons, 256 to a cell. A pivot offset therefore moves the drawn barrel farther than it moves the shots. [`VoxelBarrelOffsetToBarrelEnd`](/keys/voxelbarreloffsettobarrelend/) moves only the shots, so it is in leptons alone.
 
-:::caution[An offset the files never set reads as 0,0,0]
-A BuildingType that never assigns this key gets `0,0,0`, and a value that is not three whole numbers is ignored whole, leaving the previous value standing. A `BarrelAnimIsVoxel=yes` building that leaves this offset at that default mounts the whole barrel assembly on the structure's own origin.
-:::
+When the building's art entry sets [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/), shots start from that offset, and the barrel offsets do not move them. A building that also sets [`TurretAnimIsVoxel=yes`](/keys/turretanimisvoxel/) draws its barrel without these offsets, as [`BarrelAnimIsVoxel`](/keys/barrelanimisvoxel/) explains.
+
+A value that does not begin with three whole numbers separated by commas, such as `4,2` or `4.5,2,3`, is ignored. The building keeps the offset it had before that line was read. Text after the third number is dropped, so `4,2,3,9` reads as `4,2,3`.

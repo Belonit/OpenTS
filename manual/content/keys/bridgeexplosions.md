@@ -12,10 +12,10 @@ when_omitted:
 BridgeExplosions=MYBLAST1,MYBLAST2 ; AnimTypes registered in [Animations]
 ```
 
-A bridge cell that is destroyed kills everything on the deck, drops everything hanging beneath it, and then on a ninety-five percent roll shows one entry chosen at random from this list. It is placed at deck height over the cell, thrown up to twenty-five leptons off center in each direction, and held back one to five frames before it starts. A long span coming down therefore produces a ragged run of blasts rather than a single flash.
+When an elevated bridge collapses, each collapsing cell has a 95 percent chance to show one animation picked at random from this list. The animation appears at deck height, up to 25 leptons off the cell's center in each direction, and starts one to five frames late. A low bridge that is destroyed shows none of these animations.
 
-[`MetallicDebris`](/keys/metallicdebris/) covers the wreckage thrown alongside it on an even chance.
+Each cell that shows an explosion also has an even chance to throw wreckage from [`MetallicDebris`](/keys/metallicdebris/).
 
-:::caution[An empty list also suppresses the wreckage]
-This is one of the few animation lists the engine checks the length of, so leaving it empty is silent rather than fatal. The check gates the whole branch, though (the metallic debris is thrown inside it), so a bridge that has no explosion to show throws no wreckage either.
+:::caution[An empty list also removes the wreckage]
+With no entries, a collapsing bridge shows no explosions and throws no `MetallicDebris` wreckage, because the wreckage is thrown only alongside an explosion.
 :::

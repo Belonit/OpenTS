@@ -7,6 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-The bonus is a flat addition applied once per candidate, not a multiplier, and the only term of the threat score that is read from the rules rather than from an object type. It applies when the candidate's owner is the house that the choosing object's house currently [has declared as its enemy](/systems/base-attacked/#anger-and-the-declared-enemy). A house with no declared enemy adds nothing to any candidate.
+A positive value makes objects prefer targets that belong to their house's [declared enemy](/systems/base-attacked/#anger-and-the-declared-enemy), and a negative value makes them avoid those targets. The value is added once to the [threat score](/systems/target-selection/#the-threat-score) of each such candidate. A house with no declared enemy adds it to no candidate.
 
-This bonus sits on the same scale as the coefficient terms, which include [`Verses`](/keys/verses/) fractions and health fractions scaled by their coefficients. The shipped value is `400`, so it competes directly with them rather than with the fixed `100000` every candidate starts from.
+Unlike the five threat coefficients, the bonus is the same whichever type of object is choosing. It is on the same scale as the coefficient terms of the threat score, such as a [`Verses`](/keys/verses/) fraction or a health fraction multiplied by its coefficient. The retail `rules.ini` sets it to `400`.

@@ -8,4 +8,4 @@ when_omitted:
   value: "2000"
 ---
 
-A computer house does not build infantry against its balance. Which soldier it orders next comes from [the demand its own teams leave unfilled](/systems/ai-team-production/#production-demand), and money enters that decision only as the test that a candidate's cost is within the credits the house can spend.
+A computer house never holds money back before ordering infantry. It picks the next infantryman from [the demand its teams leave unfilled](/systems/ai-team-production/#production-demand). Money matters only in that it cannot order a type that costs more than it can spend.

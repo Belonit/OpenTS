@@ -7,8 +7,13 @@ when_omitted:
   value: ""
 ---
 
-[Building animations](/systems/building-animations/) covers the slot mechanism all four share. The value is one animation's name; a comma list matches nothing. The second slot is the one a charging turret takes over. On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure the slot's animation is destroyed as the turret starts charging, and it does not run while the turret is charging or charged. It is created again once the charge is spent. A charging turret on a structure without that flag leaves the slot alone: both animations run at once.
+The value names one AnimType registered in `[Animations]`. A comma-separated list is read as a single name and matches nothing. [Building animations](/systems/building-animations/) covers when the structure fills and empties its active slots.
 
-Installing an [upgrade](/keys/upgrades/) is the exception. A plug that brings a damaged structure back to maximum strength restarts every empty active slot without checking the turret. An exclusive turret that is charging at that moment ends up running this slot alongside its own animation until the charge is spent.
+The second slot is the only one a charging turret can take over. On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure, the animation is removed as the turret starts charging, and the slot stays empty while the turret is charging or charged. The animation starts again when the turret fires, or when it drops the charge because it lost its target, its house fell short of power, or the structure was switched off. Without that flag, a charging turret leaves this slot alone, and both animations run at once.
 
-How often the slot's animation repeats is the animation's own art.ini setting, [`LoopCount`](/keys/loopcount/): the slot asks for one pass, and that figure decides how many the animation makes. When the passes run out the animation ends or chains, and a slot whose animation has ended sits empty until an event restarts it.
+Two events start this slot's animation without checking the turret. If either happens while an exclusive turret is charging or charged, both animations run until the turret fires or drops its charge:
+
+- An [upgrade](/keys/upgrades/) installed on a structure below maximum strength repairs it fully and starts every empty active slot.
+- With [`ActiveAnimTwoPowered=no`](/keys/activeanimtwopowered/) and [`ActiveAnimTwoPoweredLight=yes`](/keys/activeanimtwopoweredlight/), each full-power recheck of the house starts this slot if it is empty.
+
+The AnimType's [`LoopCount`](/keys/loopcount/) sets how many times the animation plays in the slot. When the last pass ends, the slot stays empty until an event starts it again. If the AnimType chains to another animation, that animation takes over the slot, and the slot empties only when the last animation in the chain ends.

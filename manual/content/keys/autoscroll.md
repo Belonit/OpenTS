@@ -7,8 +7,8 @@ when_omitted:
   value: "yes"
 ---
 
-`AutoScroll=no` stops that scrolling and leaves the pointer as it is instead of turning it into the directional scroll arrow. The keyboard scroll keys, the coast scroll [`ScrollMethod`](/keys/scrollmethod/) describes, and clicking the radar all still move the view.
+`AutoScroll=no` turns edge scrolling off. Resting the pointer against the edge of the screen no longer moves the view, and the pointer keeps its normal shape instead of turning into a scroll arrow. The keyboard scroll keys, dragging with the right mouse button as [`ScrollMethod`](/keys/scrollmethod/) describes, and clicking the radar still move the view.
 
-[`ScrollMultiplier`](/keys/scrollmultiplier/) scales edge scroll steps alone, so it has nothing to act on once this is off. [`ScrollRate`](/keys/scrollrate/) also divides the coast scroll distance and keeps working either way.
+[`ScrollMultiplier`](/keys/scrollmultiplier/) scales only edge scrolling, so it has no effect while this is off. [`ScrollRate`](/keys/scrollrate/) also sets the speed of right-button dragging, and keeps that effect.
 
-The in-game game controls dialog has the same switch, writes the choice back to `sun.ini`, and takes effect at once rather than at the next scenario.
+The game controls dialog has the same switch. Closing the dialog with OK, or leaving it through its Sound or Keyboard button, applies the change and writes it to `sun.ini`. Cancel discards it.

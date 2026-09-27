@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-A second copy of each line is drawn one row below the first, and the squares on the lines' ends grow from three pixels to four. The lines run through a selected object's queued destinations beyond its movement line; [Action lines](/systems/action-lines/) covers when they are drawn.
+A second copy of each line is drawn one row below the first. The squares at the lines' ends grow from three pixels to four, or stay at three when [`NavComQueueLineDropShadow=yes`](/keys/navcomqueuelinedropshadow/) gives them a border.
+
+The queue lines run from the end of a selected object's movement line through its queued destinations. [Action lines](/systems/action-lines/) covers when they are drawn.

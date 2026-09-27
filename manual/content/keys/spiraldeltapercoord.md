@@ -7,7 +7,7 @@ when_omitted:
   value: ".025"
 ---
 
-Each particle's angle around the beam is its distance from the muzzle multiplied by this figure, so the corkscrew winds at a constant rate however long the shot is. Distance is in leptons, 256 to a cell, and the figure is in radians, which makes `.025` a shade over one full turn per cell and `.035` about one and a half. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+Each particle's angle around the beam is its distance from the muzzle multiplied by this value, so the corkscrew winds at the same rate on a short shot and a long one. Distance is in leptons, 256 to a cell, and the angle is in radians: `.025` turns a little more than once per cell, and `.035` about one and a half times. A negative value winds the coil the other way. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
 
 ```ini title="rules.ini"
 [MyRailgunSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -15,7 +15,9 @@ BehavesLike=Railgun
 HoldsWhat=MyRailgunPart ; a ParticleType registered in [Particles]
 SpiralDeltaPerCoord=.035
 SpiralRadius=6
-ParticlesPerCoord=.1
+ParticlesPerCoord=.1 ; about 18 particles to each turn of the coil
 ```
 
-The winding rate and [`ParticlesPerCoord`](/keys/particlespercoord/) work against each other: too tight a wind for the density on offer leaves fewer than a handful of particles per turn, and the corkscrew reads as scattered dots rather than a coil. At zero the particles sit in a straight line offset from the beam by [`SpiralRadius`](/keys/spiralradius/) rather than circling it.
+A tighter wind spreads the same particles over more turns. Each turn gets about 6.28 times [`ParticlesPerCoord`](/keys/particlespercoord/) divided by this value, which gives the 18 in the example above. Raise `ParticlesPerCoord` along with this value to keep that count up; once a turn has only a handful of particles, they no longer outline a coil.
+
+At zero the particles do not circle the beam. They form a straight line beside it, [`SpiralRadius`](/keys/spiralradius/) away.

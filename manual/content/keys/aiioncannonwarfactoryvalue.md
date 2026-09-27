@@ -7,4 +7,8 @@ when_omitted:
   value: ""
 ---
 
-The rating applies to a [`Factory=UnitType`](/keys/factory/) structure. It is the second of the seven structure tests, so it wins over every test below it: a war factory that is also a base defense is rated here. Like the other ion cannon rating lists, it is read at the firing house's own difficulty slot, so it needs one entry each for easy, normal and hard. A missing or short list is read past its end. The rating is read only while [the target's strength is at or below `IonCannonDamage`](/systems/superweapons/#the-computers-use). A structure above that figure keeps the flat structure rating of 3.
+The rating applies only while the structure's strength is at or below [`IonCannonDamage`](/keys/ioncannondamage/). A structure above that figure keeps the starting structure rating of 3. The computer strikes one of the candidates that share the highest rating, so this value matters only against the other ratings; [the computer's use](/systems/superweapons/#the-computers-use) lists them.
+
+The rating covers a [`Factory=UnitType`](/keys/factory/) structure. The structure tests run in a fixed order, and the first match decides the rating. Only the test for a `Factory=BuildingType` structure comes earlier, so a war factory that also generates power or is a base defense is still rated here.
+
+The list holds one rating for each [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot), in slot order 0, 1, 2. The firing house's slot selects the entry. Give all three entries in a rules file or the map. If neither sets the key, the game crashes the first time the computer rates a war factory at or below `IonCannonDamage`. A list with fewer than three entries gives an unpredictable rating in the slots it does not cover.

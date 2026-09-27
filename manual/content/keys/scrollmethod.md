@@ -7,16 +7,16 @@ when_omitted:
   value: "0"
 ---
 
-The figure applies while the right mouse button is held down over the tactical map. The distance scrolled follows from how far the pointer has moved away from the point where the button went down.
+Coast scrolling moves the tactical map while the right mouse button is held down and dragged. It starts once the pointer has moved a short distance from the point where the button went down. From then on, the further the pointer is from that point, the further the map moves. [`ScrollRate`](/keys/scrollrate/) plus one divides every distance in the table below.
 
-| Figure | Behavior |
+| Value | Behavior |
 | --- | --- |
-| `0` | The map scrolls by that offset divided by the scroll rate every sixtieth of a second, and the pointer is left where it is. |
-| `1` | The map scrolls twelve times as far and the pointer is put back on the press point, so the ground appears to slide under a pointer that never moves. Each stretch of hand movement is consumed once, so the map keeps pace with the hand rather than the clock. |
-| `2` | The same, with the offset negated, so the ground follows the pointer instead of running away from it. |
+| `0` | The map scrolls steadily toward the side the pointer was dragged to, by the pointer's offset every sixtieth of a second. The pointer stays where it is. |
+| `1` | Each movement of the pointer scrolls the map once, by twelve times the movement, and the pointer is put back on the press point. How far the map moves depends on how far the mouse moves, not on how long the button is held. |
+| `2` | The same as `1`, but the map scrolls the opposite way, so the ground follows the hand as if dragged. |
 
-The in-game game controls dialog offers the first two as a single check box and writes the choice back to `sun.ini`: a ticked box stores `0` and a cleared one `1`. `2` is reachable only by writing it into the file.
+The game controls dialog offers `0` and `1` as a single check box and saves the choice to `sun.ini` when accepted. A ticked box stores `0` and a cleared one stores `1`. `2` is available only by editing the file, and the box shows it as cleared, so accepting the dialog replaces it with `1`.
 
-:::caution[A figure outside 0 through 2 disables coast scrolling]
-The three behaviors are the only cases handled, and the horizontal and vertical distances are worked out inside them. A figure of `3` or more, or a negative one, falls through all three and leaves both distances at zero. Holding the right button then drags the view nowhere.
+:::caution[Keep the value between 0 and 2]
+Any other value gives coast scrolling a distance of zero. Dragging with the right button then shows the coast-scroll cursor but does not move the map.
 :::

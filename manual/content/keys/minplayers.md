@@ -1,4 +1,4 @@
 ---
 key: MinPlayers
-summary: Declares how many players a multiplayer map is meant for, without restricting anything.
+summary: Declares the fewest players a multiplayer map is meant for, without restricting anything.
 ---

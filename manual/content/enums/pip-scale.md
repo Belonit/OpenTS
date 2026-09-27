@@ -10,12 +10,12 @@ bindings:
 source_files: [code/pip.hh, code/ccini.cpp]
 values:
   - { constant: PIPSCALE_AMMO, value: 1, input: "Ammo", meaning: "Remaining ammunition." }
-  - { constant: PIPSCALE_TIBERIUM, value: 2, input: "Tiberium", meaning: "Stored Tiberium or resource cargo." }
-  - { constant: PIPSCALE_PASSENGERS, value: 3, input: "Passengers", meaning: "Occupied passenger slots." }
-  - { constant: PIPSCALE_POWER, value: 4, input: "Power", meaning: "No quantity; the row is given a length and no drawing branch fills it." }
-  - { constant: PIPSCALE_CHARGE, value: 5, input: "Charge", meaning: "A vehicle's stored charge against its MaxCharge." }
+  - { constant: PIPSCALE_TIBERIUM, value: 2, input: "Tiberium", meaning: "Stored Tiberium. A Weeder=yes structure counts the weeds its house holds instead. Infantry and aircraft draw no pips." }
+  - { constant: PIPSCALE_PASSENGERS, value: 3, input: "Passengers", meaning: "Passenger space in use." }
+  - { constant: PIPSCALE_POWER, value: 4, input: "Power", meaning: "Nothing. The row has a length, but no pips are drawn in it." }
+  - { constant: PIPSCALE_CHARGE, value: 5, input: "Charge", meaning: "A vehicle's stored charge against its MaxCharge. Any other kind of object shows the row empty." }
 ---
 
-A **pip** is one of the small markers drawn in a row beneath a selected object, and the scale names the quantity that row is counting. The [pip colors](/reference/enums/pip-color/) are a separate domain and decide what an individual marker looks like.
+A **pip** is one of the small markers drawn in a row beneath a selected object. [`PipScale`](/keys/pipscale/) chooses the quantity that row counts, in any letter case, and that page gives each scale's row length and how the row fills. The [pip colors](/reference/enums/pip-color/) are a separate list.
 
-The five scales are fixed by the engine, and the match ignores case. [`PipScale`](/keys/pipscale/) covers how each one sizes and fills its row. A `Charge` row is measured against [`MaxCharge`](/keys/maxcharge/), and a `Power` row is given a length that nothing fills.
+A type that can carry passengers shows its passengers whatever its scale. The scale then sets only the length of the row.

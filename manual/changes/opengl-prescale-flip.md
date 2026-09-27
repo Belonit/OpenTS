@@ -6,4 +6,4 @@ targets: []
 credit: [EJ]
 ---
 
-The picture is no longer vertically flipped during fullscreen or scaled windowed play on OpenGL. The pixel-art filter magnifies the frame through an intermediate render target whenever the window is larger than the frame by a non-integer amount. On backends that store render targets bottom-up, that target is now sampled flipped on the way to the screen. Other backends, filters, and window sizes already presented upright and are unchanged.
+On OpenGL, the default pixel-art filter showed the picture upside down whenever it enlarged the frame by a factor that is not a whole number, as it usually does in fullscreen. The picture is now upright. Other renderers, the other filters, and whole-number enlargements already showed it upright and are unchanged.

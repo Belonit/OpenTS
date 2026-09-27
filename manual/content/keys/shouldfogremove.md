@@ -7,10 +7,12 @@ when_omitted:
   value: "yes"
 ---
 
-The flag hides the animation; nothing about it lifts fog or reveals ground.
+`ShouldFogRemove=yes` hides the animation under the fog of war. It does not lift fog or reveal anything.
 
-Two separate paths apply it, one for each kind of animation. An animation standing on its own is skipped by the tactical pass while the cell under its center is fogged, so it cannot betray what the player is no longer allowed to see. An animation attached to a moving object, such as a fire attached to the object it burns, counts as standing on its own. The test looks at the cell under the animation and at whether a structure runs it, not at what it is attached to. An animation a structure runs is not covered by that test; it is hidden while the structure it belongs to is fogged. The structure and its animations are drawn from the stand-in the fog took of them instead, so the animation does not vanish; it freezes on the stage it had reached and thaws when the fog lifts.
+An animation that does not belong to a structure is hidden while the cell under its center is fogged. This includes an animation attached to a moving object, such as a fire burning on a vehicle: the fog is tested at the animation's own cell.
 
-With `no`, neither test applies: the animation keeps being drawn live over fogged ground, and a structure's animation keeps cycling on top of its own frozen stand-in. It suits an animation whose absence would look wrong, such as one belonging to a structure the player is already remembering. Used carelessly, it is also the setting that gives a hidden explosion away.
+An animation that belongs to a structure is hidden while the structure is fogged. The player sees the structure as it was last seen, with each of its animations frozen on the frame it had reached. When the fog lifts, the live animations are drawn again.
 
-[Shroud, fog and the radar map](/systems/map-visibility/#the-fog-of-war) describes what the fog photographs and when it lifts.
+With `ShouldFogRemove=no`, the animation is drawn over fogged ground as it plays. A structure's animation keeps playing on top of the structure's frozen image. An explosion or other effect set this way shows the player activity under the fog.
+
+[Shroud, fog and the radar map](/systems/map-visibility/#the-fog-of-war) describes what the fog remembers and when it lifts.

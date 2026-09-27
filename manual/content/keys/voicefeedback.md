@@ -12,6 +12,14 @@ when_omitted:
 VoiceFeedback=MYTANK_Hurt1 ; a sound ID registered in SOUND.INI
 ```
 
-Only one kind of hit reaches this list: the single blow that takes the object from at or above half its maximum strength to below it. The list stays silent when that blow also takes the object into condition red: that crossing is classified as its own result instead of the half-strength one, and it has no voice, so the biggest hits are the quietest. That hit then speaks on a 30% roll, so most objects cross the threshold silently, and further damage below the threshold says nothing at all. The transition is measured per hit, so repairing back above half strength arms the response again.
+An object can speak this list on the hit that takes it from half its maximum strength or more to below half. The hit speaks only if **all of** these hold:
 
-One entry is picked at random and played at the object's center, fading with distance from the visible screen; there is no test of whose house the object belongs to. Names are matched and picked as [`VoiceSelect`](/keys/voiceselect/) describes.
+1. It does not destroy the object.
+2. It does not also take the object below the [`ConditionRed`](/keys/conditionred/) threshold. A hit that crosses both thresholds at once plays no response.
+3. A 30 percent chance succeeds.
+
+Further hits while the object stays below half strength play nothing. Once the object is repaired back to half strength or more, the next hit that crosses the threshold can speak again.
+
+One entry is picked at random and played as a placed sound at the object's position, so it fades and pans with where the object is on screen; see [Placed sounds](/systems/sound-effects/#placed-sounds). The owner does not matter: an enemy object is heard the same as one of the player's own.
+
+Names are matched as described in [Writing the list](/keys/voiceselect/#writing-the-list).

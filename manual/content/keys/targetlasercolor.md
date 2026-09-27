@@ -7,7 +7,11 @@ when_omitted:
   value: "173,0,0"
 ---
 
-The three numbers are separated by commas; a value that is not three numbers keeps the default, a dark red. A number outside 0 to 255 wraps around, so 300,0,0 is read as 44,0,0. The squares on the line's ends take the same color. The sighting laser is the line a firing vehicle with [`TargetLaser=yes`](/keys/targetlaser/) draws to where its shot is aimed; [Action lines](/systems/action-lines/) covers when it is drawn. [`TargetLineColor`](/keys/targetlinecolor/) colors the target line a selected object draws to what it is attacking, a different line from this one; changing it leaves the laser alone.
+The color applies to the sighting laser and to the squares on its ends. The sighting laser is the line a firing vehicle with [`TargetLaser=yes`](/keys/targetlaser/) draws to where its shot is aimed. [Action lines](/systems/action-lines/) covers when it is drawn.
+
+Write three numbers separated by commas. A value that does not begin with three such numbers keeps the default, and anything after the third number is ignored. A number outside 0 to 255 wraps around, so `300,0,0` is read as `44,0,0`.
+
+The target line a selected object draws to what it is attacking is a separate line. [`TargetLineColor`](/keys/targetlinecolor/) sets its color, and this key does not affect it.
 
 ```ini title="UI.INI"
 [Ingame]

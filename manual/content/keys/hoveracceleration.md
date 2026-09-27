@@ -7,6 +7,6 @@ when_omitted:
   value: ".03"
 ---
 
-The figure is a length of time, not a rate, so raising it makes a hover unit slower off the mark. Each frame the drive raises the throttle by `1 ÷ (HoverAcceleration × 900)` of full and stops at the ceiling it is holding, which [`HoverBoost`](/keys/hoverboost/) scales. At 900 frames to the minute that makes the value the length of a standing start, so the stock `.02` is 18 frames, a little over a second.
+This value is a length of time, not a rate: raising it makes a hover unit slower off the mark. A hover unit's throttle is the fraction of its travel speed it is using, from zero to full. The time is in game minutes of 900 frames, so the stock `.02` takes a stopped unit to full throttle in 18 frames.
 
-Only the climb is measured here. Closing the throttle again runs on [`HoverBrake`](/keys/hoverbrake/).
+Each frame the throttle rises by `1 ÷ (HoverAcceleration × 900)` of full until it reaches the ceiling the drive allows. A unit pushed a cell aside to make way for another skips this ramp and goes to full throttle at once, unless it is within a cell of its destination. The ceiling is below full near the end of a move and while the unit turns; [`HoverBrake`](/keys/hoverbrake/) lists those cases, and [`HoverBoost`](/keys/hoverboost/) scales the ceiling on a straight path. Closing the throttle runs on `HoverBrake`.

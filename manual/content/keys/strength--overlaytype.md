@@ -6,24 +6,22 @@ see_also: ["system:walls-and-gates", "DamageLevels"]
 when_omitted:
   kind: value
   value: "1"
-  note: At that figure almost every hit clears the threshold outright, so a segment advances a stage on nearly anything that reaches it.
+  note: Every hit of at least 1 damage then advances the wall a stage.
 ---
 
 ```ini title="rules.ini"
-[GAWALL]
+[MYWALL]       ; example wall overlay
 Strength=100
 ```
 
-For a wall overlay, `Strength` is not a health pool. Each hit is evaluated independently:
+For a [`Wall=yes`](/keys/wall/#scope-overlaytype) overlay, `Strength` sets how hard a single hit must be to advance the wall one [damage stage](/systems/walls-and-gates/#stepping-through-the-stages). It is not a pool of hit points. Each hit is tested on its own:
 
-- Damage greater than or equal to `Strength` advances the wall by one damage stage.
-- Positive damage below `Strength` succeeds when a random integer from `0` through `Strength` is less than the damage.
-- A failed hit leaves no damage to accumulate for the next hit.
+- Damage of at least `Strength` always advances the wall one stage.
+- A smaller positive hit advances it with a chance of damage ÷ (`Strength` + 1). With `Strength=100`, a 20-damage hit succeeds 20 times in 101, about 19.8%.
+- A failed hit leaves nothing behind for the next hit.
 
-With `Strength=100`, a hit for `20` therefore has a `20 / 101` chance, about 19.8%, to advance the wall by one stage.
+No hit advances a wall more than one stage, however large. [`DamageLevels`](/keys/damagelevels/) sets how many landed hits remove a segment. A segment with no connections needs one fewer, but never fewer than one (see [Stepping through the stages](/systems/walls-and-gates/#stepping-through-the-stages)). A higher `Strength` makes each hit less likely to count, so the wall lasts longer on average. No figure makes a wall invulnerable, because any positive hit keeps some chance.
 
-A stage that lands is a stage regardless of how much damage caused it. A wall's durability is therefore the number of stages [`DamageLevels`](/keys/damagelevels/) grants multiplied by how often a hit clears this threshold, never the sum of the damage taken. Raising `Strength` past the largest damage figure that will ever reach the wall does not make it invulnerable; it only reduces every hit to the chance above.
+A crushing vehicle removes a [`Crushable=yes`](/keys/crushable/#scope-aircrafttype) segment outright, whatever its `Strength`. The cascade into neighboring segments and the removal of a wall tower each hit for 200, which always lands against a `Strength` of 200 or less. [Walls and gates](/systems/walls-and-gates/#whether-a-hit-lands) lists every source of wall damage.
 
-Two fixed damage figures ignore the threshold in practice. The [cascade into neighboring segments](/systems/walls-and-gates/#stepping-through-the-stages) and the hit dealt to a wall run when a wall tower is removed both deal 200 damage, which clears any threshold of 200 or below outright.
-
-The setting has no other consumer. Only the wall test above reads the value, and that test runs just for an overlay with [`Wall=yes`](/keys/wall/#scope-overlaytype); an overlay without the flag ignores `Strength` entirely.
+An overlay without `Wall=yes` ignores `Strength`.

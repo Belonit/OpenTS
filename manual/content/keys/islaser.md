@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-The beam is drawn on top of an ordinary shot rather than in place of one: the projectile is still created, still travels and still detonates, and the damage is entirely the projectile's. What the flag adds is two pieces of scenery drawn between the muzzle and the target's own aim point.
+`IsLaser=yes` draws a beam from the muzzle to the target each time the weapon fires. The beam is only a visual effect. The weapon still fires its projectile, and the projectile deals all the damage when it detonates.
 
 ```ini title="rules.ini"
 [MyObeliskRay] ; example WeaponType
@@ -19,10 +19,19 @@ LaserDuration=15
 Projectile=LLine ; a BulletType, registered by a weapon naming it as its Projectile
 ```
 
-The first piece is the beam itself: a thin line in [`LaserInnerColor`](/keys/laserinnercolor/), flanked by a pair of glow lines in [`LaserOuterColor`](/keys/laseroutercolor/) jittered each frame by [`LaserOuterSpread`](/keys/laserouterspread/), lasting [`LaserDuration`](/keys/laserduration/) frames. The second is a screen glow spanning the same line, which brightens only the red of whatever lies beneath it whatever colors the beam was given. [`IsBigLaser=yes`](/keys/isbiglaser/) widens it.
+## What is drawn
 
-A weapon with a barrel normally has its shot stepped forward the moment it is created so that it appears past the muzzle rather than inside it. A laser weapon skips that step, so its projectile starts at the barrel mounting. On a structure the beam also stops the turret animation dead and resets it to its first frame. That is how a [`Charges=yes`](/keys/charges/) turret drops out of its wind-up pose.
+A laser shot draws two effects along the line from the muzzle to the target's aim point:
 
-:::caution[The beam always comes from the first weapon slot]
-Whichever slot fired, the colors, the spread, the duration and the wide-or-narrow glow are read from the weapon sitting in the object's first slot. A laser weapon in the second slot therefore draws itself in the first weapon's colors. A first-slot weapon that is not a laser at all supplies its own unset color and duration to the beam.
+- The beam: a thin core line in [`LaserInnerColor`](/keys/laserinnercolor/), with two glow lines beside it in [`LaserOuterColor`](/keys/laseroutercolor/). [`LaserOuterSpread`](/keys/laserouterspread/) varies the glow color each frame, and the beam lasts [`LaserDuration`](/keys/laserduration/) frames.
+- A screen glow along the same line, drawn only at the high [detail level](/keys/detaillevel/#scope-client-settings). It brightens only the red of whatever lies beneath it, whatever colors the beam uses, and fades out over about 22 frames. [`IsBigLaser=yes`](/keys/isbiglaser/) widens it.
+
+:::caution[The beam's settings come from the first weapon slot]
+Whichever slot fired, the beam's colors, spread, duration and glow width come from the weapon in the object's first slot. A laser weapon in the second slot therefore draws its beam in the first weapon's colors. If the first-slot weapon is not a laser, the beam uses that weapon's color and duration settings, which are usually the defaults.
 :::
+
+## Effects on the shot
+
+When the firing slot has a barrel length above `0`, most projectiles take two flight turns as they launch, so they appear past the muzzle. A laser weapon's projectile skips those turns and starts at the barrel mounting. [The shot, step by step](/systems/firing-geometry/#the-shot-step-by-step) lists the firing order.
+
+On a structure, each laser shot resets the turret's charge animation to its first frame. The structure also loses its turret charge, unless it has more than one round of [`Ammo`](/keys/ammo/) left. [`Charges`](/keys/charges/) covers what that means for a charging weapon.

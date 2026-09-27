@@ -12,4 +12,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-`BuildableOver=yes` on an OverlayType lets a building's foundation cover that overlay, for the player and for computer houses. The cell must still allow building on the land type the overlay gives it, and a wall refuses a foundation whatever the setting.
+`BuildableOver=yes` in an overlay type's `rules.ini` section lets a structure be placed on cells that hold that overlay, by the player or by a computer house. The cell's land type must still allow building, and `BuildableOver` has no effect on a wall overlay.

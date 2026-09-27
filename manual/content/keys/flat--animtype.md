@@ -8,6 +8,6 @@ when_omitted:
   value: "no"
 ---
 
-With the flag set, the animation's pixels are depth-tested against the ground plane instead of against the standing gradient everything else uses. The artwork reads as painted on the terrain, and whatever stands on the cell covers it. The same choice is made for the copy drawn under fog.
+With `Flat=yes`, the animation is drawn as if painted on the terrain, and anything standing in its cell covers it. Without the flag, the animation is depth-tested as an upright image, the same way standing objects are. The fogged copy of a structure's animation follows the same setting.
 
-A [`Tiled=yes`](/keys/tiled/) animation takes a different drawing path that never reaches this flag.
+On the live map, [`Tiled=yes`](/keys/tiled/) takes precedence: a tiled animation is always drawn upright.

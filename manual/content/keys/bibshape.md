@@ -8,13 +8,25 @@ when_omitted:
   note: No apron shape is loaded and none is drawn.
 ---
 
-The value is a filename without its extension, and only a non-empty value is taken. The named `<value>.SHP` is loaded with the rules, and refetched on the same occasions and with the same theater rewrite [`DoorAnim`](/keys/dooranim/) describes.
-
-The shape is drawn under every structure of the type that is neither being built nor being sold, after the structure’s own shape and one pixel nearer the viewer. The cell’s light level is the baseline, and the structure’s [`ExtraLight`](/keys/extralight/) is folded into it. The frame drawn is the structure’s own current frame number, so an apron that is to change with the structure’s condition needs the same frame layout the main artwork has. A frame number beyond the apron file’s own count draws nothing; the engine does not fall back to frame 0.
+`BibShape` names the apron artwork drawn on the ground under a structure: a shape file, written without its extension. `<value>.SHP` is loaded with the rules, with its name adjusted for the theater as [`DoorAnim`](/keys/dooranim/) describes. It is loaded again after a saved game is loaded and, for a [`NewTheater=yes`](/keys/newtheater/) structure, when a scenario's theater is set up.
 
 ```ini title="art.ini"
 [MYWEAP] ; example war factory, drawn from its own Image ID
 BibShape=GAWEAPBB ; loaded as GTWEAPBB.SHP in temperate
 ```
 
-The apron is folded into the rectangle a structure of the type is redrawn within, and it is drawn on the fogged copy as well. What it does not do is enlarge the footprint or open it to traffic. That is [`Bib=yes`](/keys/bib/), which is read on the rules side, never looks at this artwork, and draws no apron of its own.
+Every structure of the type draws the apron, with these exceptions:
+
+- no apron is drawn while the structure's buildup plays, including in reverse when it is sold or undeployed;
+- a [`Gate=yes`](/keys/gate/) structure draws none while it is opening, open or closing;
+- an [`InvisibleInGame=yes`](/keys/invisibleingame/) structure draws none.
+
+The apron is drawn after the structure's own shape and appears on the fogged image of the structure as well. It is lit like the structure: the cell's light level plus the structure's [`ExtraLight`](/keys/extralight/).
+
+## Frames
+
+The apron shows the frame with the same number as the structure's current frame. An apron that should change with the structure's animation or damage needs the same frame layout as the structure's own artwork. When the structure's frame number is beyond the last frame in the apron file, no apron is drawn; the engine does not fall back to frame 0.
+
+## What the apron does not do
+
+The apron is only artwork. It does not add cells to the footprint and does not let vehicles onto it. [`Bib=yes`](/keys/bib/) in the rules file opens the eastern edge of the footprint to vehicles; it ignores this artwork and draws no apron of its own.

@@ -13,14 +13,23 @@ when_omitted:
 Explodes=yes
 ```
 
-An explosion whose center lands in the cell sets the overlay off. There is no strength test, no armor test and no chance roll. The segment is removed, the cell recalculates its passability and zones, and anything aiming at it drops the target. The detonation follows at once. It is the [`[AudioVisual] BarrelExplode`](/keys/barrelexplode/) animation, area damage of [`[CombatDamage] AmmoCrateDamage`](/keys/ammocratedamage/) with [`C4Warhead`](/keys/c4warhead/) and no owner, one entry from [`BarrelDebris`](/keys/barreldebris/) on a 15% roll, and a [`BarrelParticle`](/keys/barrelparticle/) system on a 25% roll.
+An explosion centered in the cell sets the overlay off when its damage is not zero or its warhead sets [`Webby=yes`](/keys/webby/). There is no armor test or chance roll. In an [`Inert=yes`](/keys/inert/) scenario, no explosion sets it off.
 
-That debris roll walks the list in order and stops at the first piece it creates. At most one piece is ever thrown, and later entries are only reached when every earlier one failed its roll.
+The overlay is removed at once. The cell's passability and movement zones are updated, and anything targeting the cell drops it as a target.
 
-Each of the four neighboring cells that also holds an explosive overlay receives a `FIRE3` animation four to six frames later. The neighbor is not detonated directly; whether the fire goes on to set it off depends on that animation's own [`Damage`](/keys/damage/#scope-animtype). The same fire is laid on explosive neighbors when an [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) structure is destroyed.
+The overlay then explodes in the same cell, with these effects:
 
-This is a separate mechanism from [`ChainReaction=yes`](/keys/chainreaction/), which is what spreads a Tiberium field's own destruction. An overlay with both flags runs both on one hit: the chain reaction is judged first, and this detonation follows it.
+- the [`BarrelExplode`](/keys/barrelexplode/) animation plays;
+- [`AmmoCrateDamage`](/keys/ammocratedamage/) is dealt as area damage through the [`C4Warhead`](/keys/c4warhead/), with no house responsible for it;
+- one piece of [`BarrelDebris`](/keys/barreldebris/) may be thrown;
+- a [`BarrelParticle`](/keys/barrelparticle/) particle system starts on a 25% chance.
 
-:::danger[The `FIRE3` animation is required]
-The neighbor fire is looked up by name every time, and a name that is not registered in `[Animations]` resolves to an index of `-1` that is used to index the animation list anyway. Removing or renaming `FIRE3` therefore reads outside that list and builds an animation from whatever it finds.
+For the debris, each `BarrelDebris` entry in list order gets a 15% chance, and the first entry that succeeds is thrown. At most one piece is thrown, and a later entry is tried only when every earlier one failed.
+
+Explosive overlays in the four cells that share an edge with the exploding cell each get a `FIRE3` animation four to six frames later. Those neighbors do not explode directly. Each explodes only if its animation's [`Damage`](/keys/damage/#scope-animtype) sets it off. A destroyed [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) structure lays the same fire on explosive overlays in the four cells that share an edge with its origin cell.
+
+`Explodes` is separate from [`ChainReaction=yes`](/keys/chainreaction/), which lets explosions detonate the Tiberium in a cell.
+
+:::danger[Keep the `FIRE3` animation registered]
+Keep an animation named `FIRE3` in `[Animations]`; the neighbor fire is looked up by that name each time. If no animation has that name, the game reads outside the animation list the first time the fire spreads, and it can crash.
 :::

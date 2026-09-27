@@ -7,6 +7,11 @@ when_omitted:
   value: "no"
 ---
 
-Collecting the overlay springs [Pickup Crate](/mapping/events/tevent-pickup-crate/) on the tag attached to the collector, and raises the scenario flag that fires [Pickup Crate (any)](/mapping/events/tevent-pickup-crate-any/) for every general trigger on the following logic pass. Both happen before a result is chosen. When the object-attached trigger destroys the collector, the sequence stops there: the crate stays on the map and no result is delivered.
+Collecting an overlay with `CrateTrigger=yes` fires two trigger events:
 
-The flag is independent of [`Crate=yes`](/keys/crate/), which the engine reads separately, but an overlay that is not a crate is never collected, so the trigger never springs without it.
+- [Pickup Crate](/mapping/events/tevent-pickup-crate/) springs on the collector's tag, if the collector has one, before the crate's result is chosen.
+- [Pickup Crate (any)](/mapping/events/tevent-pickup-crate-any/) fires for the scenario's general triggers on the next game frame.
+
+If the Pickup Crate trigger destroys the collector, collection stops there. The crate stays on the map, no result is delivered, and Pickup Crate (any) does not fire.
+
+The overlay must also set [`Crate=yes`](/keys/crate/). An overlay that is not a crate is never collected, so `CrateTrigger=yes` alone fires nothing.

@@ -8,4 +8,4 @@ when_omitted:
   value: ""
 ---
 
-One of the five scorch lists the section sets, each stored in its own place and none of them read. [`Scorches`](/keys/scorches/) covers what actually decides which mark a blast leaves.
+Like the other four scorch lists, this one is read and never used. [`Scorches`](/keys/scorches/) explains how the game picks a scorch mark, and what naming an unknown smudge type in these lists does.

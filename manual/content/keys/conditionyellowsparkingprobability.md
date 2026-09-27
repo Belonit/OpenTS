@@ -7,6 +7,8 @@ when_omitted:
   value: ".01"
 ---
 
-The figure is a fraction from 0 to 1, drawn against once per frame, and it applies in the band between [`ConditionRed`](/keys/conditionred/) and [`ConditionYellow`](/keys/conditionyellow/). Values above `1` are accepted and start a spark on every frame the draw is made; `0` never starts one. Below `ConditionRed` the draw uses [`ConditionRedSparkingProbability`](/keys/conditionredsparkingprobability/) instead; at or above `ConditionYellow` no draw is made at all, so an undamaged object never sparks whatever this figure says.
+While an object's strength is below [`ConditionYellow`](/keys/conditionyellow/) but not below [`ConditionRed`](/keys/conditionred/), this is the chance each frame that it starts throwing damage sparks. The value is a fraction: `0` never starts sparks, and `1` or more starts them on practically every frame the chance is drawn.
 
-[`ConditionRedSparkingProbability`](/keys/conditionredsparkingprobability/) covers the rest of the conditions a spark system has to meet before it starts.
+Below `ConditionRed`, [`ConditionRedSparkingProbability`](/keys/conditionredsparkingprobability/) applies instead. At or above `ConditionYellow` no chance is drawn, so an object that has not dropped below `ConditionYellow` never sparks, whatever this value is. When the two thresholds are equal, as their engine defaults are, this value never applies.
+
+[`ConditionRedSparkingProbability`](/keys/conditionredsparkingprobability/) lists the other conditions sparks need and how often a new spark system can start.

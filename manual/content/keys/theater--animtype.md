@@ -8,15 +8,22 @@ when_omitted:
   value: "no"
 ---
 
-Once the scenario's theater is settled, the animation's artwork is resolved as its own AnimType ID with the theater's extension: `.TEM` in temperate, `.SNO` in snow. When that file is absent, it falls back to `<AnimType ID>.SHP`. The animation is re-resolved on every later theater change unless it is loaded on demand.
+The animation's shape file is named after its AnimType ID, with the extension set by the scenario theater's [`Suffix`](/keys/suffix/#scope-theater) in place of `.SHP`. By default that is `.TEM` in temperate and `.SNO` in snow.
 
 ```ini title="art.ini"
 [MYBLAST] ; an AnimType ID
-Theater=yes ; draws MYBLAST.TEM or MYBLAST.SNO, and MYBLAST.SHP if neither is there
+Theater=yes ; draws MYBLAST.TEM or MYBLAST.SNO
 ```
 
-:::caution[This path ignores the animation's Image ID]
-A theater animation is named after its AnimType ID on the path that runs once the theater is known. An [`Image=`](/keys/image/#scope-animtype) pointing at some other art is not read there, so the substituted file will not be found under that other name.
-:::
+When the theater's file is missing, the animation draws `<AnimType ID>.SHP` instead. That fallback applies when the scenario's theater differs from the previous scenario's, and after a saved game loads. The animation draws nothing in that theater in two cases:
 
-The flag is tested before [`NewTheater`](/keys/newtheater/) and wins outright, so an animation marked with both is only ever renamed by extension.
+- The scenario repeats the previous scenario's theater.
+- The animation sets [`DemandLoad=yes`](/keys/demandload/#scope-animtype).
+
+The file is looked up again for every scenario and every loaded saved game, so its extension always matches the current theater.
+
+An animation that also sets [`NewTheater=yes`](/keys/newtheater/#scope-animtype) uses this flag and ignores that one.
+
+:::caution[Leave Image= unset on a theater animation]
+With an [`Image=`](/keys/image/#scope-animtype) that differs from the AnimType ID, the name the theater file is looked up under can depend on the previous scenario. When the theater differs from the previous scenario's, or a saved game is loaded, the lookup uses the AnimType ID. When the theater repeats, it uses the Image ID. A [`DemandLoad=yes`](/keys/demandload/#scope-animtype) animation always uses the AnimType ID.
+:::

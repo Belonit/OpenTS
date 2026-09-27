@@ -7,16 +7,22 @@ when_omitted:
   value: ""
 ---
 
+An infantryman leaves a corpse when he finishes a gun death or an explosion death, the death sequences that a warhead's [`InfDeath=1`](/keys/infdeath/) and `InfDeath=2` start. When the sequence reaches its last frame, one animation from this list appears at his center and he is removed. Every entry is equally likely, whichever of the two deaths he played.
+
 ```ini title="rules.ini"
 [AudioVisual]
-DeadBodies=MYDEATH_A,MYDEATH_B ; AnimTypes registered in [Animations]
+DeadBodies=MYDEATH_A,MYDEATH_B ; AnimTypes registered in [Animations]; each corpse is one of the two, equally likely
 ```
 
-An infantryman who plays a death sequence to its last frame has one corpse animation created at his center and is then deleted. Two deaths reach it: the gun death a warhead with [`InfDeath=1`](/keys/infdeath/) causes and the explosion death `InfDeath=2` causes. The engine also lists a second explosion death and a grenade death, but nothing ever starts either one. The fire death is taken only by a [`Doggie=yes`](/keys/doggie/) infantryman, who is deleted without a corpse. The list is a single pool shared by every death that leaves a corpse, not one entry per death type. A corpse's animation is drawn from the whole list with equal weight.
+A [`Doggie=yes`](/keys/doggie/) infantryman never leaves a corpse.
 
-Most deaths never get this far. A soldier who was already falling and comes down in water, a prone [`Cyborg=yes`](/keys/cyborg/) infantryman and a jumpjet infantryman are all deleted before a sequence is chosen at all. Several of the `InfDeath` cases delete the soldier outright as well. The corpse list covers only the deaths that are animated where the soldier stood.
+Many deaths remove the infantryman at once, without a death sequence, so they leave no corpse whatever the warhead's `InfDeath` is. These include:
 
-:::danger[An empty list crashes the game at the first gun or explosion death]
-An empty list gives the pick nothing to return, and the corpse animation is created without checking that a type came back. Set at least one entry before any warhead in the mod sets `InfDeath=1` or `InfDeath=2`.
+- an infantryman who was already falling and comes down in water;
+- a prone [`Cyborg=yes`](/keys/cyborg/) infantryman;
+- a `Cyborg=yes` infantryman killed by forced damage, such as being caught in a raised firestorm wall;
+- a [`JumpJet=yes`](/keys/jumpjet/) infantryman.
+
+:::danger[Give DeadBodies at least one entry]
+If rules.ini leaves `DeadBodies` out, or every entry is `none`, the list is empty and the game crashes the first time an infantryman that is not `Doggie=yes` finishes a gun or explosion death. Keep at least one entry while any warhead sets `InfDeath=1` or `InfDeath=2`.
 :::
-

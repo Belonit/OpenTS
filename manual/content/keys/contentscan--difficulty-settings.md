@@ -6,9 +6,9 @@ see_also: ["system:difficulty", "system:target-selection", IQ]
 when_omitted:
   kind: value
   value: "no"
-  note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section without this key restores no rather than keeping the earlier value.
+  note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section but not this key sets it back to no.
 ---
 
-The flag is one of two ways into a test that adds the worth of everything riding inside a transport to the transport's own worth as a target. This one opens it for every house in the slot; [the threshold in `[IQ]`](/keys/contentscan/#scope-global-rules) opens it for a house clever enough. The two are alternatives, so either on its own is sufficient.
+`ContentScan=yes` in a difficulty section would make every house in that [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot) add the worth of a transport's passengers to the transport's worth as a target. The [`[IQ]` threshold](/keys/contentscan/#scope-global-rules) is an alternative: either one alone would switch the addition on.
 
-Neither is reached. The test sits inside the routine that puts a figure on an object as a target. The only thing that calls that routine is the pass in which a computer house picks a building to aim a superweapon at, and nothing invokes that pass. What a computer house does weigh when it chooses a target is traced under [target selection](/systems/target-selection/), and cargo has no part in it.
+The setting has no effect, because nothing uses that worth. It is read only by a superweapon-targeting step that the game never runs. [Target selection](/systems/target-selection/) describes what a computer house does weigh when it chooses a target, and passengers play no part in it.

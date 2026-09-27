@@ -7,8 +7,13 @@ when_omitted:
   value: "yes"
 ---
 
-The power cursor offers the toggle only on a selectable, player-controlled structure of a type that is `TogglePower=yes` and either drains power or is [`Powered=yes`](/keys/powered/). `TogglePower=no` therefore takes the structure out of the player's reach, but it does not keep the structure switched on. The [Turn off building](/mapping/actions/taction-turn-off-attached/) trigger action and a scenario's own structure record reach the same switch, and they require only drain or `Powered=yes`.
+`TogglePower=no` stops the player switching the structure on or off with the power cursor. [Switching a structure off](/systems/power/#switching-a-structure-off) lists the other tests the cursor applies.
 
-:::caution[A TogglePower=no defense is silenced but stays lit]
-The shutdown test that takes a structure out of service spares a `TogglePower=no` structure, and so does the branch that darkens its powered animations and lights. The weapon lockout and the SAM tracking stall do not: such a defense holds fire through a shortfall while still running its idle animations. [Defenses](/systems/power/#defenses) sets the tests side by side.
-:::
+It does not keep the structure switched on. The [Turn off building](/mapping/actions/taction-turn-off-attached/) trigger action and a scenario's structure record can switch it off regardless, and the player then cannot switch it back on.
+
+`TogglePower=no` also changes what a power shortfall does to a [`Powered=yes`](/keys/powered/) structure with drain:
+
+- The structure stays operational, so its powered animations and lights keep running.
+- Its weapons still cannot fire, and a [`SAM=yes`](/keys/sam/) launcher still stops tracking.
+
+[Defenses](/systems/power/#defenses) defines operational and sets these tests side by side.

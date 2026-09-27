@@ -15,6 +15,10 @@ Normal=no
 Repeat=yes
 ```
 
-The routine that decides what plays next skips a track that is not normal. It is also left out of the track list on the sound options screen, so a player cannot pick it there either. It can still be started outright by name, which is how the menu and map selection music reaches the player without ever appearing on the playlist.
+`Normal=no` keeps the track off the automatic playlist, so the game does not pick it when the current track ends. The track is also missing from the sound options track list, and the [next track](/commands/nexttheme/) and [previous track](/commands/prevtheme/) commands skip it.
 
-The same routine also applies [`Scenario`](/keys/scenario/#scope-themes) and [`Side`](/keys/side/#scope-themes), and drops any track whose audio file is missing from the mixfiles.
+The playlist falls back to the first track listed under `[Themes]` when it has nothing else to offer, and plays that track even if it has `Normal=no`. This happens when no track is allowed, or when shuffle is on and the only allowed track is the one that just ended.
+
+The setting does not stop other ways of starting the track. A scenario's [`Theme=`](/keys/theme/), the [Play music theme](/mapping/actions/taction-play-music/) trigger action and the [Play music](/mapping/missions/tmission-play-music/) team mission all play it. So do the main menu, map selection, the score screen and ion storms, which request their tracks by ID. The main menu can request `INTRO`, so the example track plays there, and [`Repeat=yes`](/keys/repeat/) keeps it looping.
+
+[`Scenario=`](/keys/scenario/#scope-themes) and [`Side=`](/keys/side/#scope-themes) can also keep a track with `Normal=yes` off the playlist. [Choosing the next track](/systems/music/#choosing-the-next-track) lists every condition a track must meet.

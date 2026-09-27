@@ -12,4 +12,6 @@ when_omitted:
 PlayerLeft=PLYRLEFT ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the LAN lobby and is played without a position; no other lobby plays it. It marks a sign-off arriving for somebody in the player list, and it plays only once the local player's own join has been confirmed. A sign-off from someone who was in the chat list rather than the game is silent. It plays once per matching entry removed.
+Only the LAN lobby plays this sound, and it plays without a position on the map. It marks a player in the game's player list signing off, and it plays once for each player-list entry removed.
+
+The host hears it for any listed player who leaves. A guest hears it only after the host has confirmed the guest's join. A player who signs off from the chat list makes no sound.

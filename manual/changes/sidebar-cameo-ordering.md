@@ -23,9 +23,6 @@ credit:
 - Rampastring
 ---
 
-The sidebar arranged its cameos in the order the offers arrived, so the same rules set gave a
-different strip in every game. Each strip is now sorted by kind and then by declaration order,
-with walls, gates and base defenses last among the structures. `SidebarSorting=no` in `SUN.INI`
-restores the old arrangement. `CameoSortOrder=` places a type's cameo within its category
-without moving any rules list, and `SortCameoAsBaseDefense=` decides whether a building sorts
-with the defenses.
+The sidebar used to list cameos in the order they became available, so the same rules could give a different strip from one game to the next. Each strip is now sorted by kind, then by the order the types are listed in the rules, with walls, gates and base defenses after the other structures. `SidebarSorting=no` under `[Options]` in `sun.ini` restores the old arrangement.
+
+In `rules.ini`, `CameoSortOrder=` in a type's or super weapon's section moves its cameo within its kind, lower values first. It reorders no rules list, and it takes precedence over the grouping of walls, gates and defenses. `SortCameoAsBaseDefense=` in a structure's section decides whether it sorts with the base defenses.

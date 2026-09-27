@@ -1,7 +1,7 @@
 ---
 format_id: rules-registries
 title: Rules registration lists
-summary: Registers named rules types and Side membership from rules-layer lists.
+summary: Lists in the rules files that register each kind of rules type and assign countries to sides.
 kind: registry
 files:
   - RULE*.INI
@@ -35,17 +35,7 @@ source_files:
   - code/init.cpp
 ---
 
-Every one of these registration sections except `[Sides]` is read the same way. Each entry is taken by its position in the section, and only its value is looked at. The key text decides nothing, and the order the lines are written in is the order the types are registered. The value is both the type ID and the name of the section the definition is written in, and is kept to its first thirty-one characters. An empty value registers nothing: the line is dropped, so the entries written after it each move up one position. A value naming an ID the game already has reuses that type instead of adding a second one.
-
-`[Sides]` reads its keys instead. The key is the Side ID and the value is a comma-separated HouseType list. A name in that list that is not a HouseType ID is logged and skipped, so the country it names does not join that side. `[Tiberiums]` stops registering new types at four, as [Tiberium types](/systems/tiberium/#tiberium-types) explains.
-
-Registering an ID and defining it are separate passes. Registration creates the type with the built-in defaults for its kind, and the section named by the ID is read afterwards. An ID registered with no section of its own is therefore kept with those defaults rather than dropped.
-
-OpenTS processes the selected `RULE*.INI`, then `LANGRULE.INI`, then `FIRESTRM.INI` when Firestorm is enabled, then `LANGFS.INI` when present. Outside a campaign it then processes [`MPLAYER.INI`](/formats/multiplayer-rules/), and `MPLAYERFS.INI` as well when Firestorm is enabled. The scenario's own overrides come after all of them. [Game data](/using/game-data/) covers what makes Firestorm count as installed.
-
-`[Theaters]` is read differently from the rest. A map names its theater before anything else about it is read, and the archives that theater mounts supply the rest of the load. The roster therefore has to be settled before any map is loaded. It is read once as the game starts, from the selected `RULE*.INI` and from `FIRESTRM.INI` whenever that file is installed, not only when its addon is enabled. A theater's position must not move between one game and the next, and that position is the number maps, saves and the multiplayer checksum all use. Neither a map's own rules nor the multiplayer files can add a theater, for the same reason: both are read per game, and a roster that changed with the game type would move every theater after the one it added.
-
-Where no rules file declares the section, the two theaters Tiberian Sun shipped are registered in their original order, which is what every unmodified rules file gets. Where the section is present it is the whole roster: it may drop `SNOW`, reorder the pair, or replace both. A roster that means to keep them has to write them out. Naming `TEMPERATE` or `SNOW` in the list does not create a second copy of that theater. It starts from the original settings, and its own section overrides what it names.
+Every registration section except `[Sides]` lists one ID per line, written as the value. The key only labels the line, but a repeated key drops the earlier line, as described below. The ID also names the section that defines the type:
 
 ```ini title="rules.ini"
 [InfantryTypes]
@@ -56,6 +46,38 @@ Name=Example infantry
 Strength=100
 ```
 
-Projectiles have no registration section of their own. A projectile is created the first time a weapon's [`Projectile=`](/keys/projectile/) names it, then filled in from the section matching its name on the same terms as above.
+This registers an infantry type `MYINF` and reads its settings from `[MYINF]`.
 
-A weapon `[Weapons]` leaves out is created the same way, the first time a key outside `[Weapons]` names it. The keys that can do this are [`Primary=`](/keys/primary/), [`Secondary=`](/keys/secondary/), [`Elite=`](/keys/elite/), [`WeaponType=`](/keys/weapontype/), [`DropPodWeapon=`](/keys/droppodweapon/) and [`AirburstWeapon=`](/keys/airburstweapon/). Weapon sections are read in one pass over the weapons registered by then. A projectile's `AirburstWeapon=` is read after that pass, so a weapon only that key names is created too late to read its own section and keeps the built-in defaults.
+Types are registered in the order their lines appear, and each rules file adds to the types that earlier files registered. The rules files are read in the order [Multiplayer rules](/formats/multiplayer-rules/#when-they-are-read) lists, and the scenario's own overrides come last.
+
+A line registers nothing in these cases:
+
+- Its value names an ID that is already registered, by an earlier line or an earlier file. The existing type keeps its place.
+- Its value is empty, `none` or `<none>`.
+- Another line later in the same section uses the same key. Only the later line's ID is registered, at the later line's place. This also applies when the section heading appears twice in one file.
+
+Keep each ID to 24 characters or fewer. A longer ID is stored cut to its first 24 characters, and its settings are read from the section named by that shortened ID. A later reference that spells out the full ID does not find the stored type and creates another one.
+
+Registering an ID creates the type with the built-in defaults for its kind, and its section is read afterwards. An ID with no section of its own is still registered and keeps those defaults.
+
+`[Sides]` uses its keys. The key is the Side ID, and the value lists the countries on that side as HouseType IDs separated by commas. Each country must be registered by the same rules file or an earlier one. Write the list without spaces after the commas: a name that matches no registered country, including one with a leading space, is skipped, and that country does not join the side.
+
+A later file that lists an existing side replaces that side's country list, so repeat every country the side should keep. A country left out of the new list keeps the side it had.
+
+`[Tiberiums]` registers at most four types, as [Tiberium types](/systems/tiberium/#tiberium-types) explains.
+
+## Theaters
+
+`[Theaters]` is read once, as the game starts, and only from the selected `RULE*.INI` and from `FIRESTRM.INI`. `FIRESTRM.INI` counts whenever it is installed, even when Firestorm is not enabled; [Game data](/using/game-data/) covers what makes it count as installed. A map, the language rules files and the multiplayer rules files cannot add a theater. Saves record each theater by its position in the list, so the list has to stay the same from one game to the next.
+
+When neither file registers a theater, the game uses the two theaters Tiberian Sun shipped, `TEMPERATE` and `SNOW`, in that order. Unmodified rules files get this list. A `[Theaters]` list that registers at least one theater replaces those two completely: it may drop `SNOW`, reorder the pair, or replace both, so a list that means to keep them has to name them.
+
+A listed `TEMPERATE` or `SNOW` starts from that theater's original settings, and its section in the rules overrides them. Naming a theater again, later in the list or in `FIRESTRM.INI`, reuses the one already registered.
+
+## Types named by other keys
+
+Projectiles have no registration section. A projectile is created the first time a key names it, usually a weapon's [`Projectile=`](/keys/projectile/). A projectile a weapon names reads its settings from the section matching its name, as for a registered type.
+
+A weapon that `[Weapons]` does not list is created the same way, the first time one of these keys names it: [`Primary=`](/keys/primary/), [`Secondary=`](/keys/secondary/), [`Elite=`](/keys/elite/), [`WeaponType=`](/keys/weapontype/), [`DropPodWeapon=`](/keys/droppodweapon/) or [`AirburstWeapon=`](/keys/airburstweapon/).
+
+Register in `[Weapons]` any weapon that only a projectile's `AirburstWeapon=` names. Each rules file reads its weapon sections in one pass, and `AirburstWeapon=` is read after that pass. A weapon it creates therefore misses its section in that file, and keeps the built-in defaults unless a later rules file contains its section.

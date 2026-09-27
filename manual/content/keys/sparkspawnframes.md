@@ -7,7 +7,9 @@ when_omitted:
   value: "0"
 ---
 
-The count runs down one a frame, and the system stops emitting and begins to clear away when it reaches the end. Its last frame always throws a burst whatever [`SpawnSparkPercentage`](/keys/spawnsparkpercentage/) says, so a shower set to `1` is a single guaranteed burst and nothing more. Only the `Spark` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+A `Spark` system can throw bursts for this many frames. The count drops by one each frame. When it reaches zero, the system stops throwing bursts and is removed once its last particle has expired. Only the `Spark` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+
+On every frame but the last, the system throws a burst only if its [`SpawnSparkPercentage`](/keys/spawnsparkpercentage/) roll succeeds. The last frame always throws one, so `1` gives exactly one burst.
 
 ```ini title="rules.ini"
 [MyWeldingSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -20,8 +22,8 @@ LightSize=25
 OneFrameLight=true
 ```
 
-Only the system's first frame can cast the aging glow described under [`LightSize`](/keys/lightsize/), and only when that frame happens to throw a burst, so a longer shower is not a longer light. The steady one-frame light the example sets instead is redrawn for as long as the system still holds a particle, which outlasts the count.
+A longer count does not give a longer flash. The flash described under [`LightSize`](/keys/lightsize/) can appear only on the system's first frame, and only if that frame throws a burst. The [`OneFrameLight`](/keys/oneframelight/) glow that the example uses instead is drawn for as long as the system holds any particle, so it can continue after the last burst.
 
-:::caution[A spark system left at zero never clears itself away]
-The burst logic is skipped while the count is not above zero, so such a system throws nothing and never reaches the condition that retires it. Without a positive [`Lifetime`](/keys/lifetime/) it sits on the map, doing nothing, for the rest of the scenario.
+:::caution[Give a spark system a positive count]
+At zero or below, the system throws no bursts and never ends by itself. It stays on the map until another route ends it, such as a positive [`Lifetime`](/keys/lifetime/) or the removal of the object it belongs to. [Ending a system](/systems/particle-systems/#ending-a-system) lists the routes.
 :::

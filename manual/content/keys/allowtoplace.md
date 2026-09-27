@@ -8,4 +8,4 @@ when_omitted:
   value: "yes"
 ---
 
-The name promises that a tile set may be offered for placement. The value is read once per tile set and copied onto every tile the set produces, and nothing reads it back. It reaches no placement test, no map generator decision, and not even the multiplayer synchronization checksum, which never visits the isometric tile types at all.
+The engine stores the value on every tile of the set and never reads it back. A set marked `no` still appears on maps and in random maps like any other.

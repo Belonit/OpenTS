@@ -5,22 +5,31 @@ see_also: ["system:target-selection"]
 when_omitted:
   kind: value
   value: "0"
-  note: Zero is the instruction to use the object's own weapon range instead, so an omitted value costs nothing.
+  note: The object scans at the reach of its weapons.
 ---
-
-The value is written in cells and fractions are accepted. It supplies all three scan radii. The guard radius is this value outright. The area radius used by Guard Area and the patrol radius used by Patrol are twice it, the first clamped to at most 16 cells and the second to between 7 and 16. At `0` the area and patrol radii fall back to twice the longer of the object's two weapon ranges, while the guard radius becomes a live test against the range of the weapon chosen per candidate.
 
 ```ini title="rules.ini"
 [MYTANK] ; example UnitType
 GuardRange=7.5
 ```
 
-An engineer ignores the guard radius and always scans at weapon range. An object with no first-slot weapon has no range test to run and uses this value as its acceptance distance instead.
+`GuardRange` sets how far an object of this type looks for targets on its own. The value is in cells, and fractions are accepted. It sets three scan radii, and [target selection](/systems/target-selection/#scan-radius) lists which mission uses which:
 
-Two leash distances come off the same figure. A Guard Area object that is neither firing nor already traveling somewhere breaks off and heads home once it stands more than three quarters of the area radius from its home position. A patrolling object accepts a target it cannot already shoot only when the walk to it is shorter than the patrol radius in cells plus six.
+- the **guard radius** is the value itself, except that a healer, such as a medic, scans 2 cells while in Guard;
+- the **area radius**, used by Guard Area, is twice the value, at most 16 cells;
+- the **patrol radius**, used by Patrol, is twice the value, kept between 7 and 16 cells.
+
+At `0`, the area and patrol radii become twice the longer of its two weapon ranges, with the same limits. A scan at the guard radius then accepts a target only when the weapon the object would choose against that target can reach it.
+
+An engineer always takes that weapon-range guard radius, whatever its `GuardRange`. An engineer with no weapon then accepts a target within `GuardRange` of it. Its area and patrol radii still use the value.
+
+The area and patrol radii also limit how far an object strays:
+
+- A Guard Area object that is neither firing nor already moving somewhere drops its target and heads home once it is more than three quarters of the area radius from its home position.
+- A patrolling object takes on a target it cannot already shoot only when the walk to it is shorter than the patrol radius, in cells, plus six.
 
 :::caution[The value is also a fence connection distance]
-A [`LaserFencePost=yes`](/keys/laserfencepost/) building uses it as the number of cells it searches in each of the four directions for its neighboring post, treating anything under one cell as one. A [`FirestormWall=yes`](/keys/firestormwall/) type uses it as the number of cells a newly placed section searches for another section to join to, with no such floor. Both truncate it to whole cells, so changing it on those types changes how far a fence run reaches.
+A [`LaserFencePost=yes`](/keys/laserfencepost/) building uses it as the number of cells it searches in each of the four directions for its neighboring post, and treats anything under one cell as one. A [`FirestormWall=yes`](/keys/firestormwall/) type uses it as the number of cells a newly placed section searches for another section to join, with no such minimum. Both round it down to whole cells, so changing it on those types changes how far a fence run reaches.
 :::
 
-A value of exactly `-1` is indistinguishable from omitting the key: the reader treats it as absent and keeps whatever was already stored.
+`GuardRange=-1` counts as leaving the key out.

@@ -8,6 +8,6 @@ when_omitted:
   value: "4"
 ---
 
-A house whose [`IQ`](/keys/iq/) reached this level would count the worth of a transport's passengers toward the transport's worth as a target. A house whose [difficulty section](/keys/contentscan/#scope-difficulty-settings) sets the companion flag would do the same. The two are alternatives rather than conditions that both have to hold.
+A house whose [`IQ`](/keys/iq/) is at or above this value would add the worth of a transport's passengers to the transport's worth as a target. The [difficulty section's flag](/keys/contentscan/#scope-difficulty-settings) is an alternative: either one alone would switch the addition on.
 
-Neither is reached. The comparison sits inside the routine that puts a figure on an object as a target. The only thing that calls that routine is the pass in which a computer house picks a building to aim a superweapon at. No code invokes that pass, so raising a house's intelligence cannot switch the comparison on, and moving the threshold changes nothing at any level.
+The setting has no effect, because nothing uses that worth. It is read only by a superweapon-targeting step that the game never runs, so no value changes anything at any `IQ`.

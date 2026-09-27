@@ -7,12 +7,31 @@ when_omitted:
   value: none
 ---
 
-Everything the wall tower does follows from being the type this key names; there is no flag for it. While it is standing and undestroyed, the [connection logic](/systems/walls-and-gates/#connection-frames) reads it as a continuation of a brick or sandbag wall from all four directions at once. That is what lets a wall run turn a corner or meet another run through it. Nod wall is a separate family and never connects to it. For a house a human is playing, placing one on a brick or sandbag wall the same house owns removes that wall first, quietly and without refund. A computer house's tower is placed on top of the surviving segment. The tower may also be placed on an undamaged segment, which no ordinary wall building may do. Once placed it forces its four cardinal neighbors to rebuild their connection frames.
+The BuildingType this key names is the wall tower. No flag on the type gives it the role, and only one type can hold it. [Wall towers](/systems/walls-and-gates/#wall-towers) describes the behavior in full.
+
+While it stands, the tower counts as a continuation of a brick or sandbag wall from all four directions, so a wall run can turn a corner or meet another run through it. Nod walls never connect to it. [Connection frames](/systems/walls-and-gates/#connection-frames) covers how runs join.
+
+The tower can be placed on a brick or sandbag wall cell its house owns, even an undamaged one; an ordinary wall piece can only replace a damaged segment. For a house a human is playing, a sellable segment under the tower is removed first, without refund. A computer house's tower stands on top of the segment and can only be placed this way on a brick wall.
+
+The tower also takes plugged-in upgrades differently from other structures. [`PowersUpToLevel`](/keys/powersuptolevel/) and [`TurretAnim`](/keys/turretanim/#wall-towers) cover the difference.
 
 :::caution[Removing a tower damages the wall around it]
-When the tower is taken off the map its four cardinal neighbors rebuild their frames, and each of those still holding an undamaged wall is then hit for 200 damage. Any wall whose [`Strength`](/keys/strength/#scope-overlaytype) is 200 or below therefore loses a stage on every side of the tower, which can start the [cascade](/systems/walls-and-gates/#stepping-through-the-stages) along the run.
+When the tower is taken off the map, each of the four adjacent cells that holds an undamaged wall takes a 200-damage hit. A wall whose [`Strength`](/keys/strength/#scope-overlaytype) is 200 or less always loses a stage. A stronger wall loses one with a chance of about 200 in its `Strength`. Either loss can start the [cascade](/systems/walls-and-gates/#stepping-through-the-stages) along the run.
 :::
 
-The computer builds its base from a plan, an ordered list of entries, some of which are base-defense slots to be filled later. Where the side this house acts as lists a tower in [`AIWallTowers`](/keys/aiwalltowers/), a node for that tower goes into the plan just ahead of every base-defense slot. When a tower is placed, the plan's next base-defense slot is moved onto the tower's cell, but only when the tower is the type this key names; any other tower leaves that slot where the plan put it. A defense naming one of these towers is buildable before any tower stands. Owned towers on the acted side's list are kept out of the buildings the [defense candidates](/systems/ai-base-building/#base-defenses) test their prerequisites against, and every type on that list is then added back unconditionally.
+## Computer bases
 
-The value also seeds the first side's [`AIWallTowers`](/keys/aiwalltowers/) as each rules file sets it, which is how the computer's GDI bases come to be ringed with towers. An `AIWallTowers=` in that side's own section of the same file overrides it. A base taken over by the computer recognizes wall towers by this type alone, whatever side the house plays for; any other tower is left out of the plan it inherits.
+Each rules file that sets `WallTower` also replaces the first side's [`AIWallTowers`](/keys/aiwalltowers/) list with the named type, which is how the computer's GDI bases get their towers. An `AIWallTowers=` in that side's own section of the same file overrides it. The towers a computer house plans come from its side's `AIWallTowers`, not from this key.
+
+When the computer places the tower this key names, the next base defense in its plan moves onto the tower's cell. Other types on an `AIWallTowers` list do not move it.
+
+When a player's base passes to the computer, each tower of this type holding at least one upgrade fills the next unfilled base-defense placeholder in the computer's plan, and its last upgrade is written in after it. The house's side does not matter, but two conditions do:
+
+- A placeholder must remain. Once the plan has none left, no further tower is written.
+- One of the house's factories must be able to build the tower type under the normal build rules.
+
+A tower of this type without an upgrade is left out, and so is a tower of any other type unless it is [`IsBaseDefense=yes`](/keys/isbasedefense/#scope-buildingtype).
+
+:::caution[Leave IsBaseDefense off the tower type]
+A tower type with `IsBaseDefense=yes` is not left out when it has no upgrade. When a base holding such a tower passes to the computer, the game reads an upgrade the tower does not have, which can crash it.
+:::

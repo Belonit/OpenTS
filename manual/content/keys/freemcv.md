@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-The free MCV the name refers to is real: outside a campaign, a house that has lost its base can be handed one by the next crate it opens, whatever that crate drew. The override that does it reads nothing this key sets, so writing the key either way leaves it exactly as it was. It is not the last word on the pick either: one of the conversions that follows can turn the result back into money and take the MCV with it. [Choosing the result](/systems/crates/#outside-a-campaign) owns the conditions and that conversion.
+Nothing reads this flag, so no value changes which crates hand out an MCV. Outside a campaign, a crate still gives a free MCV to a house that has lost its base, whatever result the crate drew, unless [`UnitCrateType`](/keys/unitcratetype/) names another vehicle. The conditions for that are fixed, and a later conversion can still turn the MCV into money. [Outside a campaign](/systems/crates/#outside-a-campaign) lists both.

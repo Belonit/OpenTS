@@ -9,6 +9,12 @@ when_omitted:
   value: "0"
 ---
 
-The figure is stored as the type's maximum strength, which the engine reads when something takes damage, when a health ratio is worked out, and when a health ratio is written back. An animation reaches none of them. An explosion's blast sweep gathers its victims from a cell's occupier list, which an animation is never entered into, and from the rosters of aircraft, jumpjet infantry, and [`Jellyfish=yes`](/keys/jellyfish/) vehicles, which it never joins. It is on the logic list, which a heal crate walks without filtering by type. That crate restores only what belongs to the house that opened it, and an animation answers to no house. A vehicle cannot crush an animation: crush victims are taken from the same cell occupier lists the blast sweep reads. Nothing creates an animation with a strength drawn from its type either. No gameplay path reads the figure.
+An animation has no strength in play, because nothing can damage, heal, or crush one:
 
-The damage an animation deals to what is underneath it is [`Damage`](/keys/damage/#scope-animtype), which is unrelated to this.
+- An explosion damages the objects occupying the cells it reaches, plus any aircraft, jumpjet infantry, and [`Jellyfish=yes`](/keys/jellyfish/) vehicles near a blast in the air. An animation never occupies a cell and is none of those.
+- A vehicle crushes only objects occupying the cells it enters.
+- A heal crate restores only objects owned by the house that opened it, and an animation has no owner.
+
+No other gameplay path reads the value.
+
+The damage an animation deals to objects beneath it is set by [`Damage`](/keys/damage/#scope-animtype), which is unrelated to this key.

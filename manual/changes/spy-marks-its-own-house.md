@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-When several players shared a country, one player's spy gave all of them what it won: a spied structure's status display and production, and through a spied radar structure the victim's vision. Now only the spy's own house gains them.
+When several players played the same country, a spy that entered a structure gave its gains to all of them. Each of them saw a selected spied structure's power figures, Primary tag and pips, and what a spied factory was producing. Once a radar structure was spied on, each of them also saw what the victim's objects saw. Now only the house that owns the spy gains them.

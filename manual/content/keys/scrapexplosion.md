@@ -13,8 +13,6 @@ Explosion=TWLT070,FRAG1,FRAG3      ; AnimTypes registered in [Animations]
 ScrapExplosion=FBALL1_SCRAP,FRAGG1_SCRAP
 ```
 
-This is a second [`Explosion`](/keys/explosion/) list, spent in place of the first while [`ScrapMetal`](/keys/scrapmetal/) is on. It is spent exactly as that key describes, with the entry picked at random from the list: one animation per wreck for a vehicle or aircraft, one per cell of the footprint for a structure. The exception is a vehicle flagged [`Explodes=yes`](/keys/explodes/) or holding the `EXPLODES` [veteran ability](/systems/veterancy/#abilities): while it still holds ammunition, or has no ammunition limit at all, it spends the list's last entry rather than a random one. An InfantryType stores it and never reads it back.
+While [`ScrapMetal`](/keys/scrapmetal/) is on, a destroyed object plays animations from this list instead of from its [`Explosion`](/keys/explosion/) list. They are picked and placed exactly as `Explosion` describes, exceptions included. A type that leaves this list empty keeps its `Explosion` animations, so a ruleset can convert its types a few at a time.
 
-A type that leaves this empty keeps its ordinary animations even with the switch on, so a ruleset can convert its arsenal a few entries at a time.
-
-Both lists are read whichever way the switch is set. Which one is spent is settled as the object dies rather than when the rules are read, so one set of rules serves a match played either way.
+Both lists are read whatever the switch is set to, and the choice between them is made when the object is destroyed. One set of rules therefore serves games played with scrap wreckage on and off.

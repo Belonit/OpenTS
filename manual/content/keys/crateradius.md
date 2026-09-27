@@ -8,6 +8,15 @@ when_omitted:
   note: Fractions are accepted; the default reaches 640 leptons at 256 leptons to the cell.
 ---
 
-Several crate results are not confined to the object that opened the crate. The cloaking, veterancy, armor, firepower, and speed results each sweep the ground layer. They apply themselves to objects whose center lies strictly nearer to the center of the crate's cell than this distance, the [veterancy result](/systems/veterancy/#promotion-without-kills) among them. The heal result also reaches past the collector, but it restores the collector's whole house and reads no distance at all.
+The cloak, veterancy, armor, firepower and speed crate results affect every object on the ground whose center is closer than this distance to the center of the crate's cell. Raising the value spreads each of these results over more objects. The heal result is not limited by this setting: it restores every object of the collector's house.
 
-The veterancy and cloaking results set no condition on the owner. Objects belonging to other houses, allied or hostile, are treated exactly like the collector's own, and buildings standing inside the circle are included alongside vehicles and infantry. The armor, firepower, and speed results skip any object whose matching multiplier an earlier crate has already changed. The speed result reaches only infantry and vehicles, never aircraft or buildings.
+None of these results checks ownership. Allied, enemy and neutral objects inside the circle, structures included, are affected like the collector's own.
+
+Each result still has its own filter inside the circle:
+
+- veterancy promotes only objects whose type has [`Trainable=yes`](/keys/trainable/), as [Promotion without kills](/systems/veterancy/#promotion-without-kills) describes;
+- armor skips an object that an earlier armor crate has already boosted, unless [`ArmorCrateStacks=yes`](/keys/armorcratestacks/);
+- firepower skips an object that an earlier firepower crate has already boosted, unless [`FirepowerCrateStacks=yes`](/keys/firepowercratestacks/);
+- speed always skips an object that an earlier speed crate has already boosted, and it also skips structures and aircraft.
+
+[Results that sweep a radius](/systems/crates/#results-that-sweep-a-radius) covers what each result does to the objects it reaches.

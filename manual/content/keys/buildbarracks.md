@@ -5,7 +5,13 @@ see_also: ["system:ai-base-building"]
 when_omitted:
   kind: value
   value: ""
-  note: The generic barracks prerequisite goes unsatisfied for a computer house, so every type with it stays out of its base plan and its base-defense candidates; player production is unaffected.
+  note: The generic barracks prerequisite goes unsatisfied for a computer house, so a generated base plan leaves out every type that has it, and the house never picks such a type as a base defense or advanced power plant; player production is unaffected.
 ---
 
-The first entry the country this house [acts as](/keys/actslike/) [may own](/keys/owner/) is what a [`Prerequisite=BARRACKS`](/keys/prerequisite/) resolves to while [the base plan](/systems/ai-base-building/#building-the-plan) is assembled. That entry is also moved to the head of the candidate list, so the plan queues it before the rest. Outside campaign games the whole list is read once more while the house is low on credits. A house producing units that owns none of the listed types switches back to producing structures.
+A computer house tests a [`Prerequisite=BARRACKS`](/keys/prerequisite/) against this list in three decisions: generating [its base plan](/systems/ai-base-building/#building-the-plan), picking a base defense, and picking an advanced power plant. In each, only the first entry that the country the house [acts as](/keys/actslike/) [may own](/keys/owner/) meets it. While the plan is generated, that entry must already be queued. When the house picks a base defense or an advanced power plant, it must own a structure of that entry's type. Another listed type does not count, even when it is queued or owned.
+
+Outside these three decisions a computer house [ignores prerequisites](/systems/production/#computer-houses), including when it follows [a map plan](/systems/ai-base-building/#where-the-plan-comes-from). The sidebar resolves `BARRACKS` through [`PrerequisiteBarracks`](/keys/prerequisitebarracks/) instead.
+
+The same entry is tested first on each pass, so on the pass that queues it, it goes ahead of every other structure that pass adds. It must still pass the plan's candidate test.
+
+Outside campaign games, the whole list also decides one of the switches in [alternating production](/keys/aialternateproductioncreditcutoff/). A computer house short of money that owns none of the listed types switches from units back to structures.

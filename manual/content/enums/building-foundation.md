@@ -18,7 +18,7 @@ values:
   - { constant: BSIZE_33, value: 6, input: "3x3", meaning: "Three cells wide by three cells tall." }
   - { constant: BSIZE_35, value: 7, input: "3x5", meaning: "Three cells wide by five cells tall." }
   - { constant: BSIZE_42, value: 8, input: "4x2", meaning: "Four cells wide by two cells tall." }
-  - { constant: BSIZE_33_REF, value: 9, input: "3x3Refinery", meaning: "Special three-by-three refinery footprint." }
+  - { constant: BSIZE_33_REF, value: 9, input: "3x3Refinery", meaning: "Three cells by three, with one of the nine cells left open." }
   - { constant: BSIZE_13, value: 10, input: "1x3", meaning: "One cell wide by three cells tall." }
   - { constant: BSIZE_31, value: 11, input: "3x1", meaning: "Three cells wide by one cell tall." }
   - { constant: BSIZE_43, value: 12, input: "4x3", meaning: "Four cells wide by three cells tall." }
@@ -29,8 +29,10 @@ values:
   - { constant: BSIZE_53, value: 17, input: "5x3", meaning: "Five cells wide by three cells tall." }
   - { constant: BSIZE_44, value: 18, input: "4x4", meaning: "Four cells wide by four cells tall." }
   - { constant: BSIZE_34, value: 19, input: "3x4", meaning: "Three cells wide by four cells tall." }
-  - { constant: BSIZE_64, value: 20, input: "6x4", meaning: "Six cells wide by four cells tall." }
+  - { constant: BSIZE_64, value: 20, input: "6x4", meaning: "Six cells wide by four cells tall, with a bottom row only three cells wide." }
   - { constant: BSIZE_00, value: 21, input: "0x0", meaning: "Zero-cell footprint." }
 ---
 
-A name is looked up rather than read as a pair of dimensions, so `Foundation=7x7` is not a seven-by-seven block of cells. Any other name resolves to `1x1`, a single-cell footprint on a terrain type. The block a name stands for is also not the same for every object. A structure has a list of occupied cells for all twenty-two names, while a TerrainType has one only for the first eight, which [`Foundation`](/keys/foundation/#scope-terraintype) covers.
+Each name stands for a fixed block of cells, and names are matched without regard to case. The numbers in a name are not read as dimensions. On a terrain object, and in a structure's Image ID entry, a name outside this list, such as `7x7`, counts as `1x1`. The entry named after a BuildingType ignores such a name, and [`Foundation`](/keys/foundation/#scope-buildingtype) covers how a structure's two art.ini entries combine.
+
+A structure can use all twenty-two names. A terrain object has a block of cells only for the first eight, and on a terrain object `3x5` is a four-by-two block. [`Foundation`](/keys/foundation/#scope-terraintype) covers what the other names do there.

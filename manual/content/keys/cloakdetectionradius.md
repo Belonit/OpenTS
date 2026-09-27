@@ -12,8 +12,10 @@ when_omitted:
 CloakDetectionRadius=3
 ```
 
-Every frame a jumpjet is moving, it sweeps a square this many cells out from the position it has just moved to and uncloaks everything standing in it. A figure of `2` covers a five-by-five block of cells. The engine default of `0` reduces the sweep to the jumpjet's own cell, so the setting must be raised before a jumpjet reveals anything beyond the cell it is directly over.
+`CloakDetectionRadius` sets how far a moving jumpjet reveals hidden objects around it. Each frame a jumpjet takes off, flies or lands, it uncloaks every vehicle, infantryman and structure in a square of cells centered on the jumpjet's cell. The square extends this many cells out on each side, so `2` covers a five-by-five block and the Firestorm rules' `3` covers seven by seven.
 
-:::caution[The sweep ignores ownership entirely]
-Nothing in it tests the house. A jumpjet flying over its own base uncloaks its owner's hidden vehicles and structures, and its allies', exactly as it uncloaks an enemy's. [Losing a cloak](/systems/cloaking/#losing-a-cloak) lists what that costs the objects caught underneath.
+At the engine default of `0`, the square is only the jumpjet's own cell. A negative value turns the sweep off.
+
+:::caution[A jumpjet also reveals its own side]
+The sweep does not check ownership. A jumpjet flying over its own base uncloaks its owner's and allies' hidden objects as well as enemies'. [Losing a cloak](/systems/cloaking/#losing-a-cloak) lists what that costs the objects caught underneath.
 :::

@@ -7,6 +7,8 @@ when_omitted:
   value: ""
 ---
 
-The first entry the country this house [acts as](/keys/actslike/) [may own](/keys/owner/) is the type every wall node of a [planned perimeter](/systems/ai-base-building/#walls-and-gates) is created from. It is also the type the defense planner clears away when a base defense placed along a finished wall takes a cell a wall was already planned for.
+A computer house builds the walls of its [planned perimeter](/systems/ai-base-building/#walls-and-gates) from the first entry in this list that the country it [acts as](/keys/actslike/) [may own](/keys/owner/). Later entries serve countries that cannot own the earlier ones.
 
-The engine builds those nodes from that entry without checking that the list held one that country may own.
+A wall of that type is removed from the plan when a base defense later takes its cell. Only a defense that [plugs into](/keys/powersupbuilding/) one of the side's wall towers removes a wall this way.
+
+Give every country whose side builds walls an entry it may own. The game crashes when the computer plans a wall for a country that may own none of the listed types.

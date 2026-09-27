@@ -16,6 +16,6 @@ credit:
 - dkeeton
 ---
 
-A campaign mission now posts the difficulty it is played at to the on-screen message list as it starts. The name says how hard the mission is, which is the opposite of the section the computer houses read. `[Easy]` is announced as Hard, `[Normal]` as Medium and `[Difficult]` as Easy.
+A campaign mission now shows its difficulty in the on-screen message list when it starts. The name describes how hard the mission is for the player, so it runs opposite to the `rules.ini` section the computer houses use: `[Easy]` is announced as Hard, `[Normal]` as Medium and `[Difficult]` as Easy.
 
-`DifficultyName` under `[Settings]` in a launch file replaces that name, which is how a client offering more difficulties than the game's three names the one it chose.
+`DifficultyName` under `[Settings]` in a launch file replaces the announced name. A client that offers more than the game's three difficulties can use it to name the one the player chose.

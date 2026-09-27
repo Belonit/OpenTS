@@ -1,6 +1,6 @@
 ---
 key: GenericClick
-summary: Sound acknowledging a repair or sell click on a structure, and a click on a dialog control.
+summary: Sound for a structure's repair or sale starting or stopping, and for pressing a dialog control.
 see_also: [GenericBeep, ScoldSound, SellSound]
 when_omitted:
   kind: value
@@ -12,14 +12,28 @@ when_omitted:
 GenericClick=BUTTON1 ; a sound ID registered in SOUND.INI
 ```
 
-Two unrelated kinds of event play the sound.
+The sound plays for two unrelated kinds of event: a structure's repair or sale starting or stopping, and the player pressing a dialog control.
 
 ## In the game world
 
-Clicking the repair cursor on a structure plays it at that structure's position, whichever way the toggle went: on for a damaged structure, and off again. Turning repair on for a structure already at full strength is the exception: that request still turns repair on, but it takes [`ScoldSound`](/keys/scoldsound/) instead and puts up no wrench. Clicking the sell cursor on a structure with build-up artwork plays it at full volume rather than from the structure's position, again for both directions of the toggle.
+Clicking a structure with the repair cursor plays the sound at the structure's position. It plays both when repair starts on a damaged structure and when repair stops. Starting repair on an undamaged structure plays [`ScoldSound`](/keys/scoldsound/) instead; repair still turns on, but no wrench appears.
 
-Both are gated on the structure belonging to a player-controlled house, so the same actions taken by a computer house (auto-repair, an AI selling off a structure, a trigger action) are silent. The sidebar itself never plays it.
+Repair that starts or stops without a repair click plays the sound at the structure's position in these cases:
+
+- repair starts by itself, for a house whose [`IQ`](/keys/iq/) reaches [`RepairSell`](/keys/repairsell/);
+- repair stops because the structure is sold;
+- repair stops because an engineer restores the structure to full strength.
+
+Repair that ends because the structure is fully repaired, or because the house runs out of money, is silent.
+
+Clicking the sell cursor on a structure that has build-up artwork plays the sound without a map position. It plays even when the structure is already being sold and the click changes nothing.
+
+Repair and sell sounds play only for a structure owned by a house the local player controls. The test looks at the owner, not at who acted: a trigger that sells one of the player's structures plays the sound, while repairs and sales on a computer house's structures are silent. The sidebar does not play this sound.
 
 ## In dialogs
 
-The owner-drawn dialog controls play it without a position when the player operates them: pressing a button, ticking a check box, clicking a combo box or an item in its open drop-down list. Selecting an item in a list box plays it, and so does moving a track bar far enough to change its value. The mission restatement screen's "More" button plays it on the frame it first draws pressed.
+The game's dialog controls play the sound without a map position when the player presses them with the left mouse button. This covers buttons, check boxes, radio buttons, sliders, drop-down lists and their items, and list items. A slider plays it when pressed, whether or not its value changes. A disabled control plays nothing.
+
+From the keyboard, Enter on a focused button plays the sound, and so does Space on a focused button, check box or radio button.
+
+The buttons on the mission briefing screen play it once each time one is pressed.

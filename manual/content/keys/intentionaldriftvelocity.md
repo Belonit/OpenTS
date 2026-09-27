@@ -1,24 +1,28 @@
 ---
 key: IntentionalDriftVelocity
-summary: The speed a levitating unit moves at while it is drifting rather than thrusting.
+summary: The fixed speed of a levitating unit's slow drift toward its target or back to the center of its cell.
 see_also: ["ProximityDistance", "MaxBlockCount", "Acceleration", "InitialBoost"]
 when_omitted:
   kind: value
   value: "0.3"
 ---
 
-A drift sets the unit's speed to this figure outright, clears any thrust in progress, and switches the per-frame loss off entirely. The unit holds that speed until something takes it out of the drift. Three things start one:
+A drift sets a levitating unit moving at this speed, and the unit loses none of it to [`Drag`](/keys/drag/) or braking while the drift lasts. A drift cancels any thrust in progress. A drift aimed at a point never overshoots it: when the point is closer than one frame's drift along a map axis, the unit moves only as far as the point along that axis.
 
-- closing to within [`ProximityDistance`](/keys/proximitydistance/) of the target or destination being steered at;
-- drifting back to the middle of its own cell after a blocked move;
-- leaving that cell again once re-centered.
+A unit drifts in three cases:
 
-A drift aimed at a point is also clipped per axis so it cannot overshoot that point in one frame.
+1. It has stopped within [`ProximityDistance`](/keys/proximitydistance/) of its target or destination, but more than half a cell from it. The drift continues until the unit is within half a cell, where it stops. If the target moves back out of `ProximityDistance`, the unit thrusts toward it instead.
+2. A move is blocked. The unit drifts back to the center of its cell.
+3. It has returned to the center of its cell after a blocked move and has a target or destination. It drifts out of the cell toward it. Once it enters the next cell, it carries on as after a thrust: it coasts under [`Drag`](/keys/drag/), and brakes as soon as its speed is below [`MaxVelocityWhenPissedOff`](/keys/maxvelocitywhenpissedoff/) with a target, or [`MaxVelocityWhenFollowing`](/keys/maxvelocitywhenfollowing/) with only a destination. With every `[LEVITATION]` key omitted, the drift is slower than both figures, so the unit brakes at once. A unit with nothing to head for coasts instead of drifting out.
 
-The figure is in leptons per frame (256 leptons to a cell, 15 frames to the second). A value of `12` moves the unit about two thirds of a cell each second, and one of `0.3` about a cell a minute.
+The figure is in leptons per frame, with 256 leptons to a cell and 15 frames to the second. At `12`, a drift covers about two thirds of a cell per second.
 
-:::danger[A drift of more than a cell per frame can hang the game]
-The step that decides whether a levitating unit may enter the cell it is moving into compares that cell against the eight neighbors of the cell it occupies, and the search never gives up. A landing cell more than one cell away leaves it spinning, and the game stops responding. A move order's destination never reaches that step: a long journey is many frames of short steps, and the test sees only the cell one frame lands in. A movement whose horizontal or vertical component exceeds 256 leptons in one frame can land two cells away and reach that state. The figure is a speed split between the two axes, so the direction of travel decides whether it does. This figure and the speeds a thrust builds must therefore stay well below 256. Nothing in the section clamps them, and no stock figure comes near it.
+:::caution[Set IntentionalDriftVelocity to 1.5 or more]
+A unit's position changes only in whole leptons along each of the map's two axes, and any fraction is dropped every frame. A drift below 1 lepton per frame therefore never moves the unit, and a drift below about 1.42 does not move it in some directions. A unit whose drift cannot move stays where it is: short of its destination, or off the center of its cell after a blocked move, where it never recovers. The value used when this key is omitted is below 1.
 :::
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+:::danger[Keep every levitation speed below 256 leptons per frame]
+A levitating unit that moves more than 256 leptons along either map axis in one frame can land two cells from where it started. The check for entering that cell then never finishes, and the game stops responding. The check sees only one frame's movement, so a long move order is not a risk. The speed is split between the two axes, so the direction of travel decides whether a given speed crosses the limit. Nothing clamps this figure or the speed a thrust builds.
+:::
+
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

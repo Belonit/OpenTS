@@ -7,17 +7,27 @@ when_omitted:
   value: ""
 ---
 
-Which entry is used depends on what made the splash, and only one of the paths looks at the list as a whole.
-
-An explosion over open water picks by its damage: the first entry for the first thirty-five points, the next for the thirty-five after that, and so on up the list. The last entry stands for everything past what the list covers. The warhead must be [`Conventional=yes`](/keys/conventional/) and the point must not be over a bridge deck. The splash replaces the warhead's own explosion rather than joining it.
-
-Every other path takes one fixed entry and ignores the damage. The first entry goes with an ordinary bouncing animation, a piece of voxel debris, a burning infantryman and infantry destroyed over water. The last entry goes with a destroyed vehicle, an ion cannon blast that lands on water, and an `IsMeteor=yes` impact of either kind; the [animation](/keys/ismeteor/#scope-animtype) and the [voxel animation](/keys/ismeteor/#scope-voxelanimtype) both take it. Four of those eight paths lay a [`Wake`](/keys/wake/) down alongside the splash: the ordinary bouncing animation, the piece of voxel debris, infantry destroyed over water and the destroyed vehicle. The two meteor kinds, an ion cannon blast and a burning infantryman do not.
-
 ```ini title="rules.ini"
 [CombatDamage]
 SplashList=MYSPLASH1,MYSPLASH2,MYSPLASH3 ; AnimTypes registered in [Animations]
 ```
 
-:::danger[An empty list crashes the game at the first splash]
-Only the explosion path checks that the list holds anything. Every other path reads an entry from it outright, so a rules file that never sets the key at all leaves the list empty and the game crashes the first time anything falls in the water. Leaving the key out of a later rules layer is harmless; the list keeps whatever an earlier one set.
+These animations play where something hits or falls into water. An explosion over water picks an entry by its damage. Every other kind of splash always uses the first entry or the last one.
+
+An explosion over open water picks by damage in steps of 35 points: the first entry for `1` to `34` damage, the second for `35` to `69`, and so on. The last entry covers all damage past the end of the list. This needs a [`Conventional=yes`](/keys/conventional/) warhead and a point that is not on a bridge deck. The splash replaces the warhead's usual explosion animation.
+
+The other splashes use a fixed entry. Some also lay a [`Wake`](/keys/wake/) animation beside the splash:
+
+| Cause | Entry | Also lays `Wake` |
+| --- | --- | --- |
+| An ordinary bouncing animation that lands in water | First | Yes |
+| A piece of voxel debris that lands in water | First | Yes |
+| Infantry that falls into water, for example when a bridge collapses under it | First | Yes |
+| A burning infantryman that falls into water | First | No |
+| A vehicle that falls into water | Last | Yes |
+| An ion cannon blast that lands on water | Last | No |
+| An `IsMeteor=yes` [animation](/keys/ismeteor/#scope-animtype) or [voxel animation](/keys/ismeteor/#scope-voxelanimtype) that lands in water | Last | No |
+
+:::danger[Keep SplashList non-empty]
+Every case except the explosion reads an entry directly, so an empty list crashes the game the first time one of them happens. An explosion over water with an empty list gets no animation, and some explosions crash on that, as [`Conventional`](/keys/conventional/) describes. The list is empty when no rules file sets the key, and `SplashList=none` also empties it. Leaving the key out of a later rules file is harmless, because the list keeps what an earlier file set.
 :::

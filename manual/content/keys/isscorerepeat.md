@@ -7,8 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-With the flag set, the track that has just been started queues up again as its own successor, so it plays until something else interrupts it. A track whose theme entry sets [`Repeat=`](/keys/repeat/) does this regardless of the flag.
+`IsScoreRepeat=yes` plays the current music track again each time it ends, until something else changes the music. A track whose theme entry sets [`Repeat=yes`](/keys/repeat/) repeats even with this off. [Choosing the next track](/systems/music/#choosing-the-next-track) describes what can still interrupt a repeating track.
 
-The flag is also what suppresses the choice of a next track: while it is set, neither the sequential order nor the shuffled pick of [`IsScoreShuffle`](/keys/isscoreshuffle/) is read.
+While this is on, [`IsScoreShuffle`](/keys/isscoreshuffle/) affects only the first track after silence, because each track that ends plays again.
 
-The sound options dialog shows the two as check boxes that turn each other off, so the dialog can never set both. A file that sets both is read as written, and repeating wins because the next track is never chosen. Leaving the options screen writes both flags back to `sun.ini`.
+The sound options dialog shows repeat and shuffle as two check boxes, and checking one clears the other. A file that sets both is read as written, and both take effect. Both settings are written to `sun.ini` when the player leaves the options menu or, during a game, closes the game controls dialog with OK.

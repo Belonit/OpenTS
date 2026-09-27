@@ -7,6 +7,16 @@ when_omitted:
   value: "2147483647"
 ---
 
-A value above zero is compared against the objects of the type the house owns at that moment, so destroying one frees its slot again. A value below zero is compared, as a magnitude, against every object of the type the house has ever produced. That tally is never decremented, so the slot is gone for good. Zero is not a cap of zero in the first sense. The comparison it produces can never pass, so the type is never buildable at all.
+A positive value caps how many objects of the type the house owns at once. Losing one lets the house build another.
 
-[Build limits](/systems/production/#build-limits) covers the two adjustments that widen the owned tally, the reason a cameo does not vanish partway through a build, and the separate tally the production queue applies.
+A negative value caps how many the house finishes building over the whole scenario, at the value's size: `BuildLimit=-2` allows two. Losing one frees nothing.
+
+`BuildLimit=0` makes the type unbuildable.
+
+[Build limits](/systems/production/#build-limits) covers:
+
+- what else counts toward a positive limit;
+- why a build already in progress is not canceled when it reaches the limit;
+- how the sidebar shows a type at its limit;
+- the extra check the production queue applies;
+- why a computer house can build past the limit.

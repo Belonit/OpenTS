@@ -19,4 +19,4 @@ credit:
 - ZivDero
 ---
 
-A save holds the scenario file it was played from when the deployment's `OPENTS.INI` sets `CarryScenarioFile=yes` in `[Saves]`. A restart, or the replay after a loss, then reads the mission from that copy rather than from disk. That lets a mission resumed through the CnCNet client be restarted. The client replaces `spawnmap.ini` with a stub when it resumes, and the restart read the stub and crashed.
+`CarryScenarioFile=yes` in `[Saves]` of the deployment's `OPENTS.INI` stores a copy of the scenario file in each save. Restarting the mission, or replaying it after a loss, then reads the mission from that copy instead of the file on disk. A mission resumed through the CnCNet client can then be restarted, because the restart no longer reads the stub `spawnmap.ini` the client writes when it resumes a game.

@@ -8,4 +8,6 @@ when_omitted:
   value: "no"
 ---
 
-Damage to an infantry or a vehicle takes one of two branches: a member of a team hands the damage to its team, and everything else goes down the second branch. The flag is tested on that second branch, behind a condition that only an object with no team can satisfy. A team member never reaches it, and an object that could reach it has no team to read the flag from. Every team in the shipped `ai.ini` and `aifs.ini` spells the key out, and 58 of the 420 set `Whiner=yes`, which changes nothing. [Settings and state without effect](/systems/base-attacked/#settings-and-state-without-effect) covers what a damaged team does instead.
+`Whiner=yes` has no effect. If the engine read the flag, damage from an attacker to a computer-controlled team member would count as an [attack on its house's base](/systems/base-attacked/). The engine checks the flag only when an infantry, vehicle or aircraft that belongs to no team takes damage. Such an object has no team type, so the flag is never read. Damage to a team member goes to its team instead, which responds as [answering damage](/systems/ai-team-execution/#answering-damage) describes.
+
+Every team in the shipped `ai.ini` and `aifs.ini` sets the key, and 58 of the 420 set `Whiner=yes`. Those teams behave exactly as the others do.

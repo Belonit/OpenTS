@@ -12,4 +12,8 @@ when_omitted:
 TiberiumGrowthEnabled=no
 ```
 
-With the switch off, neither the [growth pass nor the spread pass](/systems/tiberium/#growth) runs for any type, and the per-cell growth test fails as well. No queued cell then ripens or seeds, though blossom trees, crates, meteors and scattered loads still place Tiberium. The [Tiberium growth](/mapping/actions/taction-tib-growth/) trigger action writes the same switch while the scenario is running.
+With the switch off, no Tiberium type [grows or spreads](/systems/tiberium/#growth). No cell gains a stage by growing, and existing patches seed no new cells.
+
+Blossom trees and other sources that place Tiberium still plant it on cells that hold none. With the switch off they cannot add stages to an existing patch.
+
+The [Tiberium growth](/mapping/actions/taction-tib-growth/) trigger action writes the same switch while the scenario is running.

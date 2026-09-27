@@ -7,6 +7,19 @@ when_omitted:
   value: "0"
 ---
 
-What the speed moves depends on the [behavior](/keys/behaveslike/#scope-particletype). A `Fire` particle covers this many leptons along its line of fire each frame, at anything from `0.72` to `1.08` times this figure. A flame given no speed at all is flagged for death on its first logic frame, before it has traveled anywhere. A `Smoke` particle climbs by this many leptons a frame, with a random one lepton added or taken away as it is created so a plume does not rise as a solid column. A `Railgun` particle steps this far along the beam each frame, after the holding system has added its own perturbation to each particle it lays down. `Gas`, `WeakGas`, `Spark` and `Web` particles hold a speed but never move by it: a spark's motion comes from [`XVelocity`](/keys/xvelocity/), [`YVelocity`](/keys/yvelocity/) and [`ZVelocityRange`](/keys/zvelocityrange/) instead, and a web particle does not move at all.
+What this speed moves depends on the particle's [behavior](/keys/behaveslike/#scope-particletype):
 
-A cell is 256 leptons across, so the stock flame's `28.0` crosses a cell in nine frames while a railgun particle's `0.4` barely creeps. [`Deacc`](/keys/deacc/) takes the speed back down from here, and a successor created through [`NextParticle`](/keys/nextparticle/) inherits the speed its predecessor had reached rather than starting again at this figure.
+| Behavior | Effect of the speed |
+| --- | --- |
+| `Fire` | Each frame the flame moves toward its target by this speed times a random factor from `0.72` to `1.08`. A flame whose speed is `0` or less is removed, so a flame with no `Velocity` is removed on its first logic frame. |
+| `Smoke` | The puff climbs this many whole leptons a frame. When the puff is created, a random `-1`, `0` or `1` is added to the speed, so a plume does not rise as a solid column. |
+| `Railgun` | The particle drifts outward from the beam at this speed plus a random amount set by the railgun system's [`VelocityPerturbationCoefficient`](/keys/velocityperturbationcoefficient/), and the speed changes by a small random amount each frame. |
+| `Gas`, `WeakGas`, `Spark`, `Web` | The particle does not move by this speed. A spark's motion comes from [`XVelocity`](/keys/xvelocity/), [`YVelocity`](/keys/yvelocity/) and [`ZVelocityRange`](/keys/zvelocityrange/), and a web particle does not move at all. |
+
+A cell is 256 leptons across. The stock `FireStream` flame, at `28.0`, crosses a cell in about nine frames, while the stock railgun particles, at `0.3` and `0.4`, start at roughly `0.1` to `0.6` leptons a frame.
+
+[`Deacc`](/keys/deacc/) lowers the speed of `Fire` and `Smoke` particles as they travel.
+
+A successor created through [`NextParticle`](/keys/nextparticle/) takes the speed its predecessor had reached, not this value.
+
+A smoke system slows the particles it emits as the system ages. [`SpawnFrames`](/keys/spawnframes/) gives the amount and the minimum speed of `2`.

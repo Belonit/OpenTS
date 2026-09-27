@@ -7,13 +7,13 @@ when_omitted:
   value: "0.01"
 ---
 
-The roll is made on each frame, as a fraction between zero and one, and only where the unit has neither a target nor a destination. Two places take it:
+A levitating unit with neither a target nor a destination wanders by thrusting in random directions. On each frame it may thrust, it rolls a fraction from `0` to `1` and starts a thrust when the roll is below this figure. The direction is random over the whole circle, so the wandering has no bias.
 
-- **All of:** the unit is at rest, and its mission is neither sticky nor sleep;
-- **All of:** it is coasting at a speed below [`MaxVelocityWhenHappy`](/keys/maxvelocitywhenhappy/), and no thrust is already running.
+The unit rolls in two situations:
 
-The direction is picked at random over the whole circle, so the wandering has no bias.
+- It is at rest, and its mission is neither sticky nor sleep.
+- It is coasting after an earlier thrust, at a speed below [`MaxVelocityWhenHappy`](/keys/maxvelocitywhenhappy/). The mission is not checked here.
 
-At the stock hundredth, an idle unit sets off roughly once every hundred frames, about seven seconds. A figure of `0` leaves a levitating unit motionless until something gives it a target or a destination. A figure of `1` puts it in a fresh thrust on every frame it is free to take one.
+At `0.01`, a unit at rest starts a thrust about once every 100 frames, roughly every seven seconds. At `0`, a levitating unit with nothing to head for never starts a thrust, so once at rest it stays put. At `1` or more, it thrusts on every frame it is allowed to.
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

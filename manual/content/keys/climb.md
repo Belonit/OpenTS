@@ -7,13 +7,15 @@ when_omitted:
   value: "5"
 ---
 
-Every frame the locomotor compares the unit's height above the ground with the height it wants. It moves the unit one step of this size in whichever direction closes the gap. The step is in leptons, 256 to a cell, and it is the same going up as coming down. At the default figure a jumpjet takes 80 frames, a little over five seconds, to climb the default [`CruiseHeight`](/keys/cruiseheight/) of `400`.
-
-The step never overshoots downward: a descent that would put the unit below the ground stops at ground level instead. There is no such guard climbing, so the unit can rise a step past its flight level and be brought back on the following frame. That overshoot is one of the things that keeps a hovering jumpjet visibly unsettled.
-
 ```ini title="rules.ini"
 [JumpjetControls]
-Climb=5
+Climb=10 ; reaches a 400-lepton cruise height in 40 frames
 ```
 
-The figure also governs how quickly a jumpjet lifts over the terrain and structures it passes across. The height it wants is raised to clear whatever is in the cell ahead. A small figure leaves a fast unit climbing after it has already reached the obstacle.
+`Climb` sets how far a jumpjet rises or sinks in one frame to reach the height it wants. The distance is in leptons, 256 to a cell. At the default `5`, a jumpjet takes 80 frames, a little over five seconds at 15 frames a second, to climb to the default [`CruiseHeight`](/keys/cruiseheight/) of `400`.
+
+Use a whole number. A jumpjet's height is kept in whole leptons, so a climb drops the fraction and a descent rounds it up. `Climb=5.5` climbs 5 leptons a frame and descends 6. A value below `1` never climbs at all.
+
+A descent stops at ground level. A climb has no such limit, so the jumpjet can rise up to one step past its flight level and sink back on the next frame. That overshoot adds to the bobbing of a hovering jumpjet.
+
+`Climb` also sets how quickly a jumpjet lifts over terrain and structures. While moving, a jumpjet raises the height it wants to clear the cell ahead. It also slows down while it is well below that height. A small value therefore makes a jumpjet slow down and climb late at each obstacle.

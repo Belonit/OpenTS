@@ -12,8 +12,10 @@ when_omitted:
 EndOfGame=yes
 ```
 
-The setting is read after the score screen and both after-mission movies. When it is set, the mission is treated as the last of its campaign: the campaign's own closing movie plays, the credits roll, and the game returns to the main menu without advancing to another map.
+Winning a mission that sets this key ends the campaign. The campaign's closing movie, set by [`FinalMovie`](/keys/finalmovie/), plays, the credits roll, and the game returns to the main menu without advancing to another mission. This happens after the score screen, if the mission shows one, and after the mission's [`PostScore`](/keys/postscore/) and [`PreMapSelect`](/keys/premapselect/) movies.
 
-The closing movie belongs to the campaign rather than to the mission, and it is played only when the mission was started as part of one. A mission that belongs to no campaign still ends the session and still rolls the credits, but shows no movie first.
+The closing movie belongs to the campaign, not to the mission, so it plays only when the mission was started as part of a campaign. A mission outside a campaign still rolls the credits and returns to the main menu, but shows no movie first.
 
-[`OneTimeOnly`](/keys/onetimeonly/) is tested first and takes precedence, so a mission with both ends the session with neither the movie nor the credits.
+[`OneTimeOnly`](/keys/onetimeonly/) takes precedence. A mission that sets both returns to the main menu with neither the movie nor the credits.
+
+Multiplayer and skirmish games end before this key is checked, so it has no effect there.

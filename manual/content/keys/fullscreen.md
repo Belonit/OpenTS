@@ -6,10 +6,10 @@ when_omitted:
   value: "yes"
 ---
 
-A full-screen game opens a borderless window the size of the desktop. A windowed game opens an ordinary framed window that can be moved, resized, and maximized. Neither one changes the desktop's own resolution. The game always renders at [`ScreenWidth`](/keys/screenwidth/) by [`ScreenHeight`](/keys/screenheight/), and that picture is scaled into whichever window it has, so alt-tabbing away and back does not disturb the rest of the desktop.
+With this setting on, the game covers the main display with a borderless window. With it off, the game opens an ordinary framed window that can be moved, resized, and maximized. [`WindowWidth`](/keys/windowwidth/) and [`WindowHeight`](/keys/windowheight/) set that window's starting size and are ignored in full screen.
 
-This setting is read before the window is created, well before the rest of `SUN.INI`, and it is written back whenever the game saves its options.
+Neither mode changes the desktop's resolution. The game renders at [`ScreenWidth`](/keys/screenwidth/) by [`ScreenHeight`](/keys/screenheight/) and scales that picture into its window, so switching away from the game leaves the desktop as it was.
 
-The [`-WIN`](/using/command-line/windowed/) command line option asks for a window regardless of what this setting says. It applies to that run only and is never written back, so a launcher can offer a window without disturbing the player's own preference.
+The [`-WIN`](/using/command-line/windowed/) command line option opens a window for that run whatever this setting says. It does not change the stored value, so a launcher can offer a window without overriding the player's choice.
 
-[`WindowWidth`](/keys/windowwidth/) and [`WindowHeight`](/keys/windowheight/) size the window when this setting is off. They are ignored while the game is full screen.
+A change takes effect at the next launch. Edit the file while the game is closed, because saving options in the game writes back the value the game started with.

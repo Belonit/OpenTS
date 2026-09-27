@@ -13,10 +13,10 @@ when_omitted:
 DemandLoad=yes
 ```
 
-The engine reads the flag from the overlay's `[<Image ID>]` section in `art.ini`, with `artfs.ini` read over it when Firestorm is enabled. The section is the one the overlay's [Image ID](/keys/image/) names.
+With `DemandLoad=yes`, the overlay's shape is not loaded with the rest of the rules. It is loaded the first time the game needs it, and then kept. Loading a map loads the shape of every overlay type the map places. After a saved game is loaded, the shape is loaded again the first time the game needs it.
 
-With the flag set, the engine does not load the overlay's shape when it reads the settings. A saved game does not bring it back either. Shape data read from the archives does not survive a save, so when a saved game loads the engine fetches every overlay type's shape again, and a demand-loaded overlay is the one left out. The first request for the shape loads a private copy instead: the map load makes that request for every overlay the map places, and anything else waits for the first draw. The copy is held per overlay type, so two overlays pointed at one Image ID each load their own.
+A demand-loaded shape is a separate copy for each overlay type. Two overlay types with the same [Image ID](/keys/image/) each load their own copy.
 
-An ordinary overlay loads its Image ID with a `.SHP` extension. [`Theater=yes`](/keys/theater/) uses the theater extension instead, and [`NewTheater=yes`](/keys/newtheater/) rewrites the ordinary name for the theater.
+The file name is formed the same way as for any overlay. An ordinary overlay loads its Image ID with a `.SHP` extension. [`Theater=yes`](/keys/theater/) uses the theater's extension instead, and [`NewTheater=yes`](/keys/newtheater/) rewrites the `.SHP` name for the theater.
 
-The engine frees the copy when the type is discarded and, for overlays with [`Theater=yes`](/keys/theater/) or [`NewTheater=yes`](/keys/newtheater/), again on theater changes.
+The copy is freed when the rules are read again or the type is discarded. An overlay with `Theater=yes` or `NewTheater=yes` also frees its copy whenever a map sets up its theater, so the next request loads the artwork for the new theater.

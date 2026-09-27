@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-No drawing path reads the flag. Nothing draws rotor blades over an aircraft at any setting, so no rotor artwork of any kind is selected; [`Rotors`](/keys/rotors/) covers the same dead path.
+OpenTS draws no separate rotor blades over an aircraft, so it never selects rotor artwork for each facing. [`Rotors`](/keys/rotors/) is unused for the same reason.

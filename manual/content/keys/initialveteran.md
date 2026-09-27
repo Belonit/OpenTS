@@ -8,11 +8,11 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-Every scenario's map file is parsed for the flag, but the game reads it in one place: [the pass that places each house's starting forces](/systems/starting-forces/#spending-the-budget). That pass runs only outside campaign play, so a campaign scenario with the setting is unaffected. Every other game type replaces the scenario's whole set of flags with the set the game options hold, but only after that pass has run, so the map's value is the one it reads.
-
 ```ini title="map file"
 [SpecialFlags]
 InitialVeteran=yes
 ```
 
-Only the units and infantry drawn from the random starting selection are promoted. The construction vehicle placed when the match is set up with bases is created separately and stays a rookie.
+`InitialVeteran=yes` makes every house's randomly chosen starting vehicles and infantry elite as they are placed. [Starting forces](/systems/starting-forces/#spending-the-budget) owns how those objects are chosen. The [base unit](/systems/starting-forces/#the-base-unit) given to each house in a game with bases is created separately and starts as a rookie.
+
+The entry works in skirmish and multiplayer games. Those games replace the map's flags with the game options, but only after the starting forces are placed, so this entry is still taken from the map. A single-player mission places no starting forces, so the entry has no effect there.

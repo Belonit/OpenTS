@@ -5,12 +5,12 @@ see_also: ["SmallVisceroid", "LargeVisceroid", "Image"]
 when_omitted:
   kind: value
   value: ""
-  note: No alternate shape set is bound, and the type draws from its ordinary artwork throughout.
+  note: No attack shape set is loaded, so a visceroid draws nothing while it attacks. Other UnitTypes are unaffected.
 ---
 
-The value is a filename without its extension, up to 23 usable characters. `.SHP` is appended and the shape set is fetched from the loaded archives as the section is read, so the artwork is bound once at load time rather than looked up again when it is drawn. No `art.ini` section is involved: unlike [`Image`](/keys/image/#scope-aircrafttype), the name is only ever a file.
+The value is a filename without its extension, up to 23 characters. The engine appends `.SHP` and loads that file from the game archives when it reads the section. No `art.ini` section is involved: unlike [`Image`](/keys/image/#scope-aircrafttype), the name is only ever a file.
 
-Only a [`SmallVisceroid=yes`](/keys/smallvisceroid/#scope-unittype) or [`LargeVisceroid=yes`](/keys/largevisceroid/#scope-unittype) UnitType ever draws from it, and only while its animation stage stands at 90 or above, the range a visceroid enters when it opens fire and leaves five frames later. Stages below 90 are its idle wandering and come from the ordinary [`Image`](/keys/image/#scope-aircrafttype) instead. Any other UnitType stores the name, fetches the artwork and never reaches a branch that draws it.
+Only a [`SmallVisceroid=yes`](/keys/smallvisceroid/#scope-unittype) or [`LargeVisceroid=yes`](/keys/largevisceroid/#scope-unittype) UnitType draws from it. Other UnitTypes load the file and never show it. A visceroid switches to this shape set each time it fires and plays five frames from it. It draws its idle wandering from the ordinary [`Image`](/keys/image/#scope-aircrafttype). While the `PENGO` [main-menu code](/systems/developer-mode/#the-main-menu-code-recognizer) is on, visceroids use replacement art and never draw from either.
 
 ```ini title="rules.ini"
 [MYVISCEROID] ; a UnitType registered in [VehicleTypes]
@@ -19,6 +19,17 @@ Image=MYVISC     ; idle frames
 AltImage=MYVISCA ; attack frames, MYVISCA.SHP
 ```
 
-The frame drawn is the stage less 90. The shape set is therefore read as eight five-frame runs in facing order starting from west: frames 0 through 4 face west, then north-west, north, north-east, east, south-east, south and south-west, ending at frame 39.
+The file holds eight five-frame runs, one for each direction the visceroid can attack in. The run is chosen by the direction from the visceroid to its target, in this order:
 
-A name that matches no file in the loaded archives leaves the type with no alternate shape set at all. The attacking visceroid then draws nothing for those five frames while its position, weapon and damage carry on unchanged.
+| Frames | Target direction |
+| --- | --- |
+| 0–4 | West |
+| 5–9 | North-west |
+| 10–14 | North |
+| 15–19 | North-east |
+| 20–24 | East |
+| 25–29 | South-east |
+| 30–34 | South |
+| 35–39 | South-west |
+
+If no loaded archive holds the named file, the visceroid draws nothing while it attacks. Its position, weapon and damage are unaffected.

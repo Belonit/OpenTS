@@ -9,6 +9,10 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-A house now acts for its own country unless its own section in the map file's house list says otherwise. That section's `ActsLike=` accepts a country's identifier as well as its position. The default came from the first three letters of the country's identifier: `GDI`, `Nod` or nothing. A third country therefore acted for no country outside a campaign, where house records are never read, and its construction yard built nothing. A name written here was read as zero. A country named `GDI-Reserve` no longer inherits a country from its name, and a country that takes no part in the multiplayer contest acts for none.
+Each house now acts as its own country unless its section in the map file sets `ActsLike=`, which names the country whose structures and units the house builds. The default used to come from the first three letters of the country's name: `GDI` acted as GDI, `Nod` as Nod, and any other name as no country. Multiplayer games never read the map's house sections, so a third country's construction yard built nothing and a country named `GDI-Reserve` acted as GDI.
+
+A house of a country with `MultiplayPassive=yes` in its `rules.ini` section now acts as no country, unless `ActsLike=` names one.
+
+`ActsLike=` now also accepts a country's name. A name used to be read as `0`, the first country.
 
 AlexB is credited for the ts-patches patch that first gave every country its own index here.

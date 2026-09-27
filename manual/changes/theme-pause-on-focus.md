@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-When the game loses the input focus the whole mix now pauses in place and resumes where it stopped when the focus returns. The music used to be stopped and started again from its beginning.
+When the game loses the input focus, the music, sound effects and speech now pause and resume where they stopped when the focus returns. The music track used to stop and start again from its beginning.

@@ -7,4 +7,6 @@ when_omitted:
   value: none
 ---
 
-The value becomes the [`AdvancedPowerPlant`](/keys/advancedpowerplant/) of the second side in the rules' [`[Sides]`](/formats/rules-registries/) list, as each rules file sets it. An `AdvancedPowerPlant=` in that side's own section of the same file overrides it. The first side has no matching key in `[General]`, and nothing else reads this one.
+When a rules file sets this key, its value becomes the [`AdvancedPowerPlant`](/keys/advancedpowerplant/) of the second side listed in [`[Sides]`](/formats/rules-registries/). An `AdvancedPowerPlant=` in that side's section of the same file overrides it. A file that omits this key leaves the side's value as it was. Nothing else reads the key.
+
+No `[General]` key does the same for the first side; set `AdvancedPowerPlant=` in its section instead.

@@ -7,7 +7,9 @@ when_omitted:
   value: "0.0"
 ---
 
-A particle of the trace starts out traveling directly away from the beam, along the same line that placed it. Each of the three axes of that course is then deflected independently by an amount running from half this figure one way to half the other. The result is normalized back to a direction. The figure is therefore measured against a course of unit length: `.3` bends by up to fifteen hundredths of it on each axis. Only the `Railgun` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+Randomly bends the course of each particle a `Railgun` [system](/keys/behaveslike/#scope-particlesystemtype) lays. Every other behavior ignores it. At `0`, each particle travels straight outward from the beam, along the line that placed it on the spiral.
+
+The course starts as a direction of length one. Each of its three axes is shifted by a random amount between minus half and plus half this value, and the result is scaled back to length one. `.3` therefore shifts each axis by up to `.15` of the course's length. The deflection shows only on `Railgun` and `Spark` particles, the ones that move in a railgun system, as [The turn](/systems/particle-systems/#the-turn) explains.
 
 ```ini title="rules.ini"
 [MyRailgunSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -17,6 +19,6 @@ MovementPerturbationCoefficient=.3
 VelocityPerturbationCoefficient=.6
 ```
 
-:::caution[The figure doubles as the floor on the speed wander]
-[`VelocityPerturbationCoefficient`](/keys/velocityperturbationcoefficient/) bounds how far a particle's speed may drift from its type's own velocity, but only the upward bound is taken from it: the downward bound is this figure negated. Raising the deflection therefore lets the trace's particles run further below their type's speed, and a system that sets no deflection at all can gain speed from the wander but never lose it.
+:::caution[This value also caps how slow particles start]
+Each particle is laid at its type's velocity plus a random offset. [`VelocityPerturbationCoefficient`](/keys/velocityperturbationcoefficient/) caps how far above that velocity the offset may go, and this value caps how far below. A larger deflection therefore also lets the trace's particles start slower. With this value at `0`, no particle starts below its type's velocity.
 :::

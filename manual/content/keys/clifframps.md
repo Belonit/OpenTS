@@ -1,13 +1,13 @@
 ---
 key: CliffRamps
-summary: Tile set holding the theater's twenty cliff ramp pieces.
+summary: Tile set that starts the twenty tiles the random map generator counts as cliff alongside CliffSet.
 see_also: [CliffSet, WaterCliffs, RampBase, SlopeSetPieces]
 when_omitted:
   kind: value
   value: "-1"
-  note: The role stays unresolved, because no tile set number can match it, and the generator's cliff test then treats the theater's first nineteen tiles as cliff ramps.
+  note: The role stays unresolved, because no tile set number can match it. When the generator then lays a tile over a shore piece, it counts the theater's first nineteen tiles as cliff and treats laying one of them there as a failed placement.
 ---
 
-The twenty pieces from this role count as cliff, and that is the whole of what the setting does. The cliff test that random map generation runs treats a tile in this range exactly as it treats one from [`CliffSet`](/keys/cliffset/). The generator neither counts a cliff ramp as ground when it decides which cells to raise nor lays a shore piece over one. Cliff ramps are rock face, not the walkable ramps of [`RampBase`](/keys/rampbase/). [Theater control files](/formats/theater-control/) explains how a `[General]` role is resolved to a live tile index.
+The random map generator counts the twenty tiles that start at this set's first tile as cliff, the same as pieces from [`CliffSet`](/keys/cliffset/). For example, it does not count one of them as high ground when it decides which cells to raise, it does not lay a shore piece over one, and it tries to keep paved roads and settlements away from them. Nothing else reads this role. [Theater control files](/formats/theater-control/) explains how a `[General]` role is resolved to a tile.
 
-Whether a cliff ramp can be crossed is settled by the land type its artwork has, not by this setting, so leaving the role unresolved changes generation alone.
+The stock temperate and snow theaters set this role to the same set as [`SlopeSetPieces`](/keys/slopesetpieces/). The twenty tiles are then that set's ten slope pieces and the ten of [`SlopeSetPieces2`](/keys/slopesetpieces2/), so the generator treats those slopes as cliff. Whether a tile can be crossed comes from the land type in its artwork, so this role affects only random map generation.

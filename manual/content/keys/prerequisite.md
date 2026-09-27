@@ -7,15 +7,19 @@ when_omitted:
   value: ""
 ---
 
-Every entry must be satisfied at once. An entry naming a BuildingType requires at least one live structure of exactly that type. The tally counts a structure from the moment it is placed rather than when its buildup finishes, and it keeps counting one that has been switched off.
+A human house can build the type only while every entry in the list is satisfied.
 
-Seven reserved names stand for a group instead, each satisfied by owning anything on the matching rules list: `POWER`, `FACTORY`, `BARRACKS`, `RADAR`, `TECH`, `GDIFACTORY` and `NODFACTORY`. [Prerequisites](/systems/production/#what-a-house-may-build) maps them to their lists and covers the separate rule an entry naming an upgrade follows.
+An entry naming a BuildingType requires the house to own at least one structure of exactly that type on the map. A structure counts from the moment it is placed, before its buildup finishes, and it still counts while switched off.
+
+Seven reserved names stand for a group instead: `POWER`, `FACTORY`, `BARRACKS`, `RADAR`, `TECH`, `GDIFACTORY` and `NODFACTORY`. Owning any structure on the matching rules list satisfies the group. [Prerequisites](/systems/production/#what-a-house-may-build) maps each name to its list and covers the different rule for an entry that names an upgrade.
 
 ```ini title="rules.ini"
 [MYTANK] ; example UnitType
 Prerequisite=FACTORY,MYRADAR
 ; FACTORY: any structure on the PrerequisiteFactory list
-; MYRADAR: example radar BuildingType, required by its own ID
+; MYRADAR: an example radar BuildingType, named by its ID
 ```
 
-Names are matched without regard to case; an entry matching neither a group name nor a BuildingType ID is dropped. A computer house is not put through this test when it produces: its [base planning](/systems/ai-base-building/) runs its own check over the same key when deciding what to place.
+Names are matched without regard to case. An entry that is neither a group name nor a BuildingType ID is dropped from the list.
+
+A computer house skips this test when it produces. When it [plans its base](/systems/ai-base-building/#building-the-plan), it tests the list against the structures it plans to own, and some entries count differently there. `POWER`, for example, always counts as met.

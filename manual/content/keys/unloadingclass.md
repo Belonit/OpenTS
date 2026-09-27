@@ -1,6 +1,6 @@
 ---
 key: UnloadingClass
-summary: The vehicle type one harvester is drawn as while it stands at a dock unloading.
+summary: The vehicle type a harvester of this type is drawn as while it unloads at a dock.
 see_also: [UnloadingHarvester, Harvester, Weeder, Dock, UndeploysInto, "system:tiberium"]
 when_omitted:
   kind: value
@@ -12,10 +12,8 @@ when_omitted:
 UnloadingClass=HORV ; a UnitType registered in [VehicleTypes]
 ```
 
-Naming a type here overrides the rules-wide [`UnloadingHarvester`](/keys/unloadingharvester/), which owns the exchange and its consequences, so each harvester in a set can have its own empty-hopper artwork. [Unloading](/systems/tiberium/#unloading) covers the docking that gets it there.
+While a harvester of this type unloads at a dock, it is drawn as the named vehicle type. The setting overrides the rules-wide [`UnloadingHarvester`](/keys/unloadingharvester/) for this type, so harvesters in the same game can each unload with different artwork. `UnloadingHarvester` describes when the swap starts and ends and what the substitute type controls. [Unloading](/systems/tiberium/#unloading) covers the docking.
 
-Only a [`Harvester=yes`](/keys/harvester/#scope-unittype) or [`Weeder=yes`](/keys/weeder/#scope-unittype) vehicle is drawn from it, and for a vein harvester it is the only route to the exchange at all: the rules-wide value has never reached one.
+Only a [`Harvester=yes`](/keys/harvester/#scope-unittype) or [`Weeder=yes`](/keys/weeder/#scope-unittype) vehicle uses the setting. A `Weeder=yes` vehicle that is not also `Harvester=yes` changes its artwork only through this key, because `UnloadingHarvester` does not apply to it.
 
-A name that matches no registered UnitType registers a new, unconfigured vehicle under that name rather than failing. The values `none` and `<none>` leave a Tiberium harvester on the rules-wide value rather than suppressing the exchange, exactly as leaving the key out does.
-
-The key is accepted in an AircraftType, BuildingType, InfantryType or UnitType section, but only a harvesting vehicle is ever drawn from it.
+A name that matches no registered UnitType registers a new, unconfigured vehicle under that name. The values `none` and `<none>` set no type, and clear a type an earlier rules file set. A `Harvester=yes` vehicle then uses `UnloadingHarvester`, and a weeder that is not also `Harvester=yes` keeps its usual artwork.

@@ -8,4 +8,4 @@ when_omitted:
   value: 0,0,0
 ---
 
-An animation draws no ring, so the value is stored for AnimTypes and never reaches anything.
+Only a structure draws a radius ring, so an animation never uses this color.

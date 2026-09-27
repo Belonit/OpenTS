@@ -7,8 +7,10 @@ when_omitted:
   value: none
 ---
 
-Wall stitching is not a flag on a type. The named type is the one the [connection logic](/systems/walls-and-gates/#connection-frames) accepts as a continuation of a Nod wall, the fixed overlay position that stock rules fill with `NAWALL`. It counts from the north and the south only, so a Nod wall arriving from the east or west stops dead at it. [`GDIGateOne`](/keys/gdigateone/) and [`GDIGateTwo`](/keys/gdigatetwo/) do the same for the brick and sandbag walls, which are a separate family; nothing here connects to them.
+The named BuildingType connects to Nod walls (`NAWALL` in the stock rules) along the north-south axis. A Nod wall cell directly north or south of it joins it, so a north-south wall run passes through the structure. A wall cell directly east or west of it does not join it, and the wall ends there. Brick and sandbag walls never join it; [`GDIGateOne`](/keys/gdigateone/) and [`GDIGateTwo`](/keys/gdigatetwo/) connect those. [Connection frames](/systems/walls-and-gates/#connection-frames) compares all the gate keys.
 
-The same name also lets the type be placed on a Nod wall the house already owns, undamaged or not, which no ordinary wall building may do. Placing the type and taking it off the map both update the two cells capping its run: one cell north of its origin and three cells south of it. Those offsets assume a three-cell footprint.
+Naming the type also lets it be placed over Nod wall cells that the placing house owns, whatever their damage. An ordinary wall BuildingType can replace only a damaged segment.
 
-None of that requires [`Gate=yes`](/keys/gate/). The flag supplies the door cycle and the clearing of walls under the footprint at placement, while this key supplies the wall connection. A type may set either without the other.
+When the type is placed or taken off the map, the wall cells at both ends of its run update their connections. These are the cell just north of its origin cell and the cell three cells south of it. The offsets assume a gate three cells long, so a type of any other length updates the wrong cells.
+
+This key and [`Gate=yes`](/keys/gate/) are independent. `Gate=yes` gives the type its opening door and can remove the house's walls from its footprint when it is placed, under the conditions in [Placing a gate](/systems/walls-and-gates/#placing-a-gate). This key gives it the wall connection. A type can have either without the other.

@@ -12,6 +12,8 @@ when_omitted:
 TimerInherit=yes
 ```
 
-The mission countdown is captured when a campaign mission is won and handed to the next one along with the [carried-over money](/keys/carryovermoney/). The timer handoff works independently of the money settings. With the switch set, and only if the captured timer had time left on it, the new mission starts that timer running from where the last one stopped. With the switch clear, or with a captured timer of zero, the new mission starts with its countdown stopped and a trigger action has to start one.
+With the switch on, a campaign mission starts with the countdown the previous mission had left when it was won. The timer starts running from that value. A countdown that a trigger had stopped with time left is carried over too, and it runs in the new mission. If the captured countdown had no time left, or the switch is off, the mission starts with its countdown stopped, and a trigger action has to start one.
 
-Losing and replaying captures nothing new: the timer stored when the previous mission was won is applied again each time the mission restarts.
+The countdown is captured when a campaign mission is won, together with the money [`CarryOverMoney`](/keys/carryovermoney/) passes on. The money settings do not affect the timer.
+
+Losing and replaying a mission captures nothing new. Each restart reapplies the countdown stored when the previous mission was won.

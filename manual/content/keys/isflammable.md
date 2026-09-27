@@ -8,6 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-The name promises that the terrain object burns. No gameplay path reads the flag.
-
-Terrain catches fire regardless of it. [`TreeFlammability`](/keys/treeflammability/) covers what actually decides whether a terrain object takes light: the type's armor and whether it spawns Tiberium stand in for the per-type flag this key's name promises.
+The flag neither makes a terrain object burn nor stops it burning. A terrain object can catch fire when its type has `Armor=wood` and does not set [`SpawnsTiberium=yes`](/keys/spawnstiberium/). [`TreeFlammability`](/keys/treeflammability/) covers the full conditions and how fire spreads between terrain objects.

@@ -23,18 +23,4 @@ credit:
 - ZivDero
 ---
 
-The weapon named `155mm` and the warhead named `ARTYHE` no longer have their
-figures rewritten in code once a game is not a campaign. Both sections are read
-from the rules like every other, so [`Damage`](/keys/damage/),
-[`ROF`](/keys/rof/), [`Verses`](/keys/verses/) and
-[`ProneDamage`](/keys/pronedamage/) now decide what those two use in every
-game type.
-
-[`MPLAYER.INI`](/formats/multiplayer-rules/) is where the multiplayer figures
-belong. A deployment that ships one carrying the values in the migration below
-plays exactly as it did.
-
-The warhead's organic flag is derived from its heavy-armor entry, and was
-previously computed before the rewrite rather than after it. It now follows the
-table in force. Stock `ARTYHE` has a nonzero heavy entry either way, so
-the flag does not move for unmodified data.
+Outside campaigns, the game no longer replaces the values of the `155mm` weapon and the `ARTYHE` warhead with fixed multiplayer figures. Both now take [`Damage`](/keys/damage/), [`ROF`](/keys/rof/), [`Verses`](/keys/verses/) and [`ProneDamage`](/keys/pronedamage/) from the rules in every game type. With the retail `RULES.INI`, artillery in skirmish and network games therefore deals more damage per shot, fires more often, and hits unarmored targets and prone infantry much harder than before.

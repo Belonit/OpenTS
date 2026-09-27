@@ -7,16 +7,23 @@ when_omitted:
   value: "no"
 ---
 
-```ini title="AI.INI, AIFS.INI, or map file"
-[MyDropTeam]
+`Droppod=yes` makes a reinforcement team of infantry arrive by drop pod, landing near its waypoint instead of arriving the ordinary way. [Drop pods](/systems/drop-pods/#droppod-teamtype) describes where each member lands and what can destroy it on landing.
+
+```ini title="ai.ini or map file"
+[MyDropTeam] ; example TeamType
 Droppod=yes
-TaskForce=MyInfantryTaskForce
+TaskForce=MyInfantryTaskForce ; defined under [TaskForces]
 ```
 
-When the team is created as reinforcements, each member receives drop-pod locomotion instead of entering from the map edge. The flag is honored only when the linked TaskForce contains infantry and no other object types.
+The pods are used only under **all of:**
 
-:::caution[Mixed task forces do not use pods]
-If even one TaskForce member is not infantry, the engine rejects drop-pod delivery for the whole team. It does not drop only the infantry subset.
+- the team is delivered by the [Reinforcement (team)](/mapping/actions/taction-reinforcements/) or [Reinforcement (team) at waypoint](/mapping/actions/taction-reinforcements-special/) trigger action;
+- every member of the team's TaskForce is an InfantryType.
+
+Teams the AI creates and fills by recruiting never arrive by pod.
+
+:::caution[One non-infantry member cancels the pods]
+If any TaskForce member is a vehicle, aircraft or other non-infantry type, the whole team arrives as an ordinary reinforcement. Its infantry do not drop.
 :::
 
-This is not the `[AudioVisual]` animation list. That separate key is spelled [`DropPod`](/keys/droppod-global-rules/) with an uppercase second `P`.
+The `[AudioVisual]` animation list is a different key, spelled [`DropPod`](/keys/droppod-global-rules/) with an uppercase second `P`.

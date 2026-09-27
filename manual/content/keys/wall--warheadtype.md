@@ -8,8 +8,15 @@ when_omitted:
   value: "no"
 ---
 
-An explosion from this warhead [reduces the wall overlay](/systems/walls-and-gates/#taking-damage) in the cell it lands on, passing its own damage figure to the per-hit test; [Verses](/keys/verses/) is never read for a wall. A warhead left at `no` reaches the wall's cell without touching the wall, unless it sets [`Wood=yes`](/keys/wood/) and the overlay's armor is wood.
+An explosion from a `Wall=yes` warhead can damage the wall overlay in the cell it lands in. The chance of a hit landing depends on the explosion's raw damage, and [`Verses`](/keys/verses/) does not apply to walls; [Taking damage](/systems/walls-and-gates/#taking-damage) gives the rule. A warhead without the flag leaves walls undamaged, unless it is [`Wood=yes`](/keys/wood/) and the wall's armor is wood.
 
-Two other things read the same flag. A warhead that destroys walls also destroys bridges, in scenarios where bridge destruction is switched on, and it cracks ice.
+In scenarios with [`DestroyableBridges=yes`](/keys/destroyablebridges/), the same explosions can damage bridges. Whatever that setting, they crack ice in the explosion's cell unless they go off up on a bridge.
 
-The flag decides more than damage. A vehicle treats a wall in its path as destroyable instead of impassable when its first weapon's warhead sets this flag, or when that warhead is [`Wood=yes`](/keys/wood/) and the wall's armor is wood. Infantry make the same test with no wood alternative, and the attack cursor over a hostile wall appears on the same condition. The [computer's automatic search for walls to shoot](/systems/target-selection/#what-each-kind-of-object-considers) rejects any object whose primary warhead lacks it, and the computer house's [DestroyWalls](/keys/destroywalls/) difficulty flag can stop the scan weighing walls at all.
+The flag also affects how objects treat walls:
+
+- A vehicle that cannot crush a wall in its path treats it as destroyable instead of impassable when its primary weapon's warhead sets this flag, or is `Wood=yes` and the wall's armor is wood.
+- Infantry treat a wall as destroyable only when the primary weapon's warhead sets this flag. `Wood=yes` does not count for them.
+- A player-controlled object shows the attack cursor over an enemy wall when the warhead in its first weapon slot sets this flag, or is `Wood=yes` and the wall's armor is wood.
+- The [computer's automatic search for walls to shoot](/systems/target-selection/#what-each-kind-of-object-considers) skips any object whose primary weapon's warhead lacks the flag. The difficulty's [`DestroyWalls`](/keys/destroywalls/) setting can turn that search off.
+
+[Walls in combat and movement](/systems/walls-and-gates/#walls-in-combat-and-movement) explains what a vehicle or infantryman does at a wall it reads as destroyable.

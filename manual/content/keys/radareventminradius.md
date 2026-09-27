@@ -7,8 +7,8 @@ when_omitted:
   value: "5"
 ---
 
-A [radar event](/reference/enums/radar-event/) gives up [`RadarEventSpeed`](/keys/radareventspeed/) pixels of radius a frame until it reaches this floor. That is the size the settled marker keeps for the rest of its life. The radius runs from the flagged pixel out to a corner of the box, which therefore spans twice it at its widest.
+A [radar event](/reference/enums/radar-event/)'s box shrinks until the distance from the flagged cell to its corners reaches this many radar pixels. The settled marker keeps that size for the rest of its life. Its diagonal is twice this value, so at the default of `5` each side of the settled box is about 7 pixels long.
 
-The clamp is also what makes settling possible. The event only tests whether it may stop turning on a frame when its radius sits within a hundredth of a pixel of this value. The clamp lands it there exactly. A floor at or above the box's opening radius is met on the first frame, so the box begins testing to settle at once. It comes to rest holding a marker whose corner-to-corner span is at least the pane's longer side.
+The box can settle only after it has shrunk to this size, and [`RadarEventSpeed`](/keys/radareventspeed/) sets how long that takes. A value at or above the distance the box opens at is reached on the first redraw. With a positive [`RadarEventRotationSpeed`](/keys/radareventrotationspeed/), the box then settles at once, with a diagonal at least as long as the pane's longer side.
 
-`RadarEventMinRadius=0` collapses all four corners onto the flagged pixel. The resulting edge length of zero is then used as a divisor with no guard when the rate of the box's color gradient is computed.
+Keep the value at `2` or more. At `0` or `1` the settled marker shrinks to a single pixel.

@@ -13,6 +13,11 @@ when_omitted:
 Tiberium=yes
 ```
 
-Setting the flag rewrites two of the overlay type's own settings once its section has been read. Its armor becomes wood even if the section sets [`Armor=`](/keys/armor/) itself, and a [`Land=Clear`](/keys/land/) overlay is promoted to the `Tiberium` [land type](/reference/enums/land-type/). That land type is the ground condition every harvesting test reads. An overlay left on another land type keeps it and is never harvested.
+`Tiberium=yes` marks an overlay as Tiberium. When the section is read, the flag also changes two of the overlay's other settings:
 
-The flag also makes the overlay eligible for the reverse lookup that decides which Tiberium in the rules' [`[Tiberiums]` list](/formats/rules-registries/) a cell belongs to. An overlay with the flag that falls outside every type's overlay range is read as the first type in that list. The bails a harvester lifts there are converted at that type's [`Value=`](/keys/value/).
+- Its armor becomes wood, even if the section sets [`Armor=`](/keys/armor/).
+- A [`Land=Clear`](/keys/land/) setting becomes the `Tiberium` [land type](/reference/enums/land-type/).
+
+Harvesters collect only from cells whose land type is `Tiberium`. A Tiberium overlay that sets another `Land`, such as `Rock`, keeps it, and harvesters cannot collect it.
+
+A flagged overlay belongs to the type in the rules' [`[Tiberiums]` list](/formats/rules-registries/) whose overlay set contains it. One that is in no type's set counts as the first type in the list. Bails a harvester lifts from the overlay are worth that type's [`Value=`](/keys/value/).

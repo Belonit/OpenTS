@@ -8,11 +8,13 @@ when_omitted:
   note: "`T` for TEMPERATE and `A` for SNOW, which keep their original settings; none for any other theater, whose artwork is then never renamed."
 ---
 
-Artwork marked [`NewTheater=yes`](/keys/newtheater/) spells the theater into the second letter of its own file name rather than into an extension. This setting supplies that letter. `GACNST` becomes `GTCNST` in a theater lettered `T` and `GACNST` in one lettered `A`. Only the first character of the value is read, and it is used in upper case.
+`ImageLetter` is the letter that theater-named artwork carries as the second character of its file name. In a theater lettered `T`, `GACNST.SHP` loads as `GTCNST.SHP`; in a theater lettered `A`, it loads as `GACNST.SHP`. [`NewTheater`](/keys/newtheater/) says which artwork is renamed this way.
 
 ```ini title="rules.ini"
 [DESERT]
-ImageLetter=D   ; GACNST becomes GDCNST
+ImageLetter=D   ; GACNST.SHP loads as GDCNST.SHP
 ```
 
-The letter decides which artwork is renamed as well as what it is renamed to: a name is rewritten only when its second letter is already some declared theater's image letter. Choosing a letter that unrelated artwork uses as its second character draws that artwork into the convention. Once a theater lettered `I` is declared, a theater lettered `T` loads `CITY01` as `CTTY01`. Pick a letter that no unrelated artwork uses as its second character.
+Only the first character of the value is read, and it is converted to upper case. An empty value keeps the letter the theater already has, so TEMPERATE and SNOW always keep one.
+
+The letters of all declared theaters also decide which names are renamed. A name is rewritten only when its second letter is already the image letter of some declared theater, ignoring case. Declaring a letter therefore also renames any theater-named artwork whose second letter matches it. Once a theater lettered `I` is declared, `CITY01` loads as `CTTY01` in a theater lettered `T`. Pick a letter that no unrelated artwork uses as its second character.

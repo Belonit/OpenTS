@@ -8,11 +8,13 @@ when_omitted:
   note: "`MMT` for TEMPERATE and `MMS` for SNOW, which keep their original settings; empty for any other theater, which then makes no second attempt."
 ---
 
-Where a tile's own artwork is missing and its set does not set [`NonMarbleMadness=0`](/keys/nonmarblemadness/), the loader tries the name again under this extension. It is how the marble madness tile artwork stands in for tiles a theater does not draw itself.
+`MMSuffix` is the extension tried when a tile's own artwork is missing. The game first looks for the tile under the theater's [`Suffix`](/keys/suffix/#scope-theater). If that file does not exist, it tries the same name with this extension. This lets marble madness tile artwork stand in for tiles the theater does not draw itself.
 
 ```ini title="rules.ini"
 [DESERT]
 MMSuffix=MMD    ; RVCLIF01.MMD, tried after RVCLIF01.DES
 ```
 
-A theater naming no marble madness extension makes no second attempt, and a tile whose own artwork is absent stays imageless.
+The second attempt is skipped when the tile's set has [`NonMarbleMadness=0`](/keys/nonmarblemadness/), or when the theater has no `MMSuffix`. A tile found under neither extension has no artwork.
+
+The game reads up to 8 characters of the value and cuts a longer one short.

@@ -1,4 +1,4 @@
 ---
 key: AlphaImage
-summary: The SHP file blended over the object as an area light.
+summary: A shape file that brightens or darkens the map around the object.
 ---

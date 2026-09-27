@@ -13,8 +13,8 @@ NaturalParticleSystem=MYSTEAMSYS ; a ParticleSystemType registered in [ParticleS
 NaturalParticleLocation=0,-40,180
 ```
 
-This is the plume a structure gives off in good health, the counterpart to [`DamageParticleSystems`](/keys/damageparticlesystems/), which only appear once it is hurt. Only a BuildingType reaches it: an AircraftType, InfantryType or UnitType stores the setting and never reads it back.
+The structure starts this particle system the moment it is placed on the map, whatever its health. It is the counterpart to [`DamageParticleSystems`](/keys/damageparticlesystems/), which start only once the structure is damaged. Only a BuildingType uses the key; an AircraftType, InfantryType or UnitType stores it without effect.
 
-The system is created the moment the structure appears on the map, at the structure's position offset by [`NaturalParticleLocation`](/keys/naturalparticlelocation/) and tied to the cell it stands on. A structure runs one of these at a time, and nothing removes it while the structure lives. The exception is cloaking: it deletes the plume the moment the structure turns fully transparent and rebuilds it only when the structure has finished becoming visible again.
+The system starts at the structure's position plus [`NaturalParticleLocation`](/keys/naturalparticlelocation/).
 
-That rebuild is guarded by the *location* rather than by this setting, so a structure whose `NaturalParticleLocation` is left at `0,0,0` never gets its plume back after its first cloak.
+A cloaked structure loses its plume when it becomes fully transparent. Whether the plume comes back depends on [`NaturalParticleLocation`](/keys/naturalparticlelocation/).

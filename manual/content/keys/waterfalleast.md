@@ -8,16 +8,18 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-A water test and a cliff test read the four waterfall roles, and both take them in the order east, west, south, north. The cliff test exists in two implementations, only one of which checks that the role resolved.
+The role names the tile set whose four tiles make an east-running waterfall. The [random map generator](/systems/map-generation/#water) lays the first and last tile at the two ends of the fall and fills the stretch between them with the second and third.
 
-The first is the water test, which any of the four pieces satisfies. Outside the random map generator only one thing asks it: a vehicle offered a passenger refuses the load while it stands on a tile holding water or on a shore piece. A transport on a waterfall tile therefore answers that it cannot take anyone aboard. The second is the cliff test, which counts every piece of a waterfall as rock face apart from the two subtiles at each end of the fall that spill out onto ordinary ground. On this set those are subtiles `0` and `4` of its first and last piece. That test is reached only from the map generator's terrain passes, which is also where the pieces are laid. The [random map generator](/formats/map-seed/) puts the first and last piece at the two ends of a fall and fills the drop between them with the middle two.
+Every tile in the set counts as holding water. Outside random map generation this matters in one place: a transport vehicle standing on a waterfall tile refuses to take on a passenger, as it does on open water or a shore piece.
 
-The moving water is not this key's doing. A tile animates from the `Tile<NN>Anim` entries its own set has in [the theater control file](/formats/theater-control/), which any tile set may have. A fall keeps running whether or not a role points at it.
+Random map generation also treats the set as rock face, except where the fall spills out onto ordinary ground. For this set those are subtiles `0` and `4` of the first and last tile. The cliff test checks the four roles in the order east, west, south, north and stops at the first set that holds the tile. If two roles name the same tile set, the spared subtiles of the earlier role apply.
 
-:::caution[An unresolved set claims the theater's first tiles]
-Nothing guards the water test against a role that no tile set answered. Left unresolved, any one of the four accepts every tile index from `0` through `2`, so the first three tiles the theater loads count as holding water — and a transport parked on one of them will not load.
+The falling water animates from the `Tile<NN>Anim` entries in the section named by the set's [`SetName`](/keys/setname/) in [the theater control file](/formats/theater-control/). Any tile set can carry those entries, so a waterfall animates whether or not a role names its set.
+
+:::caution[Resolve all four waterfall roles]
+An unresolved role still takes part in the water test. The water test then counts the theater's first three tiles as water, so a transport standing on one of them refuses its passengers. When random map generation checks whether a tile may be laid over a shore piece, it treats those three tiles as rock face as well. On a random map that places a waterfall running in the unresolved role's direction, the generator looks up the role's first tile outside the tile list.
 :::
 
-:::tip[Resolving the roles without waterfall art]
-Any real binding is safer than none. The role's whole contribution to the water test is the four tile indexes that start at the bound set's first tile. The cliff test reads those same tiles as rock face apart from the spared subtiles; only random map generation asks it. Bound to the open-water tiles `WaterSet` names, those tiles already answer as water, so the water test sees no difference.
+:::tip[A theater without waterfall art]
+Random maps use only the temperate and snow theaters. In any other theater, point the roles at the [`WaterSet`](/keys/waterset/) set. That resolves them without adding any tile to the water test, because that set's first four tiles already count as water. Do not do this in a theater that random maps use. Random map generation would then treat those four tiles as rock face, apart from the spared subtiles, and most of the open water it lays uses them.
 :::

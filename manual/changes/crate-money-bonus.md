@@ -12,6 +12,6 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-`CrateMoneyBonus` in `[CrateRules]` of `rules.ini` sets the most credits a money crate adds at random to its configured amount. It defaults to `900`, the amount the game always added, and `0` makes a money crate pay its configured amount exactly.
+`CrateMoneyBonus` in `[CrateRules]` of `rules.ini` sets the most credits a money crate adds at random to its configured amount. A lower value narrows the random extra, and `0` makes a money crate pay its configured amount exactly. Left unset, money crates pay what they always did.
 
 Rampastring is credited for the DTA patch that paid money crates their exact amount.

@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-At `no` revealed terrain stays revealed for the rest of the match unless a scenario re-shrouds it. At `yes` the [regrowth pass](/systems/map-visibility/#shroud-regrowth) runs on the interval [`ShroudRate`](/keys/shroudrate/) sets, taking one cell off the edge of the revealed area each time.
+At `yes`, the shroud creeps back over revealed terrain that nothing is watching. Every [`ShroudRate`](/keys/shroudrate/) game minutes, a [shroud pass](/systems/map-visibility/#shroud-regrowth) covers one more cell at the edge of each revealed area. At `no`, revealed terrain stays revealed unless a trigger, a team's Reshroud map mission or a darkness crate shrouds it again.
 
-The flag gates only that timer. The [Creep shadow back in](/mapping/actions/taction-creep-shadow/) trigger action performs the same pass whatever this value is.
+This key only switches the timed passes on. The [Creep shadow back in](/mapping/actions/taction-creep-shadow/) trigger action runs a pass at any value.

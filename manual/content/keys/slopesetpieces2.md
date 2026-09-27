@@ -5,9 +5,16 @@ see_also: [SlopeSetPieces, MMRampBase]
 when_omitted:
   kind: value
   value: "-1"
-  note: The role stays unresolved, because no tile set number can match it. The stamping substitutions then fire on the theater's fifth and eighth tiles. The theater's first nine tiles are read against the slope shadow table whenever they draw, so ordinary ground can pick up a slope shadow.
+  note: The role stays unresolved, because no tile set number can match it. The ramp substitutions then apply to the theater's fifth and eighth tiles. The theater's fourth and sixth tiles draw slope shadows if their set casts shadows.
 ---
 
-The second slope set is read in three places, each mirroring what [`SlopeSetPieces`](/keys/slopesetpieces/) receives. Stamping the sixth piece on subtile `0`, `3`, `6` or `9` substitutes the second piece of [`MMRampBase`](/keys/mmrampbase/) for it, and stamping the ninth piece on a subtile below `4` substitutes the first. Any tile in the first ten places from this role also draws its shadow from the same fixed per-piece table the ordinary slopes use, in place of the shadow a set marked [`ShadowCaster=yes`](/keys/shadowcaster/) would draw. [Theater control files](/formats/theater-control/) explains how a `[General]` role is resolved to a live tile index, and covers the marble madness artwork this set draws on.
+The set holds the marble madness versions of the ten [`SlopeSetPieces`](/keys/slopesetpieces/) pieces, in the same order. [Theater control files](/formats/theater-control/) explains how a `[General]` role is resolved to a tile index and covers the marble madness artwork.
 
-The collapsing-cliff replacement does not use this set; it always takes its pieces from `SlopeSetPieces`.
+When a structure's `ToTile=` names the sixth or ninth piece, some of the cells it lays become plain marble madness ramps:
+
+- The sixth piece becomes the second [`MMRampBase`](/keys/mmrampbase/) tile on sub-tiles `0`, `3`, `6` and `9`.
+- The ninth piece becomes the first `MMRampBase` tile on sub-tiles `0` through `3`.
+
+The ten pieces cast shadows only when their set is a shadow caster, as [`ShadowCaster`](/keys/shadowcaster/) describes. They then use the same slope table as the ordinary slope pieces, in which only the fifth piece, on sub-tile `6`, and the seventh, on sub-tile `1`, have a shadow.
+
+A collapsing cliff never uses this set. It always takes its pieces from `SlopeSetPieces`.

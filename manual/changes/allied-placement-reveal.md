@@ -12,4 +12,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-Outside a campaign, an ally's structure now lifts the player's shroud around itself as soon as it lands, as it already did on the ally's own screen. Only an object of the player's own house lifted the shroud when the player discovered it; now every discovered object does. A non-allied object still reveals nothing, and an ally's object reveals ground only while `AllyReveal=yes` holds. A campaign keeps the reveal to the player's own objects.
+Outside a campaign, a structure that an ally places now lifts the player's shroud around it as soon as it is placed. It used to leave that ground shrouded for the player. The reveal follows `AllyReveal` under `[AudioVisual]` in `rules.ini`, which shares allies' vision; with `AllyReveal=no`, an ally's new structure reveals nothing to the player. Campaigns are unchanged.

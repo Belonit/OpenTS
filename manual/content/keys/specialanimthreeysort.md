@@ -7,4 +7,8 @@ when_omitted:
   value: "0"
 ---
 
-The bias that moves the third special slot's animation within the drawing order of the objects sharing its layer. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how that differs from the depth bias, what the slot does to the AnimType's own sort bias, and the signed byte, -128 through 127, that the figure has to fit in. [`SpecialAnim`](/systems/building-animations/#where-each-setting-is-read-from) covers why it is not written in the same section as the slot's animation names.
+The value moves the third special slot's animation within the draw order of the ground layer, in leptons; a [cell](/glossary/#cell) is 256 leptons. A larger value sorts the animation later among the objects around it, and a smaller value sorts it earlier. An AnimType left at [`Surface=no`](/keys/surface/) is drawn in the air layer, which is not sorted, so the value has no effect on it.
+
+The value replaces the AnimType's own [`YSortAdjust`](/keys/ysortadjust/). It is read only when the slot has an animation name from [`SpecialAnimThree`](/keys/specialanimthree/) or [`SpecialAnimThreeDamaged`](/keys/specialanimthreedamaged/). Write it in the art entry named after the structure's ObjectType ID, even when [`Image=`](/keys/image/) puts the animation names in another entry. [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) has the full table.
+
+Keep the value between -128 and 127. A value outside that range wraps around. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) compares this bias with [`SpecialAnimThreeZAdjust`](/keys/specialanimthreezadjust/).

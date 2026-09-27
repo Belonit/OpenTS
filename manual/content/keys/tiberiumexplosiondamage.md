@@ -7,4 +7,6 @@ when_omitted:
   value: "100"
 ---
 
-An animation declaring [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) standing on Tiberium strips the cell bare and applies this figure through [`C4Warhead`](/keys/c4warhead/) at its own position. The figure is fixed: it does not scale with the Tiberium type, the growth stage removed, or the animation's own settings.
+An animation with [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) that starts on a Tiberium cell removes all the Tiberium from the cell. It then deals this much damage at its position through [`C4Warhead`](/keys/c4warhead/). An animation that a trigger action plays does neither. The damage is fixed: the Tiberium type, the amount removed and the animation's settings do not change it.
+
+The blast has no attacker, so no house is credited with its kills.

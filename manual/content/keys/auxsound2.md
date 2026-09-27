@@ -12,15 +12,15 @@ when_omitted:
 AuxSound2=MYHELI_Landing ; a sound ID registered in SOUND.INI
 ```
 
-Two unrelated paths read the same slot:
+Two unrelated events play this sound:
 
-- A **structure** plays it at its own position as a deconstruction begins, a sale or an undeploy, once its animations have stopped. An [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure plays it only after finishing the return of its body and barrel to their start values. The reverse build-up follows it. On a sale that puts out no vehicle, the crew evacuation comes between the two.
-- An object flown by the [flyer locomotor](/keys/locomotor/) plays it once per landing, at the ground under it, as it drops below 300 leptons, and only while it still has strength left. A wreck falling out of the sky lands silently.
+- A **structure** plays it at its position when it starts to fold away for a sale or an undeploy, just before its reverse build-up animation. An [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure first turns its body and barrel back to their starting positions.
+- An object moved by the flyer [locomotor](/keys/locomotor/) plays it once per landing, at the ground beneath it, when it descends below 300 leptons. An object with no strength left makes no landing sound.
 
-Nothing else reads the slot, so on a ground vehicle or an infantryman the setting is inert.
+On any other vehicle or infantry type the key has no effect.
 
 :::caution[A structure's `UndeploySound` wins]
-[`UndeploySound`](/keys/undeploysound/) is stored in this same slot and is read afterward, so a BuildingType that sets both keeps only `UndeploySound`.
+[`UndeploySound`](/keys/undeploysound/) sets the same sound and is read after `AuxSound2`. A BuildingType section that sets both plays only the `UndeploySound`. A rules file read later that sets only `AuxSound2` replaces it.
 :::
 
-A name that matches no registered sound leaves the previous value in place rather than clearing it.
+A name that matches no sound ID is ignored and the sound set earlier stays. Writing `none` therefore cannot clear a sound that an earlier rules file set.

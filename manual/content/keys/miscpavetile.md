@@ -8,8 +8,15 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-Thirteen of the fourteen tiles have a use, split in two groups; offset 7 is placed by nothing. Offsets 0 through 6 are the small patches the random map generator scatters over a generated town. The last three of those are placed only where a two-by-two block of plain pavement is free. Offsets 8 through 13 are the large weathering patches, tiled in two-cell steps across one of five fixed rectangles. They are refused on any cell that is neither plain pavement nor one of offsets 0 through 7.
+The [random map generator](/systems/map-generation/#settlements) uses thirteen of the set's fourteen tiles to dress a town's pavement. Offsets count from the set's first tile as offset 0; offset 7 is never placed.
 
-Unlike pavement proper these tiles have no blend family of their own. They instead count as pavement when [`ClearToPaveLat`](/keys/cleartopavelat/) examines a neighbor, so dressing a paved square with them does not make the square blend against itself.
+| Offsets | How the generator uses them |
+| --- | --- |
+| 0 to 6 | Small patches scattered over the town's plain pavement. Offsets 4 to 6 are placed only on a two-by-two block of plain pavement. |
+| 8 to 13 | Large weathering patches. Each patch repeats one tile every two cells across a rectangle of 6 by 4, 4 by 6, 4 by 4, 4 by 2 or 2 by 4 cells. Every cell of the rectangle must be empty and hold pavement or one of offsets 0 to 7. |
 
-The terrain test that asks whether a cell holds one of these tiles is not gated on the role resolving: left unresolved, it accepts everything up to index 12, so the theater's first thirteen tiles answer yes.
+All fourteen tiles count as pavement for the [`ClearToPaveLat`](/keys/cleartopavelat/) blend, so a patch does not cut blended edges into the pavement around it. The generator also accepts them as pavement when it places roads and buildings.
+
+:::caution[Set MiscPaveTile in any theater that gets towns]
+The generator does not check that this role is bound. Without it, the generator lays unrelated tiles from the start of the theater as patches, and a patch at offset 0 reads a tile that does not exist, which can crash the game. It also takes any of the theater's first thirteen tiles for a pavement patch when choosing where roads and buildings may go.
+:::

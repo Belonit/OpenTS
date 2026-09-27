@@ -5,7 +5,7 @@ see_also: [Biome, UseTransitions]
 when_omitted:
   kind: value
   value: "1"
-  note: The fallback of `1` is the afternoon, so the map takes the afternoon's light and no floodlight ring is planted.
+  note: Afternoon. It places no floodlights unless UseTransitions is on.
 ---
 
 The positions are `0` morning, `1` afternoon, `2` dusk and `3` night. [Map seed files](/formats/map-seed/) covers the section it is written in.
@@ -15,8 +15,10 @@ The positions are `0` morning, `1` afternoon, `2` dusk and `3` night. [Map seed 
 Time=3
 ```
 
-The hour settles two things. It picks the map's ambient light: three quarters at morning and at dusk, full at afternoon, half at night. A snow theater then cuts that light to three quarters again, so the darkest map the generator builds is a snow map at night. The hour also picks how many floodlights are planted in a ring around each player's start point: none in the morning or the afternoon, two at dusk, four at night. A ring is only planted where every light in it can legally stand. Twenty-one ring angles are tried before the start point is left dark.
+The hour sets the map's ambient light: three quarters at morning and at dusk, full at afternoon, and half at night. A tundra or taiga map starts at three quarters of that level. When an ion storm ends on such a map, the light rises to the hour's unreduced level, so the map ends brighter than it began, as [Map generation](/systems/map-generation/#sizing-and-the-blank-map) explains.
 
-With [`UseTransitions`](/keys/usetransitions/) set the hour also names the settings file loaded into the map, and every start point is ringed with four lights whatever the hour.
+The hour also sets how many `GALITE` floodlights ring each player's start point: none in the morning or the afternoon, two at dusk and four at night. [Map generation](/systems/map-generation/#floodlights) covers where a ring can be placed.
+
+With [`UseTransitions=yes`](/keys/usetransitions/), the hour also selects the settings file loaded into the map, and every start point gets a ring of four lights whatever the hour.
 
 When a map is [generated from a file](/systems/map-generation/#the-dialog-path-and-the-scenario-path), a value below `0` becomes `0` and one above `3` becomes `3`.

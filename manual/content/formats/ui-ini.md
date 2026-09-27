@@ -22,7 +22,7 @@ related:
     id: configuration-files
 ---
 
-The file is optional and every key has a default, so a file names only what it changes. It holds one section, `[Ingame]`.
+The file is optional and every key has a default, so a file names only what it changes. All keys go in one section, `[Ingame]`. The values below are examples.
 
 ```ini title="UI.INI"
 [Ingame]
@@ -32,10 +32,10 @@ MovementLineColor=0,255,0
 NavComQueueLineThick=yes
 ```
 
-A color is three values from 0 to 255 for red, green and blue, separated by commas; a value that is not three numbers keeps the default. [Action lines](/systems/action-lines/) explains what each line is and when it is drawn.
+Write a color as three numbers from 0 to 255 for red, green and blue, separated by commas. A color value that does not start with three comma-separated numbers keeps the default. Anything after the third number is ignored. [Action lines](/systems/action-lines/) explains what each line is and when it is drawn.
 
 ## When the file is read
 
-The file is read once at start-up, after the game archives are registered. It is read again each time a side's archives are mounted, which happens as a scenario loads, so a copy inside a side's archive takes effect for that side. Each read resets every value to its default first, so a value the file no longer names goes back to the default instead of lingering from an earlier read.
+The game reads the file at startup, after it registers the game archives. It reads the file again each time a scenario or saved game loads, after mounting the archives of the player's side, so a copy inside a side's archive applies to games played as that side. Each read starts from the defaults, so only the keys in the copy read last take effect.
 
-The file is opened through the game's file layer, so it may be loose in any folder the game searches or inside an archive. A loose copy is used ahead of an archived one. [OPENTS.INI](/formats/opents-ini/#the-order-files-are-searched-for-in) lists the folders and the order they are searched in.
+The file is opened through the game's file search, so it may be a loose file in any folder the game searches or be inside an archive. A loose copy is used ahead of an archived one. [OPENTS.INI](/formats/opents-ini/#the-order-files-are-searched-for-in) lists the folders and the order they are searched in, and its [`[Files]` section](/formats/opents-ini/#the-files-it-reads) can change the file name.

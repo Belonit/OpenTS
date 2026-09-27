@@ -9,6 +9,6 @@ targets:
 credit: [ZivDero]
 ---
 
-`-USERDIR=<path>` tells the game where to keep what it writes. The settings file, hotkeys, saved games, the hall of fame, recordings, saved random maps, screenshots and the files a multiplayer game downloads all go there. The directory is created when it is not there yet, and saved games sit in a `Saved Games` folder of their own. Without the option every one of these files stays beside the executable, as before.
+`-USERDIR=<path>` names the directory the game writes the player's files to: the settings file, hotkeys, saved games, the hall of fame, recordings, saved random maps, screenshots and the files a multiplayer game downloads. The game creates the directory if it does not exist. Saved games go to a `Saved Games` folder and screenshots to a `Screenshots` folder inside it. Without the option, all of these files are written to the game's directory, with saved games and screenshots still in those two folders.
 
-The directory is read from before anywhere else, so a player's own copy of a file is the one the game uses whatever a deployment ships under the same name. Files already beside the executable are still read until that copy exists. A file the game throws away is its own copy. Resetting the hotkeys discards the player's and falls back to the ones a deployment shipped, rather than removing what everyone shares.
+A file in the user directory is read before any other file of the same name, so the player's copy wins over one a deployment ships. Until the player's copy exists, the game reads the shipped one. Deleting a file removes only the player's copy, so resetting the hotkeys falls back to the hotkeys the deployment shipped.

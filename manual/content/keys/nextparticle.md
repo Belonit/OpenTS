@@ -12,23 +12,32 @@ when_omitted:
 Image=CLOUD1
 BehavesLike=Gas
 MaxEC=1000
+EndStateAI=28
 NextParticle=MYGASTHIN ; a thinner cloud takes its place as it expires
 
 [MYGASTHIN] ; a ParticleType registered in [Particles]
 Image=CLOUD1D
 BehavesLike=Gas
 MaxEC=50
-DeleteOnStateLimit=yes ; the chain ends here: no NextParticle
+EndStateAI=12
+DeleteOnStateLimit=yes
+; no NextParticle, so the chain ends here
 ```
 
-Whether a successor appears at all is decided by the system holding the particle, not by the particle. A gas, weak gas or web system replaces each expiring particle with one successor, placed at [`NextParticleOffset`](/keys/nextparticleoffset/) from where the original died. A smoke system replaces it with two, thrown out to either side by [`Radius`](/keys/radius/) and ignoring the offset. Fire, spark and railgun systems never create successors, so the setting is inert on any type they hold.
+The particle system holding the particle decides whether a successor appears, and how many:
 
-The successor inherits the speed its predecessor had reached and, in a gas, weak gas or web system, the sideways wander its behavior routine has built up, so a chain keeps its momentum rather than restarting. It does not inherit anything else: lifetime, damage, behavior and artwork all come from the successor's own section. `NextParticle=<none>` clears the setting; `NextParticle=none` does not. That name, like any other the game has not heard of, silently registers a new particle type with nothing configured in it, so its particles do nothing and vanish on their first frame.
+- A gas, weak gas or web system replaces each expiring particle with one successor, placed at [`NextParticleOffset`](/keys/nextparticleoffset/) from the point where the original expired.
+- A smoke system replaces it with two, thrown to either side by this type's [`Radius`](/keys/radius/). It ignores the offset.
+- Fire, spark and railgun systems create no successors, so the setting has no effect on the types they hold.
 
-:::danger[A Fire successor stops the game when it damages]
-Successors are created outside the system that spawns them, and a `Fire` particle asks its system which object to spare when it applies damage. Naming a `Fire` particle as a successor therefore stops the game the first time one of those flames comes to apply damage with a live object in its cell; a flame given no [`Damage`](/keys/damage/#scope-particletype) never reaches that step. A `Fire` type is unaffected as the particle a system holds directly, and only exposed as the successor of another.
+A successor keeps the speed its predecessor had reached. Only a `Smoke` or `Fire` successor moves by that speed; `Gas`, `WeakGas` and `Web` particles do not move by speed at all. In a gas, weak gas or web system the successor also keeps the sideways drift the predecessor had built up. In a smoke system the successor usually starts one step more translucent, as [`Translucency`](/keys/translucency/#scope-particletype) describes. Everything else, including lifetime, damage, behavior and artwork, comes from the successor's own section.
+
+`NextParticle=<none>` clears the setting. Any other name the game has not seen, `none` included, registers a new particle type under that name. That type reads a section of the same name if the rules have one, even when `[Particles]` does not list it. With no such section, its particles do nothing and disappear after their first frame.
+
+:::danger[Do not name a damaging Fire type as a successor]
+A `Fire` particle spares the object that fired its particle system, and a successor carries no link to that system. A `Fire` successor with [`Damage`](/keys/damage/#scope-particletype) therefore stops the game the first time it applies damage while a live object shares its cell. The same type is safe as the particle a system holds directly.
 :::
 
 :::danger[In a smoke system every link doubles the particle count]
-Each expiring particle is replaced by two, so a chain of three types turns one particle into four, and a fourth link into eight. A chain that leads back to a type already in it never terminates: the count doubles every generation until the game runs out of memory. Gas, weak gas and web systems replace one with one, so a loop there holds the count steady but leaves a cloud that never finishes dying.
+Each expiring particle is replaced by two, so a chain of three types turns one particle into four, and a fourth link into eight. A chain that leads back to a type already in it never ends: the count doubles every generation until the game runs out of memory. Gas, weak gas and web systems replace one with one, so a loop there holds the count steady but leaves a cloud that never finishes dying.
 :::

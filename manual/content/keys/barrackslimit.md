@@ -8,4 +8,4 @@ when_omitted:
   value: "2"
 ---
 
-No routine counts the barracks a computer house owns against a maximum. Each ownable type appears in [the assembled plan](/systems/ai-base-building/#building-the-plan) as often as that pass appends it, and the finished node list is what the house builds.
+No step of computer base planning counts barracks against a limit. A barracks type enters [the base plan](/systems/ai-base-building/#building-the-plan) once its prerequisites are met, like any other candidate structure, and the house builds that plan.

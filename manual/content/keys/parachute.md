@@ -12,12 +12,12 @@ when_omitted:
 Parachute=MYCHUTE ; an AnimType registered in [Animations]
 ```
 
-An aircraft carrying passengers drops them instead of firing its weapon. Each passenger is placed at the aircraft's own center, marked as falling, and given one of these animations attached to it, so the canopy tracks the passenger down and is released when it lands. A passenger the ground will not take is put back into the hold and hidden instead, and no canopy is created.
+An aircraft carrying passengers drops one of them each time it would fire its weapon. The passenger appears at the aircraft's position and falls, with this animation attached above it as a canopy until it lands. If the ground below will not take the passenger, it goes back into the hold and no canopy is created.
 
-Every passenger takes this canopy. [`BombParachute`](/keys/bombparachute/) sits behind a branch that nothing can reach.
+Every paradropped passenger uses this canopy. [`BombParachute`](/keys/bombparachute/) is never used.
 
-Nothing about the descent belongs to the animation: the fall rate, the landing and the mission the passenger takes up on arrival are all fixed elsewhere. Only the artwork is this setting's.
+The passenger falls at the slow parachute rate only while the animation lasts. Give it a [`LoopCount=`](/keys/loopcount/) long enough to play until landing; if it ends early, the rest of the fall is faster. The landing and the mission the passenger is given do not depend on the animation.
 
-:::danger[An unset animation crashes the game at the first paradrop]
-The canopy is created without first checking that one was named, so with the key unset the game crashes the first time a loaded aircraft is ordered to attack.
+:::danger[Name a parachute animation]
+The canopy is created without checking that one was named. With the key unset, the game crashes the first time an aircraft drops a passenger.
 :::

@@ -12,6 +12,6 @@ when_omitted:
 FogRate=.1 ; a regrowth pass every 90 frames
 ```
 
-The value is converted to frames at 900 frames to the game minute, so the default gives a pass every 45 frames. `FogRate=0` stops the fog from ever closing back in, leaving whatever has been uncovered permanently clear.
+A game minute is 900 frames, so the default runs a regrowth pass every 45 frames. A larger value lets uncovered ground stay clear longer. `FogRate=0` stops the fog from ever closing back in, so ground once uncovered stays clear.
 
-The timer starts a scenario at zero, so the first eligible frame runs a pass immediately. Nothing happens on any of these passes unless the game options switched fog of war on; [fog regrowth](/systems/map-visibility/#fog-regrowth) covers what one pass does.
+Passes run only while fog of war is on for the game; [`FogOfWar`](/keys/fogofwar/) and the game options decide that. [Fog regrowth](/systems/map-visibility/#fog-regrowth) covers when the first pass runs and what one pass does.

@@ -24,82 +24,101 @@ related:
   id: trigger-springing
 ---
 
-A scenario file keeps its triggers in five sections of the map file itself. `[Triggers]` holds one row per trigger, keyed by that trigger's ID. The same ID keys the trigger's events in `[Events]` and its actions in `[Actions]`. `[Tags]` holds the tags that fire triggers, and `[CellTags]` attaches a tag to a cell. [Trigger springing](/systems/trigger-springing/) owns what the engine does with these records once they are loaded, and [scenario object records](/formats/scenario-objects/) owns which house a trigger's owner resolves to.
+A map file declares its triggers in five sections. `[Triggers]` holds one row per trigger, and `[Events]` and `[Actions]` hold that trigger's events and actions under the same trigger ID. `[Tags]` declares the tags that fire triggers, and `[CellTags]` places a tag on a map cell. [Trigger springing](/systems/trigger-springing/) covers what the game does with these records and gives [a worked example of all five sections](/systems/trigger-springing/#tags-triggers-and-events-in-brief).
 
-Every row is positional: a field's meaning comes from where it sits between the commas, never from a name. The loader reads the trigger rows and the tag rows as the scenario starts, triggers first. It registers every trigger ID before it reads any row's fields, so a row may name a trigger defined later in the file. [A worked example of all five sections](/systems/trigger-springing/#tags-triggers-and-events-in-brief) appears under trigger springing.
+Every row except a cell tag row is a comma-separated list whose fields are known only by their position. Do not leave a field empty. Consecutive commas count as one separator, so every value after the gap moves one field earlier.
+
+The game reads the trigger rows and then the tag rows as the scenario starts. Every trigger ID in `[Triggers]` is registered before any row is read, so a trigger row may name a trigger defined later in the section by its ID. A display name matches only a trigger whose row has already been read.
 
 ## The trigger row
 
-The entry name is the trigger's ID, an arbitrary name that every other record uses to refer to the trigger. Unlike the object sections, where the loader ignores the entry name, this one is the ID. The value holds eight fields in this order:
+The entry name is the trigger's ID, which other records use to refer to the trigger. Unlike in the object sections, the entry name matters here. The value holds eight fields in this order:
 
 | Position | Content |
 | --- | --- |
-| 1 | The owner house's name, or `<none>` for [the first house type the rules register](/formats/scenario-objects/#runtime-owners). |
-| 2 | The trigger to reach from this one, by ID or display name, or `<none>` for none. [Reaching a trigger from another trigger](/systems/trigger-springing/#reaching-a-trigger-from-another-trigger) owns what the link does. |
-| 3 | The trigger's display name, the name a scenario editor shows. |
-| 4 | The disabled flag: `1` starts the trigger switched off, `0` switched on. The three fields after it run the other way. |
+| 1 | The owner: a house name, or `<none>` for the house playing the first country the rules register. [Runtime owners](/formats/scenario-objects/#runtime-owners) covers both forms. |
+| 2 | The next trigger in this trigger's chain, by ID or display name, or `<none>` for none. [Tags, triggers and events in brief](/systems/trigger-springing/#tags-triggers-and-events-in-brief) explains how a tag uses the chain. |
+| 3 | The trigger's display name. Field 2 of another trigger row and the trigger field of a tag row accept this name in place of the ID. |
+| 4 | `0` starts the trigger enabled; any other number starts it disabled. The three fields after it use the opposite sense. |
 | 5 | `1` enables the trigger at easy difficulty. |
 | 6 | `1` enables the trigger at medium difficulty. |
 | 7 | `1` enables the trigger at hard difficulty. |
-| 8 | `1` marks the trigger's tag to be handed on rather than lost with its object: to a crew member surviving the vehicle it rides on, or to whoever captures the structure it rides on. |
+| 8 | `1` lets the trigger's tag pass to another object, as described below the table. |
 
-Only the field for the difficulty the scenario runs at is read, and [difficulty](/systems/trigger-springing/#difficulty) owns what that decides. A row whose owner resolves to no live house is deleted as it is read, and a tag naming it fires nothing.
+A tag passes on when any trigger in its chain sets field 8. It passes in these cases:
+
+- A destroyed vehicle passes the tag to the infantry that escapes from it.
+- Infantry that captures a structure or takes over a vehicle passes its tag to what it took.
+
+A vehicle that infantry took over does not offer its destruction events to a tag that passes on. The tag goes to the infantry that escapes from the wreck, if one escapes.
+
+Only the field for the difficulty being played is used, and [difficulty](/systems/trigger-springing/#difficulty) covers what it decides.
+
+Fields 5 to 8 may be left off the end of the row. A missing difficulty field enables the trigger at that difficulty, and a missing field 8 counts as `0`. A row that also leaves off field 4 starts the trigger disabled.
+
+A row with an empty value, or whose owner matches no house in the game, is dropped. With `<none>`, that happens when no house plays the first country. A tag that names a dropped trigger fires nothing.
 
 ## The event row
 
-The entry name is again the trigger's ID. The value carries the number of events, then three fields for each event:
+The entry name is the trigger's ID. The value starts with the number of events, followed by three fields for each event:
 
 | Position | Content |
 | --- | --- |
-| 1 | How many events the row holds. The count is not checked against the fields the row actually holds. |
-| 2, 5, 8, ... | The event's engine number, the same number the [event page](/mapping/events/) calls Engine ID. |
-| 3, 6, 9, ... | What the next field holds: `0` a number, `1` a [team type](/mapping/team-types/). The engine writes `1` only when the event holds a team. |
-| 4, 7, 10, ... | The number itself, or the team's ID or display name. |
+| 1 | The number of events in the row. |
+| 2, 5, 8, ... | The event's number, which its [event page](/mapping/events/) lists as Numeric ID. |
+| 3, 6, 9, ... | What the next field holds: `0` a number, `1` a [team type](/mapping/team-types/). |
+| 4, 7, 10, ... | The number, or the team type's ID or display name. |
 
 ```ini title="map file"
 [Events]
-01000004=1,14,0,0          ; one event on trigger 01000004
-01000005=2,12,0,500,17,0,0 ; two events on trigger 01000005
+01000004=1,14,0,0          ; one event: 14, Mission Timer Expired
+01000005=2,12,0,500,17,0,0 ; two events: 12 with the number 500, then 17
 ```
 
-The first row holds one event: event 14, whose parameter is the number `0`. An event whose page lists the need token none, as [mission timer expired](/mapping/events/tevent-mission-timer-expired/) does, still holds the two trailing fields, and both are `0`. A trigger with no events may leave its row out altogether; the engine's own writer then records a bare `0`.
+Every event needs all three of its fields. [Mission Timer Expired](/mapping/events/tevent-mission-timer-expired/) takes no parameter (its page lists the Need token `NEED_NONE`), so the first row writes `0,0` after the event number. A trigger with no events may leave out its row or write `0`.
 
-The loader prepends each event as it parses, so the engine examines a trigger's events in the reverse of their row order, and a scenario the engine saves lists them in that reversed order. [Remembering a satisfied event](/systems/trigger-springing/#remembering-a-satisfied-event) owns what the order decides.
+Write as many events as the count says. Events beyond the count are ignored, and a row with fewer fields than its count requires crashes the game when the scenario loads.
+
+The game examines a trigger's events in the reverse of their order in the row, so in the second row above it examines event 17 before event 12. [Remembering a satisfied event](/systems/trigger-springing/#remembering-a-satisfied-event) covers what the order decides.
 
 ## The action row
 
-The entry name is again the trigger's ID. The value carries the number of actions, then eight fields for each action:
+The entry name is the trigger's ID. The value starts with the number of actions, followed by eight fields for each action:
 
 | Position | Content |
 | --- | --- |
-| 1 | How many actions the row holds. |
-| 2, 10, 18, ... | The action's engine number, the same number the [action page](/mapping/actions/) calls Engine ID. |
-| 3, 11, 19, ... | What the next field holds: `0` a number, `1` a team, `2` a trigger, `3` a tag, or `4` a team whose time sits in the row's last field. |
-| 4, 12, 20, ... | Under `0`, the number. Under `1` to `4`, the team, trigger or tag's ID, or its position in the engine's list when written in fewer than three characters, or `-1` for none. |
-| 5 to 8 | Four rectangle fields: X, Y, width, height. Most actions leave all four at zero. The exceptions hold part of their parameter there and name the field on their own pages, such as [Give Credits](/mapping/actions/taction-give-credits/). |
-| 9, 17, 25, ... | The waypoint the effect lands on, or the time under `4`. A missing last field leaves waypoint `A`, or time `0`. |
+| 1 | The number of actions in the row. |
+| 2, 10, 18, ... | The action's number, which its [action page](/mapping/actions/) lists as Numeric ID. |
+| 3, 11, 19, ... | What the next field holds: `0` a number, `1` a team, `2` a trigger, `3` a tag, or `4` a team with a time in the action's last field. |
+| 4, 12, 20, ... | Under `0`, the number. Under `1` to `4`, the ID of the team, trigger or tag, or `-1` for none. |
+| 5 to 8, 13 to 16, ... | Four rectangle fields: X, Y, width and height. Most actions write all four as `0`. The exceptions keep part of their parameter here, and their pages name the field, as [Give Credits](/mapping/actions/taction-give-credits/) does. |
+| 9, 17, 25, ... | The waypoint the action works at, or the time under `4`. |
 
-A trigger with no actions follows the same rule as its events: the row may be left out, and the engine's writer records a bare `0`.
+A team, trigger or tag named in an action must be named by its ID; display names are not matched. An ID that matches nothing creates an empty team, trigger or tag under that name. A value of one or two characters other than `-1` is read as a position in the game's list of teams, triggers or tags, counting from `0`. Give anything an action names an ID of at least three characters.
+
+Write as many actions as the count says. As with events, a row with fewer fields than its count requires crashes the game when the scenario loads. A trigger with no actions may leave out its row or write `0`.
+
+The last action in a row may leave out its final field, which then means waypoint `A`, or time `0` under `4`. In any earlier action, leaving out the final field shifts every later field.
 
 ## The tag row
 
-The entry name is the tag's ID, which the loader takes as a hexadecimal number. The value holds three fields:
+The entry name is the tag's ID. The value holds three fields:
 
 | Position | Content |
 | --- | --- |
-| 1 | The tag's lifetime: `0` volatile, `1` semi-persistent, `2` persistent. [Tag lifetimes](/systems/trigger-springing/#tag-lifetimes) owns what each kind does. |
+| 1 | The tag's lifetime: `0` volatile, `1` semi-persistent, `2` persistent. [Tag lifetimes](/systems/trigger-springing/#tag-lifetimes) covers what each one does. |
 | 2 | The tag's display name. |
 | 3 | The trigger the tag fires, by ID or display name. |
 
-A tag that fires no trigger is written as a two-field row with the display name and `<none>`, with no lifetime number at all. Reading such a row back holds the tag as volatile.
+A tag whose trigger field is missing, `<none>`, or names no trigger fires nothing.
 
 ## The cell tag row
 
-`[CellTags]` carries one row per tagged cell. The entry name is the cell, written as one number, and the value names the tag:
+`[CellTags]` has one row per tagged cell. The entry name is the cell, written as one number, and the value is the tag:
 
 | Part | Content |
 | --- | --- |
 | Entry name | The cell number: the column plus 1000 times the row on a map whose [NewINIFormat](/keys/newiniformat/) is 4 or higher, or the column plus 128 times the row on an older map. |
-| Value | The tag's ID, exactly as written in `[Tags]`. Unlike a trigger reference, this does not match a display name. A value that names no declared tag attaches a fresh empty tag, which nothing can fire, and `<none>` attaches nothing. |
+| Value | The tag's ID from `[Tags]`, in any letter case. Display names are not matched. A value that matches no tag places a new tag with no trigger, which fires nothing. `<none>` places no tag. |
 
-Only the first row for a cell attaches: a cell already holding a tag leaves every later row for it unattached.
+A cell takes the first row that places a tag on it. Later rows for the same cell are ignored.

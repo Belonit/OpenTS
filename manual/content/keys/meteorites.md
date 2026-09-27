@@ -9,4 +9,4 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-The name promises the meteor showers that seed fresh Tiberium as a game runs. The flag is parsed with the rest of the scenario's special options and never read: a shower falls only where a trigger action calls for one, whether the flag is set or clear.
+Nothing in the game reads this flag, and setting it makes no meteors fall. Meteors come from the [Meteor Impact At](/mapping/actions/taction-meteor-impact/) and [Meteor Shower At](/mapping/actions/taction-meteor-shower/) trigger actions, and from any animation with [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype) wherever the game creates it.

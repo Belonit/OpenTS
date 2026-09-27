@@ -1,11 +1,11 @@
 ---
 key: MaxWaypointPathLength
-summary: Number of markers a player may place into one waypoint path.
+summary: The most waypoints one waypoint path can hold.
 when_omitted:
   kind: value
   value: "15"
 ---
 
-A path already holding this many markers takes no more. The cursor over an empty cell turns into the refusal cursor, and placing the marker that reaches the count also drops the player out of [Waypoint Mode](/commands/waypointmode/). The same limit closes the click that loops the selected path.
+A waypoint path holds at most this many waypoints. Once the selected path is full, a click on an empty cell shows the refusal cursor and places nothing. Placing the waypoint that fills the path also ends [Waypoint Mode](/commands/waypointmode/).
 
-The count is not the only thing that closes a path: one that has been looped refuses further markers whatever its length. [Waypoint paths](/systems/waypoint-paths/) covers plotting and editing.
+A full path cannot be looped, because a path can be looped only while it can still take waypoints. A looped path, in turn, takes no more waypoints whatever its length. [Waypoint paths](/systems/waypoint-paths/) covers plotting, looping and editing.

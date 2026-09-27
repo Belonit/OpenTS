@@ -8,6 +8,6 @@ when_omitted:
   value: none
 ---
 
-The sound plays where a thrown animation ends its life, unless that end comes low over water, where only the splash is heard. It is tested on its own rather than inside the [`ExpireAnim`](/keys/expireanim/#scope-animtype) branch that deals the blast damage. An animation with no impact animation still plays it.
+The sound that plays where a thrown animation ends, unless it ends low over water as [`ExpireAnim`](/keys/expireanim/#scope-animtype) defines it. It does not depend on `ExpireAnim`: an animation with no impact animation still plays this sound.
 
-A value naming no registered sound leaves whatever was set before in place.
+An unrecognized sound name counts as omitted.

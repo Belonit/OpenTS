@@ -13,8 +13,26 @@ when_omitted:
 Side=Nod
 ```
 
-The `[Sides]` section is read first and points every country it lists at its side. This key is read afterwards and places a country that no `[Sides]` entry lists. A country the section placed keeps that side: a differing value here is logged and ignored. The roster the sides are enumerated from is therefore the one the rules declared, and the raw Tiberian Sun rules' `[Nod] Side=GDI` leaves Nod on its own side. A country left with no side at all is not an error. The stock civilian and mutant countries would have none if `[Sides]` did not list them, because their own `Side=` values name sides only `[Sides]` creates.
+The value names a side declared in `[Sides]`. A side groups countries: several countries can share one, and a country with no side is valid.
 
-The side is a coarser grouping than the country. The side of the country the local player plays decides which art and interface archives a game is presented with. These are the numbered `SIDEC01.MIX` and `SIDENC01.MIX`, with `SIDECD01.MIX` added in a campaign game and `02` in place of `01` for the second side. The same side's voices come with them, short of a mission's [`SpeechSide=`](/keys/speechside/). Defeat does not follow the side either: a campaign loss plays the mission's lose movie, and a multiplayer or skirmish loss shows the multiplayer score screen, whose artwork is one fixed file. A musical score restricted with [`Side=`](/keys/side/#scope-themes) is offered only while that country belongs to the side. The side of the country a house [acts as](/keys/actslike/) supplies the computer's [base building](/systems/ai-base-building/), its [hunter-seeker](/keys/hunterseeker/#scope-side) and the side an [AI trigger](/mapping/ai-triggers/) may be restricted to. An object's survivor is decided by its owner's country's side as well. A country with no side always leaves a [`Technician`](/keys/technician/). A country with a side leaves its [`Crew`](/keys/crew/), though a weapon-equipped object has a 15% chance of leaving a technician instead.
+`[Sides]` is read before this key and wins over it. A country that already has a side keeps it, and a `Side=` naming a different side is ignored. The key therefore only places a country that no `[Sides]` entry lists.
 
-A value naming no declared side is logged and ignored, and the country keeps the side it had.
+A value naming no side that `[Sides]` declares is ignored, and the country keeps the side it had.
+
+## What the player's side decides
+
+The side of the country the local player plays decides:
+
+- which side archives the game mounts, as [Theater, side and speech archives](/formats/mix/#theater-side-and-speech-archives) lists; a side without its own archives uses the first side's;
+- which side's voices play, unless a mission sets [`SpeechSide=`](/keys/speechside/);
+- which music tracks are offered, when a track is restricted with its own [`Side=`](/keys/side/#scope-themes);
+- in skirmish and multiplayer games, which pair of loading pictures appears: the second side's for a country on the second side, the first side's otherwise;
+- on the campaign score screen, which side's casualty bars show the player's losses: the first side's bars when the player's country is on the first side, the second side's bars otherwise.
+
+For the archives and voices, a player's country with no side counts as the first side. Such a player is offered no side-restricted track and sees the second side's casualty bars.
+
+## What a house's side decides
+
+The side of the country a house [acts as](/keys/actslike/) decides the computer's [base building](/systems/ai-base-building/), the house's [hunter-seeker](/keys/hunterseeker/#scope-side), and whether an [AI trigger](/mapping/ai-triggers/) restricted to a side is open to that house.
+
+The side of the owner's own country decides the survivors of a [`Crewed=yes`](/keys/crewed/) object. A country with no side leaves a [`Technician`](/keys/technician/). A country with a side leaves the [`Crew`](/keys/crew/) type, and an armed object has a 15% chance of leaving a technician instead. The `Crew` page gives the full order, including the engineer a structure can leave.

@@ -7,6 +7,8 @@ when_omitted:
   value: ""
 ---
 
-The first entry the country this house [acts as](/keys/actslike/) [may own](/keys/owner/) is queued immediately after the construction yard. That seat skips [the base plan's](/systems/ai-base-building/#building-the-plan) candidate filter: a type with [`AIBuildThis=no`](/keys/aibuildthis/), or a [`TechLevel`](/keys/techlevel/) above the house's, is planned anyway. Nothing else reads the list. The power plant inserted ahead of a node that would outrun the base's output falls back to the first entry that country may own when the acted side names no [`RegularPowerPlant`](/keys/regularpowerplant/).
+A computer house puts the first entry that the country it [acts as](/keys/actslike/) [may own](/keys/owner/) into [its base plan](/systems/ai-base-building/#building-the-plan) right after the construction yard. That entry skips the plan's candidate test, so it is planned even with [`AIBuildThis=no`](/keys/aibuildthis/) or a [`TechLevel`](/keys/techlevel/) above the house's. When the entry is also a candidate, the plan queues it a second time once the queue meets its prerequisites.
 
-A list holding no entry that country may own queues no power plant.
+The same entry is the last resort when the house [inserts a power plant](/systems/ai-base-building/#power-and-money-interventions) ahead of a structure its power cannot support. It is used only when the house chose neither a turbine nor an advanced power plant and its side names no [`RegularPowerPlant`](/keys/regularpowerplant/).
+
+When the country may own no listed type, the plan starts with no power plant, and the last resort inserts none. Nothing else reads the list.

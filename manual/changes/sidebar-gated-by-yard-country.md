@@ -9,6 +9,6 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-The sidebar now offers a structure only when the house owns a construction yard acting for one of the countries in its `Owner=` list, whatever that list holds. The test ran only for a type with a single owner. A structure owned by several countries therefore reached the sidebar of a house whose yard acted for none of them and was grayed the moment the factory search refused it.
+A structure with several countries in its `Owner=` list used to appear on the sidebar even when none of the house's construction yards acted for one of them, and then could not be built. The yard test now applies to every structure: the sidebar offers one only when the house has a construction yard acting for a country in its `Owner=` list. `MultiMCV=yes` under `[General]` in `rules.ini` removes the test.
 
 AlexB is credited for the ts-patches patch that first ran the yard test for every structure.

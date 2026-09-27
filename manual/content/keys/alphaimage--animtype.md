@@ -8,4 +8,8 @@ when_omitted:
   note: No light shape is loaded and the animation contributes nothing to the lighting pass.
 ---
 
-An animation has the same light shape on the same terms as any other object type. It is attached where the animation is placed and taken away with it, so the brightening lasts exactly as long as the animation plays.
+An animation's light shape is named and drawn the same way as [any other object type's](/keys/alphaimage/#scope-aircrafttype). The light is placed where the animation starts, and it stays there if the animation moves.
+
+:::caution[The light outlasts the animation]
+Give `AlphaImage=` only to an animation whose spot should stay lit for the rest of the scenario. Ending the animation does not remove its light, which stays where the animation started until the scenario ends.
+:::

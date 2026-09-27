@@ -8,6 +8,8 @@ when_omitted:
   value: none
 ---
 
-The sound is played by the crusher, at the crusher's position, on the single frame the victim is destroyed. The value names a sound ID registered in [SOUND.INI](/formats/sound-ini/), read from the type being crushed rather than from the vehicle doing the crushing. It is the only sound either path plays: a crushed object and a flattened wall overlay both go quiet if their type names none.
+The sound plays when a crusher runs over an object or overlay of this type. It is taken from the type being crushed, not from the crusher, and plays at the crusher's position. The value names a sound ID registered in [SOUND.INI](/formats/sound-ini/).
 
-Only a [`Crushable=yes`](/keys/crushable/#scope-aircrafttype) type ever reaches either path, so the setting is inert on anything a crusher cannot drive over.
+A crushed object and a destroyed wall overlay play this sound as they are removed. A crushable overlay that is not a wall survives, but plays the sound each time a crusher drives onto it. A type that names no sound is crushed in silence.
+
+The sound is used only for a [`Crushable=yes`](/keys/crushable/#scope-aircrafttype) type, since nothing else can be crushed.

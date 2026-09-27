@@ -7,15 +7,18 @@ when_omitted:
   value: "no"
 ---
 
-The flag is the only thing that puts a smudge type into the scorch pool; [`Scorches`](/keys/scorches/) covers the list that looks as though it should and does not. The pool is gathered afresh every time the ground is scorched. Every registered smudge type with the flag is offered the spot, those whose block will not fit there are dropped, and one of the survivors is picked at random. [`Height`](/keys/height/#scope-smudgetype) covers the fit test and the size grouping that narrows the survivors further.
+`Burn=yes` makes the smudge type a candidate whenever the ground is scorched. No other setting adds a type to the scorch pool. Listing it in [`Scorches`](/keys/scorches/) has no effect.
+
+Each scorch is picked at random from the `Burn=yes` types that fit the spot. [`Height`](/keys/height/#scope-smudgetype) describes the fit test and which sizes each kind of request prefers.
 
 ```ini title="rules.ini"
 [MYSCORCH]     ; example single-cell scorch mark
 Burn=yes
 ```
 
-Two things ask for a scorch. An animation asks through [`Scorch=yes`](/keys/scorch/) on its own type. It scorches on every occurrence unless it also sets [`Crater=yes`](/keys/crater/#scope-animtype), which turns each occurrence into a coin flip between the two pools.
+Two things scorch the ground:
 
-A structure coming down asks twice over. The whole-building mark happens only on a footprint of at least two cells by two and requests the multiple-cell group directly. A second request falls on each land cell of the footprint, scattered a little, and takes any smudge that fits. Each of those requests is a coin flip against a crater, so half of them go to [`Crater`](/keys/crater/#scope-smudgetype) instead.
+- An animation with [`Scorch=yes`](/keys/scorch/). If it also sets [`Crater=yes`](/keys/crater/#scope-animtype), each occurrence leaves a scorch or a crater with even odds.
+- A destroyed structure. Each mark it lays is a scorch or a crater with even odds. [A structure](/systems/destruction-and-debris/#a-structure) describes when the marks are laid.
 
-The two flags are independent on a smudge type: one with both belongs to both pools, and one with neither is registered, is given artwork, and is never picked for a scorch or a crater. A map file can still place such a type directly, through its `[Smudge]` list.
+`Burn` and [`Crater`](/keys/crater/#scope-smudgetype) are independent. A type with both can be picked as a scorch or as a crater. A type with neither is never picked for either, but a map can still place it through its `[Smudge]` section.

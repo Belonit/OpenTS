@@ -13,10 +13,12 @@ HomeCell=98
 AltHomeCell=42
 ```
 
-This is the branch a mission takes when a campaign wants the player to start looking somewhere else because of what happened earlier. The value is a waypoint number, read exactly as [`HomeCell`](/keys/homecell/) is. It is chosen over that key whenever global flag `0` is set as the map is opened. Because the flag is carried forward from the previous mission, the choice is settled before the player can do anything about it.
+The view opens on this waypoint in place of [`HomeCell`](/keys/homecell/) when global flag `0` was set at the moment the player won the previous campaign mission. A campaign can use it to start the player looking somewhere else because of what happened earlier. The value is a waypoint number, read the same way as [`HomeCell`](/keys/homecell/).
 
-The keys do not share a fallback. The repair that supplies a cell for an unplaced waypoint is applied to [`HomeCell`](/keys/homecell/) alone. An alternate the scenario never placed still holds the waypoint table's empty marker, cell `0,0`, and the view is centered on that corner of the map. The out-of-range hazard described under [`HomeCell`](/keys/homecell/) reaches the alternate too, without even that repair in front of it.
+The choice is settled as the map loads, so nothing in this mission can change it. Setting global flag `0` during this mission affects only the next one.
 
-:::caution[A multiplayer game overwrites the alternate]
-Once the starting position of a multiplayer or skirmish game has been computed from the player's own objects, the alternate is set equal to the ordinary home waypoint, so whatever the map wrote here is discarded.
-:::
+Place the waypoint this key names. Unlike [`HomeCell`](/keys/homecell/), an unplaced alternate gets no fallback cell, and the view opens on cell `0,0`, the corner of the map. A Debug build stops at a failed assertion instead.
+
+Keep the value between `0` and `100`. A number outside that range reads outside the waypoint table, and the view opens on an unpredictable cell. A Debug build stops at a failed assertion instead.
+
+In multiplayer and skirmish games the view opens on the player's own forces, so this key has no effect there.

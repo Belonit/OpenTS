@@ -7,4 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-The shadow is drawn first, in [`TargetLineDropShadowColor`](/keys/targetlinedropshadowcolor/), one row below the line, or two rows below a [thick](/keys/targetlinethick/) one. The squares on the line's ends gain a border of the same color. The target line runs from a selected object's firing point to what it is attacking; [Action lines](/systems/action-lines/) covers when it is drawn.
+The shadow is a copy of the line in [`TargetLineDropShadowColor`](/keys/targetlinedropshadowcolor/), drawn directly below it. Under a [thick](/keys/targetlinethick/) line the shadow is two rows high as well.
+
+Each end square gets a border in the shadow color, one pixel wide on a normal line and two on a thick one. On a thick line the shadow also shrinks the end squares from four pixels wide to three.
+
+The target line runs from a selected object's firing point to what it is attacking. [Action lines](/systems/action-lines/) covers when it is drawn.

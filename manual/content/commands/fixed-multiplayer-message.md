@@ -2,10 +2,13 @@
 command_id: fixed:multiplayer-message
 ---
 
-A function key opens a message editor only while all of these hold:
+In a game against other machines, the function keys `F1` through `F8` open the message editor:
 
-- the session is neither a campaign nor a skirmish game;
-- the key falls in the session player range, which runs from `F1` to `F1` plus the session's player limit less one;
-- no message is already being edited.
+- `F8` starts a line to everyone.
+- `F1` through `F7` each start a private line to the player or observer at one other machine, in connection order. `F1` addresses the first connection, `F2` the second, and so on. A key with no connection at its position does nothing.
 
-Past that gate only a network or Internet session opens anything. The last key in the range starts a message to everyone. An earlier key starts a private message to one connection: `F1` names the first connection and each key after it names the next. The message needs a connection at that position, and the player must still be allowed to send a private message. [In-game chat](/systems/chat/) states who may. A message to the team, and a second key for everyone, are commands of their own: [`ChatToAllies`](/commands/chattoallies/) and [`ChatToAll`](/commands/chattoall/).
+The range ends at `F8` because the multiplayer player limit is fixed at 8, as [`Players`](/keys/players/) explains.
+
+None of the keys does anything while a line is being edited. The private keys also do nothing for a player who may not send private lines, such as an observer; [In-game chat](/systems/chat/#who-may-open-a-line) states who may.
+
+A line to the team, and a second key for a line to everyone, are separate commands: [`ChatToAllies`](/commands/chattoallies/) and [`ChatToAll`](/commands/chattoall/).

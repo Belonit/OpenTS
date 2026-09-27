@@ -12,13 +12,13 @@ when_omitted:
 LargeFire=MYFIRE_LG ; an AnimType registered in [Animations]
 ```
 
-Two paths create it, and both pair it with [`SmallFire`](/keys/smallfire/) rather than using it alone:
+The engine lights this flame in two situations, each time alongside [`SmallFire`](/keys/smallfire/):
 
-- A [`Flamer=yes`](/keys/flamer/) animation reaching its middle frame lays one on an even chance, a little under half a cell out in a random direction from its center and snapped to the nearest free cell. It appears alongside the small flames the animation always lays.
-- A structure being torn down works over every cell of its footprint. A cell that draws a small flame has a further even chance of one of these on top, a quarter of a cell out in a random direction.
+- A [`Flamer=yes`](/keys/flamer/) animation reaches its middle frame. It has an even chance of laying one just under half a cell from its center in a random direction, at the nearest free spot. The animation also lays one small flame, and a second with an even chance, whether or not it lays this one.
+- A structure is destroyed. Each cell of its footprint has an even chance of a small flame, and a cell that gets one has a further even chance of this flame, a quarter of a cell from the cell's center in a random direction. About one cell in four gets one.
 
-Neither path is nameable from an object type, so this is the only place the effect can be changed. A structure knocked down a damage level short of destruction never reaches it: [`Sparky`](/keys/sparky/) covers that case, where the choice is between the small flame and the [`OnFire`](/keys/onfire/) set.
+No object type can name a different animation for either situation, so this key is the only way to change it. A structure that only drops a damage level does not use this flame. [`Sparky`](/keys/sparky/) covers that case, where the choice is between the small flame and the [`OnFire`](/keys/onfire/) set.
 
-:::danger[An unset animation crashes the game when a fire is laid]
-Both paths create the animation without first checking that one was named. With the key unset, the game crashes the first time either path lays one, and a structure being torn down rolls that chance on every cell of its footprint.
+:::danger[Name an animation before a structure can be destroyed]
+With the key unset, the game crashes the first time either situation lays this flame.
 :::

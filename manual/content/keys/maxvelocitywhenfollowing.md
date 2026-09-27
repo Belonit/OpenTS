@@ -7,14 +7,14 @@ when_omitted:
   value: "5"
 ---
 
-This is the mood a levitating unit is in while it has a destination and no target. Once a thrust has ended and the unit is coasting, it brakes as soon as its speed has fallen *below* this figure, or as soon as the destination is inside [`ProximityDistance`](/keys/proximitydistance/). Braking runs at [`IntentionalDeacceleration`](/keys/intentionaldeacceleration/) until the unit is stopped, and it then thrusts at the destination again.
+A levitating unit with a destination and no target coasts after each thrust until its speed falls *below* this figure, then brakes. It also brakes if the destination comes within [`ProximityDistance`](/keys/proximitydistance/). Braking runs at [`IntentionalDeacceleration`](/keys/intentionaldeacceleration/) until the unit stops, and the unit then steers at the destination again. A unit with a target uses [`MaxVelocityWhenPissedOff`](/keys/maxvelocitywhenpissedoff/) instead, even when it also has a destination.
 
-The name reads as a ceiling and the figure does not work like one. Nothing clamps a levitating unit's speed. A higher figure ends the coast sooner and brings the next thrust forward. Braking is three times steeper than the coast, so the gain runs out: past the speed a thrust reaches, the coast disappears entirely and the unit covers less ground than it would at a middling figure.
+Despite the name, the figure is not a speed limit, and nothing caps a levitating unit's speed. The figure sets how long the unit coasts, and the unit thrusts again only after it has braked. A higher figure shortens the coast and brings the next thrust sooner.
 
-A unit that also has a target uses [`MaxVelocityWhenPissedOff`](/keys/maxvelocitywhenpissedoff/) instead; the target is tested first.
+Raising the figure helps only up to a point when `IntentionalDeacceleration` is larger than `Drag`, as it is by default, because braking then sheds speed faster than coasting. Once the figure reaches the speed a thrust ends at, which the [`Acceleration`](/keys/acceleration/#scope-levitation-controls) page shows how to work out, the unit brakes straight out of every thrust and never coasts. With every other `[LEVITATION]` key at its default, the unit then averages a lower speed than it does with this key omitted.
 
-:::caution[A figure of zero strands the unit]
-The test is a strict comparison against the speed held, so at `0` the coast never ends on its own. Drag brings the unit to a standstill and it stays there, neither braking nor thrusting again, until its destination happens to fall inside `ProximityDistance` or something clears the destination outright.
+:::caution[Keep MaxVelocityWhenFollowing above 0]
+At `0` or below, a coasting unit never slows below the figure, so it never brakes on speed. [`Drag`](/keys/drag/) brings it to a halt, and it stays there, because a stopped unit thrusts again only after braking. It moves again only when its destination comes within `ProximityDistance`, when it is given a target, or when it loses its destination. A new move order to a point farther away leaves it stuck.
 :::
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

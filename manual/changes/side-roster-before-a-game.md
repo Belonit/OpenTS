@@ -6,4 +6,4 @@ targets: []
 credit: [ZivDero]
 ---
 
-The network and internet game paths now read the rules' `[Houses]` and `[Sides]` lists before the countries, as the skirmish and client-launched paths already did. They re-read the countries alone, so on those paths the side list was built from whichever country happened to name a side first. Which side held which position then depended on the order the countries were written in rather than on the order the rules list them.
+In network and internet games, the sides now take their order from `[Sides]` in `rules.ini`, as they already did in skirmish and client-launched games. Those games used to read only the countries, so the sides took the order in which the countries named them. The two orders differ only when `[Houses]` does not list the countries in the order of their sides.

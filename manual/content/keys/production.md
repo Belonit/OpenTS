@@ -1,16 +1,27 @@
 ---
 key: Production
-summary: The intelligence level at which a computer house starts itself building rather than waiting to be started.
+summary: The IQ at which a computer house builds without waiting for a trigger.
 see_also: [IQ, MaxIQLevels, BuildConst]
 when_omitted:
   kind: value
   value: "5"
 ---
 
-A computer house whose [`IQ`](/keys/iq/) reaches this level marks itself as started, as base-building and as alerted, and keeps all three marks for the rest of the session.
+A computer house whose [`IQ`](/keys/iq/) is at or above this value builds without waiting for a trigger. Every game frame, the house is marked as started, as base-building and as alerted. A human player's house is never marked this way.
 
-Being started is what lets the house act on the choices it has already made. An unstarted house still works out which structure, vehicle, soldier and aircraft it wants next, but every factory it owns passes over that choice, the construction yard included, so nothing is ever put in hand. Being marked as base-building is what makes its [MCV deploy itself and hunt](/keys/buildconst/). The alerted mark reaches nothing that runs.
+The three marks have these effects:
 
-Each of the three has a trigger action of its own: [Production Begins...](/mapping/actions/taction-begin-production/), [Auto Base Building...](/mapping/actions/taction-base-building/) and [Autocreate Begins...](/mapping/actions/taction-autocreate/). Further routes set the first two marks without any action. An MCV deploying into a construction yard outside a campaign game sets them, as does a house passing from a player to the computer while it still holds one. The [Begin production](/mapping/missions/tmission-begin-production/) team mission sets the started mark for its team's house. This threshold is what covers a campaign house that is meant to build without any of that.
+- **Started.** The house's factories, the construction yard included, begin building what the house has chosen. An unstarted computer house still decides which structure, vehicle, infantry and aircraft it wants next, but none of its factories starts on them.
+- **Base-building.** The house's [MCVs deploy and hunt on their own](/keys/buildconst/).
+- **Alerted.** No effect.
 
-Outside a campaign game every computer house is set to [`MaxIQLevels`](/keys/maxiqlevels/), so the threshold is open there for any value at or below that ceiling.
+The same check also marks a computer house as started and alerted whenever it is already marked as base-building. Base-building therefore brings the other two marks with it, whatever the house's IQ. These routes set marks without the threshold:
+
+- The [Auto Base Building...](/mapping/actions/taction-base-building/) trigger action sets base-building.
+- A computer house's MCV deploying into a construction yard outside a campaign game sets base-building.
+- The [Production Begins...](/mapping/actions/taction-begin-production/) trigger action and the [Begin production](/mapping/missions/tmission-begin-production/) team mission set only the started mark.
+- The [Autocreate Begins...](/mapping/actions/taction-autocreate/) trigger action sets only the alerted mark.
+- A house the computer takes over from a player who leaves the game is marked started and base-building, but only if it owns a construction yard.
+- A house the computer takes over because its player did not return to a loaded multiplayer save is marked started.
+
+Outside a campaign game, the computer opponents the game adds get [`MaxIQLevels`](/keys/maxiqlevels/) as their IQ, and so does a house the computer takes over from a player. Those houses meet this threshold unless it is set above `MaxIQLevels`. In a campaign, this value decides which houses build from the start and which wait for a trigger.

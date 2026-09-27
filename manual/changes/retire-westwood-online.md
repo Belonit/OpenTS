@@ -6,7 +6,7 @@ breaking: true
 migration:
 - Play over a network or in skirmish instead. A Westwood Online game can no longer be started, and the World Domination Tour it hosted can no longer be entered.
 - Delete the `[WOnline]` section from `sun.ini`, along with `PreferredServer`, `Locale`, `StoreNick` and `LastNickSlot` from `[MultiPlayer]`, or leave them to be ignored.
-- Rebind whatever key was set to Page User. The command is gone, and the `[Hotkey]` entry naming it is ignored.
+- Assign another command to the key that was set to Page User if you want to use it. That key now does nothing, because the command is gone and the `[Hotkey]` entry in `keyboard.ini` that names it is ignored.
 targets:
 - type: command
   id: PageUser
@@ -41,6 +41,6 @@ targets:
 credit: [ZivDero]
 ---
 
-The Westwood Online client has been removed. The service it logged in to, chatted through, listed games on and reported ladder results to has not answered for years, so the login, lobby, ladder and paging screens are gone. The Internet button remains on the main menu and in the multiplayer game-type dialog, but it is disabled. World Domination Tour is disabled too, because the tour was reached over the same service and no tour server can be asked for a campaign. Its screens and its maps are still in the game.
+The Westwood Online client has been removed with its login, chat lobby, ladder and paging screens. The Internet button stays on the main menu and in the Select Multiplayer Game menu, but it is disabled. On Firestorm, the World Domination Tour buttons are disabled as well, because the tour was played through the same service.
 
-A network game is unaffected. The game still builds its results at the end of a match, describing the same fields it always did, but there is no longer a server to send them to.
+Network and skirmish games are unaffected.

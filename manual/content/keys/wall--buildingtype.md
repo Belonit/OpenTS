@@ -8,6 +8,12 @@ when_omitted:
   value: "no"
 ---
 
-A structure of this type is never placed as a structure. On reaching the map it creates one of its [`ToOverlay`](/keys/tooverlay/) overlays on the cell, claims the cell for its house, and deletes itself; a cell that refuses the overlay refuses the placement outright.
+`Wall=yes` makes a BuildingType a wall segment that never stays on the map as a structure. When it is placed, it puts its [`ToOverlay`](/keys/tooverlay/) overlay in the cell and makes the placing house the cell's owner. It then reveals the map within its [`Sight`](/keys/sight/) and deletes itself. If the cell refuses the overlay, the placement fails. [From structure to overlay](/systems/walls-and-gates/#from-structure-to-overlay) covers the cell tests.
 
-The flag is also what applies [`WallBuildSpeedCoefficient`](/keys/wallbuildspeedcoefficient/) to the type's build time, last of everything that shapes it.
+Give the type a `ToOverlay` in its `art.ini` entry. Without one, placing the structure crashes the game.
+
+A wall segment may be placed next to any cell its house owns, not only next to a building. This lets a wall run extend from the end of an earlier one. [Placement decision order](/systems/base-adjacency/#placement-decision-order) covers the full test.
+
+Its build time is multiplied by [`WallBuildSpeedCoefficient`](/keys/wallbuildspeedcoefficient/), after every other build-time adjustment. [How long it takes](/systems/production/#how-long-it-takes) lists the steps.
+
+On the sidebar, its cameo sorts into the wall group, with firestorm walls and laser fences.

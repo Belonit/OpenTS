@@ -4,7 +4,7 @@ summary: The mission the campaign advances to instead, when the second global fl
 see_also: [NextScenario, SkipMapSelect]
 when_omitted:
   kind: context-dependent
-  note: The read falls back to the stored name itself. The scenario object empties the name once when the session starts, so the session's first mission falls back to an empty name and any later mission to the name the previous mission's file wrote.
+  note: The name the game already holds. It comes from the most recent mission that set this key, or from a loaded save, and is empty until one of those sets it.
 ---
 
 ```ini title="map file"
@@ -14,6 +14,12 @@ NextScenario=Maps/Missions/GDI2A.MAP
 AltNextScenario=Maps/Missions/GDI9C.MAP
 ```
 
-This is the branch a mission takes when the campaign has to fork on something the player did earlier. It is read only where [`NextScenario`](/keys/nextscenario/) would be read: a won mission that sets [`SkipMapSelect`](/keys/skipmapselect/). It is chosen over that key whenever global flag `1` is set at the moment the mission is won. The flag is the ordinary trigger-system global, so any trigger that sets it during the mission redirects the advance.
+The campaign advances to this mission in place of [`NextScenario`](/keys/nextscenario/) when global flag `1` is set at the moment the player wins. A campaign can use it to fork on something the player did, because any trigger that sets global flag `1` before the win redirects the advance.
+
+:::caution[Clear global flag 1 in a mission that should not fork]
+Global flags [carry over](/systems/campaign-progression/#what-survives-the-boundary) from one campaign mission to the next, so flag `1` set in an earlier mission still redirects the advance. [Clear it](/mapping/actions/taction-clear-global/) before the win in any mission that should advance to `NextScenario`. Otherwise the campaign advances to this key's mission, or, when this mission omits the key, to the name an earlier mission set, which may be empty.
+:::
+
+The key applies only where [`NextScenario`](/keys/nextscenario/) does, after a won mission that sets [`SkipMapSelect`](/keys/skipmapselect/). A mission that shows the map selection screen ignores both keys.
 
 [`NextScenario`](/keys/nextscenario/) covers how the name is resolved against the campaign's progression data and what happens when it matches nothing.

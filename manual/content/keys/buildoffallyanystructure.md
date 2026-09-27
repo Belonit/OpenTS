@@ -12,6 +12,6 @@ when_omitted:
 BuildOffAllyAnyStructure=no
 ```
 
-With this assignment, only an ally's construction yards anchor a placement. The default lets any of the ally's buildings anchor one, on the same [`BaseNormal`](/keys/basenormal/) test that decides which of your own buildings do.
+With `no`, an ally's building anchors a placement only when its type is a [`ConstructionYard=yes`](/keys/constructionyard/) type. With `yes`, any ally building anchors one. Either way, the building's type must also have [`BaseNormal=yes`](/keys/basenormal/), the same test the player's own buildings pass.
 
-It is rules data rather than a match option, so every machine takes it from its own copy of the rules. It narrows the ally case alone: your own buildings anchor your placements either way, and the match must admit [building off an ally](/systems/base-adjacency/#building-off-an-ally) before the key decides anything.
+The key applies only when the match allows [building off an ally](/systems/base-adjacency/#building-off-an-ally). It never changes which of the player's own buildings anchor a placement.

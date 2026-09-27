@@ -1,12 +1,21 @@
 ---
 key: InvisibleInGame
-summary: Whether the structure is drawn at all, offered to the player, or plotted on the radar.
+summary: Hides a structure from every player, keeps it off the radar and out of targeting, and lets units pass through it.
 see_also: [Invisible, "system:cloaking"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The engine skips the structure's shape when it draws, so it is never drawn for any house, its owner included. That is what separates this from [`Invisible=yes`](/keys/invisible/), where the owner still sees it. It offers the player no action and no other object offers one against it, the cursor passes over it, and an [EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) skips it when the cell sweep reaches its center.
+An `InvisibleInGame=yes` structure is never drawn for any house, its owner included. That separates it from [`Invisible=yes`](/keys/invisible/), which still draws the structure for its owner.
 
-Setting it forces `Invisible=yes` and [`RadarVisible=no`](/keys/radarvisible/) onto the same type. Both are read before it, so it overrides whatever those two keys set in the same section.
+Setting this key also forces `Invisible=yes` and [`RadarVisible=no`](/keys/radarvisible/) onto the type, overriding either key in the same section. The structure therefore has every effect of `Invisible=yes` as well.
+
+It is also left out of these interactions:
+
+- it offers no cursor action when selected, and no structure offers an action against it;
+- band-box selection passes over it;
+- no object picks it as a target on its own;
+- explosions do not damage it;
+- infantry and vehicles move through its cells, and Tiberium can grow on them;
+- [an EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) leaves it untouched and does not spring its [Paralyzed](/mapping/events/tevent-paralyzed/) trigger event.

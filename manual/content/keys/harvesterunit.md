@@ -12,17 +12,20 @@ when_omitted:
 HarvesterUnit=HARV
 ```
 
-The value is a comma-separated list of UnitType IDs. Every listed type counts as a harvester wherever the engine counts them:
+The value is a comma-separated list of UnitType IDs. The list does not make a type harvest: [`Harvester=yes`](/keys/harvester/#scope-unittype) does that, and a harvesting type left off the list still harvests. The list decides which vehicles the engine counts, protects and replaces as harvesters.
 
-- the computer's decision to queue a replacement, and its judgement of whether it can still earn;
-- the census behind a computer house's [weighted patch search](/systems/tiberium/#finding-a-patch);
-- the free harvester a unit crate hands a player who owns a refinery and none;
-- the income bookkeeping behind those counts.
+Every listed type counts as a harvester in these places:
 
-Where one harvester must be priced, queued or handed out, the engine takes the first entry the country the house [acts as](/keys/actslike/) may own, or entry 0 when it may own none.
+- A computer house whose IQ reaches the [`Harvester`](/keys/harvester/#scope-global-rules) level queues a replacement harvester when it owns too few listed harvesters for its refineries. That page lists the other conditions.
+- A computer house judges whether it can still earn money partly from whether it owns a listed harvester.
+- While a computer house has a listed type on order, some production modes hold back its infantry and aircraft, as described under [`AIAlternateProductionCreditCutoff`](/keys/aialternateproductioncreditcutoff/).
+- In skirmish and multiplayer games, the number of listed harvesters a house owns weights a computer house's [search for a Tiberium patch](/systems/tiberium/#finding-a-patch).
+- A unit crate gives a free harvester to a house that owns a refinery and no listed harvester.
 
-Every listed type is also the set the [harvester truce](/keys/harvesterimmune/) shields from damage and from automatic target scans, even when a human house is the one scanning. Recovery from an EMP stun is unrelated to the truce, and sends any listed vehicle back to harvesting.
+When the engine must price, queue or hand out one harvester, it takes the first entry that the country the house [acts as](/keys/actslike/) may own. When that country may own none of them, it takes the first entry.
 
-The list is separate from [`Harvester=yes`](/keys/harvester/#scope-unittype): a type not named here still harvests, it is simply invisible to those counts.
+The [harvester truce](/keys/harvesterimmune/) protects exactly the listed types, and also leaves them out of the multiplayer defeat test. Its page lists what the truce protects them from.
 
-An empty list leaves the computer judging that it can still earn, so it never sells its base back to buy a harvester it cannot name.
+A listed vehicle recovering from an EMP stun goes back to harvesting unless it was unloading. This happens with or without the truce.
+
+With an empty list, a computer house always judges that it can still earn, so it never sells its base to buy a harvester it cannot name.

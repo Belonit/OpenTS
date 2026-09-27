@@ -7,4 +7,6 @@ when_omitted:
   value: none
 ---
 
-This line is spoken when a click lands on a cameo the weapon cannot be fired from and the charge timer is stopped rather than running. [`ImpatientVoice=`](/keys/impatientvoice/) is the line for the same click while the timer runs. Nothing speaks it at the moment a weapon is [suspended](/systems/power/#superweapons); it is only ever a reply to a click. Because a [`ManualControl=yes`](/keys/manualcontrol/) weapon's timer is stopped between firings, this is the line such a weapon gives while it is uncharged. An unrecognized speech name is not rejected; it leaves the weapon with no line.
+The line plays when the local player clicks the cameo of a weapon that cannot be fired and whose countdown is stopped. That covers a [suspended](/systems/power/#superweapons) weapon, and a [`ManualControl=yes`](/keys/manualcontrol/) weapon waiting for its next start. A weapon whose countdown is still running plays [`ImpatientVoice=`](/keys/impatientvoice/) instead.
+
+The line only answers a click. Nothing plays it at the moment a weapon is suspended. An unrecognized speech name gives the weapon no line.

@@ -9,6 +9,8 @@ when_omitted:
   value: "no"
 ---
 
-With `FirepowerCrateStacks=yes`, each firepower crate multiplies the firepower multiplier of every object in [`CrateRadius`](/keys/crateradius/) by the `Firepower` value in `[Powerups]` again, so two crates at `2` leave an object dealing four times its ordinary damage. A drawn firepower result also stops turning into money when the collector is already upgraded; it still turns into money when the collector has no primary weapon.
+With `FirepowerCrateStacks=yes`, each firepower crate multiplies the firepower multiplier of every object it reaches by the `Firepower` value in `[Powerups]`, even when an earlier crate already did. Two crates at `2` leave an object dealing four times its ordinary damage. [Results that sweep a radius](/systems/crates/#results-that-sweep-a-radius) covers which objects a crate reaches.
 
 With `no`, a firepower crate changes only objects whose firepower multiplier is still exactly `1`.
+
+Outside a campaign, the setting also decides when a drawn firepower result turns into money. With `no`, it turns into money when the collector's firepower multiplier is no longer `1`. With `yes`, an upgraded collector keeps the firepower result. Either way, it turns into money when the collector has no primary weapon.

@@ -16,4 +16,4 @@ credit:
 - dkeeton
 ---
 
-A campaign mission whose `Brief` names no movie, or names one whose file is missing, now shows its written briefing as it starts. The page is the one the objectives button brings up during play. Only a fresh start shows it; a restart and the replay a loss offers go straight to the map. The mission's transit theme plays behind the page.
+A campaign mission whose `Brief` in `[Basic]` names no movie, or a movie whose file is missing, now opens with its written briefing, the page the options menu's Restate Briefing button shows during play. The track named by the mission's `Theme` plays behind the page. Only a fresh start shows the page; a restart, and the replay offered after a loss, go straight to the map.

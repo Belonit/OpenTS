@@ -1,12 +1,16 @@
 ---
 key: ProductionAnimDamaged
-summary: The animation the production slot runs while the structure is damaged.
+summary: The damaged form of a structure's production animation.
 see_also: ["ProductionAnim", "ConditionYellow"]
 when_omitted:
   kind: inherited
   note: The animation ProductionAnim names.
 ---
 
-At the moment a slot is filled, only a [`ConstructionYard=yes`](/keys/constructionyard/) structure picks this name, and only when its health has fallen to [`ConditionYellow`](/keys/conditionyellow/) or below. [ProductionAnim](/keys/productionanim/) covers the three other structures that run the slot, and they always fill it in its healthy form. Any structure running the slot switches to this name when its health falls to [`ConditionYellow`](/keys/conditionyellow/) or below.
+`ProductionAnimDamaged=` names the production slot's animation for a structure whose health is at or below [`ConditionYellow`](/keys/conditionyellow/).
 
-A slot that names only this one and no healthy animation therefore runs nothing on those three, and nothing on a healthy construction yard.
+When the slot starts, only a [`ConstructionYard=yes`](/keys/constructionyard/) structure chooses this name, and only if its health is at or below `ConditionYellow` at that moment. Every other structure starts the slot with the [`ProductionAnim`](/keys/productionanim/) name, whatever its health.
+
+Once the slot is running, any structure switches it to this name at the next hit or repair step that finds its health at or below `ConditionYellow`, or earlier if another animation on the structure starts in its damaged form.
+
+A type that sets this key without `ProductionAnim` runs the slot only on a construction yard that is damaged when a structure it placed finishes. Other structures never run it.

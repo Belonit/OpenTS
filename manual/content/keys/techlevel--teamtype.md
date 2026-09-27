@@ -8,4 +8,4 @@ when_omitted:
   value: "0"
 ---
 
-The value is stored on the TeamType and written back out unchanged; nothing about recruiting, producing or running a team reads it.
+An AI trigger's tech level requirement comes from the [`TechLevel`](/keys/techlevel/#scope-aircrafttype) of the object types in its TeamTypes' TaskForces, not from this key. [Which triggers are eligible](/systems/ai-team-production/#which-triggers-are-eligible) describes that requirement.

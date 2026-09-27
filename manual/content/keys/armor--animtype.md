@@ -9,6 +9,6 @@ when_omitted:
   value: none
 ---
 
-An armor class is read when a warhead's damage is scaled before it is applied, and again when a unit weighs each of its weapons against the target it is attacking. An animation arrives at neither. [`Strength`](/keys/strength/#scope-animtype) sets out every path that would have to reach it and why none does.
+An armor class matters only to an object that takes damage or that a unit weighs as a target. An animation is neither. [`Strength`](/keys/strength/#scope-animtype) lists the damage paths and why none of them reaches an animation.
 
-An animation is on the dealing end instead. [`Damage`](/keys/damage/#scope-animtype) is the figure it applies to whatever is under it, and the class weighed against the warhead there belongs to what the damage lands on.
+An animation can deal damage instead. [`Damage`](/keys/damage/#scope-animtype) sets what it applies to whatever is under it, and that damage is scaled by the armor class of each object it hits.

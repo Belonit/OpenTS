@@ -8,8 +8,8 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-The switch is the first test a cell makes before it may [spread](/systems/tiberium/#spread); with it off, cells still ripen but never seed bare ground.
+With `TiberiumSpreads=no`, Tiberium cells still grow but never [spread](/systems/tiberium/#spread) onto neighboring cells. Blossom trees are not affected and still seed the ground around them; [other sources of Tiberium](/systems/tiberium/#other-sources-of-tiberium) covers them.
 
 :::caution[The entry is read in campaigns only]
-The `[SpecialFlags]` block is read from the map only in a single-player mission. Every multiplayer and skirmish game forces this switch on when the scenario starts.
+Only a single-player mission reads `[SpecialFlags]` from the map. Skirmish and multiplayer games always have this switch on.
 :::

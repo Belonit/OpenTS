@@ -14,6 +14,8 @@ NextScenario=Maps/Missions/GDI2A.MAP
 AltNextScenario=Maps/Missions/GDI9C.MAP
 ```
 
-At the default, winning the mission opens the map selection screen and the player chooses where the campaign goes. Setting the key replaces that choice with the mission's own: the campaign is advanced to [`NextScenario`](/keys/nextscenario/), or to [`AltNextScenario`](/keys/altnextscenario/) when the second global flag is set, and the screen is never shown.
+With `SkipMapSelect=yes`, winning the mission skips the map selection screen. The campaign advances to [`NextScenario`](/keys/nextscenario/), or to [`AltNextScenario`](/keys/altnextscenario/) when global variable 1 is set. At the default, the map selection screen opens and the player chooses the next mission.
 
-The advance is still a campaign advance, not a direct load. The named map has to be one of the choices the map selection data offers from the mission's current stage, and the stage number moves with it. [`NextScenario`](/keys/nextscenario/) covers what happens when the name is not among them.
+The named map must be one of the next missions the campaign's map selection data offers from the current stage, and the campaign moves to that stage. [`NextScenario`](/keys/nextscenario/) covers what happens when the name is not among them.
+
+A mission that also sets [`OneTimeOnly`](/keys/onetimeonly/) or [`EndOfGame`](/keys/endofgame/) ends the campaign instead, and this key has no effect.

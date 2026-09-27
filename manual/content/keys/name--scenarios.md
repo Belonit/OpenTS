@@ -6,7 +6,7 @@ see_also: [RequiredAddOn]
 when_omitted:
   kind: value
   value: "<none>"
-  note: The read substitutes the literal text "<none>" rather than keeping the title the previous mission established.
+  note: The title is the literal text "<none>". The previous mission's title does not carry over.
 ---
 
 ```ini title="map file"
@@ -14,6 +14,8 @@ when_omitted:
 Name=GDI 10A: Destroy the Prototype Facility (A)
 ```
 
-The title is held in a 44-byte field, so it is cut off after 43 characters. Within the running game, the title becomes the description recorded with saves of the mission. The save offered from the in-game options screen starts from it, and the quicksave and automatic saves build their descriptions around it.
+The title labels saves of the mission in a campaign or skirmish game. The save dialog on the in-game options screen offers it as the save's description, and the descriptions of quicksaves and automatic saves include it. A title longer than 43 characters is cut off at 43.
 
-In a campaign the map does not have the last word. Once the map has been read, `MISSION.INI` is opened (`MISSION1.INI` under the Firestorm expansion) and searched for a section named exactly as the scenario file was named when the mission was started. A `Name=` there replaces the map's. The shipped campaigns do not reach it: their scenarios are named by path, such as `Maps/Missions/GDI1A.MAP`, while the shipped mission file's sections are bare filenames such as `[GDI1A.MAP]`, so the map's own title stands.
+In a campaign, `MISSION.INI` can replace the title. After reading the map, the game opens `MISSION.INI`, or `MISSION1.INI` for a map with `RequiredAddOn=1`. A `Name=` in the section named after the scenario replaces the map's title. The section name must be the full scenario name the mission was started with, path included.
+
+The stock campaigns never reach this override. Their scenarios are named by path, such as `Maps/Missions/GDI1A.MAP`, while the stock mission file names its sections by bare filename, such as `[GDI1A.MAP]`. The title from the map file is used.

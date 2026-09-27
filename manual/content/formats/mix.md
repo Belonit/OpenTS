@@ -13,31 +13,84 @@ source_files:
   - code/init.cpp
 ---
 
-Registered MIX archives expose their members through the ordinary file layer, so a member is opened by name exactly as a file on disk is. A loose file with the requested name takes precedence over a member in a loaded archive, which permits local override files. Archive members are opened for reading only; a file opened for writing is always a real file on disk.
+Once the game mounts a MIX archive, each of its members opens by name like a file on disk. A loose file with the same name takes precedence over the member, so a loose file can override archive content. The exception is a file the game reads only from cached archives, which [Caching](#caching) lists. Archive members are read-only; a file opened for writing is always a file on disk.
 
 ## Mounting and search order
 
-An archive is mounted by name, and the order archives are mounted in is the order they are searched. Startup mounts the patch archives first, then the numbered expansion archives counted down from the highest number present, and the shipped archives last. A theater or a side mounts its own archives later and drops them again when the theater or side changes. The first archive holding a member of the requested name answers for it, so an archive mounted earlier shadows that name in every archive mounted after it.
+The game searches archives in the order it mounted them. The first archive that holds a member of the requested name supplies it, so an archive mounted earlier overrides that name in every archive mounted after it. Names are matched without regard to case.
 
-Startup requires some of them: `CACHE.MIX`, and then `CONQUER.MIX`, `SOUNDS.MIX`, and `SOUNDS01.MIX` where the expansion is installed. The game stops during startup without one of those. Every other archive is mounted when present and passed over when absent, among them the map, multiplayer, score and movie archives. A deployment holding the maps and the multiplayer content loose, or in archives of its own, still starts. A music track or movie whose file is not found in any archive or folder is skipped.
+Startup mounts these archives in this order:
 
-Playing a side requires that side's cached archive, `SIDEC01.MIX` or `SIDEC02.MIX` by the side's position, and a campaign additionally requires a CD archive. A campaign belonging to an expansion takes that expansion's CD archive, `E01SCD01.MIX` or `E01SCD02.MIX`, where the installation has one, and the plain `SIDECD01.MIX` or `SIDECD02.MIX` where it does not, so an installation that keeps the expansion's members in the base archive still plays the expansion's campaign. Missing both, the game reports that it cannot read the scenario. The uncached side archive, `SIDENC01.MIX` or `SIDENC02.MIX`, and the expansion archives mounted over both are optional.
+| Order | Archive | Required | Cached |
+| --- | --- | --- | --- |
+| 1 | `PATCH.MIX` | No | No |
+| 2 | `PCACHE.MIX` | No | Yes |
+| 3 | `EXPAND99.MIX` down to `EXPAND00.MIX` | No | No |
+| 4 | `ECACHE99.MIX` down to `ECACHE00.MIX` | No | Yes |
+| 5 | `TIBSUN.MIX` | No | No |
+| 6 | `CACHE.MIX` | Yes | Yes |
+| 7 | `LOCAL.MIX` | No | No |
+| 8 | `CONQUER.MIX` | Yes | Yes |
+| 9 | Every `MAPS*.MIX`, in alphabetical order | No | No |
+| 10 | `MULTI.MIX` | No | No |
+| 11 | `SOUNDS01.MIX` | Where the Firestorm expansion is installed | Yes, when audio is available |
+| 12 | `SOUNDS.MIX` | Yes | Yes, when audio is available |
+| 13 | `SCORES.MIX`, then `SCORES01.MIX` | No | No |
+| 14 | Every `MOVIES*.MIX`, in alphabetical order | No | No |
 
-Names are matched without regard to case. Each archive has an index of its members, sorted by a checksum of the member name. A lookup is a binary search over that index rather than a scan, so nothing depends on the order members were packed in.
+`PATCH.MIX` and the `EXPAND` archives are mounted only as loose files, never as members of another archive.
 
-Mounting an archive that is not there registers nothing and reports nothing: the object is created, finds no file, and never joins the list of archives to search. A name that no archive holds is not recorded anywhere. The request falls through to opening a real file of that name, and fails when there is none.
+If a required archive is missing or cannot be cached, the game stops during startup. An optional archive that is missing is skipped, and later lookups do not search it. A deployment can therefore keep the maps and the multiplayer content loose or in other archives.
+
+A music track or movie whose file is not found in any archive or folder is skipped.
+
+### Theater, side and speech archives
+
+Archives mounted after startup are searched after every startup archive.
+
+When a scenario or saved game uses a different theater from the one last loaded, the game drops the previous theater's archives and mounts the new theater's. These are `<Root>.MIX` and `<Suffix>.MIX`, both cached, then `<IsoRoot>.MIX`, not cached. [`Root`](/keys/root/), [`Suffix`](/keys/suffix/#scope-theater) and [`IsoRoot`](/keys/isoroot/) are set per theater.
+
+Each time a scenario or saved game loads, the game drops the previous side's archives and mounts those of the player's side. The two-digit side number `<nn>` is the side's position in the side list: `01` for the first side, `02` for the second. The archives are mounted in this order:
+
+1. `E99SC<nn>.MIX` down to `E00SC<nn>.MIX`, cached, only while an expansion is enabled.
+2. `SIDEC<nn>.MIX`, cached. Required.
+3. `E99SNC<nn>.MIX` down to `E00SNC<nn>.MIX`, not cached, only while an expansion is enabled.
+4. `SIDENC<nn>.MIX`, not cached. Optional.
+5. In a campaign only, one CD archive, not cached. Required.
+
+For the CD archive, a campaign mission first tries `E<xx>SCD<nn>.MIX` while an expansion is enabled, where `<xx>` is the mission's [`RequiredAddOn`](/keys/requiredaddon-scenarios/) number: a Firestorm mission tries `E01SCD01.MIX` or `E01SCD02.MIX`. Without that archive it mounts `SIDECD<nn>.MIX`, so an installation that keeps the expansion's members in the base archive still plays the expansion's campaign.
+
+If a required side archive is missing, the game mounts the first side's archives instead. If those are missing too, the scenario or saved game fails to load, and a scenario reports that it cannot be read.
+
+Speech archives follow the same pattern for the player's side, or in a campaign for the mission's [`SpeechSide`](/keys/speechside/): `E<xx>VOX<nn>.MIX` for each enabled expansion, then `SPEECH<nn>.MIX`, which is required. A missing `SPEECH<nn>.MIX` falls back to the first side's in the same way. None of the speech archives is cached.
 
 ## Caching
 
-An archive can be cached, which reads all of its member data into memory in one operation. The index is read when the archive is mounted whether or not the archive is ever cached; caching concerns only the member data. An archive may have a message digest. It is checked as the archive is cached, and a digest that does not match refuses the cache. Its index may be encrypted, and the game detects that from the start of the file and decrypts as it reads.
+A cached archive holds all of its member data in memory from the moment it is cached. An uncached archive stays on disk, and a member is read from it when opened. The tables and lists above say which archives the game caches. Every archive's index is read when the archive is mounted, whether or not it is cached.
 
-Whether an archive is cached decides how its members can be reached:
+Whether an archive is cached decides how its members can be read:
 
-- A member of a cached archive can be handed out as a pointer straight into the memory the archive is already holding. Nothing is allocated for the member and nothing is copied. Shapes, fonts, palettes and sound samples are fetched this way, so those files have to live in an archive that was cached. A loose file, or a member of an archive that was mounted without being cached, is not found by that path at all.
-- Opening a member as a file works either way. From a cached archive the file object becomes a window onto that same memory, and a read copies out of it. From an archive that is not cached, the archive file itself is opened and every read is biased to the member's position within it.
+- Many files are read only from cached archives. They include the shapes of object and animation types that are not [demand-loaded](/keys/demandload/), the game fonts, the theater palettes and the mouse cursor. A loose copy of such a file, or a copy in an archive mounted without caching, is not found.
+- Any file the game opens by name can come from either kind of archive.
 
-Direct pointers belong to the archive, remain valid only while it is cached and mounted, and must not be freed by their users. Demand-loaded structure, animation, overlay and construction shapes release only their file-layer copies.
+To replace a file of the first kind, put the replacement in `PCACHE.MIX` or an `ECACHE` archive. Do not also put a copy in an uncached archive that the game searches earlier: `PATCH.MIX` for a file in `PCACHE.MIX`, or `PATCH.MIX` or any `EXPAND` archive for a file in an `ECACHE` archive. The game finds that uncached copy first and treats the file as missing.
 
-:::danger[An archive too short to hold a header is mounted from uninitialized memory]
-The number of members and the size of the data block are taken from the first bytes of the file without testing that any bytes were read. An archive that cannot supply them, an empty file most obviously, is mounted with a member count and an index taken from whatever that memory last held. Allocating an index for an implausible count is not survivable. Where the count is small enough to allocate, the archive joins the search with meaningless entries. A request that matches one of those entries is handed an offset and a size that describe no file.
+An archive may carry a digest of its member data. The game checks it when caching the archive and leaves the archive uncached if the digest does not match.
+
+## File layout
+
+An archive starts with a header, then its index, then the member data:
+
+| Part | Contents |
+| --- | --- |
+| Flags | Optional. Two zero bytes, then a 16-bit field: bit 0 set means a digest follows the data, bit 1 set means the header and index are encrypted. An archive that does not start with two zero bytes has neither. |
+| Header | The number of members, a 16-bit integer, then the size of the member data in bytes, a 32-bit integer. |
+| Index | One 12-byte entry per member: the checksum of the member's name, the member's offset from the start of the data, and its size in bytes, each a 32-bit integer. |
+| Data | The members' contents. Member data is never encrypted. |
+| Digest | Present only when flag bit 0 is set. A 20-byte SHA-1 digest of the data. |
+
+The checksum is computed from the member's name in upper case, without a path. Keep the index sorted by checksum in ascending order, compared as signed 32-bit integers. The game finds a member by binary search over the index, so an entry out of order may not be found. The order of the members in the data does not matter.
+
+:::danger[Do not mount an empty or truncated archive]
+Keep every archive the game mounts at least as long as its header and index. If the file is shorter, for example an empty file, the missing member count, data size and index entries are taken from leftover memory. A negative member count crashes the game when it mounts the archive. Otherwise the archive joins the search with meaningless entries, and a request that matches one of them reads data from a wrong position.
 :::

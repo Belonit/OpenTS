@@ -7,15 +7,15 @@ when_omitted:
   value: "no"
 ---
 
-The setting lives in a mission's own section and is read from the mission the object is currently in. It does two things, and both are about refusing to leave the mission.
+`Zombie=yes` keeps an object on its current mission in two cases where it would otherwise pick a new one. The setting is read from the mission the object is currently in.
 
 ```ini title="rules.ini"
 [Sleep]
 Zombie=yes
 ```
 
-The first is the one that pairs with [`NoThreat`](/keys/nothreat/). A vehicle, soldier or aircraft that belongs to no team is snapped out of a mission marked no threat the moment damage from an identified attacker lands without destroying it. The flag that hides it from target scans is treated as a state it should not stay in once it has been found. This setting cancels that, so an object that is meant to sit still and be ignored goes on sitting still after it is shot. The no-threat flag is tested first at the one place this half is read, so it does nothing on a mission that is not also marked no threat. A team member never reaches the test at all: damage to one is reported to its team instead.
+**After damage on a no-threat mission.** A vehicle, infantry or aircraft that belongs to no team normally leaves a [`NoThreat=yes`](/keys/nothreat/) mission when it survives damage from a known attacker and does not retaliate. With `Zombie=yes` it stays, and scans go on ignoring it.
 
-The second is shared with [`Paralyzed`](/keys/paralyzed/): a soldier, or a vehicle with a first-slot weapon, that has finished its orders is not given a guard mission in place of this one, and stays where it is.
+**When it runs out of orders.** A soldier with no target and nowhere to go, or a vehicle with a primary weapon and nowhere to go, stays on this mission. Without the setting it is given Guard or Area Guard. This case works exactly like [`Paralyzed=yes`](/keys/paralyzed/), which lists the objects it does not affect.
 
-Nothing here stops the object from firing back. Whether it acquires the attacker is [`Retaliate`](/keys/retaliate/), which is tested separately.
+The setting does not stop the object from fighting back. An object allowed to [retaliate](/systems/target-selection/#retaliation) switches to attacking its attacker. Set [`Retaliate=no`](/keys/retaliate/) on the same mission to prevent that.

@@ -1,6 +1,6 @@
 ---
 key: Explosion
-summary: The animations a destroyed object leaves behind, one drawn at random from the list.
+summary: The explosion animations a destroyed vehicle, structure or aircraft plays.
 see_also: [ScrapExplosion, ScrapMetal, Explodes, DebrisTypes, MaxDebris, FirestormWarhead, Ammo]
 when_omitted:
   kind: value
@@ -12,15 +12,20 @@ when_omitted:
 Explosion=TWLT070,FRAG1,FRAG3 ; AnimTypes registered in [Animations]
 ```
 
-Each object kind spends the list differently:
+A destroyed object plays entries from this list. How many it plays, and where, depends on the kind of object:
 
-- A **vehicle** creates one entry, picked at random, at its own position. Three things replace that choice. Art declaring [`DeathFrames`](/keys/deathframes/) defers the animation to the end of its death throes. The firestorm warhead substitutes seven to nine firestorm particle systems. A fall that ends over water leaves a wake and the last entry of the rules' [`SplashList`](/keys/splashlist/) instead. A vehicle that [`Explodes=yes`](/keys/explodes/#scope-aircrafttype), or whose type grants it the `EXPLODES` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/), takes the **last** entry whenever it still has ammunition, meaning an unlimited [`Ammo`](/keys/ammo/) pool or a count above zero. The biggest wreck therefore belongs at the end of the list.
-- A **structure** creates one entry, picked afresh, on *every* cell of its footprint, scattered up to a quarter cell from the cell center, each starting between zero and three frames later. A large structure therefore consumes the list once per cell, not once per building.
-- An **aircraft** creates one entry, picked at random, at its center, but nothing at all when the killing warhead is [`[CombatDamage] FirestormWarhead`](/keys/firestormwarhead/), which substitutes seven to nine firestorm particle systems.
-- An **InfantryType** stores the list and never reads it back.
+- A **vehicle** plays one entry, picked at random, at its position. Three cases change that:
+  - A vehicle whose art declares [`DeathFrames`](/keys/deathframes/) first stands as a wreck, and plays its entry when the wreck explodes.
+  - A kill by [`[CombatDamage] FirestormWarhead`](/keys/firestormwarhead/) plays seven to nine firestorm particle systems instead.
+  - A vehicle that dies in water after falling leaves a wake and the last entry of [`SplashList`](/keys/splashlist/) instead.
+- A **structure** plays one entry, picked separately, on every cell of its footprint. Each is placed a quarter cell from its cell's center in a random direction and starts zero to three frames late. A large structure therefore plays many entries.
+- An **aircraft** plays one entry, picked at random, where it was hit. A kill by the firestorm warhead plays seven to nine firestorm particle systems instead.
+- **Infantry** never play this list.
 
-A match played with [`ScrapMetal`](/keys/scrapmetal/) on spends the type's [`ScrapExplosion`](/keys/scrapexplosion/) list instead of this one, in every way described above; a type that names no scrap animations keeps these.
+A vehicle that is [`Explodes=yes`](/keys/explodes/#scope-aircrafttype), or whose rank grants the `EXPLODES` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/), plays the **last** entry whenever it still has ammunition. It has ammunition when its [`Ammo`](/keys/ammo/) is unlimited or its count is above zero. Put the biggest explosion at the end of the list.
 
-An empty list simply leaves out the animation; the debris, the death voice and any [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) blast are unaffected either way.
+In a match with [`ScrapMetal`](/keys/scrapmetal/) on, the type's [`ScrapExplosion`](/keys/scrapexplosion/) list replaces this one in every case above. A type with no `ScrapExplosion` entries keeps this list.
 
-Writing `Explosion=none` empties the list, because the placeholder resolves to no type and nothing is left to add. Writing the key with nothing after the `=` is a different thing: the read finds no value and keeps whatever an earlier rules file set. A name the game does not already know is registered as a new animation type rather than rejected, so a misspelling becomes an animation of its own.
+An empty list plays no animation. The wreckage, the death voice and any `Explodes=yes` blast still happen. A vehicle with an empty list also skips two effects that come with its death animation: the [`TiberiumExplosive`](/keys/tiberiumexplosive/#scope-global-rules) blast of its load and the [screen shake](/keys/shakescreen/) of a strong vehicle.
+
+`Explosion=none` empties the list. A key with nothing after the `=` counts as absent, so the type keeps the list an earlier rules file set. An unknown name is registered as a new animation type instead of being rejected, so a misspelled name adds an animation of its own to the list.

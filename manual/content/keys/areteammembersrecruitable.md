@@ -7,4 +7,8 @@ when_omitted:
   value: "yes"
 ---
 
-The value is stamped onto the object at the moment it joins, and it outlives the team. An object released by a team declared `AreTeamMembersRecruitable=no` keeps the cleared state and is refused by every [autocreated team](/systems/ai-team-production/#recruitment) it later comes near. Its ordinary team-recruitable state is untouched, so a team whose TeamType is not marked as autocreated can still take it.
+Each object that joins a team of this type takes this value as its autocreate-recruitable state. With `AreTeamMembersRecruitable=no`, no [autocreated team](/systems/ai-team-production/#recruitment) can recruit the object, and a [base defense call-up](/systems/base-attacked/#which-objects-qualify) passes it over. Every TeamType the [AI trigger pass](/systems/ai-team-production/#from-suggestion-to-team) creates teams from is marked as autocreated, so AI trigger teams cannot recruit it either.
+
+The state stays after the object leaves the team, and after the team is gone. It changes only when the object joins another team, which sets it to that TeamType's value.
+
+The object's ordinary recruitable state is unaffected. A team whose TeamType is not marked as autocreated can still recruit it.

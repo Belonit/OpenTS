@@ -7,6 +7,6 @@ when_omitted:
   value: "10000"
 ---
 
-The figure is spent entirely on the setup screens: skirmish, network and online all build their credits slider from `2500` to this value. Nothing during a match compares a house's balance against it, so it neither caps what a house may accumulate nor limits what [`Money`](/keys/money/) can seed; it limits only what a player can choose.
+This is the highest starting credits a player can choose on the skirmish and multiplayer setup screens. Each screen's credits slider runs from `2500` up to this value. The lower end is fixed in the engine, so no rules setting can move it.
 
-The lower end is fixed in the engine and this setting cannot move it, so raising the starting money floor is not possible from the rules.
+The value limits only that choice. Nothing during a match compares a house's credits against it, and a [launch file](/formats/spawn-ini/#the-options-every-house-plays-under) sets starting credits without this limit. [`Money`](/keys/money/) explains how the default starting credits interact with the slider.

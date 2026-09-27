@@ -7,7 +7,9 @@ when_omitted:
   value: "15"
 ---
 
-Each shot a vehicle with [`TargetLaser=yes`](/keys/targetlaser/) fires restarts its laser's timer at this many frames, and the line is drawn while the timer runs. The default is one second at the game's frame rate. `0` starts no timer, so the laser is never drawn.
+Each time one of the player's vehicles with [`TargetLaser=yes`](/keys/targetlaser/) fires, its sighting laser is drawn for this many game frames. Every new shot restarts the count, so a vehicle that keeps firing keeps its laser up. `0` or a negative value hides the laser entirely.
+
+Because the count is in game frames, the laser stays up longer in real time at a slower game speed. [Action lines](/systems/action-lines/) covers which vehicles draw the laser and when it disappears early.
 
 ```ini title="UI.INI"
 [Ingame]

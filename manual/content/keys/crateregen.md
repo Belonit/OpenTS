@@ -1,12 +1,14 @@
 ---
 key: CrateRegen
-summary: The range, in minutes, of the random lifetime given to each engine-placed crate.
+summary: The range, in minutes, of the random lifetime given to each random crate.
 see_also: ["system:crates"]
 when_omitted:
   kind: value
   value: "10"
 ---
 
-Each crate the engine places draws its own lifetime when it is created, uniformly between half this figure and twice it. The default of `10` produces crates that live between 5 and 20 minutes; `CrateRegen=3` produces crates that live between 1.5 and 6 minutes. The setting names a range, not a lifetime.
+Each random crate gets a lifetime between half this value and twice it, in minutes of game time. The default of `10` gives lifetimes between 5 and 20 minutes; `CrateRegen=3` gives lifetimes between 1.5 and 6 minutes. Raising the value makes crates stay in place longer.
 
-An expired crate is removed and replaced by a fresh random one, so the setting governs how often crates move around the map rather than how many there are. Crates drawn into a map's overlay layer and crates dropped by destroyed vehicles are not tracked and never expire, so this setting does not reach them.
+When a crate's lifetime runs out, it is removed and the engine tries to place a new random crate elsewhere. The setting therefore controls how often crates move around the map, not how many there are.
+
+Crates drawn into the map and crates dropped by destroyed vehicles have no lifetime and stay until something collects them. [How long a crate lasts](/systems/crates/#how-long-a-crate-lasts) covers expiry and replacement.

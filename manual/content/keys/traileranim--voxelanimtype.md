@@ -8,8 +8,8 @@ when_omitted:
   value: none
 ---
 
-An animation of the named type is created every other frame for as long as the piece is alive. The frames are the even frames of the game clock, not a count of the piece's own. A plume that has to stay attached to the piece is better served by [`AttachedSystem`](/keys/attachedsystem/), which ties one particle system to it for the whole flight.
+`TrailerAnim` names an animation that the piece leaves behind as it flies. A new one is created on every even-numbered frame of the game clock while the piece is alive, so the piece leaves one every other frame. To keep a single effect attached to the piece for its whole flight, use [`AttachedSystem`](/keys/attachedsystem/) instead.
 
-:::caution[The trail is placed far above the piece]
-The trail takes the piece's horizontal position unchanged. Its height, though, is put through the conversion that turns a screen height into a world height, the opposite of the one that would place it correctly. The trail is drawn about nine times as high above the ground as the piece shedding it, and the gap grows as the piece climbs.
+:::caution[The trail appears far above the piece]
+Each trail animation takes the piece's horizontal position, but its height is about 8.7 times the piece's height. A piece 100 leptons up leaves its trail about 870 leptons up. Height is measured from the lowest ground level, so the gap also grows over raised terrain.
 :::

@@ -12,10 +12,10 @@ when_omitted:
 IonBeam=MYIONBEAM ; an AnimType registered in [Animations]
 ```
 
-The animation is created five leptons above the impact point on the frame the strike lands, centered on that point and pinned to the view, ahead of the damage and the combat lighting. It plays over every surface: unlike [`IonBlast`](/keys/ionblast/), which water replaces with a splash, the beam is drawn wherever the strike comes down.
+The beam plays centered on the impact point on the frame an ion cannon blast lands. It plays over land and water alike. [`IonBlast`](/keys/ionblast/), which plays with it, is replaced by a splash over water.
 
-The GDI Ion Cannon superweapon and the scripted ion-blast trigger action both arrive through the same routine, so both draw it.
+A superweapon with [`Type=IonCannon`](/keys/type/#scope-superweapontype) and the [Ion-cannon strike...](/mapping/actions/taction-ion-cannon/) trigger action both set off the same blast, so both play the beam.
 
-:::danger[An unset animation crashes the game at the first ion cannon strike]
-The beam is created without first checking that an animation was named, so with the key unset the game crashes as soon as an ion cannon fires, whether the superweapon or a trigger sent it.
+:::danger[Name an animation before an ion cannon can fire]
+With the key unset, the game crashes as soon as an ion cannon blast lands, whether the superweapon or the trigger action set it off.
 :::

@@ -7,4 +7,8 @@ when_omitted:
   value: "2"
 ---
 
-The figure is raw damage: the [vein attack](/systems/veins/#standing-in-veins) hands it to the object with [`VeinholeWarhead`](/keys/veinholewarhead/). The warhead's own modifier for the object's armor then decides how much is taken off. It is applied on every second frame, and to every unit, structure or infantryman standing in the cell at once rather than to one victim at a time. With no warhead resolved the amount is reduced to nothing whatever this figure says.
+`VeinDamage` is the raw damage of each hit in a [vein attack](/systems/veins/#standing-in-veins). A hit lands on every other frame and strikes every vulnerable building, vehicle, infantryman and aircraft in the cell at once.
+
+The damage is dealt with [`VeinholeWarhead`](/keys/veinholewarhead/), whose modifier for each object's armor scales it as for any other warhead. With no warhead set, vein attacks deal no damage whatever this value is.
+
+An object can take this damage more than once every other frame when its cell runs several attacks at once. [`VeinAttack`](/keys/veinattack/) explains when that happens.

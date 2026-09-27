@@ -6,14 +6,20 @@ when_omitted:
   value: "no"
 ---
 
-The flag turns a vehicle into one car of a train and changes how it moves, how it is routed, and how other things treat it.
+The flag makes a vehicle one car of a train. It changes how the vehicle plans a route, what stops it, what happens to objects in its way, and how other objects treat it.
 
-Pathfinding gives it no long-range search: the coarse pass that ordinary vehicles use to plan across the map is switched off for it. The step-by-step search is narrowed as well: the three cells in the rear arc, those more than a quarter turn off the direction the vehicle is currently facing, are struck out before the search begins. It cannot start a journey by backing up or turning sharply.
+A train plans every route cell by cell. The coarse map-wide planning that other vehicles use for long routes is off for it. A new route also cannot leave the starting cell through the three neighboring cells behind the train, those more than 90 degrees from its current facing. A train therefore cannot start a journey by reversing or turning sharply.
 
-Blockages barely stop it. Every obstacle short of strictly prohibited terrain is treated as a clear cell when it decides whether it may enter one. It does not ask an allied object standing in its way to move aside, and it does not stop short and settle for a nearby spot the way an ordinary vehicle does. An unarmed one counts a cell held by enemy infantry as destroyable rather than impassable. It never scatters, whatever is coming at it.
+A train treats every cell as open unless the cell is impassable to it. It does not ask an allied object in its way to move aside. When its destination is occupied, it keeps that destination where another vehicle would settle for a free cell nearby. An enemy object in a cell does not block a train, armed or not. Other unarmed vehicles treat a cell held by an enemy as impassable unless they can crush the occupant.
 
-Leaving the map is permitted. An ordinary object that is not a loaner may not leave, but a train may, and it is deleted once it is gone. The deletion holds off while the order it is following still points at a cell inside the playable area.
+Each time the lead car enters a cell, every object in that cell that is not crushable takes 10,000 damage from the [`C4Warhead`](/keys/c4warhead/). The lead car takes 20 damage from the same warhead for each object hit. A train with [`Crusher=yes`](/keys/crusher/) also crushes allied crushable objects, which other crushers leave alone.
 
-Stopping unhooks the cars behind it: a car that is not itself following another stops the whole chain trailing it, and that chain is broken again when one of them is destroyed.
+A train never scatters.
 
-A vehicle thief will not take a train. It is passed over as a target and answers the thief's click with a plain selection.
+A map couples cars into a train by naming, in each vehicle's entry, the vehicle that follows it. When the lead car stops, every car behind it stops too. When a car is destroyed, it is uncoupled from the car ahead, and every car behind it that has a destination stops.
+
+A train may leave the map. Most other objects may leave only while retreating or when their team is leaving the map. Once a train is off the map it is deleted, unless its destination is still inside the playable area or it belongs to a team that is not leaving the map.
+
+A [vehicle thief](/keys/vehiclethief/) never picks a train as a target. When the player points a thief at a train, the click selects the train.
+
+A destroyed train with [`CarriesCrate=yes`](/keys/carriescrate/) drops a crate only when the scenario sets [`TrainCrate`](/keys/traincrate/). [`TruckCrate`](/keys/truckcrate/) does not apply to it.

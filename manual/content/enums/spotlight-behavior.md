@@ -12,11 +12,17 @@ values:
   - { constant: LIGHT_BEHAVIOR_NONE, value: 0, input: "0", meaning: "The beam is held in place and not drawn at all." }
   - { constant: LIGHT_BEHAVIOR_SWEEP, value: 1, input: "1", meaning: "The beam sweeps back and forth across an arc centered on the structure's facing." }
   - { constant: LIGHT_BEHAVIOR_CIRCLE, value: 2, input: "2", meaning: "The beam travels around the structure at a constant rate." }
-  - { constant: LIGHT_BEHAVIOR_FOLLOW, value: 3, input: "3", meaning: "The beam tracks the nearest non-allied infantry or vehicle standing where the beam sat when the mode was set." }
+  - { constant: LIGHT_BEHAVIOR_FOLLOW, value: 3, input: "3", meaning: "The beam follows the nearest non-allied infantry or vehicle in or next to the beam's cell at the moment the mode is set." }
 ---
 
-`Follow` drops back to `Sweep` the moment its quarry dies, moves beyond [`SpotlightMovementRadius`](/keys/spotlightmovementradius/), or was never found at all, so it is a temporary state rather than a standing one. A beam is given `Sweep` when its structure is placed, which means `0` is only ever reached by a map or a trigger asking for it. [`SpotlightRadius`](/keys/spotlightradius/) covers which of the modes runs the intruder scan, and when. [`HasSpotlight`](/keys/hasspotlight/) covers whether a structure has a beam at all.
+[`HasSpotlight`](/keys/hasspotlight/) decides whether a structure has a beam at all, and [`SpotlightRadius`](/keys/spotlightradius/) covers which modes detect intruders.
 
-:::caution[A value outside the four is drawn but never moves]
-The four modes are the whole of this domain, and no branch of the beam logic answers to anything else. A beam holding a figure above `3`, or a negative one, is still visible, because only `0` suppresses the drawing. Nothing moves it and nothing scans from it, so it sits over one spot until [something sets its behavior again](/mapping/actions/taction-change-spotlight-behavior/).
+A structure's beam starts in `Sweep` when the structure is placed. A map's structure entry can give it another mode, and the [Change Light Behavior](/mapping/actions/taction-change-spotlight-behavior/) trigger action can change the mode during play.
+
+`Follow` lasts only while the beam has a target within reach. The beam returns to `Sweep` when the target is [`SpotlightMovementRadius`](/keys/spotlightmovementradius/) or farther from the structure. It also returns to `Sweep`, and forgets the target, when the target is destroyed, cloaks, changes owner or is removed from the map, such as by boarding a transport.
+
+When `Follow` is set with no non-allied infantry or vehicle near the beam, the beam returns to `Sweep` on the next frame. The exception is a beam that has followed a target before and has not forgotten it. That beam follows the same target again while the target is closer to the structure than `SpotlightMovementRadius`.
+
+:::caution[Use only the values 0 to 3]
+Any other value, including a negative one, leaves the beam drawn but motionless over one spot. It stays there and detects no intruders until a trigger action sets another mode.
 :::

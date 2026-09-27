@@ -12,4 +12,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-Outside a campaign, an alliance with the player no longer reveals the ground around a passive house's objects. The alliance sweep that `AllyReveal` turns on revealed by hand and skipped the rule that such objects never look.
+Outside a campaign, the objects of a country with `MultiplayPassive=yes` in its `rules.ini` section reveal no ground, and an alliance with the player no longer changes that. With `AllyReveal=yes` in the `[AudioVisual]` section of `rules.ini`, which shares each house's sight with its allies, forming the alliance used to reveal the ground around every one of the passive house's objects once.

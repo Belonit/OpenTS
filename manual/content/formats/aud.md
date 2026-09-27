@@ -1,7 +1,7 @@
 ---
 format_id: aud
 title: AUD audio
-summary: Stores sound effects, speech, and music consumed by the OpenTS audio layer.
+summary: Westwood's audio format, which holds the game's sound effects, speech and music.
 kind: binary
 extensions:
   - .AUD
@@ -15,33 +15,71 @@ source_files:
   - code/audio/audiostream.cpp
   - code/voc.cpp
   - code/theme.cpp
+  - code/vox.cpp
 ---
 
-Sound effects and music both play from `.AUD` files, but the two paths do not find those files the same way, and the difference decides where a modded sample has to be put.
+The game finds every `.AUD` file by name through the normal file search. A loose file in the game directory replaces a member of a mounted archive with the same name; [MIX archives](/formats/mix/) covers which archives are mounted.
 
 ## How a sample is found
 
-A sound effect names its samples in [SOUND.INI](/formats/sound-ini/) and looks each one up the first time it plays, through the ordinary file layer. A loose file in the game directory and a member of any mounted archive both serve, and the loose file wins; [MIX archives](/formats/mix/) covers which archives are mounted. The engine tries `.WAV`, `.OGG`, `.FLAC` and `.MP3` under the same name before it tries `.AUD`. A decoded sample is kept in memory while the sound plays and afterwards for as long as the memory is not needed for another, so a sound plays from memory from its second use on. A sound whose sample is not found is still registered under its ID and never plays.
+Sound effects, music and speech name their files differently:
 
-Music is streamed. A music track's `.AUD` is opened by name through the same file layer each time it plays and read a block at a time, so nothing of it is held in memory between plays. A track whose file cannot be opened is left out of shuffled and sequential play, and produces nothing when it is asked for directly.
+- A sound effect's samples are named in [SOUND.INI](/formats/sound-ini/) without an extension. The game tries `.WAV`, `.OGG`, `.FLAC` and `.MP3` under each name before `.AUD`, and plays the first file that decodes. [Sound effects](/systems/sound-effects/#samples) covers the size limit and how long a decoded sample stays in memory.
+- A music track plays from the `.AUD` file named after its [THEME.INI](/formats/theme-ini/) ID, and a [speech](/systems/eva-speech/) line from the `.AUD` file with its name. The game reads these files while they play and keeps nothing of them in memory afterward. [Music](/systems/music/) covers what happens when a track's file is missing.
 
-## When either one is silent
+A file with the `.AUD` extension that holds WAV, OGG, FLAC or MP3 data also plays, as a sound effect, music track or speech line. The game reads such a file by its content when it does not start with a valid AUD header.
 
-A sound effect is played only while all of these hold, tested in this order:
+## When sound effects and music are silent
 
-- the player's sound effect volume setting is above zero, and so is the volume the sound is asked to play at;
-- the game was not started quiet;
-- the sound names at least one sample;
+A sound effect starts only when all of these hold:
+
+- the sound effect volume option is above zero, except for the test beep the voice volume control plays outside a game;
+- the volume the sound is played at, after any fade with distance, is above zero;
+- the game was not started with the [quiet launch option](/using/command-line/quiet/);
+- its SOUND.INI entry names at least one sample;
 - an audio device is available.
 
-Music is played only while all of these hold, tested in this order:
+A music track starts only when all of these hold:
 
 - an audio device is available;
-- the game was not started quiet;
+- the game was not started with the quiet launch option;
 - the music volume is above zero.
 
-## What the reader takes from the file
+## File structure
 
-The start of the file supplies the playback rate, the size of the data, the size it uncompresses to, a set of flags and a compression code. Two flags are read: one marks the sample as stereo, the other marks it as sixteen bit. Any rate above zero, either bit depth, and mono or stereo all play; a rate above 20000 and below 24000 hertz is played as 22050 whatever the file asked for. The Westwood delta codec is refused when the sixteen-bit flag is set, because it never produced sixteen-bit output.
+An AUD file is a 12-byte header followed by the sample data. Numbers are stored low byte first.
 
-Three compression codes are decoded: uncompressed data, the earlier Westwood delta compression, and the frame compression the shipped files use. A sample with any other code is refused and does not play. Within a frame-compressed sample each frame is preceded by its compressed size, its uncompressed size and a fixed marker. A frame whose marker does not match, or whose sizes exceed the decoder's limits, ends the sample there instead of failing the play.
+| Offset | Bytes | Holds |
+| --- | --- | --- |
+| 0 | 2 | Playback rate in hertz |
+| 2 | 4 | Size of the data after the header, in bytes |
+| 6 | 4 | Size of the data once uncompressed, in bytes |
+| 10 | 1 | Flags: `1` for stereo, `2` for 16-bit samples |
+| 11 | 1 | Compression code |
+
+The file does not play if any of these holds:
+
+- the rate is `0`;
+- the data size is `0` or less, or larger than the rest of the file;
+- a flag other than stereo and 16-bit is set;
+- the compression code is not one of the three below;
+- the compression code is `1` and the 16-bit flag is set.
+
+Any other rate plays as written, except that a rate above 20000 and below 24000 hertz plays at 22050. Mono and stereo samples both play, at either bit depth.
+
+| Code | Compression |
+| --- | --- |
+| `0` | None. 8-bit samples are unsigned and 16-bit samples are signed; stereo samples alternate left and right. |
+| `1` | Westwood delta compression, for 8-bit samples only |
+| `99` | ADPCM, the compression the shipped files use |
+
+With code `1` or `99`, the data is a series of blocks. Each block starts with an 8-byte header: its compressed size in 2 bytes, its uncompressed size in 2 bytes, and the marker `0x0000DEAF` in 4 bytes. A block whose two sizes are equal is stored uncompressed.
+
+Keep each block within these limits:
+
+- The uncompressed size is at most 8392 bytes and holds a whole number of samples for every channel. The sample ends before a block that breaks this.
+- The compressed size is at most 2098 bytes. Music and speech end before a larger block. A sound effect with code `99` also ends there, unless that block is stored uncompressed.
+
+The sample also ends before a block without the marker, and before a code `1` block that does not decode to its uncompressed size. The blocks before it still play.
+
+Set the header's uncompressed size to the full decoded size in a code `1` file. A sound effect ends before the first block that would take it past that size. A value of `0` counts as four times the data size.

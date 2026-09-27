@@ -7,8 +7,24 @@ when_omitted:
   value: "0,0"
 ---
 
-A pause is drawn from between the two bounds each time a pass ends and another begins, so the pair needs [`LoopCount`](/keys/loopcount/) above one to do anything. While both bounds are zero the animation loops with no pause at all. Fifteen frames make a second of game time, so `RandomLoopDelay=10,300` is a pause of between two thirds of a second and twenty seconds.
+Each time a looping animation finishes a pass and starts the next, it pauses for a random number of game frames between the two bounds. The bounds may be written in either order. Fifteen game frames make one second of game time, so `RandomLoopDelay=10,300` pauses for between two thirds of a second and twenty seconds.
 
-The animation does not advance while it is paused, and nothing marks it for redraw, so the frame it stopped on stays in place. When the pause runs out, the animation's opening side effects run again. Its [`Report=`](/keys/report/#scope-animtype) sound plays again, and a [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) animation sets off the tiberium beneath it again. An animation whose largest frame is its first performs its scorch or crater step again, but the new mark lands only where the ground has no smudge yet, so a stationary animation does not deepen the first one. A looping animation with a sound and a pause therefore repeats that sound once per pass, which is what makes the pause worth having on an idle effect and unusable on a noisy one.
+The pause comes only between passes, so the animation needs more than one pass, normally a [`LoopCount`](/keys/loopcount/) above `1`. With both bounds at `0`, the animation loops without a pause.
 
-A value with only one number is discarded whole, and both bounds keep whatever the type already holds. Both halves have to be written.
+While paused, the animation does not advance and is not drawn.
+
+When the pause ends, the animation repeats the effects it had when it first started:
+
+- Its [`Report=`](/keys/report/#scope-animtype) sound plays again.
+- A [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) animation sets off the Tiberium beneath it again.
+- If its largest frame is frame 0 of its shape, its [`Scorch`](/keys/scorch/), [`Crater`](/keys/crater/#scope-animtype) and [`Flamer`](/keys/flamer/) effects run again. A new scorch mark or crater appears only on a cell with no smudge yet, so a stationary animation leaves one mark.
+
+Animations placed by the Play Anim At and Drop Zone Flare trigger actions skip the sound and the chain reaction.
+
+A pass followed by no pause, including a pick of `0`, repeats none of these effects. A pause is therefore how a looping animation plays its sound once per pass.
+
+:::caution[Keep both bounds at 0 or above]
+A negative pause never runs out. An animation that picks one stops, is no longer drawn, and never finishes.
+:::
+
+Write both numbers. A value with only one number is ignored.

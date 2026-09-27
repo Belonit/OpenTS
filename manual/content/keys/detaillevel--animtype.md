@@ -8,13 +8,13 @@ when_omitted:
   value: "0"
 ---
 
-The animation is drawn only while the player's own detail setting has reached this figure. That setting runs from 0 at its lowest through 2 at its highest. A figure of `1` drops the animation at the lowest setting, `2` keeps it only at the highest, and anything above 2 hides it at every setting. At zero the test never hides anything. A purely decorative animation sets a high figure so that it is the first thing to go on a slow machine.
+The animation is drawn only when the player's [detail setting](/keys/detaillevel/#scope-client-settings) is at least this value. The detail setting runs from `0`, the lowest, to `2`, the highest. A value of `1` hides the animation at the lowest setting, `2` shows it only at the highest, and any value above `2` hides it at every setting. At `0` or below, the animation is always drawn. Give purely decorative animations a higher value so that they are the first to disappear on a slow machine.
 
-The test governs drawing alone. An animation held back by it is still created, still advances through its stages, still counts its passes down and still applies whatever damage, craters, scorch marks or tiberium growth it has. Only the artwork is skipped. Raising the figure therefore trims drawing work without changing what happens in the game.
+The setting controls drawing only. A hidden animation is still created, still advances through its frames and loops, and still deals its damage, leaves craters and scorch marks, and spreads Tiberium.
 
-The stand-in a structure's animation leaves behind under the fog of war makes the same test, so an animation the setting hides is missing from the remembered picture as well as from the live one.
+The picture of a structure's animation remembered under the fog of war uses the same test, so an animation this setting hides is missing there as well.
 
-How faded the animation is drawn is gated separately, by its own [`TranslucencyDetailLevel`](/keys/translucencydetaillevel/); this figure decides only whether it is drawn at all.
+[`TranslucencyDetailLevel`](/keys/translucencydetaillevel/) separately decides at which settings the animation is drawn translucent. This setting decides only whether it is drawn at all.
 
 ```ini title="art.ini"
 [MYPILE_A] ; an idle animation for a barracks

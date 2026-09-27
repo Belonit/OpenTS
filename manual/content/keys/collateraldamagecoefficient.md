@@ -1,23 +1,23 @@
 ---
 key: CollateralDamageCoefficient
-summary: The fraction of its own maximum strength a destroyed object deals to its surroundings.
+summary: Multiplies a destroyed object's maximum strength to give the collateral figure that sizes its death explosion.
 see_also: [Explodes, Strength, ExpSpread, Cyborg, Storage]
 when_omitted:
   kind: context-dependent
-  note: "`1` for an AircraftType, BuildingType or UnitType and `0.66` for an InfantryType. A `Cyborg=yes` InfantryType falls to `0.33`, but only from the second rules layer that names its section onward, because the cyborg flag is not yet set when the value is chosen on the first pass."
+  note: "`1` for an AircraftType, BuildingType or UnitType and `0.66` for an InfantryType. A `Cyborg=yes` InfantryType falls to `0.33`, but only in rules files read after the one that sets `Cyborg=yes`, because the cyborg flag is read after this default is chosen."
 ---
 
 ```ini title="rules.ini"
 [MYAMMOTRUCK] ; a UnitType registered in [VehicleTypes]
 Explodes=yes
 Strength=200
-CollateralDamageCoefficient=2.5 ; 500 damage delivered on death
+CollateralDamageCoefficient=2.5 ; a collateral figure of 500
 ```
 
-The coefficient multiplies the type's [`Strength`](/keys/strength/#scope-aircrafttype), its full maximum rather than the strength it had left. The product is the damage a destroyed object deals to everything around it. A structure adds the [`Power`](/keys/power/) of each Tiberium held in its [`Storage`](/keys/storage/) on top, which is why a full refinery makes a far larger crater than an empty one.
+A destroyed object's collateral figure is this coefficient times its type's [`Strength`](/keys/strength/#scope-aircrafttype). `Strength` is the maximum, not the strength the object had left. A structure adds, for each Tiberium type in its [`Storage`](/keys/storage/), the amount held times that Tiberium's [`Power`](/keys/power/#scope-tiberium), so a full refinery blasts harder than an empty one.
 
-That figure is reached only on a death that explodes, so the setting does nothing at all unless the type is [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) or the object holds the veteran explodes ability. It also sizes the blast radius, and because the radius calculation divides the figure by 100 and discards the remainder, any product below 100 collapses to the minimum radius.
+The figure is used only when the object explodes on death: its type is `Explodes=yes`, or its rank grants the [explodes ability](/systems/veterancy/#abilities). The blast also needs a weapon in the object's first weapon slot, because it uses that weapon's warhead. [`Explodes`](/keys/explodes/#scope-aircrafttype) covers how the figure sets the blast's damage, radius and animation. Any figure below 100 gives the smallest radius.
 
-:::caution[A later rules file resets this key]
-The value is re-derived from the object kind immediately before it is read, so a later rules layer that names the type's section, for any key at all, discards a coefficient an earlier file set. Repeat the assignment in every file that declares the section.
+:::caution[Repeat the key in every rules file that names the section]
+Each rules file that contains the type's section resets the coefficient to the default for its kind before reading this key, even when the file sets only other keys. Write `CollateralDamageCoefficient` in every file that contains the section.
 :::

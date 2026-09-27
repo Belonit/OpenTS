@@ -13,8 +13,13 @@ IsJuggernaut=yes
 StartFacing=4 ; south
 ```
 
-The figure counts eighths of a turn: `0` north, `2` east, `4` south, `6` west. The engine multiplies the figure onto its 256-step dial, so each step is 45 degrees and there is no way to write a facing between two of them. A figure of `8` or more wraps around.
+A structure snaps to this facing the moment its construction animation finishes. The facing shows only on a structure with a part that turns, such as a turret.
 
-The facing is applied the moment a structure's construction animation finishes. A [`LaserFence=yes`](/keys/laserfence/) structure is skipped and keeps whatever facing it was placed with. A structure pre-placed on the map never plays a construction animation, so this facing does not reach it.
+The value counts eighths of a turn: `0` is north, `2` east, `4` south and `6` west. Each step is 45 degrees, and no value selects a facing between two steps. Values outside `0` to `7` wrap around, so `8` is north again.
 
-An [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure will not begin to fold away until its body is back at this facing and its barrel is back at [`StartPitch`](/keys/startpitch/). Deconstruction turns both toward their start values and retries every frame until they arrive, before the reverse build-up runs. An [`Artillary=yes`](/keys/artillary/) structure takes the same paired test later on, at the point its [`UndeploysInto`](/keys/undeploysinto/) vehicle would be created.
+Two kinds of structure never take this facing:
+
+- A [`LaserFence=yes`](/keys/laserfence/) structure keeps the facing it was placed with.
+- A structure that starts the scenario on the map plays no construction animation.
+
+An [`IsJuggernaut=yes`](/keys/isjuggernaut/) or [`Artillary=yes`](/keys/artillary/) structure also turns back to this facing when it packs up; [`StartPitch`](/keys/startpitch/) covers when.

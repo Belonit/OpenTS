@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-The wave takes the shot's damage over entirely. A sonic weapon's projectile is created with its firepower forced to nothing, so [`Damage=`](/keys/damage/#scope-weapontype) is never delivered and everything the weapon does is done by [`AmbientDamage`](/keys/ambientdamage/) as the wave passes.
+`IsSonic=yes` makes the weapon fire a wave that rolls from the muzzle to the target and damages the objects under it. All of the weapon's damage comes from the wave's [`AmbientDamage`](/keys/ambientdamage/). The weapon still fires its projectile, but the projectile carries no damage, so [`Damage=`](/keys/damage/#scope-weapontype) adds nothing to the shot.
 
 ```ini title="rules.ini"
 [MySonicGun] ; example WeaponType
@@ -19,14 +19,20 @@ Range=6
 ROF=120
 ```
 
-The wave grows out from the muzzle by a twentieth of the distance each frame, reaching the target after twenty frames. It then holds at full length for another sixty-one before it begins to fade from its trailing edge. In all it lasts about a hundred frames, some seven seconds. On every one of those frames it damages every object standing in a cell it currently covers, so anything that stays under it takes the ambient figure many times over rather than once. Even a small figure adds up to a great deal. It also wears down wall overlay it crosses and sets off chain reactive overlay.
+## How long the wave lasts
 
-Neither of the object's weapons may fire while a wave is alive, and the reload delay is exactly [`ROF`](/keys/rof/) with the house's rate of fire bias, the burst gaps and the random padding all skipped. A structure with more than one round left waits a single frame instead, so only the effect's own lifetime paces it.
+The wave grows from the muzzle by a twentieth of the distance each frame, and reaches the target after 20 frames. It holds at full length for about 60 more frames, then fades from its trailing edge over the last 20. The whole wave lasts about 100 frames.
 
-:::caution[The wave is fired and fed from the first weapon slot]
-The damage figure and the warhead the wave applies are read from the weapon in the object's first slot, not from the slot that fired, and the wave is re-anchored each frame to that slot's muzzle. A sonic weapon in the second slot therefore rolls out a wave with the first weapon's ambient damage and warhead.
-:::
+The wave damages the objects in every cell it covers on every frame it lasts, so an object that stays under it is hit many times. Even a small `AmbientDamage` adds up. If the firer is destroyed, the wave deals no more damage and fades. [`AmbientDamage`](/keys/ambientdamage/) covers the damage each hit deals, and its effect on walls and chain reactive overlay. On every frame, a destroyable cliff under the wave may also collapse, at the chance [`[CombatDamage] CollapseChance`](/keys/collapsechance/) sets.
 
 :::caution[A wave fired beyond about 8.5 cells dies at once]
-The wave keeps growing only while the firer is still aiming at the same target and the two are no more than 2172 leptons apart, a little under 8.5 cells. Past that it stops and fades from its trailing edge. A wave that was already past that distance when it was created is removed on the same frame and damages nothing. A sonic weapon whose [`Range=`](/keys/range/) reaches further than that simply misses at its longest shots.
+The wave keeps growing and holding only while the firer still targets the same object and the two are no more than 2172 leptons apart, a little under 8.5 cells. When that stops being true, the wave fades early from its trailing edge. A wave fired from beyond that distance is removed as soon as it appears and damages nothing, so a sonic weapon whose [`Range=`](/keys/range/#scope-weapontype) reaches further deals no damage at its longest shots.
+:::
+
+## Firing rate
+
+While a wave is alive, neither of the object's weapons can fire. The reload delay after a sonic shot is exactly [`ROF`](/keys/rof/#scope-weapontype), with no house rate-of-fire bias, burst delay, random extra frames or veteran bonus. The next shot waits until both `ROF` has passed and the wave is gone. A structure with more than one round of [`Ammo`](/keys/ammo/) left waits only for the wave. [The reload delay](/systems/firing-geometry/#the-reload-delay) gives the full rules.
+
+:::caution[The wave uses the first weapon slot's settings]
+The wave's damage and warhead come from the weapon in the object's first slot, whichever slot fired. The wave is also drawn from the first slot's muzzle. A sonic weapon in the second slot therefore rolls out a wave with the first weapon's `AmbientDamage` and warhead.
 :::

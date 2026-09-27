@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The setting gates the drop for every [`CarriesCrate=yes`](/keys/carriescrate/) vehicle whose type is not a train; trains use [`TrainCrate`](/keys/traincrate/) instead. It is read once as the scenario loads and nothing changes it afterwards.
+With the switch on, a destroyed [`CarriesCrate=yes`](/keys/carriescrate/) vehicle drops a crate on a free cell near where it died, unless its type sets [`IsTrain=yes`](/keys/istrain/). Trains follow [`TrainCrate`](/keys/traincrate/) instead.
+
+The setting is read once as the scenario loads, and no trigger action changes it.

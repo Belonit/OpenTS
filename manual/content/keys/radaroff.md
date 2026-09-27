@@ -7,4 +7,8 @@ when_omitted:
   value: none
 ---
 
-The sound plays without a position, at the moment the pane is put into its closing state. The house losing its radar and the mode cycle dropping a player-names display back to a radarless pane are two occasions of it, among several. Unlike [`RadarOn`](/keys/radaron/), the branch has no guard against the pane already being closed or closing, so the sound can play again over a pane that is already shut. [Power output and drain](/systems/power/#radar) covers what takes the radar away.
+The sound plays, without a position, when the radar pane starts to close. These are the usual occasions:
+
+- The local player loses the radar. [Power output and drain](/systems/power/#radar) covers what takes it away.
+- In a multiplayer game without radar, [Radar Toggle](/commands/toggleradar/) closes the name and kill list.
+- An in-game transmission ends while the player has no radar.

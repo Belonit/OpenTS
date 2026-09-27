@@ -12,8 +12,14 @@ when_omitted:
 VoiceSelect=MYTANK_Sel1,MYTANK_Sel2 ; sound IDs registered in SOUND.INI
 ```
 
-One entry is picked from the list at random and played at full volume, not as a positional sound effect, so an object selected far off the visible screen is as loud as one under the cursor. The response is spoken only for a house the player controls.
+When the player selects an object of this type, it speaks one entry picked at random from the list. The response is a sound without a place, so it does not fade or pan with the object's position on screen; see [Placed sounds](/systems/sound-effects/#placed-sounds). Only objects of a house the player controls speak.
 
-Selecting several objects at once does not produce several responses. The first object that is actually selected speaks, and the rest of that selection is silenced, whether the objects were taken with a band box, a group key or a replayed recording.
+Selecting several objects at once with a band box or a group key produces one response, from the first object selected. Three commands are the exception. A press of [`SelectType`](/commands/selecttype/), [`VeterancyFilter`](/commands/veterancyfilter/) or [`HealthFilter`](/commands/healthfilter/), or of a filter's add-lower form, can play one response for each object it adds to the selection. A filter press that only narrows the selection plays one response for each object it keeps.
 
-Names are matched against the IDs registered in [SOUND.INI](/formats/sound-ini/); anything unmatched is dropped, so a list of nothing but misspellings leaves the type silent rather than falling back on anything. Writing the key with nothing after the `=` is a different thing: the read finds no value and keeps whatever an earlier rules file set. The other four voice lists are read the same way, and a space after a comma has the same effect here: the spaced name fails to match and is dropped.
+## Writing the list
+
+This section also applies to [`VoiceMove`](/keys/voicemove/), [`VoiceAttack`](/keys/voiceattack/), [`VoiceDie`](/keys/voicedie/) and [`VoiceFeedback`](/keys/voicefeedback/).
+
+Each name is matched, without regard to letter case, against the sound IDs registered in [SOUND.INI](/formats/sound-ini/). A name that matches no sound is dropped. Do not put spaces after the commas: a name with a leading space matches nothing and is dropped.
+
+A later rules file that sets the key replaces the earlier list. Writing the key with nothing after the `=` does not clear it, because the game ignores an empty assignment. To silence a type that an earlier file gave a list, write a value that matches no sound, such as `<none>`.

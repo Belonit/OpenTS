@@ -15,6 +15,6 @@ credit:
 - dkeeton
 ---
 
-A defense whose weapon reaches only the air now takes an attack order against an airborne aircraft in range, firing at what it is given instead of choosing for itself. The cursor follows what the weapon can reach, so a landed aircraft, a ground unit and open ground offer nothing. `AimableSams` in the launch file is not read.
+A defense whose weapon can hit only targets in the air used to refuse attack orders and choose its own targets. It now accepts an attack order against an aircraft in flight within its range and fires at that aircraft. The attack cursor appears only over targets the weapon can hit, so a landed aircraft, a ground unit or open ground shows none. `AimableSams` in the client launch file, `SPAWN.INI`, is not read, because OpenTS allows the order without it.
 
-dkeeton is credited for the ts-patches patch this follows, whose `AimableSams` gate the order here does without.
+dkeeton is credited for the ts-patches patch this follows, which enabled the order through `AimableSams`.

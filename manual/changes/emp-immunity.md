@@ -23,8 +23,8 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-`ImmuneToEMP=yes` on an object type makes an EM pulse pass it by: a landed aircraft is not wrecked, a unit is not stunned, a structure is not powered off, and a limpet mine is not destroyed. The object still springs its Paralyzed trigger event.
+`ImmuneToEMP=yes` in an object type's section of `rules.ini` protects that object from EM pulses. A pulse does not stun an immune vehicle, landed aircraft or cyborg, crash an immune aircraft that is taking off or landing, power off an immune structure, or destroy an immune limpet mine. An immune object still springs its Paralyzed trigger event.
 
-`IsCoreDefender=yes` on a structure or vehicle now only supplies this key's default, so Firestorm's Core Defender keeps its immunity and a ruleset can switch it off with `ImmuneToEMP=no`.
+`IsCoreDefender=yes` on a structure or vehicle used to make it immune whatever the rest of its section said. It now makes `ImmuneToEMP` default to `yes`, so Firestorm's Core Defender stays immune unless its section sets `ImmuneToEMP=no`.
 
 Rampastring is credited for the Vinifera feature this follows.

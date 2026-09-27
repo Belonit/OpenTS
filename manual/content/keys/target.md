@@ -8,6 +8,6 @@ when_omitted:
   value: "-1"
 ---
 
-The sync-bug settings are read only as the multiplayer menu is entered, and only while recording playback is armed. The number is decoded into the target the hunt would compare each object against, and unlike the neighboring coordinate it really is stored.
+The value is an encoded number that identifies an object to watch. The engine decodes and stores it, but nothing compares any object against it, because the search that would do so is compiled out of both build configurations.
 
-It is then never compared with anything, because the routine that would do the comparing has an empty body. No gameplay path reads the target.
+`Target` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/playback/).

@@ -9,6 +9,8 @@ targets:
 credit: [ZivDero, AlexB, dkeeton, CCHyper]
 ---
 
-The Guard command now orders a selected harvester or weeder to harvest. A harvester that is already unloading is left alone, and an unarmed harvester used to ignore the key. Every other selected object that can move and fire guards the area around the spot it stands on when the key is pressed, not the cell it was heading for. A unit on the move therefore stops where it is instead of finishing its trip first.
+The Guard command now sends a selected harvester or weeder back to harvesting, unless it is unloading. An unarmed harvester used to ignore the key, and an armed one guarded like any other armed unit.
+
+Every other selected object that can move and fire now guards the area around the spot where it stands when the key is pressed. It used to guard around the cell it was heading for, so a moving unit finished its trip before guarding.
 
 AlexB and CCHyper are credited for the harvester behavior in ts-patches and Vinifera, and dkeeton for the ts-patches change that holds units in place.

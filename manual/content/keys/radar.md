@@ -7,16 +7,14 @@ when_omitted:
   value: "no"
 ---
 
-The radar map is raised for the local player's house when all of these hold:
+A `Radar=yes` structure gives the local player the radar map. The map is up while all of these hold:
 
-- No ion storm is running.
-- The house's power output is at least its drain.
-- It owns a structure of a `Radar=yes` type that is switched on, out of limbo, on the map and not being deconstructed.
+- no ion storm is running;
+- the player's house has at least as much power output as drain;
+- the house owns a `Radar=yes` structure that is switched on, on the map and not being sold.
 
-A scenario set to [`FreeRadar=yes`](/keys/freeradar/) skips that search but still has to pass the storm and power tests.
+[`FreeRadar=yes`](/keys/freeradar/) replaces the third test, but the storm and power tests still apply. In a campaign, a radar structure the player has not discovered does not count. A player who has been given the whole map keeps the radar whatever the three tests say, as [observers and coach mode](/systems/observers/) describes.
 
-:::caution[The search stops at the first radar it finds]
-Buildings are scanned in creation order and the scan ends at the first eligible structure, which supplies the radar only if it is not stunned. A stunned radar found first therefore keeps the map dark even when a second, working one stands beside it.
-:::
+A stunned radar structure can keep the map dark even while another radar structure works, because the house checks only the first structure that passes the tests above. [Radar](/systems/power/#radar) gives the full test.
 
-The value also marks the structure as an intelligence target. Once a house has a spy inside an enemy's `Radar=yes` structure, every look that enemy's objects make also uncovers the map for the spy's house.
+`Radar=yes` also makes the structure a target for spies. When a spy enters an enemy's `Radar=yes` structure, everything that enemy's objects see is also uncovered for the spy's house. [Who looks, and when](/systems/map-visibility/#who-looks-and-when) covers how long that lasts.

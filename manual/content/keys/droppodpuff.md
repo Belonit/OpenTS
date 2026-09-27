@@ -8,6 +8,4 @@ when_omitted:
   value: none
 ---
 
-The engine reads this `AnimType` reference from `[AudioVisual]`, but no runtime code creates the referenced animation.
-
-Descending pods instead create the hard-coded `SMOKEY` animation every six frames, and only while [`DropPodWeapon`](/keys/droppodweapon/) is configured.
+No game effect creates this animation. A falling pod's smoke trail is the fixed `SMOKEY` animation, which appears only while [`DropPodWeapon`](/keys/droppodweapon/) is set. The landing animation comes from [`DropPod`](/keys/droppod-global-rules/).

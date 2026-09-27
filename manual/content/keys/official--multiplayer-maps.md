@@ -8,8 +8,8 @@ when_omitted:
   value: "no"
 ---
 
-The `Official=` entry sits in the map's `[Basic]` section. Loose `.mpr` files in the game directory are scanned whenever the multiplayer map list is rebuilt. The flag travels with the map into the lobby: the host sends it to the guests along with the rest of the game options. It decides whether a guest who does not already hold the map may fetch it from the host.
+`Official=yes` in the `[Basic]` section of a loose `.mpr` map in the game directory marks the map as one that shipped with the game. In a LAN game, the host's copy of the map decides the mark.
 
-A guest missing a map marked `yes` will not ask for it: on a LAN it reports that it cannot play and signs off. A map left unmarked is transferred from the host instead.
+A guest cannot download a map marked official from the host. If the guest has no copy of the map with the same file name, size and `[Digest]` as the host's, it shows a message that it cannot play the map and leaves the game. A map without the mark is downloaded from the host instead.
 
-The generated random map is exempt from the refusal whatever the flag says. Maps packaged inside a `.pkt` list count as official without reading any setting.
+Maps listed in a `.pkt` file always count as official, whatever they set. The random map is always downloaded from the host, whatever its mark.

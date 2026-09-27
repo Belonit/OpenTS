@@ -7,4 +7,6 @@ when_omitted:
   value: none
 ---
 
-The line is spoken on the frame an ordinary weapon's timer reaches zero, and only for the local player's own weapon. A [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon becomes ready on a separate branch that announces nothing. An unrecognized speech name is not rejected; it leaves the weapon with no line.
+The line plays for the local player's weapon on the frame its countdown reaches zero and the weapon becomes ready.
+
+Two kinds of weapon become ready without it. A [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon never plays it. A one-time weapon from a trigger action or a crate arrives fully charged, and its grant is silent. An unrecognized speech name gives the weapon no line.

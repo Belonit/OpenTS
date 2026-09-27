@@ -7,7 +7,7 @@ when_omitted:
   value: "0,0,0"
 ---
 
-Three channel values from 0 to 255 give the core of the beam its color. The core is drawn once, as a single antialiased line straight down the middle of the beam. It is the only part of a laser whose color is chosen freely: the flanking glow blends its red alone, and so does the screen glow that spans the same line.
+`LaserInnerColor` sets the color of the thin core line down the middle of an [`IsLaser=yes`](/keys/islaser/) beam, as red, green and blue values from `0` to `255`.
 
 ```ini title="rules.ini"
 [MyObeliskRay] ; example WeaponType
@@ -15,9 +15,13 @@ IsLaser=yes
 LaserInnerColor=255,0,0
 ```
 
-Only the channels above zero are blended onto the terrain. A channel left at zero contributes nothing, and a color of `0,0,0` leaves no core at all. The lowest detail setting drops that test along with the blending: the core becomes a plain shaded line in exactly this color. A black core is drawn as a black line there.
+At the medium and high [detail levels](/keys/detaillevel/#scope-client-settings), the core is an antialiased line blended onto whatever lies beneath it, one channel at a time. Only channels above `0` are blended; a `0` channel leaves that channel of the picture beneath unchanged. The default `0,0,0` therefore draws no visible core.
 
-The figure is read from the weapon in the object's first slot whichever slot fired, so a laser weapon in the second slot borrows the first weapon's core color.
+At the low detail level, the core is drawn as a plain line in this color, darkened where the picture beneath is shaded, so `0,0,0` draws a black line.
+
+The core is the only part of a laser whose color you choose freely at the medium and high detail levels. The glow lines beside it use only the red of [`LaserOuterColor`](/keys/laseroutercolor/), and the screen glow along the beam only brightens red.
+
+The value is read from the weapon in the object's first weapon slot, whichever slot fired. A laser weapon in the second slot therefore uses the first weapon's core color.
 
 :::note[A partial triplet reads as the default]
 `LaserInnerColor=255` names one channel where three are needed, so the core keeps its default color and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.

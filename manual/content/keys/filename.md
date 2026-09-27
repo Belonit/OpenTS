@@ -7,7 +7,7 @@ when_omitted:
   value: TILE
 ---
 
-Each tile of the set is looked for as this stem plus a two-digit index counting from `01`, extended with the theater's own suffix. [Theater control files](/formats/theater-control/) covers the lettered alternates built on the same stem and the fallback extension tried when the theater file is missing.
+Each tile of the set loads the file named by this stem, the tile number and the theater's file extension. The tile number counts from `01` and has at least two digits. [Theater control files](/formats/theater-control/) covers the lettered alternates built on the same stem and the second extension tried when a file is missing.
 
 ```ini title="TEMPERAT.INI"
 [TileSet0631]      ; example set
@@ -16,6 +16,6 @@ FileName=RVCLIF    ; loads RVCLIF01.TEM through RVCLIF08.TEM
 TilesInSet=8
 ```
 
-Nothing checks that the stem produced a file. A tile whose artwork is absent still becomes a tile type, reports zero width and height, and draws nothing where a cell places it.
+Check that every file the stem produces exists. A missing file does not stop the theater from loading or shift the numbering of the tiles after it: the tile still takes its place in the set, with zero width and height and no artwork.
 
-The stem is capped at 63 characters; a longer value is cut short when it is read. A tile type keeps the whole path it loaded from, so that it can read its artwork again after the theater trims it out of memory.
+The stem is read to at most 63 characters; anything longer is cut off.

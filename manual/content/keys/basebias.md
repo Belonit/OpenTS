@@ -8,4 +8,4 @@ when_omitted:
   value: "1"
 ---
 
-The name suggests a multiplier applied to a candidate's threat value while that candidate stands near a friendly base. Nothing reads the stored figure, and no term in the [threat score](/systems/target-selection/#the-threat-score) measures a candidate against a base at all.
+No part of target selection reads this value. No term in the [threat score](/systems/target-selection/#the-threat-score) measures a candidate against a base.

@@ -4,6 +4,8 @@ summary: Lower bound for the number of infantry requested by the Drop Pods super
 see_also: [DropPodInfantryMaximum, "system:drop-pods"]
 ---
 
-Each superweapon firing randomly chooses an inclusive count between this value and [`DropPodInfantryMaximum`](/keys/droppodinfantrymaximum/). This affects the superweapon's elite `E1`/`E2` squad only; it does not change the size of [`Droppod=yes`](/keys/droppod-teamtype/) TeamTypes.
+Each firing of the Drop Pods superweapon picks a squad size at random from this value to [`DropPodInfantryMaximum`](/keys/droppodinfantrymaximum/), both included. The key affects only the superweapon's elite `E1`/`E2` squad, not [`Droppod=yes`](/keys/droppod-teamtype/) TeamTypes.
 
-The delivered count can be lower than the requested count. The whole squad shares one budget of `3 * count` placement attempts, and an infantry object is discarded when no legal nearby cell is found; [the superweapon entry path](/systems/drop-pods/#drop-pods-superweapon) documents the placement flow.
+The squad that lands can be smaller than the size picked. The superweapon allows three placement attempts per soldier, pooled across the squad, and discards a soldier whose attempt fails. [Drop Pods superweapon](/systems/drop-pods/#drop-pods-superweapon) explains when an attempt fails. A size of `0` drops nothing.
+
+Keep both values at `0` or above. If the size picked comes out negative, the superweapon never finishes placing its squad and the game stops responding.

@@ -7,10 +7,12 @@ when_omitted:
   value: ".05"
 ---
 
-The value is converted to frames and divided by the animation's step count when the buildup art is loaded, truncating once at the end; the result is the delay between one buildup frame and the next. The shipped `rules.ini` sets `.06`, which spreads 54 frames, or 3.6 seconds, across the type's steps; the engine default of `.05` spreads three seconds, and `1` spreads a full minute.
+`BuildupTime` sets how long a newly placed structure plays its construction animation. A game minute is 900 frames, or 60 seconds at 15 frames a second. The shipped `rules.ini` sets `.06`, which is 54 frames or 3.6 seconds. The engine default of `.05` is three seconds, and `1` is a full minute.
 
-The step count is half the number of frames in the buildup art, or [`GateStages`](/keys/gatestages/) plus one for a [`Gate=yes`](/keys/gate/) type.
+The time is divided evenly across the animation's steps, and each step lasts the result rounded down to a whole frame. The step count is half the number of frames in the [buildup art](/keys/buildup/), or [`GateStages`](/keys/gatestages/) plus one for a [`Gate=yes`](/keys/gate/) type. A value too small to give each step at least one frame skips the animation, and the structure finishes construction as soon as it is placed.
 
-One value covers every structure in the game, so a type with more buildup frames spends less time on each of them rather than taking longer overall. [Buildup](/systems/production/#buildup) covers the game-speed adjustment applied to the resulting rate and the construction-yard handshake that runs alongside it.
+One value covers every structure. A type with more buildup frames spends less time on each frame and takes no longer overall. [Buildup](/systems/production/#buildup) covers what happens while the animation plays and when it ends.
 
-A [`Theater=yes`](/keys/theater/) structure has its construction animation timed again as the theater is set up, from every frame in the file at a fixed five seconds, so this value does not reach it.
+When a scenario starts, a [`Theater=yes`](/keys/theater/) structure's animation is retimed to play every frame of its buildup art over five seconds, and `BuildupTime` does not apply. A `Theater=yes` structure that sets [`DemandLoadBuildup=yes`](/keys/demandloadbuildup/) is the exception and uses this value like any other structure.
+
+Two later events drop the five-second timing for a `Theater=yes` structure: loading a saved game, and starting a map that has a section for the structure. After either one, the animation is timed from `BuildupTime` like any other structure's. If the buildup art has no `.SHP` file, those events leave the structure with no construction animation.

@@ -7,10 +7,12 @@ when_omitted:
   value: none
 ---
 
-The line is spoken only for the local player's own weapon, and only where a charge is started rather than resumed. Three starts qualify:
+The line plays for the local player's weapon when its countdown starts from a full [`RechargeTime`](/keys/rechargetime/). Three events start the countdown:
 
-- a structure or a plug first grants the weapon;
-- a repeating weapon discharges and begins its next charge;
-- a [`Type=ChemMissile`](/keys/type/) weapon is started by its house's [weed storage filling](/systems/superweapons/#manual-control).
+- a structure or a plug grants the weapon while its house has full power;
+- an ordinary repeating weapon fires and begins its next charge;
+- a full [weed pool](/systems/superweapons/#manual-control) starts a [`Type=ChemMissile`](/keys/type/#scope-superweapontype) weapon.
 
-A weapon coming back from suspension and a [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon returning to charging both pass through silently, as does every weapon granted by a trigger action or a crate. An unrecognized speech name is not rejected; it leaves the weapon with no line.
+A [`ManualControl=yes`](/keys/manualcontrol/) weapon stops its countdown when it is granted and after each shot, so only the weed pool plays the line for it. A [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon plays it only when a structure or a plug grants it.
+
+No line plays when a trigger action or a crate grants the weapon, when a weapon granted during a power shortfall arrives suspended, or when a suspended weapon resumes. An unrecognized speech name gives the weapon no line.

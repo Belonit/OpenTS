@@ -8,4 +8,4 @@ when_omitted:
   value: "4"
 ---
 
-No routine counts the refineries a computer house owns against a maximum. The number that reaches its base comes from [the pass that assembles the plan](/systems/ai-base-building/#building-the-plan), and the money branch of the planner can add one more at the current build position whenever the house cannot earn.
+No step of computer base planning counts refineries against a limit. When the engine generates a computer house's plan, the refineries in it are set as [the plan is built](/systems/ai-base-building/#building-the-plan). The first [`BuildRefinery`](/keys/buildrefinery/) entry whose owners include the country the house [acts as](/keys/actslike/) enters like any other candidate structure, and the house's difficulty slot decides how many extra copies follow it. A plan the scenario supplies keeps the refineries the scenario lists. A house that runs out of money can also insert a refinery into its plan, as [power and money interventions](/systems/ai-base-building/#power-and-money-interventions) describes.

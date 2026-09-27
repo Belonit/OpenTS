@@ -1,6 +1,6 @@
 ---
 key: IonLightningRandomness
-summary: The percentage of ion storm lightning bolts that fall on a random cell rather than on an object.
+summary: The percent chance that an ion storm lightning bolt strikes a random cell instead of an object.
 see_also: [IonLightningFrequency, IonImmune, LightningRod, "system:ion-storms"]
 when_omitted:
   kind: value
@@ -12,6 +12,10 @@ when_omitted:
 IonLightningRandomness=75
 ```
 
-A random bolt draws a cell until it lands inside the playfield, so it can strike empty ground. It can also strike ground outside the playable area that no player will ever occupy. The remaining bolts go through [the aimed selection](/systems/ion-storms/#where-it-strikes), which weighs every object on the map and can end up striking nothing at all.
+Each called bolt strikes a random cell with this percent chance. Otherwise it is aimed at an object.
 
-At `100` no bolt is ever aimed, so [`LightningRod`](/keys/lightningrod/) and [`IonImmune`](/keys/ionimmune/) stop influencing where lightning falls. At `0` a storm over a map with no eligible object produces no bolts at all.
+A random bolt strikes any cell of the playfield. It can hit empty ground, including the map border outside the playable area.
+
+An aimed bolt strikes one object from a [list of candidates](/systems/ion-storms/#where-it-strikes). When the list comes up empty, no bolt falls that frame.
+
+At `100` every bolt is random, so [`LightningRod`](/keys/lightningrod/) and [`IonImmune`](/keys/ionimmune/) no longer affect where lightning falls. At `0` every bolt is aimed, so a storm over a map with no candidates never strikes.

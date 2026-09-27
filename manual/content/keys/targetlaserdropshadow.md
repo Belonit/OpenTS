@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The shadow is drawn first, in [`TargetLaserDropShadowColor`](/keys/targetlaserdropshadowcolor/), one row below the line, or two rows below a [thick](/keys/targetlaserthick/) one. The squares on the line's ends gain a border of the same color. The sighting laser is the line a firing vehicle with [`TargetLaser=yes`](/keys/targetlaser/) draws to where its shot is aimed; [Action lines](/systems/action-lines/) covers when it is drawn.
+The shadow is a copy of the laser directly beneath it, in [`TargetLaserDropShadowColor`](/keys/targetlaserdropshadowcolor/). It is one row high, or two rows under a [thick](/keys/targetlaserthick/) laser. Each end square gets a border in the shadow color, one pixel wide on a normal laser and two on a thick one. On a thick laser the shadow also shrinks the end squares from four pixels to three.
+
+The sighting laser is the line a firing vehicle with [`TargetLaser=yes`](/keys/targetlaser/) draws to where its shot is aimed. [Action lines](/systems/action-lines/) covers when it is drawn.

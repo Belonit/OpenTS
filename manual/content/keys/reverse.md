@@ -7,12 +7,12 @@ when_omitted:
   value: "no"
 ---
 
-A stage is the animation's frame counter, and the frame drawn is the type's start frame plus it. A reversed animation is created on the stage held by [`LoopEnd`](/keys/loopend/) and steps down one stage at a time, finishing once the stage arrives at [`Start`](/keys/start/). Every further pass begins on the loop end again, and [`LoopStart`](/keys/loopstart/) is not read at all.
+A reversed animation plays its frames backward. It opens on frame [`LoopEnd`](/keys/loopend/) and steps down one frame at a time. The pass ends when it steps to frame `0`, so frame `0` is never shown. Every further pass begins on `LoopEnd` again, so [`LoopStart`](/keys/loopstart/) has no effect.
 
-The flag is applied only when the animation is created. One that reaches this type through [`Next=`](/keys/next/) is put on the type's start figure as a stage but keeps stepping the way it already was. The flag on the type it arrived at is never read.
+These frame numbers assume [`Start`](/keys/start/) is `0`, the usual case. A non-zero `Start` shifts both ends of a reversed pass, as that page explains.
 
-:::caution[A reversed animation usually opens on a blank frame]
-The loop end is put on the animation as a stage rather than as a frame number, so the first frame displayed is the start frame added to the loop end. On the ordinary animation, whose start frame is zero, that is the loop end itself. With the loop end left at the shape's own frame count, that frame is one past the last frame the shape holds and draws nothing. Setting `LoopEnd=` to the number of the last frame rather than to the frame count removes the blank opening frame.
+:::caution[Set LoopEnd to the last frame]
+By default `LoopEnd` is the shape's frame count, one past its last frame. A reversed animation then opens on a frame that draws nothing. Set `LoopEnd=` to the frame count minus one, the number of the last frame, as in the example below.
 :::
 
 ```ini title="art.ini"
@@ -25,3 +25,9 @@ Reverse=yes
 Rate=200
 Surface=yes
 ```
+
+The direction is set only when the animation is created. An animation that changes into this type through [`Next=`](/keys/next/) keeps the direction it already had, so `Reverse=yes` does not turn it around.
+
+:::caution[Do not give a reversed animation a Next type]
+After a reversed animation changes type through `Next=`, it keeps stepping backward from the new type's start. If the new type does not set `Reverse=yes`, the animation keeps stepping backward past frame `0` of the shape, then draws nothing and never finishes. When the new type's `Start` is above `0`, it first opens on frame twice that `Start` and plays every frame below it. If the new type sets `Reverse=yes`, its first pass ends after one frame.
+:::

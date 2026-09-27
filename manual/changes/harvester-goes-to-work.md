@@ -20,6 +20,6 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-A harvester leaving a war factory or a repair bay now starts harvesting by itself instead of stopping on the exit cell. A factory's rally point still applies: the harvester drives there first and looks for Tiberium from there.
+A harvester or weeder leaving a war factory or a repair bay now starts harvesting instead of stopping on the exit cell. When the factory has a rally point, the harvester drives there first and looks for Tiberium from there.
 
-An armed harvester now returns to harvesting on its own too. Idle away from Tiberium, it guards its area like any armed vehicle.
+An armed harvester or weeder with nothing to do now behaves as an unarmed one does. It used to guard like any armed vehicle. A computer player's harvester or weeder goes back to harvesting. A player's goes back to harvesting only when it stops on Tiberium, or on veins for a weeder, and guards anywhere else.

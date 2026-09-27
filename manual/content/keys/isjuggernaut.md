@@ -7,8 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-The flag is one of the eight that make a structure [one of the deployed-vehicle kinds](/keys/deploysinto/). Such a structure is put down on the deploying vehicle's own cell rather than one cell away and returns to that cell when it [undeploys](/keys/undeploysinto/). It may be taken back down whether or not the session allows redeploying, and [an EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) attaches sparks to it as it is stunned.
+The flag makes the structure one of the eight [deployed-vehicle kinds](/keys/deploysinto/), which deploy and [pack up](/keys/undeploysinto/) on the vehicle's own cell.
 
-Two effects belong to this flag alone, and both are about stowing the gun. Deconstruction is held at its first step until the barrel pitch has come back to [`StartPitch`](/keys/startpitch/) and the body to [`StartFacing`](/keys/startfacing/), so the structure keeps turning and nothing else in the sequence begins until it arrives. The vehicle produced by the undeploy is then created with its barrel already at `StartPitch`.
+When [an EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) stuns the structure, sparks appear on it.
 
-A computer-owned Juggernaut also packs itself up when it is handed a target beyond the range of a primary weapon that is not anti-aircraft. The target is dropped, and the structure is sent straight into deconstruction unless it is immobilized. [`TickTank=yes`](/keys/ticktank/) and [`Artillary=yes`](/keys/artillary/) structures share that.
+Two effects are specific to this flag, and both stow the gun:
+
+- Before a Juggernaut is sold or packed up, it turns its barrel back to [`StartPitch`](/keys/startpitch/) and its body to [`StartFacing`](/keys/startfacing/). Nothing else in the sequence begins until both arrive.
+- The vehicle created when it packs up starts with its barrel at `StartPitch`.
+
+A computer-owned Juggernaut given a target beyond the range of its primary weapon drops the target and deconstructs, unless it is immobilized. With an `UndeploysInto` type it packs up; without one it is sold. A primary weapon whose projectile is anti-aircraft skips this range test. [`TickTank=yes`](/keys/ticktank/) and [`Artillary=yes`](/keys/artillary/) structures behave the same way.

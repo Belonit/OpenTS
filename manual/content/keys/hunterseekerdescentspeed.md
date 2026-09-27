@@ -7,8 +7,10 @@ when_omitted:
   value: "0"
 ---
 
-While an airborne [hunter seeker](/systems/superweapons/#hunter-seeker) is above its flight level, it drops each frame by the smaller of this figure and its height above the ground. That second limit is the drone's whole altitude rather than the gap down to the level it is heading for. A figure larger than the gap therefore takes it past that level in one step, and leaves the climb to put it back. The drone re-levels once the climb has restored that level. The stock rules use `50`, about a fifth of a cell a frame. A drone reduced to no strength is pulled down by an accelerating fall of its own, on top of whatever this figure takes off. The fall adds one lepton on the first frame, two on the next, and so on. It is destroyed the moment that fall takes it to the ground, throwing a fixed blast of 1000 damage through [`C4Warhead`](/keys/c4warhead/) at its landing point.
+While an airborne [hunter seeker](/systems/superweapons/#hunter-seeker) is above its flight level, it drops this many leptons each frame. The stock rules use `50`, about a fifth of a cell a frame. At `0` a drone that still has strength never drops and holds whatever altitude it has reached. [`HunterSeekerDescendProximity`](/keys/hunterseekerdescendproximity/) sets the level the drone descends to.
 
-An ordinary aircraft stages its descent, taking a step of a twentieth of the remaining gap and holding that step between 20 and 50 leptons a frame. A hunter seeker never uses that staged descent. [`HunterSeekerDescendProximity`](/keys/hunterseekerdescendproximity/) covers where the drone is told to descend to.
+The drop is limited only by the drone's height above the ground, not by the gap to its flight level. A value larger than that gap takes the drone below its flight level in one step, and the next frame's climb at [`HunterSeekerAscentSpeed`](/keys/hunterseekerascentspeed/) brings it back up.
 
-At `0` the step is zero and the drone holds whatever altitude it has reached.
+A hunter seeker does not use the staged descent of an ordinary aircraft, which drops a twentieth of the remaining gap each frame, held between 20 and 50 leptons. This value is its whole descent rate.
+
+A drone reduced to zero strength falls. Each frame it drops by this value and also by a fall that starts at one lepton and grows by one lepton every frame. When it reaches the ground it is destroyed with a 1000-damage blast through [`C4Warhead`](/keys/c4warhead/) at the landing point.

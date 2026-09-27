@@ -5,8 +5,10 @@ see_also: [BehavesLike, NextParticle, Particle]
 when_omitted:
   kind: value
   value: ""
-  note: An empty name is registered as a ParticleType of its own rather than resolving to nothing, so the type holds a blank particle with every built-in value; a later file that contains the section without this key puts that blank particle back.
+  note: The empty name is registered as a ParticleType of its own, so the system holds a blank particle with every built-in value. A later file that contains the section without this key puts that blank particle back.
 ---
+
+Every particle a system emits by its [behavior](/keys/behaveslike/#scope-particlesystemtype) is of this type. So is the single particle a system receives from a warhead's blast, an exploding barrel, a web, or a levitating vehicle's gas puff. A veinhole monster's gas release is the exception: it always adds a `GasCloudM1` particle to the scenario's shared gas cloud. A particle's [`NextParticle`](/keys/nextparticle/) decides what it turns into when it expires, so a gas cloud or a smoke column can end up holding types this key never names.
 
 ```ini title="rules.ini"
 [MySparkSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -17,14 +19,12 @@ SparkSpawnFrames=1
 SpawnSparkPercentage=1
 ```
 
-Every behavior that creates a particle creates one of this type, and it is the only particle a system makes for itself. A particle's own [`NextParticle`](/keys/nextparticle/) governs what it turns into afterwards, so a gas cloud or a smoke column may end up holding types this key never names.
+A name that no particle declares is registered as a new, blank particle type. A misspelled name therefore gives a system whose particles have no artwork, no damage and a life of one frame.
 
-A name no particle declares is registered as a new particle type rather than refused, and a misspelling therefore produces a system holding a particle with no artwork, no damage and a one-frame life instead of an error. That is also what an omitted key resolves to: the blank name is registered as a particle in its own right, so the system holds something invisible rather than holding nothing. Every type in the rules that omits the key ends up sharing that one blank particle.
-
-:::caution[A gas system named by a warhead never supplies its own particle]
-A warhead whose [`Particle`](/keys/particle/) names a system with [`BehavesLike=Gas`](/keys/behaveslike/#scope-particlesystemtype) releases into the scenario's shared gas cloud rather than building a system of its own. The particle released is the shared cloud's rather than the one named here. The setting on such a type is never reached by that path.
+:::caution[A gas system named by a warhead does not use this key]
+An ordinary blast from a warhead whose [`Particle`](/keys/particle/) names a system with [`BehavesLike=Gas`](/keys/behaveslike/#scope-particlesystemtype) releases its particle into the scenario's shared gas cloud. That particle comes from the shared cloud's `HoldsWhat`, so this key on the named system has no effect on that path.
 :::
 
-:::danger[`HoldsWhat=<none>` crashes a spark or a railgun system]
-`<none>` is the one value that resolves to no particle. A smoke or fire system checks for it and quietly emits nothing, and a gas or web system never creates a held particle in the first place. A `Spark` system reaches past the start of the particle list for a type that is not there, and a `Railgun` system lays its corkscrew through a particle it never created. The spark system crashes the first frame it throws a burst; the railgun system crashes the first time it lays a trace with at least one particle in it. Leave the key out, or name a particle.
+:::danger[`HoldsWhat=<none>` crashes a spark or railgun system]
+`<none>` is the one value that names no particle. A `Spark` system with it crashes the game the first time it throws a burst. A `Railgun` system with it crashes the first time it lays a trace of at least one particle. Every other behavior, and every blast that asks a system for one particle, creates nothing instead. Name a particle, or leave the key out.
 :::

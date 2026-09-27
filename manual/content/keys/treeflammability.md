@@ -6,14 +6,8 @@ when_omitted:
   value: ".1"
 ---
 
-The figure is a fraction from 0 to 1, so the stock `.05` gives each qualifying neighbor a one-in-twenty chance. At `1` or above every qualifying neighbor catches on every attempt.
+A burning terrain object tries to spread fire on roughly one game frame in a hundred, and no setting changes that interval. On each attempt, each neighboring terrain object that is not burning gets a draw with this chance, from 0 to 1. The stock `.05` gives each such neighbor a one-in-twenty chance per attempt. At `1` or more, practically every neighbor wins its draw on every attempt.
 
-A burning terrain object tries to spread the fire on roughly one frame in a hundred, and nothing configures that interval. On a frame it does, each of the eight neighboring cells holding a terrain object that is not already alight is drawn against separately. A tree hemmed in on every side gets eight independent chances at once.
+A burning tree with terrain objects in all eight neighboring cells makes eight separate draws on each attempt, one for each neighbor.
 
-Winning the draw is not enough to catch. The neighbor has to satisfy **All of:**
-
-- it is not already crumbling, the animation a destroyed terrain object plays out before it disappears;
-- its type sets [`Armor=wood`](/keys/armor/#scope-aircrafttype), which is what a TerrainType has unless its section sets something else;
-- its type does not declare [`SpawnsTiberium=yes`](/keys/spawnstiberium/), so a blossom tree never burns.
-
-The only other way a terrain object catches is a [`Sparky=yes`](/keys/sparky/) warhead damaging it, and that path clears the same three conditions.
+A neighbor that wins the draw catches fire only if it can burn. [`TreeFire`](/keys/treefire/) lists the conditions, describes the other way a terrain object catches fire, and sets the flames a burning object shows.

@@ -8,7 +8,7 @@ when_omitted:
   note: A pace of zero, which never advances the artwork.
 ---
 
-The figure is only ever applied by [`IsAnimated=yes`](/keys/isanimated/), and only at the moment a stopped animation is started again. It is a countdown in game frames: the artwork advances one frame each time that many pass. `1` advances every frame (fifteen frames a second) and `15` advances once a second.
+The value is the number of game frames an [`IsAnimated=yes`](/keys/isanimated/) terrain object shows each frame of its artwork. `1` advances the artwork on every game frame, and `15` advances it once a second at 15 frames a second. The object takes the value each time its animation starts, which [`AnimationProbability`](/keys/animationprobability/) decides.
 
 ```ini title="rules.ini"
 [MYTREE]                 ; example blossom tree
@@ -18,6 +18,6 @@ AnimationProbability=.02
 SpawnsTiberium=yes
 ```
 
-:::caution[A pace of zero leaves the object stuck on its first frame]
-Zero is not a pace but a stopped animation, so starting the animation with it stops the animation again in the same step. The object is returned to its first frame, and because it counts as stopped it is eligible to be started again on the very next frame. That start returns it to the first frame once more, for as long as the scenario runs.
+:::caution[Set AnimationRate above 0 on an animated type]
+An animated object with `0` stays on the first frame of its artwork, and a [`SpawnsTiberium=yes`](/keys/spawnstiberium/) object never seeds Tiberium.
 :::

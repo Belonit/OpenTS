@@ -7,15 +7,12 @@ when_omitted:
   value: ".2"
 ---
 
-```ini title="rules.ini"
-[AudioVisual]
-AmbientChangeRate=.2
-```
+The value is in game minutes of 900 frames, so `.2` waits 180 frames between steps. Together with [`AmbientChangeStep`](/keys/ambientchangestep/), it sets how long the map takes to reach a new ambient level, whether a trigger action or [an ion storm](/systems/ion-storms/#the-ambient-ramp) changed the target.
 
-The figure is converted at 900 frames to the minute, so `.2` waits 180 frames between steps. Together with [`AmbientChangeStep`](/keys/ambientchangestep/) it fixes how long the map takes to reach a new ambient level, whether the change came from a scripted action or from [an ion storm](/systems/ion-storms/#the-ambient-ramp).
+The first step comes as soon as the target changes, unless the wait after an earlier step is still running. The wait only spaces the steps that follow.
 
-:::caution[Zero stops the fade entirely]
-The step is guarded on a non-zero rate. At `0` the current ambient level never moves again, so a scripted lighting change and a storm's darkening are both stored and never shown.
+:::caution[Keep AmbientChangeRate above 0]
+At `0` the ambient level never changes again. A scripted lighting change and a storm's darkening both set a new target that never shows on the map.
 :::
 
-The [Set ambient rate...](/mapping/actions/taction-set-ambient-rate/) trigger action overwrites this value in the loaded rules, and the overwrite outlives the trigger that made it.
+The [Set ambient rate...](/mapping/actions/taction-set-ambient-rate/) trigger action changes this value, and a saved game keeps the change. The change lasts until a later scenario loads a rules file or map that sets the key. If none sets `AmbientChangeRate`, later scenarios in the same session keep the changed value.

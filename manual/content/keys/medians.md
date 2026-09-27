@@ -8,8 +8,19 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The random map generator uses four of the fourteen, and only on the north-south road band; the east-west band lays no medians at all. Offset 5 is the head of a strip and offset 4 repeats down its body, both dropped in the center column as each straight road row goes down. Offset 3 caps the tail, placed either where a junction interrupts the run or where the band ends. Offset 12 is the stub laid on each crossing arm of a four-way junction, one cell to either side.
+The [random map generator](/systems/map-generation/#settlements) lays median strips only down the north-south roads of a town. East-west roads get none. It uses four tiles of the set, counted from the set's first tile as offset 0:
 
-A strip is only started when more than five cells of road remain. One that would otherwise dangle past a plain end cap is walked back and overwritten with road again. The terrain test that walk follows is not gated on the role resolving: left unresolved, it accepts everything up to index 12, so the walk runs over the theater's first thirteen tiles and rewrites them as road.
+| Offset | Where the generator lays it |
+| --- | --- |
+| 5 | The head of a strip, just past a junction |
+| 4 | Each following cell of the strip |
+| 3 | The tail, where the next junction interrupts the strip or the road ends |
+| 12 | One cell to each side of a junction where the road crosses another |
 
-Medians count as pavement when [`ClearToPaveLat`](/keys/cleartopavelat/) examines a neighbor, so a strip running through paved ground does not make that ground blend against it.
+A strip starts after a junction only when more than five cells of road remain before the road's end. If the road instead stops at an end cap partway down, the generator replaces the strip above the cap with plain road.
+
+All fourteen tiles count as pavement for the [`ClearToPaveLat`](/keys/cleartopavelat/) blend, so a strip does not cut blended edges into the pavement around it.
+
+:::caution[Set Medians in any theater that gets towns]
+The generator does not check that this role is bound. Without it, the generator lays unrelated tiles from the start of the theater where the medians belong. It also takes any of the theater's first thirteen tiles for a median when it checks the road it has already laid, so a junction can be laid over ground that holds one of those tiles.
+:::

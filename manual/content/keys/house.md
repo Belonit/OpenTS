@@ -1,13 +1,22 @@
 ---
 key: House
-summary: The country whose house in the match owns teams built from this TeamType.
+summary: The house, named by country or start position, that owns teams a trigger action creates from this TeamType.
 see_also: [TaskForce, Script, Waypoint, "system:ai-team-production"]
 when_omitted:
   kind: value
   value: none
 ---
 
-The value names a country, matched against every registered country's ID and its [`Name=`](/keys/name/) string, and the team is given whichever house in the match is playing it. It may instead name a [spawn house](/formats/scenario-objects/#spawn-houses), `Spawn1` through `Spawn8` or `<Player @ A>` through `<Player @ H>`, and the team is given the house that starts at that position. A country no house is playing resolves to nothing, and so do `<none>` and a spawn house nobody holds. An unrecognized name is not rejected: it registers a fresh country under that name, which by definition nobody is playing, while a spawn house registers none. Omitting the key keeps whatever an earlier layer set.
+`House=` sets the owner of a team that a trigger action creates from this TeamType: [Reinforcement (team)](/mapping/actions/taction-reinforcements/), [Reinforcement (team) at waypoint](/mapping/actions/taction-reinforcements-special/) or [Create Team](/mapping/actions/taction-create-team/).
+
+:::caution[AI trigger teams ignore this setting]
+A team raised by the [AI trigger pass](/systems/ai-team-production/#from-suggestion-to-team) belongs to the house whose pass raised it, whatever country this key names. A [Change team](/mapping/missions/tmission-teamchange/) mission gives the new team the old team's house.
+:::
+
+The value selects a house in one of two ways:
+
+- A country, given by its ID or its [`Name=`](/keys/name/) string, selects the house in the match that plays that country.
+- A [spawn house](/formats/scenario-objects/#spawn-houses), `Spawn1` through `Spawn8` or `<Player @ A>` through `<Player @ H>`, selects the house that starts at that position.
 
 ```ini title="ai.ini or map file"
 [MyRaidTeam] ; example TeamType
@@ -17,12 +26,10 @@ TaskForce=MyRaidForce ; defined under [TaskForces]
 Script=MyRaidScript   ; defined under [ScriptTypes]
 ```
 
-The owner settles who the team's members are created for and who they may be recruited from; a candidate of any other house is refused outright. It is also the house the team counts against for the defensive-team census and the per-house team limit.
+The owner is the house the team's members are created for, and the only house the team can recruit from. The team also counts among that house's teams for [the team budget](/systems/ai-team-production/#the-team-budget) and, outside a campaign, for [`Max`](/keys/max/).
 
-:::caution[An AI trigger ignores this setting]
-A team raised through the [AI trigger pass](/systems/ai-team-production/#from-suggestion-to-team) is created for the house whose pass raised it, whatever country this key names. The setting decides the owner only where a team is created from the TeamType alone: the [Reinforcement (team)](/mapping/actions/taction-reinforcements/) and [Create Team](/mapping/actions/taction-create-team/) trigger actions. A [Change team](/mapping/missions/tmission-teamchange/) mission hands the new team the old team's house instead.
-:::
+A file read later that defines the same TeamType without `House` keeps the owner an earlier file set. An owner that came from a spawn house is kept only as its country, so the later read gives the team to the first house in the match playing that country, which can be a different house.
 
-:::caution[A team with no owner is never raised]
-Both paths that read this key refuse a TeamType whose owner resolved to nothing: the reinforcement delivers no group and the Create Team action creates no team. A misspelled country name, a country the rules register but no house in this match is playing, or a spawn house nobody holds is enough to reach this.
+:::caution[A team with no owner is never created]
+The team has no owner when the value names a country no house in the match plays, or a spawn house nobody holds. A name that matches no country, `<none>` included, registers a new country under that name, and no house plays that country either. The reinforcement actions then deliver nothing, and Create Team creates no team.
 :::

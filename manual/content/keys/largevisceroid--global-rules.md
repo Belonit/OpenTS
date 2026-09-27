@@ -8,8 +8,12 @@ when_omitted:
   value: none
 ---
 
-The named UnitType is what a small visceroid turns into when another merges into it. The creature that was standing still keeps its position, its house and its identity on the map. It becomes that type at that type's maximum strength, and the creature that drove onto it deletes itself. [`SmallVisceroid=yes`](/keys/smallvisceroid/#scope-unittype) covers the approach that leads to it.
+The named UnitType is what two small visceroids become when they merge. The one that was standing still becomes this type at the type's maximum strength and keeps its position and its house. The one that drove onto it is deleted. [`SmallVisceroid=yes`](/keys/smallvisceroid/#scope-unittype) covers how the two come together.
 
-Nothing checks that the named type sets [`LargeVisceroid=yes`](/keys/largevisceroid/#scope-unittype) itself, so the two settings can name different things. A merge produces whatever is named here, and that result behaves as a large visceroid only if its own section says so.
+A merge produces exactly the type named here. Nothing checks that the type sets [`LargeVisceroid=yes`](/keys/largevisceroid/#scope-unittype), and the result behaves as a large visceroid only if its own section does.
 
-A name that matches no declared UnitType does not resolve to no type. A UnitType of that name is brought into existence, configured by a section of the same name if the rules go on to supply one and left blank if they do not. The literals `none` and `<none>` are the exception: those do resolve to no type.
+A name that matches no declared UnitType creates a UnitType of that name. It is configured by a section of the same name if the rules supply one, and left blank if they do not. Only the values `none` and `<none>` name no type.
+
+:::caution[Name a type while small visceroids can meet]
+With no type named, the first merge crashes the game.
+:::

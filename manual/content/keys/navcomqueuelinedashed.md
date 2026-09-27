@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The lines run through a selected object's queued destinations beyond its movement line. Their dashes are four pixels on and four off. They move along each line by the clock, one pixel every 128 milliseconds, so they run at the same pace whatever the game speed. [Action lines](/systems/action-lines/) covers when the lines are drawn.
+Dashes are four pixels on and four off. They move along each line at one pixel every 128 milliseconds, a pace set by the clock, so it does not change with the game speed.
+
+The queue lines run from the end of a selected object's movement line through its queued destinations. [Action lines](/systems/action-lines/) covers when they are drawn.

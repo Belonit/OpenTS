@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-Do Explosion At now detonates nothing when the weapon it names is not in the weapon list. The index went unchecked before, so the action read past the list.
+Do Explosion At used to read past the end of the rules weapon list when its weapon number was negative or past the last weapon. It now detonates nothing in that case.

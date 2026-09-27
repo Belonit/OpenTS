@@ -8,19 +8,19 @@ when_omitted:
   value: "no"
 ---
 
-The explosion drops a spotlight over the ground around it. Its strength is a quarter of the damage, rounded down and held between 21 and 63 on a 64-step brightness scale. Any blast of 87 damage or less produces the faintest flash and any blast of 252 or more the brightest. The light widens for its first two frames and then shrinks away over the eight that follow.
+The explosion lights the ground around it with a brief flash. The flash's size is a quarter of the blast's damage, rounded down and held between 21 and 63 on a scale of 64. A blast of 87 damage or less gives the smallest flash, and one of 252 or more gives the largest. The flash grows to full size within three game frames and shrinks away over the next seven.
 
 ```ini title="rules.ini"
 [MyShellWH] ; example WarheadType
 Bright=yes
 ```
 
-The explosions that read the flag are the ones raised without a projectile:
+A projectile's impact ignores this flag. Its flash comes from [the firing weapon's `Bright`](/keys/bright/#scope-weapontype) instead.
 
-- an animation or voxel animation that detonates as it expires
-- the collateral blast an [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) object makes when it is destroyed
+The flag applies to these explosions, none of which comes from a projectile:
+
+- an animation or voxel animation that explodes when it expires
+- the collateral blast a dying [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) object, or one with the `EXPLODES` [ability](/systems/veterancy/#abilities), makes through its first weapon's warhead
 - [`IonStormWarhead`](/keys/ionstormwarhead/) lightning and [`IonCannonWarhead`](/keys/ioncannonwarhead/)
 - the [Do Explosion At](/mapping/actions/taction-do-explosion/) trigger action
-- everything the [`C4Warhead`](/keys/c4warhead/) stages: a laser fence segment blown up with its post, a vehicle stranded and blowing itself up, an object that falls out of the sky, an explosive crate, a hunter-seeker, and the three lighting trigger actions
-
-A shot that lands takes its flash from [the firing weapon's own flag](/keys/bright/#scope-weapontype) instead and never reads this one.
+- the flashes that read [`C4Warhead`](/keys/c4warhead/): a laser fence segment blown up with its post, a stranded vehicle blowing itself up, a flying object that falls to the ground, an explosive crate, a hunter-seeker, and the three lighting trigger actions

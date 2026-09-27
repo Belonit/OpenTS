@@ -8,4 +8,8 @@ when_omitted:
   value: "no"
 ---
 
-A [`ChainReaction=yes`](/keys/chainreaction/) Tiberium overlay detonates under a warhead with this flag; under every other warhead the overlay is inert. A sonic wave sets it off with no warhead check. The flag means nothing to overlays that are not Tiberium.
+An explosion from a `Tiberium=yes` warhead can set off the Tiberium in its cell when the cell's overlay is a [`ChainReaction=yes`](/keys/chainreaction/) Tiberium overlay. The same explosion also thins that cell's Tiberium. Explosions from other warheads leave such a cell alone. [Tiberium damage](/systems/tiberium/#damage) gives the detonation chance and the thinning.
+
+A sonic wave passing over the cell can set the Tiberium off whatever its warhead.
+
+The flag makes no difference to a `ChainReaction=yes` overlay that is not Tiberium; the [`ChainReaction`](/keys/chainreaction/) page covers that case.

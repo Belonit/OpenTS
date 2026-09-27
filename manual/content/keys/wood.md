@@ -7,8 +7,20 @@ when_omitted:
   value: "no"
 ---
 
-A TerrainType takes damage from this warhead and from no other. Damage processing on a terrain object begins by testing the flag and reports nothing at all when it is absent, so a warhead left at `no` cannot fell a tree however much damage it deals. A vehicle likewise treats a terrain object in its path as destroyable only when the weapon it would use against it sets the flag and the terrain type is not [`Immune=yes`](/keys/immune/#scope-aircrafttype), and as impassable otherwise.
+Only a `Wood=yes` warhead can damage a terrain object such as a tree, and even that warhead cannot damage a terrain type that is [`Immune=yes`](/keys/immune/#scope-aircrafttype).
 
-The same flag is the second route through a wall. An explosion reduces a wall overlay either because its warhead is [`Wall=yes`](/keys/wall/#scope-warheadtype) or because it is `Wood=yes` and the overlay's [`Armor`](/keys/armor/#scope-aircrafttype) is `wood`. A vehicle's blocked-path test and the player's attack cursor over a hostile wall accept the same pair of conditions. The [computer's automatic wall scan](/systems/target-selection/#what-each-kind-of-object-considers) and infantry's blocked-path test read `Wall=yes` alone. The computer therefore never picks a wood-armored wall out as something to shoot, and infantry treat it as flatly impassable rather than as something to clear.
+The flag also decides whether a vehicle can clear a terrain object that blocks its path. The vehicle treats the terrain object as something to destroy when the weapon it would use against it has a `Wood=yes` warhead and the terrain type is not `Immune=yes`. Otherwise the terrain object is impassable to it, unless the vehicle is a crusher and the terrain type is [`Crushable=yes`](/keys/crushable/).
 
-[`Tiberium=yes`](/keys/tiberium/#scope-overlaytype) sets an overlay's armor to wood as its section is read, which is what puts Tiberium overlays on the same footing.
+A `Wood=yes` warhead also damages a wall overlay whose [`Armor`](/keys/armor/#scope-aircrafttype) is `wood`, in the same way a [`Wall=yes`](/keys/wall/#scope-warheadtype) warhead damages any wall overlay. [Taking damage](/systems/walls-and-gates/#taking-damage) covers what each hit does to the wall.
+
+Two checks also accept a `Wood=yes` warhead against a wood-armored wall:
+
+- A vehicle's blocked-path test, which uses its primary weapon's warhead.
+- The player's attack cursor over a wall owned by a house that is not an ally, which uses the warhead of the object's primary weapon.
+
+Two other checks accept only `Wall=yes`, so a warhead with `Wood=yes` alone gains nothing from them:
+
+- The [computer's automatic wall scan](/systems/target-selection/#what-each-kind-of-object-considers). A computer-controlled object whose primary weapon's warhead is not `Wall=yes` never picks a wall as a target by itself, even a wood wall.
+- Infantry's blocked-path test. Infantry whose primary weapon's warhead is not `Wall=yes` treat any wall as impassable, including a wood wall.
+
+[Walls in combat and movement](/systems/walls-and-gates/#walls-in-combat-and-movement) covers what each kind of object does at a wall.

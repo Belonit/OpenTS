@@ -12,8 +12,12 @@ when_omitted:
 WebbedInfantry=MYWEBGUY ; an AnimType registered in [Animations]
 ```
 
-A [`Webby=yes`](/keys/webby/) warhead striking an infantryman who is not [`IsWebImmune=yes`](/keys/iswebimmune/) deals no damage at all. It instead pins him for [`WebDuration`](/keys/webduration/) frames, give or take [`WebDurationVariation`](/keys/webdurationvariation/), puts him into the struggling sequence, and springs the [Paralyzed](/mapping/events/tevent-paralyzed/) trigger event on his tag. For as long as he is in that sequence, this animation's artwork is used in his place.
+While a web holds an infantryman, he is drawn with this animation's artwork in place of his own.
 
-Only the artwork is substituted. The frame shown is still chosen from the soldier's own struggling sequence, and his facing, remap and position are unchanged. The substitute therefore has to be built to match the sequence it stands in for.
+A [`Webby=yes`](/keys/webby/) hit puts an infantryman who is not [`IsWebImmune=yes`](/keys/iswebimmune/) into his struggling sequence, and [`WebDuration`](/keys/webduration/) sets how long he stays in it. The substitute artwork is used for as long as he is in that sequence.
 
-The substitution is guarded, so leaving the key unset draws the soldier in his own artwork while he struggles rather than failing. It also takes precedence over the [`Disguise`](/keys/disguise/) substitution, so a webbed spy shows the web rather than his cover.
+Only the artwork changes. The frame shown is still picked from the soldier's own struggling sequence, and his facing, house colors and position are unchanged. Build the substitute so its frames line up with the struggling frames of every infantry type that can be webbed.
+
+With the key unset, a webbed soldier struggles in his own artwork.
+
+The web artwork takes precedence over the [`Disguise`](/keys/disguise/) artwork, so a webbed spy shows the web instead of his cover.

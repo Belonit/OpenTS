@@ -11,8 +11,14 @@ when_omitted:
 SavourDelay=.03
 ```
 
-A house that has won, lost, or been condemned to blow up does not act on it at once. The value is turned into a countdown in minutes at fifteen frames a second, and the default is a little under two seconds. The win, the loss, or the destruction of everything the house owns waits until that countdown reaches zero. It buys the player a moment to watch the shot that settled the match.
+`SavourDelay` sets how long a house waits between being flagged to win, lose or blow up and that result taking effect. The value is in minutes of game time: it is multiplied by 900 frames and truncated. Left unset, the delay is 27 game frames, just under two seconds at 15 frames a second. `SavourDelay=.03` written in the file gives 26 frames, because a value read from the file is stored at slightly lower precision.
 
-The countdown is set on the frame the fate is decided, and covers all three fates from the same figure. Two things bypass it. A trigger action can declare a win or a loss in a silent form that never sets the countdown. And a house that already holds a fate ignores a further flag for any other, so the first decision keeps its own delay. Flagging a house to lose is the exception: it cancels a pending win.
+When the countdown ends, the result takes effect: the win, the loss, or the destruction of everything the house owns. In a campaign mission a win can wait longer, as [The win sequence](/systems/campaign-progression/#the-win-sequence) describes.
 
-A network game rounds the delay up. It is first raised to at least the number of frames the session runs ahead of itself. It is then rounded so that it expires on a frame number that is a multiple of ten, which keeps every machine agreeing on when the game ends.
+The countdown starts when the fate is decided, with these exceptions:
+
+- The [Announce Win](/mapping/actions/taction-announce-win/) and [Announce Lose](/mapping/actions/taction-announce-lose/) trigger actions do not start it.
+- A house already flagged for a fate ignores a later flag to win or to blow up, and its first countdown continues.
+- A flag to lose cancels a pending win and starts a new countdown. It is ignored when the house is already flagged to lose or to blow up.
+
+In a multiplayer game other than skirmish, the countdown is lengthened so that every machine ends the game on the same frame. It is first raised to at least the number of frames each machine runs ahead of the others. It is then extended to end on a frame number divisible by ten.

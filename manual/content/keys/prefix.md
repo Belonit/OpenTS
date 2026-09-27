@@ -8,4 +8,4 @@ when_omitted:
   value: "A"
 ---
 
-The key's name suggests the letter that begins a country-specific filename. Only the first character of the value is kept, because the destination has room for one character and a terminator. No gameplay path reads the stored letter.
+Only the first character of the value is stored, and nothing in the game reads it.

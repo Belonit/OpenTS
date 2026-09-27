@@ -12,10 +12,10 @@ when_omitted:
 Brief=GDI_M02
 ```
 
-The movie runs directly after [`Intro`](/keys/intro/) when a campaign mission is started fresh. It is also the only one of the mission's movies that stays reachable afterwards: the objectives screen shows a second button beside "resume" when a briefing movie is set. That button stops the score, replays the movie, and starts the score again. With no briefing movie, the resume button is centered on its own and the screen offers text alone.
+The movie plays directly after [`Intro`](/keys/intro/) when a mission is started fresh. A restart from the menu or a replay after a loss skips it.
 
-A mission that names no briefing movie, or names one whose file is missing, shows that same objectives screen as it starts, in the movie's place. It appears only on a fresh start: a restart, and the replay offered after a loss, go straight to the map. The mission's transit [`Theme`](/keys/theme/) plays behind it.
+The objectives screen offers the movie again during the mission. When a briefing movie is named, the screen shows a second button beside the resume button. That button stops the current music track, replays the movie, and then starts the same track again. With no briefing movie, the resume button sits alone in the center.
 
-Naming a movie the art file's `[Movies]` list does not have has the same effect as omitting the key. [`Intro`](/keys/intro/) covers how a movie name is resolved and what happens to one that cannot be found.
+A campaign mission with no briefing movie shows the objectives screen at the start instead. The same happens when the movie's file is missing, although the replay button still appears and then plays nothing. The mission's [`Theme`](/keys/theme/) track plays behind the screen. This screen appears only on a fresh start, not on a restart or a replay after a loss.
 
-The check that decides whether the movie's file exists formats its name into a 25-byte buffer, with no length check. The `.VQA` extension and the terminator fill the last five bytes, so a `[Movies]` entry longer than twenty characters overruns that buffer on the stack.
+A name missing from the art file's `[Movies]` list has the same effect as omitting the key. [`Intro`](/keys/intro/) covers how a movie name is resolved and what happens to one that cannot be found.

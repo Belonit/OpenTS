@@ -7,19 +7,23 @@ when_omitted:
   value: none
 ---
 
-An animation of the named type is created for the cell each time an overlay of the type is laid down, placed at ground level. The overlay does not need [`Tiberium=yes`](/keys/tiberium/#scope-overlaytype): a plain decorative overlay that names an animation here gets one all the same. Where the cell already grows Tiberium, the animation is switched to that crop's color scheme and takes the cell's own brightness. An effect over a standing crop therefore tints with it.
-
 ```ini title="rules.ini"
 [MYCRYSTAL]           ; example Tiberium overlay
 Tiberium=yes
 CellAnim=MYSPARKLE    ; example AnimType registered in rules.ini
 ```
 
-The animation is created whether or not the overlay was actually accepted onto the cell: a placement refused by [`Overrides`](/keys/overrides/) on the overlay already there still produces one.
+Each time an overlay of this type is laid on a cell, an animation of the named type starts there at ground level. This includes overlays read from a map and Tiberium that spreads to a new cell. The overlay does not need [`Tiberium=yes`](/keys/tiberium/#scope-overlaytype); a decorative overlay gets its animation too.
 
-The setting also stands in for the overlay's own artwork in two places:
+Walls, the veinhole, overlays with `Land=Railroad`, the four low-bridge end pieces, and veins laid during play never create the animation. Neither does an overlay laid on a slope other than the four simple slopes.
 
-- an overlay named by a map's overlay pack is created when it has artwork **or** an animation named here, so an artless type can still be placed from a map;
-- radar and map-preview colors come from the animation's artwork when the overlay has no shape of its own. On the in-game radar a Tiberium overlay takes its color from the animation whether or not it has one.
+Otherwise the animation starts even when the overlay itself is refused. For example, a placement refused because the cell is blocked, or because the overlay already in the cell sets [`Overrides=yes`](/keys/overrides/), still leaves the animation behind.
 
-What ends the animation is the animation's own flag, not the overlay's. An animation flagged as animated Tiberium checks each frame that the overlay beneath it still names it here, and marks itself for deletion the moment that stops being true. That is how the effect goes away with the crop. An animation without that flag simply plays out its loop count and ends like any animation, whether or not the overlay is still there.
+If the cell holds Tiberium when the animation starts, the animation is drawn in that Tiberium type's color scheme and at the cell's brightness, so an effect over a crop is tinted with it.
+
+The animation also stands in for missing overlay artwork:
+
+- A map's overlay data places an overlay only when the type has artwork or names an animation here. An overlay type with no artwork of its own can therefore still be placed from a map.
+- When the overlay has no artwork, its radar and map-preview color comes from the animation's artwork. On the in-game radar, a Tiberium overlay that names an animation always takes its color from the animation.
+
+The overlay does not remove the animation. An animation with [`IsAnimatedTiberium=yes`](/keys/isanimatedtiberium/) removes itself once its cell no longer holds an overlay that names it. Any other animation plays its loops and ends, whether or not the overlay is still there.

@@ -12,6 +12,4 @@ targets:
 credit: [ZivDero]
 ---
 
-Terrain zone and subzone identifiers are held as full integers rather than 16-bit values, so a map large enough to produce more than 32767 subzones no longer indexes the route search's tables with a negative number. A terrain change near the bottom or right edge of the playfield also no longer clears subzone identifiers past the end of the zone tables, and a route longer than 2000 cells is now abandoned instead of overrunning the move list it is written into.
-
-The map record of a save game grew with those identifiers. A save written by an earlier development snapshot of this release cycle is refused when that record is read.
+Route search no longer reads or writes outside its tables, which could corrupt memory or crash the game. A map with more than 32767 subzones, the blocks of connected cells the route search plans across, no longer produces negative table positions. A terrain change near the bottom or right edge of the playfield no longer writes past the end of the zone tables. A route longer than 2000 cells is no longer built; it used to be written past the end of the unit's move list.

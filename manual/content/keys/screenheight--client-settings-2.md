@@ -5,11 +5,9 @@ label: Height the display opens at
 see_also: [ScreenWidth, WindowHeight, Fullscreen]
 when_omitted:
   kind: computed
-  note: Both dimensions become 640 by 480 when either is left out.
+  note: A height left out keeps the launch option's height, if any. If either dimension is still unset, both become 640 by 480.
 ---
 
-This is the earlier of the two reads of the assignment, made before the main window exists. [`ScreenWidth`](/keys/screenwidth/#scope-client-settings-2) covers what the pair does at that point: either dimension missing or written as `-1` replaces both, and the resulting size opens the window and sets the video mode.
+The game reads this height with [`ScreenWidth`](/keys/screenwidth/#scope-client-settings-2) before it opens its window, and renders at the resulting size. That page covers how the pair combines with the launch option, the 640 by 480 fallback, and what happens when the renderer cannot start.
 
-The height is the full height of the game screen, and [the sidebar](/systems/sidebar/) is drawn down the whole of it. The depth and alpha buffers are allocated at a fixed 480 by 480 region as the display is brought up, whatever height was chosen. Loading a save or changing the display mode later reallocates them at the tactical view's real size.
-
-Starting the game with the internet debug view showing sets the pair to 640 by 400 before the display is opened, whatever the file said.
+The height is the full height of the game screen. [The sidebar](/systems/sidebar/) runs down the whole of it, and the tactical view takes the height left below a 16-pixel strip across the top.

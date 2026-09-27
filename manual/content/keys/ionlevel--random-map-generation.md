@@ -5,16 +5,14 @@ label: Random map generation
 see_also: [UseIonStorms, "system:ion-storms"]
 when_omitted:
   kind: context-dependent
-  note: "0: generation has left the map's ordinary `Level` at a thousandth of full light by then, and the fallback truncates that to nothing. Every storm then shades the map flat."
+  note: "0, so storms shade the map flat. Outside storms a generated map adds only a thousandth of full light per height level."
 ---
 
-Random map generation reads this entry from `ION.INI`. Only the name is fixed: the game looks `ION.INI` up through [the ordinary file layer](/formats/mix/), so the game-directory copy is the one generation reads. That file is where a mod sets the storm lighting every generated map will use. The read happens only when the [`UseIonStorms`](/keys/useionstorms/) option is on for the map being built.
+Random map generation reads this key from the `[Lighting]` section of `ION.INI`, and only for a map whose seed sets [`UseIonStorms=yes`](/keys/useionstorms/). A loose `ION.INI` in the game directory takes precedence over one in a [MIX archive](/formats/mix/). The value applies to every generated map with ion storms.
 
-The value is the brightness a storm adds for each height level a cell stands above the ground, in place of the map's ordinary [`Level`](/keys/level/#scope-scenarios). It also scales the height bonus drawn onto aircraft and onto elevated units and infantry. It is a fraction of full light per level, so cliffs and hills stand out more as the value grows, and `0` shades the map flat. The swap in and out happens on the frames the storm breaks and ends, exactly as it does for [a scenario's `IonLevel`](/keys/ionlevel/#scope-scenarios).
+The value works as [a scenario's `IonLevel`](/keys/ionlevel/#scope-scenarios) does: while a storm runs, it is the brightness each height level adds to a cell, as a fraction of full light. Larger values make cliffs and hills stand out more, and `0` shades the map flat. Aircraft in flight, and infantry and vehicles on bridges, also take their extra height brightness from it during a storm.
 
 ```ini title="ION.INI"
 [Lighting]
-IonLevel=0  ; the stock file's figure: storms shade the map flat
+IonLevel=0  ; the stock file's value: storms shade the map flat
 ```
-
-The fallback cannot take an ordinary height brightness across. Generation has set the map's `Level` to a thousandth of full light by then, and the fallback's whole-number division reduces that to `0`. A generated map is therefore shaded flat through every storm unless `ION.INI` states this value. A value the file states is used exactly as written; only the omission collapses to `0`.

@@ -5,7 +5,17 @@ see_also: ["system:ai-team-production"]
 when_omitted:
   kind: value
   value: ""
-  note: The list stays empty and the difficulty slot is used to index it anyway, reading storage that was never allocated.
+  note: A computer house uses an undefined chance.
 ---
 
-Entries run hardest game setting first. The shipped rules write `100,80,60`: a `100` percent chance on the hardest setting, `80` on the next and `60` on the easiest. A computer house indexes them with its own difficulty slot, the inverse of the setting the player chose. A game set to Hard gives the computer the first entry, and one set to Easy gives it the last. Vehicles, infantry and aircraft each have their own routine, and each routine makes the draw once per [production choice](/systems/ai-team-production/#production-demand). Winning it selects the type wanted by the team that has waited longest. Losing it selects uniformly from the list of candidates the same pass has gathered.
+`FillEarliestTeamProbability` is the percent chance that a computer house builds for its oldest waiting team first. The house draws it each time it [chooses the next vehicle, infantryman or aircraft](/systems/ai-team-production/#production-demand) to build for its teams. Vehicles, infantry and aircraft each make a separate draw.
+
+- **Draw succeeds:** the house builds the candidate type wanted by its oldest waiting team.
+- **Draw fails:** the house picks at random from a list of candidate types, with equal chances. The list does not favor the types in greatest demand; [Production demand](/systems/ai-team-production/#production-demand) explains which types it holds.
+
+Write one percentage for each [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot), slot 0 first. A computer house uses the entry for its slot. With the menu's settings, the first entry applies when the player chose Hard and the last when the player chose Easy, unless [the multiplayer bonus](/systems/difficulty/#the-computers-bonus-with-more-than-one-human) moves the house down a slot. Write all three entries; a house whose slot lies past the end of a shorter list uses an undefined chance.
+
+```ini title="rules.ini"
+[General]
+FillEarliestTeamProbability=100,80,60 ; player on Hard, Normal, Easy
+```

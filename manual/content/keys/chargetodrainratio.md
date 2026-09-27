@@ -7,6 +7,8 @@ when_omitted:
   value: "3"
 ---
 
-A [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon spends its charge while its effect is running, and this figure converts between the two. Firing a fully charged weapon puts a drain of [`RechargeTime`](/keys/rechargetime/) multiplied by this value on the clock. Firing it again divides whatever drain is left by the same value and turns it back into charge, so switching the effect off part-way returns the matching share of the charge. The same product is what the cameo clock is drawn against while the effect runs.
+`ChargeToDrainRatio` sets how long a [`UseChargeDrain=yes`](/keys/usechargedrain/) superweapon's effect runs for the charge it spends. Fired from a full charge, the effect runs for [`RechargeTime`](/keys/rechargetime/) multiplied by this value. Switching the effect off early converts the time left back into charge at the same rate, so the unused share of the charge is kept. While the effect runs, the cameo clock shows the time left as a share of that full run time.
 
-A ratio below 1 makes the effect shorter than the charge that bought it: the shipped `rules.ini` sets `.333`, which spends the whole three-minute firestorm charge on one minute of wall. Above 1 it runs longer than the charge took to build. One figure in `[General]` covers every charge-draining weapon; [the firestorm generator's charge](/systems/laser-fences/#charge-and-drain) sets out both formulas as the wall uses them.
+A value below `1` makes the effect shorter than the time the charge took to build, and a value above `1` makes it longer. The shipped `rules.ini` sets `.333`, so the firestorm's three-minute charge keeps the wall up for one minute.
+
+One value in `[General]` covers every charge-draining weapon. It applies only to a house a human is playing, because a computer house's wall never drains. [Charge and drain](/systems/laser-fences/#charge-and-drain) gives both formulas as the firestorm wall uses them.

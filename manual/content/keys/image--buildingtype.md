@@ -7,4 +7,4 @@ when_omitted:
   note: Uses the building's Image ID as the main SHP basename.
 ---
 
-This art key changes only the building's main-shape basename. It does not change the Image ID or the `[<Image ID>]` section used by other building art keys.
+`Image=` in a building's art section changes only the file name of its main shape. The building keeps its Image ID, and its other art keys are still read from the `[<Image ID>]` section. This name is adjusted for the theater in the same way as the Image ID would be. [`Theater=`](/keys/theater/) and [`NewTheater=`](/keys/newtheater/) describe the adjustment. A building with `Theater=yes` ignores this key in a new game: once the map is read, it draws `<Image ID>` with the theater's extension. After a saved game loads, it draws the file this key names again.

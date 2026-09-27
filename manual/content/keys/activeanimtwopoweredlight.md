@@ -7,4 +7,14 @@ when_omitted:
   value: "no"
 ---
 
-The flag does not tint or light anything: it swaps the freeze for outright destruction and recreation. [Power](/systems/building-animations/#power) covers why it needs [`ActiveAnimTwoPowered=no`](/keys/activeanimtwopowered/) beside it to have any effect at all.
+`ActiveAnimTwoPoweredLight=yes` removes the [`ActiveAnimTwo`](/keys/activeanimtwo/) animation when its house rechecks its power and is short, and creates it again when a recheck finds full power. Only some structures remove the animation; [Power](/systems/building-animations/#power) covers which. Despite its name, the flag does not light or tint anything.
+
+The flag takes effect only beside [`ActiveAnimTwoPowered=no`](/keys/activeanimtwopowered/). While `ActiveAnimTwoPowered` is `yes`, its default, the animation freezes during a shortage and this flag is ignored.
+
+Each time the house rechecks its power at full power, it creates the animation in the slot if the slot is empty. That includes an animation that played to its end.
+
+Three events can start the animation again during a shortage, and it then runs until the next recheck removes it:
+
+- A repair step starts it if the slot is empty, unless an exclusive turret is charging or charged.
+- An [upgrade](/keys/upgrades/) installed on a structure below maximum strength starts it if the slot is empty.
+- On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure, the turret dropping its charge starts it. A turret that is charging or charged drops its charge when its house falls short of power.

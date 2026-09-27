@@ -5,7 +5,7 @@ label: Commanded house
 see_also: [SpeechSide, NextScenario]
 when_omitted:
   kind: computed
-  note: The first HouseType the rules registered, because an absent or empty value resolves to "no house" and that result is replaced with the first one.
+  note: The first country registered, the same as an empty value.
 ---
 
 ```ini title="map file"
@@ -13,10 +13,10 @@ when_omitted:
 Player=GDI
 ```
 
-The value names a HouseType and settles which house the player commands for the rest of a campaign mission. Everything created afterwards is measured against that house: ownership, allegiance, buildable lists, and the money the mission starts with. The campaign's map selection screen reads its progression list from the same house. A multiplayer or skirmish game assigns houses from the lobby and never reaches this read.
+`Player` names the house the player controls in a campaign mission. The name can be the country's ID or its full name, ignoring case. The player commands that house's units and structures, spends its credits, and builds from its build options. The map selection screen after the mission reads its campaign progression from the same house.
 
-The lookup accepts either the house's ID or its full name and ignores case.
+In a multiplayer or skirmish game, the lobby or the launch file assigns houses and this key is ignored.
 
-:::danger[A house the scenario does not contain leaves the player pointer null]
-The houses a mission contains are the first HouseTypes the rules registered, as many of them as the map's `[Houses]` list has entries. When the named house is not among them, the search for it returns nothing and the very next statement writes through the empty result. A name that matches no registered house at all is worse still. Rather than being rejected, it registers a fresh HouseType, which no scenario can ever contain. A typo here is enough to end the load in a null write.
+:::danger[Name a house the mission contains]
+The mission's houses are the first countries registered, one for each entry in the map's `[Houses]` section. They are counted in the order the rules declare countries, not the order `[Houses]` lists them. If `Player` names any other country, or a name that matches no country, the game crashes while loading the mission.
 :::

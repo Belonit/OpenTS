@@ -7,6 +7,6 @@ when_omitted:
   value: HealBase
 ---
 
-Campaign crates are not drawn at random: the overlay determines the result outright. This setting is the result for a crate whose overlay is the one named by [`CrateImg`](/keys/crateimg/). The value is one of the [crate result](/reference/enums/crate/) tokens. An unrecognized token resolves to `Money` with no diagnostic.
+In a campaign, a crate whose overlay is the one named by [`CrateImg`](/keys/crateimg/) gives this result. Campaign crates are not drawn at random: the overlay alone decides the result. The value is one of the [crate result](/reference/enums/crate/) tokens, and an unrecognized token gives `Money`.
 
-The setting has no effect at all while `CrateImg` and [`WoodCrateImg`](/keys/woodcrateimg/) name the same OverlayType, which is how the shipped rules are written. [Choosing the result](/systems/crates/#in-a-campaign) covers the mechanism and what a second overlay needs.
+The setting has no effect while `CrateImg` and [`WoodCrateImg`](/keys/woodcrateimg/) name the same OverlayType, as they do in the shipped rules. [Choosing the result in a campaign](/systems/crates/#in-a-campaign) explains why and what a second overlay type needs.

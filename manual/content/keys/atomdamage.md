@@ -1,6 +1,6 @@
 ---
 key: AtomDamage
-summary: Raw damage of a wide-area nuclear blast that nothing in play reaches.
+summary: Raw damage of a fallback nuclear blast that never occurs in play.
 no_effect: true
 see_also: ["NukeWarhead", "MaxDamage", "ExpSpread"]
 when_omitted:
@@ -8,8 +8,15 @@ when_omitted:
   value: "1000"
 ---
 
-The blast the figure describes is centered on the point of detonation and uses [`[SpecialWeapons] NukeWarhead`](/keys/nukewarhead/). In a campaign it reaches four cells and uses the figure as written; in a skirmish or multiplayer match it reaches three cells and one fifth of the figure, rounded down. Nothing is credited with the damage.
+No detonation in play deals this damage. The value belongs to a fallback nuclear blast that runs only when a nuclear shot's explosion animation cannot be created, and creating an animation never fails.
 
-The figure is the raw damage handed to the same wide-area routine an exploding object's death blast uses. That routine scales each cell's share by the cell's distance from ground zero, and the share rises toward the rim, as [`ExpSpread`](/keys/expspread/) describes. The center cell and the rim cells take the full figure or more, and the cells between them take less.
+If the fallback did run, it would be a [wide-area blast](/systems/warheads/#the-wide-area-blast) through [`[SpecialWeapons] NukeWarhead`](/keys/nukewarhead/) around the detonation cell, credited to no house:
 
-It is not the damage an ordinary nuclear shot delivers. A detonation with the nuclear warhead does its damage the way every other shot does, through its own warhead. This wide-area blast sits behind a test of whether the explosion animation object was allocated at all, a test the allocator never fails, so nothing in play reaches it.
+| Game | Radius | Raw damage |
+| --- | --- | --- |
+| Campaign | 4 cells | The value as written |
+| Skirmish or multiplayer | 3 cells | One fifth of the value, rounded down |
+
+Each cell's share of a wide-area blast rises toward the rim, as [`ExpSpread`](/keys/expspread/) describes. The center and rim cells take the full raw damage or more, and the cells between them take less.
+
+Every nuclear shot deals the ordinary blast of its weapon's damage, like any other shot. The fallback would only have added the wide-area blast on top of it.

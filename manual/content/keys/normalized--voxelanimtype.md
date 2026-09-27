@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-A voxel animation is stepped by its bounce physics rather than by a frame delay, so there is no rate to rescale and nothing reads the stored flag.
+A voxel animation moves by its bounce physics each frame and has no frame delay for the flag to rescale.

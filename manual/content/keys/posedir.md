@@ -12,14 +12,23 @@ when_omitted:
 PoseDir=0
 ```
 
-Two paths read it, and they disagree about what the number means.
+Keep this at `0`, north. Two uses read the number on different scales, so any value from 1 to 255 gives them different headings.
 
-The placement path treats it as a 256-step direction, where 0 is north and each step is a little over one and a third degrees, so 64 is east and 128 is south. It supplies the facing an aircraft is given as it is put on the map. That covers the free helicopter a helipad gets when it is built. It also covers an aircraft leaving the factory that built it: the aircraft lands on the pad, or is pushed to a nearby cell if an ion storm is running.
+## Placing an aircraft
 
-The landing path treats the same number as an eight-step compass facing instead, where 1 is northeast and 4 is south. It supplies the direction an aircraft turns its body toward as it settles on its destination with nothing to aim at, or while strafing. That direction is settled in order:
+When an aircraft is put on the map beside or on a structure, it faces this direction on a 256-step scale. `0` is north, `64` east and `128` south, and each step is about 1.4 degrees. This covers:
 
-1. an aircraft in radio contact with a helipad or a vehicle copies that object's facing;
-2. a loaded aircraft keeps the heading it already has;
-3. anything else takes this value.
+- a structure's free aircraft, including the one a helipad gets when it is built;
+- a new aircraft from its factory, when the factory is not in contact with another aircraft or an ion storm is running. During a storm the aircraft is placed on a nearby cell instead of the pad.
 
-At the default of `0` the two agree, since north is zero on both scales. Any other value points the two paths in different directions. The landing path keeps only the low three bits of the number, so values `8`, `16`, `24` and so on all read as north there, while the placement path reads each of them as a different heading.
+Outside an ion storm, a new aircraft whose factory is already in contact with another aircraft, such as one parked on its pad or one flying back to it, flies in from the map edge facing north. It does not use this setting.
+
+## Landing
+
+When an aircraft comes within a cell of its destination with nothing to aim at, or while strafing, it turns to a landing facing. The first of these that applies decides the facing:
+
+1. An aircraft in radio contact with a helipad or a vehicle copies that object's facing.
+2. An aircraft carrying cargo keeps its current heading.
+3. Any other aircraft takes this value as an eight-step compass facing, where `1` is northeast and `4` is south.
+
+The landing scale uses only the lowest three bits of the number. Values `8`, `16`, `24` and so on all mean north there, while the placement scale gives each of them a different heading.

@@ -12,8 +12,8 @@ when_omitted:
 SelfHealStep=1
 ```
 
-Every object that [mends itself](/systems/repair/#self-healing) gains this many strength points per tick, structure, vehicle, aircraft and infantry alike. A type that states [`SelfHealingStep`](/keys/selfhealingstep/) uses its own figure instead.
+Each self-healing tick restores this many strength points to an object that [mends itself](/systems/repair/#self-healing). It applies to structures, vehicles, aircraft and infantry alike. A type with [`SelfHealingStep`](/keys/selfhealingstep/) at `0` or above uses that value instead.
 
-[`RepairStep`](/keys/repairstep/) and [`IRepairStep`](/keys/irepairstep/) reach no part of this path; the wrench, the depot and the hospital keep those two to themselves.
+A step below `1` heals `1` point, so `0` and negative values still heal a point per tick. Healing never raises strength above the object's maximum.
 
-A resolved step below `1` is raised to `1`, so `0` and negative values still heal a point at a time. `SelfHealing=no` switches healing off, unless the object has earned the `SELF_HEAL` veteran ability. A step larger than the damage left is clamped to the object's maximum strength.
+[`RepairStep`](/keys/repairstep/) and [`IRepairStep`](/keys/irepairstep/) do not affect self-healing. They apply to the repair wrench, the service depot, the hospital and Tiberium healing.

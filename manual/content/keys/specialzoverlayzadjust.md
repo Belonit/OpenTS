@@ -8,4 +8,4 @@ when_omitted:
   value: "0"
 ---
 
-The name pairs the figure with [`SpecialZOverlay`](/keys/specialzoverlay/), the shape nothing draws. No drawing path reads the figure.
+The value is stored with the structure's type, but nothing uses it. Its name pairs it with [`SpecialZOverlay`](/keys/specialzoverlay/), a shape that is also never drawn. [`NormalZAdjust`](/keys/normalzadjust/) biases the depth of the structure's main shape.

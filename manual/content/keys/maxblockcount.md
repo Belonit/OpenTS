@@ -1,6 +1,6 @@
 ---
 key: MaxBlockCount
-summary: Parsed retry count that decides nothing.
+summary: A retry count for blocked levitating units that has no effect.
 no_effect: true
 see_also: ["IntentionalDriftVelocity", "ProximityDistance"]
 when_omitted:
@@ -8,10 +8,10 @@ when_omitted:
   value: "4"
 ---
 
-A levitating unit that cannot enter the cell it is moving into tries once more at a point nudged by a single lepton, and where that also fails it spends one of these tries. The figure refills the count when the tries run out and again on every successful move, so a running tally of consecutive blocked frames is kept.
+The engine counts a levitating unit's blocked moves against this figure, but running out changes nothing, so every value behaves the same.
 
-Nothing turns on the tally. Running out clears the unit's destination, but only on the condition that it has neither a live target nor a live destination. Reaching that condition is itself what clears the destination, so the step has nothing left to do. The behavior is the same at every value. A blocked unit drifts back to the middle of its own cell at [`IntentionalDriftVelocity`](/keys/intentionaldriftvelocity/) and departs again in a fresh direction, however long the obstruction has held it.
+When the count runs out, the engine clears the unit's destination only if the unit has neither a live target nor a live destination. A unit that meets that condition has no destination left to clear.
 
-A newly created unit starts on four tries whatever the figure says, and picks the figure up from its first successful move onward.
+A blocked levitating unit instead drifts back to the center of its cell at [`IntentionalDriftVelocity`](/keys/intentionaldriftvelocity/). From there it drifts out toward its target or destination, if it has one, however many times it has been blocked.
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

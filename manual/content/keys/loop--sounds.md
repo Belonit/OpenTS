@@ -8,7 +8,9 @@ when_omitted:
   value: "0"
 ---
 
-With `LOOP` in the sound's [`Control=`](/keys/control/), how many times the body plays. The attack plays once before the first cycle and the decay once after the last. `0` plays the body until the game stops the sound, as when it scrolls out of range. The game fades such a loop out, and its decay does not play. Without `LOOP` the key has no effect.
+How many times the body of a looping sound plays. The key takes effect only with `LOOP` in the sound's [`Control=`](/keys/control/). The attack plays once before the first cycle and the decay once after the last.
+
+`Loop=0` repeats the body until the game stops the sound, for example when its place scrolls out of range. The game stops it with a short fade, and its decay does not play.
 
 ```ini title="sound01.ini"
 [ALARM]
@@ -17,4 +19,6 @@ Control=LOOP ATTACK DECAY
 Loop=4
 ```
 
-[`LoopLimit=`](/keys/looplimit/) is read when this key is absent.
+Each play of `ALARM` plays `ALARMIN`, then `ALARM` four times, then `ALARMOUT`.
+
+When `Loop=` is absent or negative, [`LoopLimit=`](/keys/looplimit/) is read in its place.

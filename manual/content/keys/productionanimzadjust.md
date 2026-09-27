@@ -7,4 +7,4 @@ when_omitted:
   value: "0"
 ---
 
-The bias that decides whether the production animation is drawn over the structure or behind it. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers which direction each sign moves it and the byte the figure has to fit in.
+`ProductionAnimZAdjust=` decides whether the production animation is drawn over the structure or behind it. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers which direction each sign moves it and why the value must stay between -128 and 127.

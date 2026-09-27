@@ -1,20 +1,25 @@
 ---
 key: Sensors
-summary: Whether the object reveals a nearby hidden object belonging to a house its own owner does not consider allied.
+summary: Whether the object reveals a nearby hidden object belonging to a house its owner does not consider allied.
 see_also: [SensorArray, "system:cloaking"]
 when_omitted:
   kind: context-dependent
   note: "An InfantryType section starts at yes. An AircraftType, BuildingType or UnitType section starts at no."
 ---
 
-The flag is read in two proximity tests, and neither marks a cell as sensed. A hidden vehicle, infantryman or aircraft arriving at the center of a cell is uncloaked when one of the eight neighboring cells inside the playable area holds a flagged object whose owner does not consider it allied. A cloaked structure is uncloaked, and refused a new cloak, while a flagged object whose owner does not consider the structure allied stands anywhere within one cell of its footprint.
+`Sensors=yes` makes an object end the cloak of hidden objects right next to it. It works in two cases:
 
-Both tests use the detector owner's alliance list. The hidden object's owner may consider the detector allied without preventing detection.
+- A hidden vehicle, infantryman or aircraft is uncloaked when it arrives at the center of a cell and one of the eight neighboring cells, inside the playable area, holds a detector. The test runs only as the hidden object arrives, so a detector that walks up to a hidden object standing still does not reveal it.
+- A cloaked structure is uncloaked, and cannot cloak again, while a detector stands within one cell of its footprint.
 
-Detection therefore costs the detector nothing and grants its house nothing at a distance: it marks nothing on the radar and lets nothing shoot at something still hidden elsewhere. That is what a [`SensorArray=yes`](/keys/sensorarray/) structure does instead, and the two mechanisms share no state.
+Only one object is tested in each cell, the one nearest the cell's corner, so a detector that shares a cell with another object can be missed.
 
-The `SENSORS` [veteran ability](/systems/veterancy/#abilities) stands in for the flag in the first test only. A promoted detector reveals a passing vehicle and does nothing at all to a cloaked structure.
+Both cases apply only when the detector's owner does not consider the hidden object's house allied. The hidden object's owner may consider the detector allied, and detection still happens.
+
+A detector only ends cloaks. It marks nothing as sensed, so its house cannot see or target anything that is still hidden elsewhere. A [`SensorArray=yes`](/keys/sensorarray/) structure does that instead; [Detection](/systems/cloaking/#detection) compares the two.
+
+The `SENSORS` [veteran ability](/systems/veterancy/#abilities) works like this flag in the first case only. A promoted detector uncloaks a vehicle, infantryman or aircraft that moves past it, but has no effect on a cloaked structure.
 
 :::caution[Every InfantryType is a detector unless told otherwise]
-InfantryTypes start with the flag already set, so a civilian, an engineer and a common rifleman all reveal hidden objects that move past them. Suppressing that takes an explicit `Sensors=no` in the section.
+InfantryTypes start with this flag set, so a civilian, an engineer and a rifleman all uncloak hidden objects that move past them. Write `Sensors=no` in the section to turn it off.
 :::

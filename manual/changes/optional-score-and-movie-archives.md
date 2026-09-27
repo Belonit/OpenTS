@@ -9,6 +9,6 @@ targets:
 credit: [ZivDero, FunkyFr3sh]
 ---
 
-The game no longer refuses to start when `SCORES.MIX` or every `MOVIES*.MIX` is missing. Both are still mounted wherever they are found. A music track or movie whose file is not found in any archive or folder is skipped.
+The game now starts when `SCORES.MIX` is missing or no `MOVIES*.MIX` archive is found; it used to refuse to start. An archive that is present is still mounted. A music track or movie whose file is in no mounted archive or search folder is skipped.
 
 FunkyFr3sh is credited for the ts-patches change this follows.

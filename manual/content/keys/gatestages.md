@@ -7,13 +7,15 @@ when_omitted:
   value: "9"
 ---
 
-The door's completion fraction is scaled by this count to pick the frame to draw. The frame is clamped to the last one in the range. The count is the number of healthy door frames in the gate's artwork: with `GateStages=9`, the travel draws frames `0` through `8`, and the damaged block starts at frame `10`.
+The value is the number of undamaged door frames in the gate's artwork. A closed gate shows frame `0` and a fully open one shows frame `GateStages - 1`. While the door moves, the frame drawn follows how far it has traveled.
 
 ```ini title="art.ini"
 [MYGATE] ; example gate, drawn from its own Image ID
 GateStages=9
 ```
 
-A gate at or below [`ConditionYellow`](/keys/conditionyellow/) draws from a second block of door frames offset by this count plus one, so the art needs both blocks. With `GateStages=9`, the damaged block is frames `10` through `18`, and the door animation never draws frame `9`. The second block is automatic: a gate needs no `DamagedDoor=yes`.
+A gate at or below [`ConditionYellow`](/keys/conditionyellow/) draws its door from a second block of frames that starts at `GateStages` plus one, so the art needs both blocks. With `GateStages=9`, the undamaged door uses frames `0` through `8`, the damaged door uses frames `10` through `18`, and frame `9` is never drawn as a door frame. The damaged block needs no [`DamagedDoor=yes`](/keys/damageddoor/).
 
-For a [`Gate=yes`](/keys/gate/) type the same figure plus one is the buildup step count that [`BuildupTime`](/keys/builduptime/) is divided into, in place of the frame count the buildup art would otherwise supply.
+While the door is open or moving, the frames before `GateStages / 2`, rounded down, are depth-sorted as an upright wall, and the later frames as if lying flat on the ground. The damaged block follows the same split. With `GateStages=9`, frames `0` through `3` are upright and frames `4` through `8` lie flat.
+
+A [`Gate=yes`](/keys/gate/) type's buildup animation plays frames `GateStages` down to `0` of its buildup art, in that order. [Buildup](/systems/production/#buildup) covers the animation's timing.

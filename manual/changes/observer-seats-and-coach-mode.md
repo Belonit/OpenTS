@@ -36,8 +36,10 @@ credit:
 - dkeeton
 ---
 
-A launch file may seat people who watch the match rather than play it. An observer's house starts defeated with nothing on the map, and is given the whole map with the radar up; it sees hidden objects and decorations as their owners do. It shows the match time where its credits would be, and can message only everyone or the other observers. It is left out of the score screen, the name list and the statistics report.
+A seat listed under `[IsSpectator]` in `spawn.ini` watches the match without playing. The observer's house starts defeated with nothing on the map, sees the whole map with the radar up, and sees every house's cloaked and underground objects, pips and rank insignia as their owners do. Its credit readout shows the match time, it can message only everyone or the other observers, and it is left out of the score screen, the radar pane's name list and the statistics report.
 
-`CoachMode` in the launch file's `[Settings]` section is honored: a defeated player keeps allied vision and private chat instead of the whole map. Without it a defeated player now has the fog lifted, the regrowth stopped, and hidden objects and decorations shown, as an observer does.
+A defeated player now sees the whole map as an observer does. The fog is lifted and kept from growing back, and every house's cloaked and underground objects, pips and rank insignia are shown.
+
+`CoachMode=yes` in the `[Settings]` section of `spawn.ini` lets a defeated player keep their allies' vision and private chat instead of seeing the whole map.
 
 Iran wrote the spawner's observer seats, from the code he wrote for Red Alert. dkeeton added coach mode to ts-patches.

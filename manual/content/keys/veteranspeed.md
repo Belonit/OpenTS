@@ -7,6 +7,8 @@ when_omitted:
   value: "1"
 ---
 
-The multiplier reaches only an object whose rank grants it the `FASTER` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/). The default doubles speed, and `0` leaves it unchanged.
+Raising the value speeds the object up: the default doubles its movement speed, and `0` leaves it unchanged. Only an object whose rank grants the `FASTER` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/) is affected.
 
-Scaling is applied after the house ground-speed bias and the object's own speed bias, and before the current throttle setting. Only infantry, vehicles, and aircraft have a speed to raise; a building that reached veteran rank gains nothing from the ability.
+The multiplier applies after the house's ground-speed multiplier and any speed crate bonus.
+
+It reaches infantry and vehicles whose [`Locomotor`](/keys/locomotor/) is Drive, Hover, Walk, Mech or Tunnel. Every other locomotor, including Flyer, Jumpjet and Levitate, sets its pace without reading the multiplier, so aircraft, jumpjets and levitating objects gain nothing. A building has no speed to raise.

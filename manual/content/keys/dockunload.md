@@ -7,4 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-This is the flag a building answers a harvester's docking request with, and it is the only one that admits a Tiberium harvester: [`Refinery=yes`](/keys/refinery/) supplies the dock point and the unloading animations but grants no access on its own. The harvester's house must have declared the building's house an ally, and only that direction is checked, so a one-way alliance admits the request. A [weed refinery](/systems/veins/) is the exception: it admits a weeder on [`Weeder=yes`](/keys/weeder/) alone, without this flag. A building already holding an attached object refuses the request until that object leaves.
+A structure with `DockUnload=yes` accepts a [`Harvester=yes`](/keys/harvester/#scope-unittype) vehicle that asks to dock, and the harvester unloads its Tiberium there. No other flag admits a Tiberium harvester. [`Refinery=yes`](/keys/refinery/) places the dock point and plays the unloading animations, but it does not accept a harvester by itself.
+
+A harvester never unloads at a structure that is also [`UnitRepair=yes`](/keys/unitrepair/) or [`Helipad=yes`](/keys/helipad/), because those flags decide first whether a docking vehicle is admitted.
+
+The structure can still refuse a harvester, for example when the two houses are not allied both ways or another vehicle is already docked. [Unloading](/systems/tiberium/#unloading) lists the conditions and covers how a harvester picks a bay.
+
+A [weed refinery](/systems/veins/) does not need this flag: [`Weeder=yes`](/keys/weeder/#scope-buildingtype) on the structure admits a weeder by itself.

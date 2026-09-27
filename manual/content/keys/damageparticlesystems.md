@@ -13,17 +13,29 @@ DamageParticleSystems=MYSPARKSYS,MYSMOKESYS ; ParticleSystemTypes registered in 
 DamageSmokeOffset=0,0,90
 ```
 
-The list is one pool that the engine splits by each entry's [`BehavesLike`](/keys/behaveslike/). Only two of those behaviors are ever drawn from it, and an entry with any other behavior is never used.
+Each entry's [`BehavesLike`](/keys/behaveslike/) decides its role. `Spark` entries supply the object's damage sparks and `Smoke` entries supply its damage smoke. An entry with any other behavior is never used.
 
-**Sparks** are the `Spark` entries. A damaged object checks for them on every one of its own passes, while its health ratio is below [`ConditionYellow`](/keys/conditionyellow/) and it is not more than ten leptons underground. Past that depth the plume is out of sight below the ground, so nothing attaches there and a running system is dropped. If it has no spark system running, one entry is picked from the spark entries at random and attached to the object at its center plus [`DamageSmokeOffset`](/keys/damagesmokeoffset/). The roll is [`ConditionRedSparkingProbability`](/keys/conditionredsparkingprobability/) once the ratio is below [`ConditionRed`](/keys/conditionred/), and [`ConditionYellowSparkingProbability`](/keys/conditionyellowsparkingprobability/) until then. Sparks are switched off for every InfantryType except a [`Cyborg=yes`](/keys/cyborg/) one, and switched on for everything else; there is no key for it.
+**Sparks start by chance.** On every frame that a damaged object meets **all of** these, it rolls for sparks:
 
-**Smoke** are the `Smoke` entries, and they are attached on a damaging hit rather than on a pass. The attach happens under **All of:**
+- its strength is below [`ConditionYellow`](/keys/conditionyellow/);
+- it is less than ten leptons underground;
+- it has no spark system running.
 
-- the health ratio is at or below `ConditionYellow`
-- the hit is the one that takes the object below half strength or below `ConditionRed`
-- no smoke system is already running
-- the object is not more than ten leptons underground
+The chance is [`ConditionYellowSparkingProbability`](/keys/conditionyellowsparkingprobability/), or [`ConditionRedSparkingProbability`](/keys/conditionredsparkingprobability/) once the object is below [`ConditionRed`](/keys/conditionred/). On success, one `Spark` entry, chosen at random, starts at the object's center plus [`DamageSmokeOffset`](/keys/damagesmokeoffset/). The burst stays at that point and ends by itself once its [`SparkSpawnFrames`](/keys/sparkspawnframes/) have passed; repair does not cut it short.
 
-One smoke entry is picked at random and attached at the object's position plus `DamageSmokeOffset`. Repairing back above `ConditionYellow`, or sinking further than ten leptons underground, removes it again.
+Damage sparks share a slot with the spray of a [`UseSparkParticles=yes`](/keys/usesparkparticles/) weapon. While damage sparks are running, such a weapon cannot fire. While its spray is running, no damage sparks start.
 
-An object may run one spark system and one smoke system at a time, so a longer list widens the choice rather than the count.
+**Smoke starts on a hit.** A damaging hit attaches one `Smoke` entry, chosen at random, when **all of** these hold:
+
+- the object's strength is at or below `ConditionYellow` after the hit;
+- the hit takes the object below half strength or below `ConditionRed`, or is the killing hit a [`Cyborg=yes`](/keys/cyborg/) soldier survives by going prone;
+- it has no smoke system running;
+- it is less than ten leptons underground.
+
+The smoke is attached at the object's position plus `DamageSmokeOffset`. Healing or repair that lifts the object back above `ConditionYellow` removes it, and so does travel more than ten leptons underground.
+
+An object runs at most one spark system and one smoke system at a time, so a longer list widens the choice, not the count.
+
+:::caution[A cyborg's sparks depend on the last rules file]
+An InfantryType gives off sparks only if it is `Cyborg=yes`; every other kind of object can spark. Every rules file the game reads, including the scenario, switches an InfantryType's sparks off unless that file contains the type's section and the type is `Cyborg=yes`. A `Cyborg=yes` type therefore sparks only when the last rules file read for the scenario also contains its section.
+:::

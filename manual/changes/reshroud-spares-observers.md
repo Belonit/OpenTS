@@ -15,4 +15,4 @@ targets:
 credit: [ZivDero]
 ---
 
-Reshroud map and its team mission no longer shroud an observer or a player defeated outside coach mode. Before, both covered the map for the player at every machine, so an observer saw only shroud until the map was revealed again.
+The Reshroud map action and team mission no longer shroud an observer, or a player defeated while coach mode is off. Before, each machine shrouded the map for the player it was running, so an observer saw only shroud until the map was revealed again.

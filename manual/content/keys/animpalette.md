@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-Only the body is remapped. The shadow thrown under a projectile that is above the ground is drawn from the normal palette either way, so a remapped projectile keeps an ordinary shadow. A [`Voxel=yes`](/keys/voxel/) projectile is drawn through the voxel path, which takes its colors from [`Color`](/keys/color/#scope-bullettype) and never reads this setting.
+Only the body changes palette. The shadow under a projectile above the ground is drawn with the normal palette either way. A [`Voxel=yes`](/keys/voxel/) projectile ignores this setting, because it takes its colors from [`Color`](/keys/color/#scope-bullettype).
 
-The setting is read from the art section named by the projectile's [`Image`](/keys/image/). That assignment is required. Without it the lookup runs against an empty section name, so nothing here is read, not even from an art section named after the projectile, which is where its `Voxel` setting is still found.
+The setting is read from the art section named by the projectile's [`Image`](/keys/image/). Write `Image=` in the projectile's rules section even when it would name the section itself. Without it, this setting is not read, not even from an art section named after the projectile, as [where a projectile's artwork is read from](/systems/projectile-flight/#where-a-projectiles-artwork-is-read-from) explains.

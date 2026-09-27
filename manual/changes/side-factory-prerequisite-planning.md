@@ -15,4 +15,4 @@ targets:
 credit: [ZivDero]
 ---
 
-A computer house assembling its base plan now counts a `GDIFACTORY` or `NODFACTORY` prerequisite as met once any type of the matching `PrerequisiteGDIFactory` or `PrerequisiteNodFactory` list is queued. Production already worked that way for a house playing. The planner had no answer for either group and treated both as never satisfied, so a structure naming one was left out of every generated plan.
+A computer house's generated base plan used to leave out every structure with a `GDIFACTORY` or `NODFACTORY` prerequisite, because the plan treated both as never met. The plan now counts either prerequisite as met once it includes any structure from the matching `PrerequisiteGDIFactory` or `PrerequisiteNodFactory` list under `[General]` in `rules.ini`. Production already accepted a structure from those lists that the house owns.

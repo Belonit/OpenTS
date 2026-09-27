@@ -5,20 +5,30 @@ see_also: [RampSmooth, MMRampBase, SlopeSetPieces, CliffRamps]
 when_omitted:
   kind: value
   value: "-1"
-  note: The role stays unresolved, because no tile set number can match it, and every shape but the first derives a tile index landing somewhere in the theater's first nineteen tiles.
+  note: The role stays unresolved. Ramp shape 1 then gets tile index -1, and shapes 2 through 20 get the theater's first nineteen tiles.
 ---
 
-The set holds one piece per ramp shape, in the order the ramp shapes are numbered, so the tile for a given shape is this role plus the shape number minus one. Whenever the engine has decided what shape a cell's ground should be and needs the artwork for it, that is the arithmetic it does. A tile set number is the zero-based number of the set's `[TileSetNNNN]` section, and the loader reads those sections in number order from `TileSet0000`. [Theater control files](/formats/theater-control/) explains how a `[General]` role is resolved to a live tile index.
+The set holds one single-cell ramp piece for each ramp shape, in this order:
 
-Four paths do it:
+| Tiles | Ramp shapes |
+| --- | --- |
+| 1 to 4 | Straight ramps descending west, north, east and south |
+| 5 to 8 | Outer corners, with one corner raised |
+| 9 to 12 | Inner corners, with three corners raised |
+| 13 to 16 | Steep ramps, with two corners raised and a third raised twice as high |
+| 17 to 20 | Double ramps, with two opposite corners raised |
 
-- A crater smooths its rim into ramps after terrain is deformed.
-- A veinhole monster dishes the nine cells around itself the same way as it takes root.
-- The transition pass restores the plain piece to a ramp cell whose neighbors along the ramp's axis are ramps as well, taking a piece from [`RampSmooth`](/keys/rampsmooth/) when they are not.
-- Stamping certain pieces of [`SlopeSetPieces`](/keys/slopesetpieces/) substitutes a plain ramp for them on the affected subtiles.
+Directions are map directions, and map north is the upper right of the screen. The engine takes the piece for a shape by its position in the set, so pieces stored out of order give cells artwork that does not match their slope. [Theater control files](/formats/theater-control/) explains how the `[General]` value selects a set.
 
-Random map generation uses the same arithmetic throughout its terrain pass.
+The engine writes pieces from this set into cells in these cases:
 
-:::danger[The derived tile index is never checked]
-None of those paths test that the role resolved before writing the index into a cell, and the cell hands that index straight to the tile heap. With the role unresolved every ramp lands two tiles below where its shape number points, and the first shape writes `-1`. Pointing the key at a number that no tile set answers, including the first number past the last set, leaves the role in that unresolved state.
+- Terrain deformation, from a warhead's [`Deform`](/keys/deform/) or a meteor crater set by [`CraterLevel`](/keys/craterlevel/), gives each reshaped cell the piece for its new slope.
+- A [veinhole monster](/systems/veins/) that the random map generator places sinks the three-by-three block of cells around it and lines the rim with ramps.
+- Whenever a cell's terrain is recalculated, including at scenario start, a cell holding one of this set's four straight ramps or a [`RampSmooth`](/keys/rampsmooth/) blend piece has its piece picked again. It gets its plain piece from this set when both neighbors along the slope also slope, and a blend piece from `RampSmooth` otherwise.
+- Placing the sixth or ninth piece of [`SlopeSetPieces`](/keys/slopesetpieces/) during play replaces some of its cells with the second or first piece of this set.
+
+The random map generator uses the same pieces when it builds slopes.
+
+:::danger[Point RampBase at a tile set the theater loads]
+A value that names no loaded set, including the first number past the last set, leaves the role unresolved, just as omitting the key does. Every path above still writes the resulting index into the cell. A west-descending ramp then gets index `-1`, which is not a tile, and the engine reads outside the theater's tile list when it uses that cell.
 :::

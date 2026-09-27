@@ -8,4 +8,4 @@ when_omitted:
   value: ".16"
 ---
 
-Nothing weighs a computer base by proportion. How many refineries a plan holds is settled while [the plan is assembled](/systems/ai-base-building/#building-the-plan): one arrives through the ordinary candidate scan, and the extra copies that follow it are counted out by difficulty from [`BuildRefinery`](/keys/buildrefinery/).
+No step of computer base planning reserves a share of the base for refineries. When the engine generates a computer house's plan, the refineries in it are set as [the plan is built](/systems/ai-base-building/#building-the-plan). The first [`BuildRefinery`](/keys/buildrefinery/) entry whose owners include the country the house [acts as](/keys/actslike/) enters like any other candidate structure, and the house's difficulty slot decides how many extra copies follow it. A plan the scenario supplies keeps the refineries the scenario lists.

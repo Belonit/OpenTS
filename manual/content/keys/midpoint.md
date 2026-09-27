@@ -7,4 +7,4 @@ when_omitted:
   value: "0"
 ---
 
-The name promises a mid-height on the structure's artwork, of the kind a projectile or a light would aim at. Nothing reads the stored figure. [`Height`](/keys/height/#scope-buildingtype) is the figure a shot at a tall structure actually aims by.
+Shots do not aim by this key. A shot at a tall structure can take its aim point from [`Height`](/keys/height/#scope-buildingtype) instead.

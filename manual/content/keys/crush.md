@@ -7,10 +7,17 @@ when_omitted:
   value: "1.5"
 ---
 
-The distance is written in cells and measured between the two objects. Two decisions read it, and both are reached only for a house under computer control.
+The value is a distance in cells between a crusher and its target. Only computer-controlled vehicles use it, in the two decisions below. Raising the value makes them drive at targets from farther away instead of using their weapons.
 
-The first is the approach step. A unit with [`Crusher=yes`](/keys/crusher/), or one promoted to veteran or elite rank whose type lists the crusher ability under [`VeteranAbilities=`](/keys/veteranabilities/) or [`EliteAbilities=`](/keys/eliteabilities/), drives onto a [`Crushable=yes`](/keys/crushable/#scope-aircrafttype) target inside this distance instead of closing to weapon range.
+A crusher is a vehicle with [`Crusher=yes`](/keys/crusher/), or one that has reached a rank whose [`VeteranAbilities=`](/keys/veteranabilities/) or [`EliteAbilities=`](/keys/eliteabilities/) list includes the crusher ability. The target must have [`Crushable=yes`](/keys/crushable/#scope-aircrafttype).
 
-The second is retaliation. A unit that takes a hit from an enemy it could crush drives at the attacker rather than firing back, provided that attacker stands within this distance and the house's IQ has reached [`[IQ] AutoCrush`](/keys/autocrush/#scope-global-rules). A house in difficulty slot 2, the `[Difficult]` section, never does it. For a computer house, slot 2 is the one the Easy setting hands out: the easiest game is the one in which nothing runs the player over. A disguised infantryman is refused as a crush target there as well. [Difficulty settings and handicaps](/systems/difficulty/) covers which house holds which slot.
+When a computer-controlled crusher moves in on its target, it drives onto the target instead of stopping at weapon range if the target is closer than this distance.
 
-Both tests reject a target beyond the distance rather than weighing crushing against firing on any other ground, so widening it makes computer-controlled crushers abandon their weapons over a longer reach.
+When a computer-controlled crusher that is not in a team and not docked is hit by an enemy, it drives at the attacker to run it over if **all of** these hold:
+
+- the attacker is no farther away than this distance;
+- the house's IQ is at or above [`[IQ] AutoCrush`](/keys/autocrush/#scope-global-rules);
+- the house is not in difficulty slot 2, the `[Difficult]` section;
+- the attacker is not infantry whose type has [`Disguised=yes`](/keys/disguised/).
+
+With the menu's settings, a computer house takes slot 2 when the player chooses Easy, so its vehicles do not run over their attackers. [Difficulty settings and handicaps](/systems/difficulty/) covers the cases that move a computer house to another slot, such as a launch file's handicaps or [`CompEasyBonus`](/keys/compeasybonus/).

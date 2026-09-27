@@ -1,12 +1,14 @@
 ---
 key: Unsellable
-summary: Prevents the BuildingType from being sold.
+summary: Prevents the player from selling the BuildingType's structures.
 see_also: ["system:walls-and-gates"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The demolish test rejects the type outright, before it looks at buildup artwork or at the structure's current mission. No instance of it can be sold by hand: the sell cursor tests the flag before it offers a sale. The routines the engine uses to sell a building on its own behalf reach the sale directly and never read the flag; the computer's emergency base sell-off is one of them.
+`Unsellable=yes` stops the player from selling any structure of this type. The sell cursor is never offered over it.
 
-The flag reaches walls through a second path. Selling a wall cell searches the rules for the first BuildingType whose [`ToOverlay`](/keys/tooverlay/) is that overlay and refuses the sale when that one type is unsellable. The search stops at the first match, so when several BuildingTypes lay the same overlay, only the earliest declared one decides whether the overlay can be sold.
+The flag does not stop sales the game starts itself. A computer house sells unsellable structures like any other, including when it sells off its whole base, and so does the [Sell building](/mapping/actions/taction-sell-attached/) trigger action.
+
+The flag also covers wall segments. A segment can be sold, or cleared for a new segment, gate or tower, only if the first BuildingType whose [`ToOverlay`](/keys/tooverlay/) lays its overlay is sellable. When several BuildingTypes lay the same overlay, only the one declared first counts. [Walls and gates](/systems/walls-and-gates/#crushing-clearing-and-selling) covers selling and clearing walls.

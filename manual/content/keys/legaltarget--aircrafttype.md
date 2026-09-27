@@ -8,11 +8,17 @@ when_omitted:
   note: Most object types start targetable. A BulletType, SmudgeType, TerrainType or VoxelAnimType starts untargetable instead, and a TerrainType is forced back to targetable when its section sets IsVeinhole=yes.
 ---
 
-A type set to `no` is rejected by every automatic target scan, and pointing at one of its objects offers no attack cursor. Holding the force-fire modifier (left Ctrl by default) bypasses the cursor test, so a player can still order a shot at it by hand. An object that already has such a target keeps engaging it: the flag is weighed while scans pick candidates and while the cursor is decided, never while a shot is being taken. Retaliation runs without a scan, so a unit damaged by such an object still fires back at it.
+With `LegalTarget=no`, no automatic target scan picks an object of this type, and pointing at one does not offer the attack cursor. On an OverlayType, pointing at the overlay's cell does not offer the attack cursor.
 
 ```ini title="rules.ini"
 [MYPROP] ; example BuildingType used as scenery
 LegalTarget=no
 ```
 
-Tree targeting is a separate allowance: with `[CombatDamage] TreeTargeting=yes` a player may point at a TerrainType whatever this setting says.
+The flag is checked only when a scan picks candidates and when the cursor is chosen, so it does not stop every attack:
+
+- A player can still order an attack by holding the force-fire key, left Ctrl by default.
+- An object that already has one of these objects as its target keeps attacking it.
+- [Retaliation](/systems/target-selection/#retaliation) does not scan, so an object damaged by one of these objects can still fire back at it.
+
+With [`TreeTargeting=yes`](/keys/treetargeting/) in `[CombatDamage]`, pointing at a TerrainType offers the attack cursor whatever this key says.

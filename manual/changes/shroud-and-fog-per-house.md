@@ -12,8 +12,18 @@ targets:
 credit: [ZivDero]
 ---
 
-Every house now has its own shroud and fog; before, only the local player's existed.
+Every house now has its own shroud and fog. Before, only the local player's existed.
 
-Outside a campaign, shroud and fog regrowth now leaves uncovered what an ally's vehicles and infantry see while `rules.ini` sets `AllyReveal=yes` under `[AudioVisual]`, what the objects of a house whose radar the player has spied on see, and what an object carrying the player's limpet drone sees. Before, of an ally's objects only its structures were spared, and the fog pass could still cover part of what they saw. The same objects now also uncover ground when the playable area grows to include them. A campaign keeps the original rules for both.
+`AllyReveal=yes` under `[AudioVisual]` in `rules.ini` lets a house see what its allies' objects see.
 
-An ally's airborne infantry and tile-laying structures, a structure an ally captures, and an object carrying an ally's limpet drone now uncover ground for the player like the ally's other objects. So do the aircraft and airborne infantry of a house whose radar the player has spied on.
+Outside a campaign, shroud and fog regrowth no longer covers ground that these objects see:
+
+- an ally's vehicles and infantry, while `AllyReveal=yes`;
+- the vehicles, infantry and structures of a house whose radar the player has spied on;
+- an object carrying the player's limpet drone.
+
+Before, regrowth spared only what an ally's structures saw while `AllyReveal=yes`, and fog regrowth could still cover part of that.
+
+Outside a campaign, the same objects, other than structures, now also uncover ground when the playable area grows to include them. In a campaign, both regrowth and a growing playable area work as before.
+
+While `AllyReveal=yes`, the player now also sees what an ally's airborne infantry, tile-laying structures and newly captured structures see, and what an object carrying an ally's limpet drone sees. For a house whose radar the player has spied on, the player also sees what its aircraft, airborne infantry, tile-laying structures and newly captured structures see.

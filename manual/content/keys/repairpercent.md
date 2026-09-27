@@ -12,6 +12,11 @@ when_omitted:
 RepairPercent=.5   ; a full repair charges about half the object's price
 ```
 
-The multiplier sits at the end of the step price, after the object's cost has been divided into steps: `(cost / (Strength / RepairStep)) * RepairPercent`, never less than one credit. It applies to both paths that charge for a repair: the wrench on a structure, and a service depot working on a vehicle or aircraft. Infantry never reach it, because a hospital is free.
+Each repair step costs `(Cost / (Strength / RepairStep)) * RepairPercent` credits, and never less than one credit. It applies to the wrench on a structure and to a service depot repairing a vehicle or aircraft. A hospital heals infantry for free, so infantry never pay it.
 
-The share is approximate in both directions. Both divisions and the multiplication truncate, so a structure costing 1000 with [`Strength=400`](/keys/strength/) is charged 3 credits for each of its 80 steps at the default. That is 240 credits rather than the 250 the fraction names. The one-credit floor pushes the other way on anything cheap with a large strength. A structure costing 100 with `Strength=1000` is charged the floor on all 200 of its steps, so a full repair costs twice what the structure did. [The cost of one step](/systems/repair/#the-cost-of-one-step) shows where each truncation lands.
+A full repair costs roughly `RepairPercent` of the object's price, not exactly:
+
+- Each division and the multiplication drop fractions of a credit, which usually makes a repair slightly cheaper. At the defaults, a structure costing 1000 with [`Strength=400`](/keys/strength/) pays 3 credits for each of its 80 steps, 240 credits in total instead of 250.
+- The one-credit minimum makes a cheap object with high `Strength` dearer. A structure costing 100 with `Strength=1000` pays the minimum on all 200 of its steps, twice what it cost to build.
+
+[The cost of one step](/systems/repair/#the-cost-of-one-step) shows where each truncation happens and which price counts as `Cost`.

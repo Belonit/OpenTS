@@ -8,6 +8,10 @@ when_omitted:
   note: Cells of the type are worth nothing.
 ---
 
-The [harvester's patch search](/systems/tiberium/#finding-a-patch) ranks cells by this value multiplied by their growth stage plus one, so a full-grown cell counts twelve times the setting.
+A harvester lifts one growth stage at a time and carries each as one unit of Tiberium. Each unit is worth `Value` credits.
 
-A harvester stores growth stages rather than credits. For most houses a stored unit is converted at this value only when the house spends it, so changing the setting re-prices Tiberium already sitting in a silo. A computer house in a skirmish or multiplayer game is the exception. It converts each unit as it is handed over and never stores it, so a later change to the figure leaves that house's income unchanged.
+When the units become credits depends on the house, as [Credits and storage](/systems/tiberium/#credits-and-storage) explains. A computer house in a skirmish or multiplayer game receives the credits as soon as its harvester unloads. Every other house keeps only the units that fit in its free storage. Each stored unit becomes `Value` credits when the house spends it.
+
+The [harvester's patch search](/systems/tiberium/#finding-a-patch) ranks a cell by `Value` multiplied by its growth stage plus one, so a full-grown cell counts twelve times the setting.
+
+[`FillSilos=yes`](/keys/fillsilos/) uses the first Tiberium type's `Value` to decide how much Tiberium each house receives when the scenario starts.

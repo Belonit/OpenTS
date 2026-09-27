@@ -8,4 +8,6 @@ when_omitted:
   value: 65535,65535
 ---
 
-The name promises a fixed firing point for the second weapon to match the one the first weapon gets. No path reads it. A building takes its mounting, its muzzle and the point it measures its aim from either from [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/), whichever weapon slot is firing. The per-slot firing offsets apply only when that pair is left at `65535,65535`, and [`SecondaryFireFLH`](/keys/secondaryfireflh/) covers where the second weapon fires from in that case.
+A building's second weapon has no fixed firing point of its own. [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/) serves both weapon slots. When it is set, it moves the mounting and the muzzle of whichever weapon fires, and the point the building turns to face its target from.
+
+When `PrimaryFirePixelOffset` is left at `65535,65535`, the second weapon fires from [`SecondaryFireFLH`](/keys/secondaryfireflh/). A [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building is the exception: it fires both weapons from the end of its voxel barrel. An upgrade plugged into the building that brings its own second weapon fires it from the upgrade's `SecondaryFireFLH`.

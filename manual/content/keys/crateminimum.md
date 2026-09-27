@@ -7,6 +7,8 @@ when_omitted:
   value: "1"
 ---
 
-The starting count is the larger of this setting and the number of human players the match was set up with, then clamped down by [`CrateMaximum`](/keys/cratemaximum/). It applies only to the one placement pass that runs as a non-campaign scenario finishes loading. The replacements placed later, on expiry and on pickup, come one at a time and read neither limit.
+The number of crates placed at the start is the larger of this setting and the number of human players, capped by [`CrateMaximum`](/keys/cratemaximum/). [At scenario start](/systems/crates/#at-scenario-start) covers which matches record a human player count.
 
-Each of those starting crates still has to find a legal cell, and [Where a random crate can land](/systems/crates/#where-a-random-crate-can-land) covers the cases in which the search produces no visible crate.
+The setting applies only to that one placement, made as a non-campaign scenario finishes loading with crates switched on for the match. Replacements for expired and collected crates are placed one at a time, and neither limit applies to them.
+
+A starting crate can still fail to appear. [Where a random crate can land](/systems/crates/#where-a-random-crate-can-land) covers the cells that are refused.

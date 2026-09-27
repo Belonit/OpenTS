@@ -6,4 +6,4 @@ targets: []
 credit: [ZivDero]
 ---
 
-The white outline marks the part of the map the screen shows. It now stays within the radar picture and covers at most all of it. On a map smaller than the screen it was sized past the radar and drew over the sidebar.
+On a map smaller than the screen, the radar's white outline of the on-screen area used to extend past the radar picture and draw over the sidebar. The outline now stays inside the radar picture and is never larger than it.

@@ -7,17 +7,19 @@ when_omitted:
   value: "no"
 ---
 
-A building with this flag offers the enter cursor to a player-controlled infantry of an allied house that is below full strength, under **All of:**
+A hospital heals damaged infantry free of charge, one at a time. With the player's infantry selected, pointing at an allied hospital shows the enter cursor when the infantry is below full strength and **all of** the following hold:
 
-- the building is out of construction;
+- the hospital has finished construction and is not being sold;
 - it is switched on;
-- it is not already servicing someone;
-- it still holds ammunition.
+- it is not already treating another infantry;
+- its [`Ammo`](/keys/ammo/) count is not zero.
 
-Admission costs one point of the building's [`Ammo`](/keys/ammo/) pool. A hospital never receives the instant restock that refills an emptied ammunition pool, so the pool only ever goes down.
+Otherwise the cursor shows that the infantry cannot enter.
 
-Healing then runs on [`IRepairRate`](/keys/irepairrate/): each time the counter elapses the occupant gains [`IRepairStep`](/keys/irepairstep/) strength at no charge, and it is released once it reaches full strength. An occupant that turns out to need nothing is released at the first count, having still spent the admission point.
+Each admission uses one point of `Ammo`. Most structures refill an empty `Ammo` count at once. A hospital never does, and neither does an [`Armory=yes`](/keys/armory/) structure, so every point is one patient.
 
-:::caution[An unset ammunition pool allows exactly one visit]
-A building type that names no `Ammo` starts its pool at `-1`, which passes the non-zero entry test; the decrement on the first admission then clamps the pool to zero, and the enter cursor is refused from then on. Give the type an explicit `Ammo` count for the number of patients it should treat.
+The patient gains [`IRepairStep`](/keys/irepairstep/) strength each time the [`IRepairRate`](/keys/irepairrate/) interval passes, and leaves once it reaches full strength. A patient that is already at full strength when the first interval passes leaves at once, and its admission point is still spent.
+
+:::caution[Set `Ammo` to the number of patients]
+A type that sets no `Ammo` starts with a count of `-1`. That count passes the admission test once, and the first admission drops it to `0`, so the hospital treats one patient and then refuses everyone. Give the type an explicit `Ammo` count.
 :::

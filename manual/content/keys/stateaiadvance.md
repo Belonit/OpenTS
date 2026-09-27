@@ -7,10 +7,14 @@ when_omitted:
   value: "4"
 ---
 
-Particles of a type do not step together: those with an odd internal identifier hold each state one frame longer than this, and the count each particle is measured against is offset by that same identifier. A cloud spawned in one burst therefore drifts out of step within a few states instead of animating in lockstep. `Gas`, `WeakGas`, `Smoke`, `Fire` and `Web` particles all use the interval; `Spark` and `Railgun` particles have no state machine and ignore it.
+A larger figure plays the sequence more slowly. `Gas`, `WeakGas`, `Smoke`, `Fire` and `Web` particles use it; `Spark` and `Railgun` particles have no animation states and ignore it.
 
-A `Fire` particle marked [`Normalized=yes`](/keys/normalized/#scope-particletype) discards the figure and works its own interval out from its flight. That result is kept in one signed byte, so a computed interval above 127 wraps to a much smaller or negative one, and can land on `0` or `-1`. The figure written here is truncated to the same byte.
+Particles of one type do not step in unison. Each particle starts its steps at a different point, and about half the particles stay one frame longer in each state. With the default `4`, those particles step every 5 frames. A burst created together therefore drifts out of step within a few states.
 
-:::danger[Zero and -1 stop the game]
-The interval is used as a divisor without a check, and half the particles of a type have one frame added to it first. At `0` the other half divide by zero on the first logic frame they run, and `-1` does the same to the half that has one added. A `Smoke` or `Fire` particle escapes only while its state already sits at the end of its sequence. Every other value, negative ones included, divides cleanly.
+A `Fire` particle marked [`Normalized=yes`](/keys/normalized/#scope-particletype) ignores this figure and works out its own interval from its flight.
+
+The figure is held in one signed byte: `128` to `255` wrap to negative values, and `256` wraps to `0`. A negative interval acts as its positive size: `-4` steps every 4 frames. The half that would stay one frame longer steps one frame sooner instead, every 3 frames.
+
+:::danger[Keep the interval away from 0 and -1]
+The interval is used as a divisor with no check for zero. At `0` the particles that step on the interval itself stop the game on their first frame. At `-1` the half that stays one frame longer does, because it divides by one more than the interval. Values that wrap to these, such as `256` and `255`, and a `Normalized` interval that lands on them, do the same. A `Smoke` or `Fire` particle whose state is already at or past `EndStateAI` is not affected.
 :::

@@ -7,11 +7,13 @@ when_omitted:
   value: "100"
 ---
 
-The roll is made only for a cell the theater marks as a destroyable cliff. Any of these sets the roll going:
+Each hit on a destroyable cliff cell brings the cliff down with this percent chance. `100` collapses it on every hit and `0` never does. Values above `100` behave as `100`. Only cells the theater marks as destroyable cliffs are rolled for.
 
-- an explosion, wherever it goes off;
-- the point at which an [`IsRailgun=yes`](/keys/israilgun/) beam is stopped by rising ground;
-- the cell that beam finally settles on;
-- any cell an [`IsSonic=yes`](/keys/issonic/) wave has swept across, once on every frame the wave lives. The wave damages its whole accumulated swathe again each frame, so a cliff under a sonic beam is rolled for many times over.
+These hits roll for a collapse:
 
-The figure is a percentage: `100` brings the cliff down on every hit, `0` on none, and anything above `100` behaves as `100`. Under a sonic beam the figure barely matters: any value above zero brings the face down almost at once, since every cliff cell the wave has reached is rolled for again on every frame the wave lives.
+- an explosion in the cell;
+- an [`IsRailgun=yes`](/keys/israilgun/) beam stopped by rising ground, at the cell where it stops;
+- an `IsRailgun=yes` beam fired at a cell, at that cell, when the beam reaches it;
+- an [`IsSonic=yes`](/keys/issonic/) wave, at every cell it currently covers, once per frame for as long as the wave lasts.
+
+Because a sonic wave rolls again on every frame, even a low value is likely to bring down a cliff that stays under the wave for long. At `1`, a cliff under a wave for 100 frames comes down about 63 times in 100.

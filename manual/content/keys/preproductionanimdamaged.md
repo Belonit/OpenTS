@@ -7,6 +7,8 @@ when_omitted:
   note: The animation PreProductionAnim names.
 ---
 
-At the moment a slot is filled, only a [`ConstructionYard=yes`](/keys/constructionyard/) structure picks this name, and only when its health has fallen to [`ConditionYellow`](/keys/conditionyellow/) or below. An unloading harvester always fills the slot on the structure it docks with in its healthy form. The docked structure switches to this name when its health falls to [`ConditionYellow`](/keys/conditionyellow/) or below while the slot is running.
+A construction yard starts the pre-production slot with this name when its health is at or below [`ConditionYellow`](/keys/conditionyellow/). An unloading harvester always starts the slot in its healthy form, whatever the structure's health.
 
-A slot that names only this one and no healthy animation therefore runs nothing at a dock, and nothing on a healthy construction yard.
+Once the slot is running, it follows the structure's other animations between the healthy and damaged forms. [The damaged form](/systems/building-animations/#the-damaged-form) covers when the whole set switches, including the switch back to healthy that a harvester's start causes on a damaged structure.
+
+If only this name is set, the slot runs nothing when a harvester unloads, and nothing when a healthy construction yard starts it.

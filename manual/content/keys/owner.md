@@ -7,13 +7,21 @@ when_omitted:
   value: ""
 ---
 
-The value is a comma-separated list of country IDs, matched without regard to case. Each recognized name adds its country. A name matching none adds nothing at all rather than reporting a problem.
+The value is a comma-separated list of country IDs from `[Houses]`, matched without regard to case. Do not put spaces after the commas: a name with a leading space matches no country. A name that matches no country is skipped.
 
 ```ini title="rules.ini"
 [MYWEAP] ; example war factory BuildingType
 Owner=GDI,Nod
 ```
 
-Production reads the list twice. A BuildingType with no countries at all is never buildable. One that names any also needs an owned construction yard [acting as](/keys/actslike/) one of them. For every kind of object, the factory that builds it must share at least one country with it, so a factory and a product that name disjoint lists never pair up. The computer's [base planning](/systems/ai-base-building/) and the role lists it is handed test the country the house acts as against the same list.
+The list decides these things:
 
-A country's place in the rules list is a bit in a 32-bit mask, so at most thirty-two countries can own anything; a country beyond the thirty-second owns nothing. Outside campaign games, [`DoubleOwned=yes`](/keys/doubleowned/) answers both questions with a mask of the first thirty-one countries. Every house can build the type, and any factory that itself names a country can produce it.
+- **Production.** A BuildingType with an empty list cannot be built, except under [`DoubleOwned=yes`](/keys/doubleowned/) outside campaign games. Otherwise the house also needs a construction yard that [acts as](/keys/actslike/) one of the listed countries, unless [`MultiMCV=yes`](/keys/multimcv/) is set. For every kind of object, the factory that builds it must share at least one country with it, so a factory and a product with no country in common never pair up. [Ownership](/systems/production/#ownership) gives the full test.
+- **Computer base planning.** [Base planning](/systems/ai-base-building/) and the role lists it uses consider only types whose list includes the country the house acts as.
+- **Multiplayer starting units.** A house receives a starting vehicle or infantry type only if the type lists the house's country. [`AllowedToStartInMultiplayer`](/keys/allowedtostartinmultiplayer/) must also be set.
+- **Dropship loadout.** The [loadout screen](/keys/allowableunits/) offers only types that list the player's country.
+- **Crate vehicles.** A crate's random vehicle reward picks only [`CrateGoodie=yes`](/keys/crategoodie/) types that list the country the collector's house acts as.
+
+Outside campaign games, [`DoubleOwned=yes`](/keys/doubleowned/) replaces the list for production only, with a mask of the first 31 countries in `[Houses]`. The other uses read the list as written.
+
+The list can name only the first 32 countries in `[Houses]`. Do not rely on a later country owning any type.

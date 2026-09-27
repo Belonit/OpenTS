@@ -7,12 +7,14 @@ when_omitted:
   value: none
 ---
 
-Nothing about a type itself marks it out; every effect follows from being named here. Where one is handed out, the house takes the first entry the country it [acts as](/keys/actslike/) may own, and entry 0 when that country may own none. Naming one MCV per country therefore gives each faction its own, and a single value is a list of one.
+The listed vehicle types are base units. Each house may start with one, and several rules count a base unit the way they count a structure. No setting on the vehicle type itself gives it this role.
 
-- With bases enabled, each house that is neither passive nor an observer is given its entry on its start position, or on the nearest cell the [placement search](/systems/starting-forces/#where-an-object-lands) finds within thirty-one cells. In capture the flag, it is the object the house's flag is attached to. Enabling bases also takes one off the lobby's unit count to pay for it, when the list names anything.
-- The random starting units are drawn from the [`AllowedToStartInMultiplayer=yes`](/keys/allowedtostartinmultiplayer/) types with every listed type held out. The [average price](/systems/starting-forces/#the-budget) that decides how many are drawn leaves it out too.
-- In a short game, a house holding no structures and no unit of any listed type is defeated.
-- A crate collected by a house that has lost its base and can afford to rebuild [delivers its entry](/systems/crates/#money-and-free-units). With bases disabled, the random vehicle result refuses to hand out any listed type.
-- The [Center Base](/commands/centerbase/) command looks for a [`BuildConst`](/keys/buildconst/) structure. When it finds no building of the player's at all, it falls back to a unit of any listed type.
+When a house is given a base unit, it gets the first listed type that the country it [acts as](/keys/actslike/) may own. If that country may own none of them, it gets the first entry. List one MCV per country to give each faction its own.
 
-An empty list is not an error: no base unit is placed, the unit count is left whole, and a short game is lost with the last structure.
+- **Match start.** With [`Bases`](/keys/bases/) on, each house that is neither passive nor an observer gets its base unit at its start position. If that cell is taken, the [placement search](/systems/starting-forces/#where-an-object-lands) tries the nearest cells out to thirty-one cells away. In capture the flag, the house's flag is attached to this unit. When the list names anything, the house's starting-force budget also counts one unit fewer to pay for it.
+- **Random starting forces.** The [`AllowedToStartInMultiplayer=yes`](/keys/allowedtostartinmultiplayer/) types drawn for starting forces never include a listed type. Listed types are also left out of the [average price](/systems/starting-forces/#the-budget) that decides how many units are drawn.
+- **Short game.** A house that holds no structures and no vehicle of a listed type is defeated.
+- **Crates.** While bases are on, a house that has no structures, no vehicle of a listed type and more than 1500 credits can [receive its base unit from a crate](/systems/crates/#money-and-free-units). With bases off, the random vehicle crate result never gives a listed type.
+- **Center Base.** The [Center Base](/commands/centerbase/) command looks for a [`BuildConst`](/keys/buildconst/) structure. When the player has no building at all, it centers on a vehicle of a listed type instead.
+
+An empty list is valid. No house gets a base unit, the unit count is not reduced, and in a short game a house loses when its last structure is gone.

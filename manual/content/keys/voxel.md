@@ -1,23 +1,33 @@
 ---
 key: Voxel
-summary: Draws the type from a voxel model rather than from a shape file.
+summary: Draws a vehicle, aircraft, or projectile from a voxel model instead of a shape file.
 see_also: ["Image", "ShadowIndex", "Turret", "Theater"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A vehicle, aircraft, infantry, building, or bullet type marked here loads `<Image ID>.VXL` together with its `<Image ID>.HVA` motion file.
+A vehicle, aircraft, projectile, infantry, or structure type marked here loads `<Image ID>.VXL` together with its `<Image ID>.HVA` motion file. Vehicles, aircraft, and projectiles draw their body from that model. Infantry and structures load it but go on drawing their shape. An aircraft draws its body only from a voxel model, so an AircraftType without `Voxel=yes` has no body drawn at all.
 
 ```ini title="art.ini"
 [MYTANK] ; the Image ID of a UnitType
 Voxel=yes ; draws MYTANK.VXL and MYTANK.HVA
 ```
 
-A [`Turret=yes`](/keys/turret/) vehicle also loads `<Image ID>TUR` for its turret and `<Image ID>BARL` for its barrel, each as a `.VXL` and `.HVA` pair. A voxel type that is not a vehicle looks for both pairs whether or not it has a turret. A vehicle with no turret looks for neither pair. The exception is the amphibious transport, whose rules section is named exactly `APC`: it looks for an `<Image ID>W` pair instead. A missing companion pair is simply not drawn, so shipping neither companion pair is safe. A half pair is the dangerous case: a companion `.VXL` present while its `.HVA` is missing fails the load and throws the whole voxel set away, main model included, leaving the type with no model at all.
+The engine also looks for companion models, each a `.VXL` and `.HVA` pair:
 
-Voxels have no theater variants. [`Theater=yes`](/keys/theater/) and [`NewTheater=yes`](/keys/newtheater/) rename the file for the shared shape fetch, and a voxel type skips that fetch, so neither flag changes a voxel's artwork. A BulletType is the exception: it makes that fetch on its own account unless it is [`Inviso=yes`](/keys/inviso/), so a voxel projectile keeps its shape as well.
+- A [`Turret=yes`](/keys/turret/) vehicle loads `<Image ID>TUR` for its turret and `<Image ID>BARL` for its barrel.
+- A vehicle with no turret loads neither. The exception is the amphibious transport, whose rules section is named exactly `APC`: it loads an `<Image ID>W` pair instead.
+- An aircraft, projectile, infantry, or structure type looks for both the `TUR` and `BARL` pairs, whether or not it has a turret.
 
-:::caution[A model that fails to load leaves nothing behind]
-A vehicle marked as a voxel is drawn from its model or not at all. There is no fallback to the shape file, so a misspelled Image ID or a missing `.VXL` leaves the vehicle invisible while it goes on fighting.
+A companion whose `.VXL` is missing is not drawn, and nothing else changes, so a model can ship without companions. A companion `.VXL` shipped without its `.HVA` makes the engine discard the main model too, so a vehicle or aircraft has no voxel body to draw. A main `.VXL` without its `.HVA` has the same result.
+
+On a ParticleType the flag stops the particle's shape from loading when a scenario starts, so the particle is not drawn. Loading a saved game brings the shape back. Leave the flag off particle types.
+
+Voxel models have no theater variants. [`Theater=yes`](/keys/theater/) and [`NewTheater=yes`](/keys/newtheater/) never change which `.VXL` and `.HVA` files load.
+
+:::caution[A voxel type has no shape to fall back on]
+A vehicle or aircraft marked here is drawn from its model or not at all. A missing or misnamed `.VXL` leaves its body undrawn while it goes on fighting.
+
+Ship both the `.VXL` and the `.HVA` for a `Voxel=yes` projectile, and ship any companion `.VXL` with its `.HVA`. If a file is missing or broken, the game can crash when the projectile is drawn.
 :::

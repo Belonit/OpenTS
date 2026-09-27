@@ -9,18 +9,20 @@ bindings:
   scripting_parameter_types: []
 source_files: [code/mzone.hh, code/ccini.cpp, code/map.cpp, code/cell.cpp]
 values:
-  - { constant: MZONE_NORMAL, value: 0, input: "Normal", meaning: "Terrestrial movement to which every crushable and every blocked cell is closed." }
-  - { constant: MZONE_CRUSHER, value: 1, input: "Crusher", meaning: "Terrestrial movement to which a cell held by a crushable overlay is open." }
-  - { constant: MZONE_DESTROYER, value: 2, input: "Destroyer", meaning: "Terrestrial movement to which a cell held by a crushable overlay, a wall, or a fully blocking terrain object is open." }
-  - { constant: MZONE_AMPHIBIOUS_DESTROYER, value: 3, input: "AmphibiousDestroyer", meaning: "Destroyer movement extended across water as well." }
-  - { constant: MZONE_AMPHIBIOUS_CRUSHER, value: 4, input: "AmphibiousCrusher", meaning: "Crusher movement extended across water as well." }
-  - { constant: MZONE_AMPHIBIOUS, value: 5, input: "Amphibious", meaning: "Movement across land and water." }
-  - { constant: MZONE_SUBTERANNEAN, value: 6, input: "Subterannean", meaning: "Subterranean movement.", note: "The accepted token preserves the engine's historical spelling." }
-  - { constant: MZONE_INFANTRY, value: 7, input: "Infantry", meaning: "Infantry movement." }
-  - { constant: MZONE_INFANTRY_DESTROYER, value: 8, input: "InfantryDestroyer", meaning: "Infantry movement to which crushable, wall and fully blocking terrain cells are open as well." }
-  - { constant: MZONE_FLYER, value: 9, input: "Fly", meaning: "Air movement, to which every cell inside the playable area is open." }
+  - { constant: MZONE_NORMAL, value: 0, input: "Normal", meaning: "Open land only." }
+  - { constant: MZONE_CRUSHER, value: 1, input: "Crusher", meaning: "Open land and cells with a crushable overlay." }
+  - { constant: MZONE_DESTROYER, value: 2, input: "Destroyer", meaning: "Crusher cells, plus wall cells and cells a terrain object fills completely." }
+  - { constant: MZONE_AMPHIBIOUS_DESTROYER, value: 3, input: "AmphibiousDestroyer", meaning: "Destroyer cells, plus water and beach." }
+  - { constant: MZONE_AMPHIBIOUS_CRUSHER, value: 4, input: "AmphibiousCrusher", meaning: "Crusher cells, plus water and beach." }
+  - { constant: MZONE_AMPHIBIOUS, value: 5, input: "Amphibious", meaning: "Open land, water and beach." }
+  - { constant: MZONE_SUBTERANNEAN, value: 6, input: "Subterannean", meaning: "Every cell in the playable area except water, beach and cells a terrain object partly fills.", note: "The accepted token preserves the engine's historical spelling." }
+  - { constant: MZONE_INFANTRY, value: 7, input: "Infantry", meaning: "Open land and cells a terrain object partly fills." }
+  - { constant: MZONE_INFANTRY_DESTROYER, value: 8, input: "InfantryDestroyer", meaning: "Infantry cells, plus cells with a crushable overlay, wall cells and cells a terrain object fills completely." }
+  - { constant: MZONE_FLYER, value: 9, input: "Fly", meaning: "Every cell in the playable area." }
 ---
 
-The names say which cells join a class's [movement zones](/glossary/#movement-zone), not what an object of that class may do to them. A class decides only which cells count as crossable while the zones are built and a route is plotted. `Crusher` opens a cell held by a crushable overlay; the three destroyer classes also open a wall or a terrain object that fills every one of its standing places. `Destroyer` therefore crosses fully blocking trees and rocks as readily as it crosses walls. Whether a vehicle actually flattens a wall it drives into is [`Crusher=yes`](/keys/crusher/), which is read separately and can be set on a type of any class.
+A movement zone class decides which cells count as crossable when the engine divides the map into [movement zones](/glossary/#movement-zone) and plans routes. [`MovementZone`](/keys/movementzone/) sets a type's class. The ten classes are fixed by the engine.
 
-What each class is compared against is a single blockage rating held for the cell, not its [land type](/reference/enums/land-type/). [`TemperateOccupationBits`](/keys/temperateoccupationbits/) covers how a terrain object's occupation figure decides how much of its cell the object blocks, without changing the terrain at all. The ten classes are fixed by the engine, and each one costs the map a zone table of its own. [`MovementZone`](/keys/movementzone/) covers what naming one does to a type.
+Each class accepts some of the cell ratings that [the zone map](/systems/movement-and-terrain/#the-zone-map) describes and refuses the rest. The table above names the cells each class accepts. Open land is the rating for a cell that no other rating covers. [`TemperateOccupationBits`](/keys/temperateoccupationbits/) covers how much of a cell a terrain object fills.
+
+Apart from `Subterannean`, which also makes the type burrow (see [`MovementZone`](/keys/movementzone/)), a class decides only where routes may go. `Destroyer` plans routes through walls and through trees and rocks that fill their cells, but the class breaks through none of them. Whether a vehicle shoots a wall in its way depends on its primary weapon's warhead, as [Walls in combat and movement](/systems/walls-and-gates/#walls-in-combat-and-movement) describes. Whether a vehicle crushes a crushable wall or object it drives onto is set by [`Crusher=yes`](/keys/crusher/), which a type of any class can use.

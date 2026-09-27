@@ -12,15 +12,17 @@ when_omitted:
 Mechanic=yes
 ```
 
-The key redirects a healer; it does not create one. A healer is an object whose weapon [`Damage`](/keys/damage/#scope-weapontype) plus [`AmbientDamage`](/keys/ambientdamage/) averages below zero across the weapon slots it has, and on anything else this key does nothing. Who such a healer takes as a patient, in one place:
+The key changes which patients a healer takes; it does not make an object a healer. An object is a healer when the [`Damage`](/keys/damage/#scope-weapontype) plus [`AmbientDamage`](/keys/ambientdamage/) of its primary and secondary weapons averages below zero. On any other object the key does nothing.
+
+A healer takes these patients:
 
 - An infantry healer without the key takes infantry.
-- Set, the key flips an infantry healer to vehicles, and it gives up infantry.
-- A vehicle healer takes vehicles whether or not it sets the key.
-- [`OmniHealer=yes`](/keys/omnihealer/) takes infantry and vehicles alike, on any healer.
+- An infantry healer with the key takes vehicles and no longer takes infantry.
+- A vehicle healer takes vehicles, with or without the key.
+- A healer with [`OmniHealer=yes`](/keys/omnihealer/) takes infantry and vehicles alike.
 
-Vehicle here covers driven vehicles, landed aircraft, and deployed [`UndeploysInto`](/keys/undeploysinto/) buildings other than a construction yard. An ordinary building, an airborne aircraft, and anything not allied to the healer are never patients.
+A vehicle, for this purpose, is a driven vehicle other than a [`NonVehicle=yes`](/keys/nonvehicle/) type, an aircraft on the ground, or a structure with [`UndeploysInto`](/keys/undeploysinto/) set other than a construction yard. An ordinary structure, an airborne aircraft, and any object not allied to the healer are never patients.
 
-The redirection reaches both the cursor and the [automatic scan](/systems/target-selection/): a mechanic offers the repair cursor over a damaged ally, walks to one it finds while guarding, and holds it until it is whole. Force-move withdraws the offer over a vehicle with [`Passengers`](/keys/passengers/) capacity, which is what keeps a damaged transport boardable.
+The key applies to both the cursor and the [automatic scan](/systems/target-selection/). A mechanic offers the repair cursor over a damaged allied vehicle, walks to one it finds while guarding, and keeps repairing it until it is undamaged. Holding force-move over an allied transport withdraws the repair offer, so the player can still order the mechanic aboard a damaged transport.
 
-Only an infantry acts on the key. Nothing about [what a healing shot does on arrival](/systems/warheads/#healing) changes.
+Only infantry use the key. It does not change [what a healing shot does on arrival](/systems/warheads/#healing).

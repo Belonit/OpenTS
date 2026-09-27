@@ -8,14 +8,16 @@ when_omitted:
   value: SCREEN
 ---
 
-Flags, separated by spaces or commas, saying how a sound played at a place in the world is heard. The values follow Yuri's Revenge.
+Flags that decide how a sound played at a place in the world fades, pans and is silenced. Separate the flags with spaces or commas; they combine. The flags follow Yuri's Revenge.
 
-- `NORMAL` or `SCREEN`: the sound fades with the distance of its place from the edge of the view and is panned by where that place is across it. Vertical distance counts double, and the fade reaches silence at [`Range=`](/keys/range/).
-- `LOCAL`: as `SCREEN`, but the distance is measured from the center of the view, so a sound at the edge is already quieter.
+- `NORMAL` or `SCREEN`: the sound fades with the distance of its place outside the view, reaching silence at [`Range=`](/keys/range/#scope-sounds), and pans by where the place is across the view.
+- `LOCAL`: as `SCREEN`, but the distance is measured from the center of the view, so the sound is already quieter at the edge of the view.
 - `GLOBAL`: the fade stops at [`MinVolume=`](/keys/minvolume/) instead of silence.
-- `SHROUD` or `UNSHROUDED`: silent unless the cell of its place has been revealed.
-- `SHROUDED`: silent unless the cell of its place is still unrevealed.
-- `UNSHROUD`, `VIOLENT`, `MOVEMENT`, `QUIET`, `LOUD`, `PLAYER`, `NOISE_SHY`, `GUN_SHY` and `AMBIENT` are read and kept but decide nothing, as they did not in Yuri's Revenge.
+- `SHROUD` or `UNSHROUDED`: the sound is silent while the cell of its place is unrevealed.
+- `SHROUDED`: the sound is silent once the cell of its place has been revealed.
+- `UNSHROUD`, `VIOLENT`, `MOVEMENT`, `QUIET`, `LOUD`, `PLAYER`, `NOISE_SHY` (or `NOISESHY`), `GUN_SHY` (or `GUNSHY`) and `AMBIENT` are accepted and have no effect.
+
+A flag the engine does not recognize is ignored.
 
 ```ini title="sound01.ini"
 [BIGBLAST]
@@ -23,4 +25,6 @@ Type=GLOBAL SHROUD
 MinVolume=0.3
 ```
 
-A sound played without a place, such as a button click, is not attenuated or panned at all, whatever its type. A flag the engine does not know is ignored.
+`BIGBLAST` keeps at least 30 percent of its in-view loudness however far from the view it plays, but it is silent in cells the player has not revealed.
+
+A sound played without a place, such as a button click, does not fade, pan or fall silent under any of these flags.

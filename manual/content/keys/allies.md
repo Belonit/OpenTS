@@ -8,24 +8,44 @@ when_omitted:
   note: An empty list, which leaves the house allied to nobody but itself.
 ---
 
-The value is a comma-separated list of house identifiers. Each name is matched without regard to letter case against both the section names and the display names of the loaded houses, and a name that matches nothing contributes nothing. A campaign mission reads it from each house record. A skirmish or multiplayer game reads it instead from the [spawn house](/formats/scenario-objects/#spawn-houses) sections `[Spawn1]` through `[Spawn8]`, and each section belongs to the house starting at that position. There a name may also be a spawn house: the house allies with the one house holding that position. A country name allies it with every house playing that country. A section for a position nobody holds is ignored, and an observer is never allied.
+The value is a comma-separated list of houses that this house treats as friends. An allied object is [rejected by an automatic target scan](/systems/target-selection/#why-a-candidate-is-rejected), is passed over instead of crushed, and does not provoke [retaliation](/systems/target-selection/#retaliation). A house is always its own ally, whether or not it names itself.
+
+## Where the list is read
+
+A campaign mission reads `Allies` from each house record. Each name matches a country by its section name or its `Name=`, ignoring letter case, and allies the house with that country's house. Write the names with no space after the commas: in a house record, a name with a leading space matches nothing.
 
 ```ini title="scenario map file"
 [Special] ; a house record in the scenario's own house list
 Allies=GDI,Nod
 ```
 
+A skirmish or multiplayer game reads `Allies` from the [spawn house](/formats/scenario-objects/#spawn-houses) sections `[Spawn1]` through `[Spawn8]` instead. Each section applies to the house that starts at that position, and a section for a position nobody holds is ignored. Each name can be one of these:
+
+- A spawn house, such as `Spawn2`, allies with the one house that starts at that position.
+- A country allies with every house playing that country.
+
+An observer is never allied.
+
 ```ini title="multiplayer map file"
 [Spawn1] ; whoever starts at waypoint 0
 Allies=Spawn2,Nod
 ```
 
-An alliance is what keeps two houses from turning on each other: an allied object is [rejected by an automatic target scan](/systems/target-selection/#why-a-candidate-is-rejected), is passed over rather than crushed, and does not provoke [retaliation](/systems/target-selection/#retaliation). A house is always its own ally whether or not it names itself.
+Alliances from the [launch file](/formats/spawn-ini/#who-is-playing) are made first and kept, and the map's alliances are added to them.
 
 :::caution[The alliance runs one way]
-Naming a house here makes *this* house treat that one as a friend. It does not make that house treat this one as a friend, and a scenario that wants a mutual truce has to write the pairing into both house records. The check that decides whether every house left alive is allied asks the question in both directions and accepts it only when both agree.
+Naming a house here makes this house treat that house as a friend, not the reverse. For a mutual truce, name each house in the other's list.
 :::
 
-Alliances declared this way are silent. The announcement, the ceasefire sweep that drops targets already acquired, and the [`AllyReveal`](/keys/allyreveal/) map reveal all belong to alliances formed while a scenario is running, and none of them fires while the scenario is being read.
+When a house is defeated in a skirmish or multiplayer game, or by the [Destroy all of...](/mapping/actions/taction-house-destroy-all/) action, the [match ends](/systems/observers/#when-the-match-ends) if every house left is allied with every other in both directions.
 
-In a skirmish or multiplayer game the alliances the [launch file](/formats/spawn-ini/#who-is-playing) wrote are made first and kept, and the map's are added to them. A person who allies with somebody during play still makes the computer players [close ranks](/keys/paranoid/) against every person, the map's alliances included, so a cooperative map is best played with `AlliesAllowed=no`.
+## What a map alliance does not do
+
+Alliances from the map take effect without the alliance announcement. They also skip two things that happen when an alliance forms during play: the house's units drop targets that are now friendly, and, with [`AllyReveal`](/keys/allyreveal/) on, a house that allies with the local player reveals the terrain around all its objects at once.
+
+With [`Paranoid`](/keys/paranoid/) on, every computer house breaks its alliances with every human house, including those the map or the launch file declared, when either of these happens:
+
+- A human house forms an alliance during play.
+- A computer house whose IQ equals [`MaxIQLevels`](/keys/maxiqlevels/) is defeated. Every computer player in a skirmish or multiplayer game has that IQ.
+
+`Paranoid=no` in `[AI]` is the only setting that keeps a cooperative map's alliances between human and computer houses intact. Leaving `AlliesAllowed` at `no` in the launch file's [`[Settings]`](/formats/spawn-ini/#the-options-every-house-plays-under) stops only the alliances players form during play.

@@ -7,6 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-The vertical half of the first slot's offset. It moves the [`ActiveAnim`](/keys/activeanim/) animation down the screen from the point the structure is drawn at, and a negative figure lifts it above that point instead. The offset pins the animation to a point on the artwork rather than to a cell, so it holds wherever the structure stands.
+`ActiveAnimY` moves the [`ActiveAnim`](/keys/activeanim/) animation down from the structure's drawing point by that many screen pixels. A negative value lifts it above that point.
 
-[Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how the offset differs from the two draw-order biases, and [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) covers when the two figures are read.
+[Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how the offset differs from the slot's two draw-order biases.

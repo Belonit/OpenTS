@@ -7,13 +7,15 @@ when_omitted:
   value: "no"
 ---
 
-The setting lives in a mission's own section. The mission tested is the one the candidate is in, not the one the object doing the looking is in. A candidate in a mission marked this way is rejected near the top of the target gauntlet, before ownership, range, category or [`LegalTarget`](/keys/legaltarget/) are considered.
+Automatic target scans never pick an object whose current mission sets `NoThreat=yes`. The mission of the object being considered decides this, not the mission of the object doing the scan. [Why a candidate is rejected](/systems/target-selection/#why-a-candidate-is-rejected) lists the other reasons a scan passes an object over.
 
 ```ini title="rules.ini"
 [Harmless]
 NoThreat=yes
 ```
 
-A target chosen by a player order, by a team script or by retaliation reaches the object regardless of the mission it is in.
+Only scans are affected. A player's attack order, a team's [Attack Waypoint](/mapping/missions/tmission-att-waypt/) mission or [retaliation](/systems/target-selection/#retaliation) can still target the object. A team's [Attack](/mapping/missions/tmission-attack/) mission picks its target by scanning, so it passes the object over too.
 
-One other thing reads the setting. A vehicle, soldier or aircraft that belongs to no team leaves a mission marked this way and returns to idle behavior as soon as damage from an identified attacker lands without destroying it. [`Zombie=yes`](/keys/zombie/) in the same section is what holds it there instead.
+Damage can end the effect for an object on no team. When a vehicle, infantry or aircraft that belongs to no team survives damage from a known attacker and does not [retaliate](/systems/target-selection/#retaliation), it picks a new mission as it does when it runs out of orders. [`Zombie=yes`](/keys/zombie/) in the same section keeps it on this mission. [`Paralyzed=yes`](/keys/paralyzed/) does the same for a soldier with no target and nowhere to go, or an armed vehicle with nowhere to go. A team member does not change mission this way; it reports the damage to its team instead.
+
+An object that retaliates switches to attacking its attacker, and the effect does not end. Once the attacker is gone, the object can return to this mission, and scans ignore it again.

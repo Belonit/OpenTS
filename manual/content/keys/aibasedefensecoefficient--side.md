@@ -13,13 +13,23 @@ when_omitted:
 AIBaseDefenseCoefficient=1.5
 ```
 
-Scales the defenses interleaved into the base plan while [it is assembled](/systems/ai-base-building/#building-the-plan). Working from the plan's fourth entry, a running build cost asks for `(cost - 2000) / 1500` defenses, truncated to a whole number. This key multiplies that count: roughly one more defense per 1500 credits of planned construction once the plan passes 2000. Each defense asked for becomes a `-1` placeholder, a reserved plan slot that the [defense planner](/systems/ai-base-building/#base-defenses) later fills with a real defense building.
+Scales how many base defenses a computer house playing for this side mixes into its base plan as the plan grows more expensive. A higher value gives more defenses, earlier in the plan. The house applies it when it [generates its plan](/systems/ai-base-building/#building-the-plan).
 
-The difficulty slot never enters this count; it scales only the [`AIBaseDefensePlaceholders`](/keys/aibasedefenseplaceholders/) block appended after the queue, which this key does not multiply. At `0` the plan holds just that trailing block, interleaving nothing.
+Before each plan entry from the fourth on, the house works out how many defenses it wants so far:
 
-```ini title="plan assembly at coefficient 1.5"
-; running cost 4300 -> (4300 - 2000) / 1500 = 1, times 1.5 -> 1 defense so far
-; later the running cost is 6100:
-;   (6100 - 2000) / 1500 = 2, times 1.5 -> 3 wanted, 1 planned
-; so two more -1 placeholders precede the entry that comes next
-```
+1. It takes `C`, the combined cost at this house's prices of the structures already copied into the plan, not counting the first (normally the construction yard). Towers and placeholders add nothing to `C`.
+2. It computes `(C - 2000) / 1500` and truncates it to a whole number.
+3. It multiplies that by this value and truncates again.
+
+When the result exceeds the defenses already planned, the difference goes into the plan as `-1` placeholders. The [defense planner](/systems/ai-base-building/#base-defenses) later fills each placeholder with a defense structure.
+
+For example, at a coefficient of `1.5`:
+
+- When `C` is 4300, `(4300 - 2000) / 1500` truncates to 1, and 1 times 1.5 truncates to 1. One placeholder goes in.
+- When `C` later reaches 6100, `(6100 - 2000) / 1500` truncates to 2, and 2 times 1.5 is 3. With one already planned, two more placeholders go in ahead of the next entry.
+
+The formula has no difficulty term, but a harder game [plans more extra refineries](/systems/ai-base-building/#building-the-plan), and their cost counts toward `C`. At the same coefficient, a harder game therefore reaches each defense threshold earlier in the plan.
+
+This value does not scale the block of [`AIBaseDefensePlaceholders`](/keys/aibasedefenseplaceholders/) placeholders added after the last entry.
+
+At `0`, the house mixes no defenses into the plan. Any trailing block and any defenses along its perimeter wall remain.

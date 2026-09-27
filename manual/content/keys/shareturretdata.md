@@ -7,10 +7,12 @@ when_omitted:
   value: "no"
 ---
 
-The model comes from the object type named by [`ShareSource`](/keys/sharesource/) rather than from a `.VXL` file of the animation's own. This flag claims the source's turret model, which is a separate file from its body and exists only for a type that has a turret; a vehicle without one hands over nothing and the piece is never drawn.
+`ShareTurretData=yes` makes the animation draw the turret model of the object type named by [`ShareSource`](/keys/sharesource/). The animation then loads no `.VXL` file for itself.
 
-The three sharing flags are tested in a fixed order and the first one set decides the part: body, then turret, then barrel. A type with [`ShareBodyData=yes`](/keys/sharebodydata/) as well takes the body instead.
+A turret model is a separate file from the body. A vehicle has one only when it has a turret, and borrowing from a vehicle without one leaves the piece invisible. The exception is a turretless voxel vehicle whose ID is `APC`: it keeps its `<Image ID>W.VXL` model, when that file exists, in the turret part, and this flag borrows that model.
 
-:::danger[Dropping the flag in a later file frees the lender's model]
-A later rules or map file that declares the same section again without repeating this flag turns the borrowing off. The section is then read as owning its model: the borrowed one is released, and a fresh one is loaded in its place. The lending object type is then drawn out of freed memory, and the motion data that animates its model is released a second time when the game shuts down, corrupting the heap. [`ShareSource`](/keys/sharesource/) covers the borrowing in full.
+An animation borrows only one part. The engine checks the three sharing flags in the order body, turret, barrel and uses the first one set. [`ShareBodyData=yes`](/keys/sharebodydata/) therefore overrides this flag, and this flag overrides [`ShareBarrelData`](/keys/sharebarreldata/).
+
+:::danger[Repeat the flag wherever the section is declared]
+A later rules or map file that declares this section without the flag makes the animation free the borrowed model and load a `.VXL` file for itself. The lending type is then drawn from freed memory, and the game frees the same memory twice when the next mission loads or the game exits. [`ShareSource`](/keys/sharesource/) describes this and the other ways a borrowed model is lost.
 :::

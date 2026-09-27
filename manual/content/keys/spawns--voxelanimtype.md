@@ -8,12 +8,14 @@ when_omitted:
   value: none
 ---
 
-The voxel animation type a meteor's impact breaks into. The children are all created at once, at the point of impact, and with no owning house. A child with [`IsTiberium=yes`](/keys/istiberium/#scope-voxelanimtype) is therefore drawn in Tiberium colors, where a piece thrown off a destroyed vehicle is not. [`SpawnCount`](/keys/spawncount/#scope-voxelanimtype) fixes how many appear.
+`Spawns` names the voxel animation type that a meteor breaks into when it strikes. [`SpawnCount`](/keys/spawncount/#scope-voxelanimtype) sets how many pieces appear.
 
-The branch belongs to [`IsMeteor=yes`](/keys/ismeteor/#scope-voxelanimtype) alone, and is skipped where the meteor lands in water below the height of a bridge deck, 416 leptons or about a cell and a half above the ground.
+Only an [`IsMeteor=yes`](/keys/ismeteor/#scope-voxelanimtype) type spawns pieces. A meteor that ends its flight over water spawns nothing unless it is at least 416 leptons above the ground there, the height of a bridge deck.
 
-A value naming no registered voxel animation is not refused: a type of that name is created on the spot, holding no artwork and every setting at its built-in value, and the impact spawns pieces of it.
+All the pieces appear in the same frame. Ordinary debris starts at the impact point, and a spawned meteor type flies in toward it. The pieces belong to no house, so a piece with [`IsTiberium=yes`](/keys/istiberium/#scope-voxelanimtype) is drawn in Tiberium colors. Debris thrown off a destroyed object takes its owner's house colors instead.
 
-:::caution[A type that spawns itself never runs out]
-A meteor naming its own type here, or any cycle of meteor types that leads back to it, replaces itself at every impact. At a count of `1` each impact replaces the piece on average; at `2` or more the population grows with every generation, and each piece deforms the ground it lands on in turn.
+A name missing from `[VoxelAnims]` still creates a voxel animation type of that name. If that file or a later rules or map file declares a section with that name, the type reads it. Otherwise the type has no model and every setting at its built-in value, so its pieces are invisible.
+
+:::caution[A meteor that spawns itself can multiply without limit]
+If `Spawns` names the meteor's own type, or a chain of meteor types leads back to it, each impact launches new meteors toward the point where it struck. At a `SpawnCount` of `1` each impact produces one meteor on average. At `2` or more the number of meteors usually grows with every generation, and each impact on land can deform the terrain again, as [`CraterLevel`](/keys/craterlevel/) sets.
 :::

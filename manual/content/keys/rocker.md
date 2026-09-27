@@ -7,13 +7,25 @@ when_omitted:
   value: "no"
 ---
 
-The force is a hundredth of the blast's damage, held at four. Damage of 30 or less produces no force worth applying and nothing tips at all; damage of 400 and above all tips by the same amount.
+A blast from this warhead rocks the voxel-drawn objects around it: each one tilts and then eases back to level. Rocking costs no strength.
 
 ```ini title="rules.ini"
 [MyShellWH] ; example WarheadType
 Rocker=yes
 ```
 
-Every object standing in the seven-by-seven block of cells centered on the blast is offered the disturbance, but only one drawn as a voxel takes it; infantry and buildings drawn from shape art are left alone. The tilt is the force divided by the type's [`Weight`](/keys/weight/), reduced by the object's distance from the blast and dropped altogether once that leaves it negligible. A heavy vehicle tips less than a light one at the same range. That figure is capped as well, so a light vehicle close to a strong blast tips no faster than the cap allows. An object standing in the blast's own cell is tipped away from whatever fired the shot rather than away from the impact point.
+The rocking force is the blast's damage divided by 100, capped at 4. This is the blast's raw damage, before armor and distance reduce it for any target. A blast of 30 damage or less rocks nothing, and every blast of 400 or more rocks with the same force.
 
-The tilt is held at 45 degrees, forward and sideways alike, and eases back to level over the frames that follow; a vehicle that is crushing something at the time is held to 18 degrees forward instead. The disturbance costs no strength of its own.
+The blast rocks every object in the seven-by-seven block of cells centered on its cell, as long as the object's type is drawn as a voxel. Infantry, structures and other objects drawn from shape art do not rock.
+
+How far an object tilts depends on three things:
+
+- A stronger force tilts it further.
+- A heavier [`Weight`](/keys/weight/) tilts it less, so a heavy vehicle rocks less than a light one at the same distance.
+- A greater distance from the blast tilts it less. An object far enough away that the tilt would be negligible does not rock at all.
+
+The speed at which a blast starts an object tipping is capped. Past that cap, a stronger blast, a lighter object or a shorter distance no longer makes the object tip faster or further.
+
+Each object tips away from the blast. An object standing in the blast's cell tips away from the object credited with the blast instead, when there is one.
+
+An object stops tilting at 45 degrees, forward or sideways, and then eases back to level over the following frames. A vehicle crushing something at the time stops at 18 degrees forward.

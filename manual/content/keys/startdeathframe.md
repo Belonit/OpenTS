@@ -7,10 +7,10 @@ when_omitted:
   note: Facings × (FiringFrames + WalkFrames + 1), or -1 for a vehicle with no death frames.
 ---
 
-The death run starts here, and unlike the walk, standing and firing blocks it is a single run shared by every facing rather than one run per facing.
+The death animation is one run, shared by every facing, starting at this frame.
 
-The derived default leaves room for a walk block, a firing block and one further frame for each facing. That last frame stands in for the one standing frame a vehicle with [`FiringFrames`](/keys/firingframes/) is given by default. The derivation never reads [`StandingFrames`](/keys/standingframes/) itself, so a vehicle with a longer standing block has to name this frame outright.
+The default places the death run after one walk run, one firing run and one extra frame for each facing. The extra frame matches the single standing frame per facing that a vehicle with [`FiringFrames`](/keys/firingframes/) gets by default. The default ignores [`StandingFrames`](/keys/standingframes/) and always counts one standing frame per facing. A vehicle whose `StandingFrames` is not `1` must set `StartDeathFrame`.
 
-:::caution[Naming this frame does not move the wreck's lifetime]
-[`MaxDeathCounter`](/keys/maxdeathcounter/) defaults to the *derived* start frame plus [`DeathFrames`](/keys/deathframes/), and that default is settled before the section's own value for this key is read. Writing this key out therefore leaves the wreck lifetime where the derivation put it; artwork that moves the death run has to name both.
+:::caution[Set MaxDeathCounter to change the wreck's lifetime]
+[`MaxDeathCounter`](/keys/maxdeathcounter/) defaults to the default start frame plus [`DeathFrames`](/keys/deathframes/), computed before `StartDeathFrame` is read. Setting `StartDeathFrame` does not change that lifetime. Set `MaxDeathCounter` as well to choose how long the wreck lasts.
 :::

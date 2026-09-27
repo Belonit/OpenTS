@@ -8,4 +8,10 @@ when_omitted:
   note: The English placeholder text; a localized build supplies its own.
 ---
 
-The name is read as the multiplayer menu is entered and fills the name field of the LAN and skirmish dialogs. Edits there are saved to the `[MultiPlayer]` section of `sun.ini` when you leave the dialog. On the LAN it is also the name the game is advertised under when the player hosts. The stored name holds up to 63 characters, and the LAN dialog limits typing to sixteen.
+The game reads the name when the player picks multiplayer play from the main menu and puts it in the name field of the LAN and skirmish dialogs. Leaving either dialog saves the name, including any edit made there, back to `sun.ini`.
+
+When the player hosts a LAN game, other players see the game listed under this name.
+
+The stored name can be up to 63 bytes of UTF-8 text. The LAN dialog's name field accepts 16 typed characters, and the skirmish dialog's accepts 11.
+
+A game started from a [client launch file](/formats/spawn-ini/#who-is-playing) uses the name written there and leaves the stored name unchanged.

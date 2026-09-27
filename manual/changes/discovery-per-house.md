@@ -15,4 +15,4 @@ targets:
 credit: [ZivDero]
 ---
 
-In a network game, Discovered by player and House Discovered... followed each machine's own player, so a trigger could run on one machine and not on another and the game could fall out of sync. Both now fire the same way on every machine: the first time a human player other than the owner discovers the object.
+In a network game, Discovered by player and House Discovered... used to depend on which player each machine was running. A trigger could run on one machine and not another, and the game could fall out of sync. Now every machine springs Discovered by player the first time a human player other than the tagged object's owner discovers that object. House Discovered... counts a house as discovered the first time a human player other than that house discovers one of its objects.

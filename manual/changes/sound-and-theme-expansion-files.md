@@ -16,6 +16,6 @@ credit:
 - ZivDero
 ---
 
-Startup now reads `SOUND.INI` and `SOUND01.INI` into one database, and `THEME.INI` and `THEME01.INI` into another, the expansion's file over the base one. An entry both name comes from the expansion, and an entry only the base names is kept. Whether the expansion is installed no longer decides which file is read. `SOUND.INI` was passed over entirely wherever Firestorm was installed, and `THEME01.INI` wherever it was not.
+Startup now reads both `SOUND.INI` and `SOUND01.INI`, and both `THEME.INI` and `THEME01.INI`, whether or not Firestorm is installed. The expansion file is read second, so a key both files set takes the expansion's value, and a key only the base file sets is kept. A game with Firestorm installed used to ignore `SOUND.INI` entirely, and one without it ignored `THEME01.INI`.
 
-Either file of a pair on its own is now enough, so a deployment that ships only the expansion's sounds or themes starts. Startup stops only when neither file of a pair can be read.
+One file of each pair is now enough, so a deployment that ships only the expansion's sounds or themes starts. Startup stops only when neither file of a pair can be read.

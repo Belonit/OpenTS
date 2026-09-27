@@ -7,8 +7,10 @@ when_omitted:
   value: "1"
 ---
 
-The second horizontal axis, and the counterpart of [`XVelocity`](/keys/xvelocity/). That page covers how the three axis settings together fix a spark's speed and direction, what the holding system adds to them, and which systems read them. Setting the two horizontal axes apart makes a burst spread further along one of them than the other; the stock spark types keep them equal.
+`YVelocity` sets the spread of speeds a spark is thrown at along the second horizontal axis, the same way [`XVelocity`](/keys/xvelocity/) does for the first. That page explains how the three axis settings set a spark's speed and direction, what the spark system adds to them, and which systems read them.
 
-:::danger[Zero stops the game]
-The random speed is drawn by dividing by this figure, so `YVelocity=0` divides by zero and the game stops the moment a spark system holding the type fires its first burst.
+Giving the two horizontal axes different values makes a burst spread further along one axis than the other. The stock spark types keep them equal.
+
+:::danger[Keep YVelocity nonzero]
+`YVelocity=0` divides by zero and crashes the game when a spark system holding the type throws its first burst.
 :::

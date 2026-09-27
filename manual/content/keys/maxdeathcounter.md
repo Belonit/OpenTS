@@ -1,14 +1,14 @@
 ---
 key: MaxDeathCounter
-summary: The number of game frames a destroyed shape-drawn vehicle lingers as a wreck before it explodes.
+summary: The number of game frames a destroyed vehicle with death frames lingers as a wreck before it explodes.
 see_also: ["DeathFrames", "DeathFrameRate", "StartDeathFrame"]
 when_omitted:
   kind: computed
   note: The derived StartDeathFrame plus DeathFrames, or -1 for a vehicle with no death frames.
 ---
 
-A wreck's death counter starts at zero on the update that destroys the vehicle and steps up by one each game frame. Once it reaches this figure the wreck explodes and is deleted, so the figure is a duration in game frames (15 to the second) rather than a frame number.
+A vehicle with [`DeathFrames`](/keys/deathframes/) above `0` stays on the map as a wreck when it is destroyed. The wreck explodes and is deleted once this many game frames have passed since its destruction. The value is a duration, not a frame number. It has no effect on a vehicle whose `DeathFrames` is `0`.
 
-The figure is independent of how long the animation itself runs, which is `DeathFrames × DeathFrameRate` game frames. The derived default is a frame number carried over rather than a duration chosen for the artwork: it is the frame just past the end of the death run. At the default [`DeathFrameRate`](/keys/deathframerate/) the run therefore always finishes first, and the wreck sits on its last frame for the remainder.
+The death animation runs for `DeathFrames × DeathFrameRate` game frames and then holds its last frame. A longer value leaves the wreck on that last frame for the rest of the time, and a shorter one cuts the animation off.
 
-Only a vehicle with [`DeathFrames`](/keys/deathframes/) above `0` ever starts a death counter, so this setting is inert on any other vehicle.
+Left unset, the value is longer than the death animation at the default [`DeathFrameRate`](/keys/deathframerate/), so the wreck holds its last frame for a while before it explodes.

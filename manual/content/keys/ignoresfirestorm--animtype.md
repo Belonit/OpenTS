@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-An AnimType's art entry is read into the same flag as an object type's, but no firestorm test ever examines an animation. The four tests that read the flag look at units, aircraft, infantry and projectiles only, so the value stored here is never read.
+A firestorm wall tests only vehicles, infantry, aircraft and projectiles, never an animation, so this value has no effect.

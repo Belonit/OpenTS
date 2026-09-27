@@ -7,13 +7,13 @@ when_omitted:
   value: "0"
 ---
 
-Every stage the animation reaches is added to this figure to pick the frame drawn. The animation therefore occupies the run of frames from here upward, which is what lets several animations share one shape file, each taking a different stretch of it.
+The frame drawn is always `Start` plus the animation's current stage. The first stage is `0`, except for the reversed and chained animations described below. The animation therefore uses a run of frames beginning at `Start`. Several animations can share one shape file this way, each using a different run of it.
 
-The frame at this index is the one displayed while the animation is still on its first stage. Nothing checks the figure against the artwork: one past the last frame in the shape leaves the animation drawing nothing for its whole life.
+The value is not checked against the shape file. If `Start` is at or past the shape's frame count, the animation draws nothing for as long as it plays.
 
 ## What is counted from here and what is not
 
-[`End`](/keys/end/) is a count of stages measured from this figure, so the frames a single pass covers are this figure through this figure plus `End` minus one. [`LoopStart`](/keys/loopstart/) and [`LoopEnd`](/keys/loopend/) are not counts; they are frame numbers in the shape, and the engine subtracts this figure from each of them to turn it back into a stage. The three therefore fit together only when the count and the loop range describe the same stretch.
+[`End`](/keys/end/) is a number of stages counted from `Start`, so a single pass shows frames `Start` through `Start + End - 1`. [`LoopStart`](/keys/loopstart/) and [`LoopEnd`](/keys/loopend/) are frame numbers in the shape file, not stage numbers. Set `End` and the loop range so that they describe the same run of frames.
 
 ```ini title="art.ini"
 [MYPLUG_D] ; the damaged form of an animation sharing MYPLUG's shape
@@ -25,10 +25,14 @@ End=10        ; ten stages, so the final pass also covers frames 10 through 19
 LoopCount=3
 ```
 
-Leaving `End` out of that section would not shorten the animation to match. The stage count is taken from the whole shape, so the final pass would run from frame 10 for the shape's full length, off the end of the artwork.
+If `End` is omitted, the animation has as many stages as the shape file has frames, not as many as remain after `Start`. Without `End=10`, the final pass of the example would start at frame 10 and run 10 frames past the end of the shape.
 
-:::caution[The loop block mixes stages and frame numbers]
-The reverse and ping-pong end tests, and the stage a chained animation is put on, treat this frame number as though it were a stage. On an animation whose figure is zero, the ordinary case, the two agree and nothing is out of place. On one that sets it, a [`Reverse=yes`](/keys/reverse/) animation stops once its stage reaches this figure. The drawn frame is this figure plus the stage, so the pass ends at twice this figure (frame 20 in the example above) instead of at this figure itself. An animation reached through [`Next=`](/keys/next/) opens on twice this figure as well.
+:::caution[Reverse, ping-pong and chained animations add Start to a frame number]
+Three cases use a frame number where a stage belongs, so the animation acts on the frame `Start` past the one set. In the example above, twice `Start` is frame 20.
+
+- A [`Reverse=yes`](/keys/reverse/) animation begins each pass on frame `Start + LoopEnd`. On a single pass, it ends on reaching the frame at twice `Start`, which is not displayed. Given more than one pass, it holds frame `Start + LoopEnd` until its final pass. Keep `Start=0` on a reversed animation.
+- A [`PingPong=yes`](/keys/pingpong/) animation given more than one pass turns only once. It climbs to frame `LoopEnd` or to the frame at twice `Start`, whichever comes first. It then plays downward through frame `0`, draws nothing after that, and never finishes. Keep `Start=0` on a ping-pong animation.
+- An animation that switches to this type through [`Next`](/keys/next/) begins on the frame at twice its `Start`.
 :::
 
-The stage at which an animation lays down its scorch mark or crater is compared against the frame number rather than the stage, so that moment stays pinned to the artwork whatever this is set to.
+The moment an animation leaves its scorch mark or crater is tied to the largest frame in the shape file, not to a stage, so `Start` does not move it. [`Crater`](/keys/crater/#scope-animtype) covers that timing.

@@ -7,10 +7,15 @@ when_omitted:
   value: none
 ---
 
-Each survivor picks its type afresh, and two settings are read ahead of this one. A structure that has never been captured and whose own production kind is buildings offers the `[General]` [`Engineer`](/keys/engineer/#scope-global-rules) type on a one-in-four roll. [`Technician`](/keys/technician/) then replaces the type named here for an object whose house belongs to no side, and on a 15% roll for an armed object whose house has one. Everything else uses this type. Only a [`Crewed=yes`](/keys/crewed/) structure or vehicle produces survivors at all; [Survivors](/systems/capture/#survivors) covers the count and the per-cell odds.
+Only a [`Crewed=yes`](/keys/crewed/) structure or vehicle produces survivors. [Survivors](/systems/capture/#survivors) covers how many a structure produces, and [`CrewEscape`](/keys/crewescape/) covers a vehicle's crew. The type of each survivor is chosen separately, by these tests in order:
 
-A value naming an InfantryType that no `[InfantryTypes]` entry registers is not refused. The read registers the name itself, and because object sections are read after `[General]`, a section written under that name is still picked up in the same pass. Such a type is missing from the list, not from the game. A name with no section of its own registers a type with nothing but engine defaults: no artwork and no animation sequence data, and the per-frame animation logic reads that sequence table without checking.
+1. A structure that has never been captured and whose type builds structures produces the `[General]` [`Engineer`](/keys/engineer/#scope-global-rules) type on a one-in-four roll.
+2. An object whose house belongs to no side produces the [`Technician`](/keys/technician/) type.
+3. An armed object whose house has a side produces the `Technician` type on a 15% roll.
+4. Any other survivor is of this type.
 
-:::danger[A `Crewed=yes` structure cannot be sold until this is set]
-The value starts as no type at all, and the survivor loop a sale runs reads each pick before testing it for nothing. Selling such a structure therefore ends the game on the first survivor the engineer roll does not supply.
+The value does not have to be listed under `[InfantryTypes]`. A name the game does not already know registers a new InfantryType, and a section of that name is still read, because object sections are read after `[General]`. A name with no section of its own gives a type with only engine defaults and no animation sequence, and a survivor of that type crashes the game once it animates.
+
+:::danger[Set this before a `Crewed=yes` structure is sold]
+The value starts as no type. A sale crashes the game when one of its survivors falls through to step 4 while the value is unset. A destroyed structure or vehicle produces no survivor for that pick instead.
 :::

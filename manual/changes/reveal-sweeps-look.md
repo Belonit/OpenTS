@@ -12,4 +12,6 @@ targets:
 credit: [ZivDero]
 ---
 
-The sweep that reveals a new ally's objects and the one that reveals a spied house's objects now give each object an ordinary look instead of revealing its bare `Sight=`. The height bonus and the veteran sight bonus therefore apply, and a landed aircraft shows one cell. A structure reveals from the cell it stands on rather than from its center. An object never locked to the playable area stays dark.
+Two events reveal the map around every object a house owns. One is the house becoming your ally, when `AllyReveal=yes` in `[AudioVisual]` of `rules.ini` makes allies share their sight. The other is you spying on the house's radar. Each object now reveals the area it normally sees, where it used to reveal a circle of its bare `Sight=` around its center.
+
+Other than an aircraft, an object now gets its height bonus and veteran sight bonus, and it reveals nothing until it has entered the playable area. A structure reveals around the top cell of its foundation. An aircraft reveals its bare `Sight=`, or 1 cell once it has landed.

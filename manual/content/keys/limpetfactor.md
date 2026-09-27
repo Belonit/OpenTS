@@ -7,27 +7,44 @@ when_omitted:
   value: "0"
 ---
 
-Any figure of `1` or more turns the weapon into a limpet attachment instead of a shot whenever the target is a unit, an infantryman, an aircraft or a building rather than a cell. The firing object creates no projectile: it marks the target with its own house, sets the target's speed multiplier to the remaining fraction, plays the weapon's sound, springs the limpet trigger event on the target, and removes itself.
+A value of `1` or more makes the weapon attach a limpet instead of firing a shot, whenever the target is a vehicle, infantryman, aircraft or structure. Against any other target, such as a cell, the weapon fires an ordinary shot. An attachment creates no projectile. It does these things in one step:
+
+- marks the target with the firing object's house;
+- sets the target's speed multiplier to the percentage that remains, so `50` leaves half;
+- plays the weapon's sound and springs the limpet trigger event on the target;
+- removes the firing object.
 
 ```ini title="rules.ini"
 [MyLimpetWH] ; example WarheadType
 LimpetFactor=50 ; the target keeps half its speed
 ```
 
-A target may hold one mark from each house. A shot at a target its own house has already marked does nothing at all: no projectile, no second mark, and the firing object survives. In the shipped rules the object that fires is the deployed limpet mine, a structure the limpet drone folds into; the drone itself has no weapon.
+In the shipped rules, the deployed limpet mine fires the attachment. The limpet drone folds into that structure and has no weapon of its own.
 
-A mark changes three things about the object holding it. Only a vehicle is slowed, because the multiplier is read where a vehicle works out its top speed and nowhere else; infantry, aircraft and buildings hold the mark at full speed. An object holding the local player's own mark reveals ground for that player instead of for its owner, which is what makes the attachment worth firing. An aircraft is exempt, because it works out its own sight and never reads the mark. Its selection marker changes as well (a marked building's box is drawn in yellow), and the repair cursor is offered over a marked building whatever its strength.
+A target can hold one mark from each house. When the firing object's house has already marked the target, firing does nothing: no projectile, no second mark, and the firing object survives. A later mark from another house replaces the speed percentage the target already had.
 
-Healing removes it. Any damage below zero clears the mark and restores the object's [`ROT`](/keys/rot/#scope-aircrafttype), so a repair weapon undoes an attachment outright. A repair step inside a service depot clears it the same way, and clears it before the vehicle's strength is looked at.
-
-:::caution[The value is stored as a whole number]
-The figure is truncated to a whole number before it is stored, so anything below `1` is stored as `0` and attaches nothing. That includes the percentage form used by the warhead's other fractional settings: `LimpetFactor=50%` is read as one half, truncated to zero, and the weapon fires an ordinary shot.
+:::caution[Write a whole number]
+The value is truncated to a whole number, so a value of at least `0` and below `1` attaches nothing and the weapon fires an ordinary shot. That includes the percentage form: `LimpetFactor=50%` reads as one half, which truncates to `0`. Do not write a negative value; its effect is undefined.
 :::
 
-:::caution[The turn rate is never slowed]
-The rate of turn is scaled on the firing object rather than on the target: the firing object's own `ROT` is multiplied by the factor just written onto the target, and it is removed on the same step. A marked vehicle turns its body and its turret at full speed however low this setting goes.
+:::danger[Keep the value at 100 or below]
+`100` stops a marked vehicle dead. A value above `100` does not reverse or freeze the target. It multiplies the vehicle's top speed by a huge figure instead: `LimpetFactor=150` multiplies it by about 43 million.
 :::
 
-:::danger[A figure above 100 speeds the target up]
-The shortfall below 100 is worked out as an unsigned quantity, so `LimpetFactor=150` does not reverse or freeze the target. It yields a multiplier of about 43 million: a marked vehicle's top speed is scaled by that figure rather than reduced. Exactly `100` is the value that stops a vehicle dead.
+## What a mark does
+
+A mark has these effects on the object holding it:
+
+- A marked vehicle is slowed. Infantry, aircraft and structures keep their full speed.
+- A marked object reveals the map around it for its owner and also for every house that has marked it. A marked aircraft reveals only for its owner.
+- A marked structure's selection box is drawn in yellow, and the repair cursor is offered over it at any strength. A marked vehicle with [`IsCoreDefender=yes`](/keys/iscoredefender/#scope-unittype) also gets a yellow selection box.
+- Other marked vehicles and aircraft draw a different frame of the selection marker art when selected. Marked infantry look the same as unmarked ones.
+- The mark carries over when a vehicle deploys into a structure or a structure undeploys into a vehicle.
+
+:::caution[The target's turn rate is not slowed]
+A marked vehicle turns its body and turret at full speed, however high this value is. The attachment slows the turn rate of the firing object instead, which is removed in the same step.
 :::
+
+## Removing a mark
+
+Healing removes every mark on an object and restores its full [`ROT`](/keys/rot/#scope-aircrafttype), so a repair weapon undoes an attachment. A repair step from a structure that services docked objects, such as a service depot, also removes the marks, even from an object at full strength.

@@ -4,10 +4,10 @@ summary: Which graphics interface the game draws through, as a number.
 when_omitted:
   kind: value
   value: "0"
-  note: Zero leaves the choice of interface to the renderer.
+  note: Zero lets the game choose the interface.
 ---
 
-The game asks the graphics card for one of several interfaces. The setting exists so that a driver problem can be worked around without a new build:
+The number selects the graphics interface the game asks for when it starts. It exists to work around a driver problem, so leave it at `0` unless a driver needs a specific interface.
 
 | Value | Interface |
 | --- | --- |
@@ -17,6 +17,10 @@ The game asks the graphics card for one of several interfaces. The setting exist
 | `3` | Vulkan |
 | `4` | OpenGL |
 
-A value outside this range is treated as `0`. Naming an interface the machine cannot provide is a startup failure rather than a fallback. The game reports that the video mode could not be set and closes, so an interface that turns out to be missing has to be undone by editing the file again.
+A value outside this range is treated as `0`.
 
-The setting is read before the renderer starts, so a change takes effect the next time the game is launched.
+The [debug log](/using/debug-logging/) names the interface that started. Check it to confirm that a requested interface is in use.
+
+If the game cannot start drawing, it reports that it is unable to set the video mode and closes. Set `Renderer` back to `0` in the settings file to undo a value that causes this.
+
+A change takes effect at the next launch.

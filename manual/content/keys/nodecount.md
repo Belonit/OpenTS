@@ -7,4 +7,12 @@ when_omitted:
   value: "0"
 ---
 
-This count sets how many node entries the engine reads. Entries are read in order from the zero-padded three-digit keys `000` upward: a `NodeCount` of `4` reads `000` through `003` and ignores `004` and everything after it. A first field matching no BuildingType ID is not reported as a problem. It produces a node of type `-1`, the base-defense placeholder the planner fills in itself. [Where the plan comes from](/systems/ai-base-building/#where-the-plan-comes-from) covers the entry format and what a supplied list suppresses. Outside a campaign the count is read from a [spawn house](/formats/scenario-objects/#spawn-houses) section, `[Spawn1]` through `[Spawn8]`, only on a map that sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/).
+`NodeCount` sets how many entries of a house's base plan are read. The entries use the zero-padded three-digit keys `000` upward, read in order, so a `NodeCount` of `4` reads `000` through `003` and ignores `004` and any later entry. [Where the plan comes from](/systems/ai-base-building/#where-the-plan-comes-from) covers the entry format and how a supplied plan stops the house from generating one.
+
+An entry whose type does not start with `-` and matches no BuildingType ID becomes a `-1` node, a base-defense placeholder whose type and cell the planner picks.
+
+:::caution[Write every entry the count covers]
+Give each key from `000` up to one below `NodeCount` a type and both cell coordinates. A missing entry, or one without both coordinates, crashes the game while the scenario loads.
+:::
+
+In a campaign, the house reads `NodeCount` from the section named after it, such as `[GDI]`. In a skirmish or multiplayer game, a house reads `NodeCount` from the [spawn house](/formats/scenario-objects/#spawn-houses) section of the start position it holds, `[Spawn1]` through `[Spawn8]`, and only on a map that sets [`UseMPAIBaseNodes=yes`](/keys/usempaibasenodes/).

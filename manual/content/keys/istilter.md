@@ -7,4 +7,4 @@ when_omitted:
   value: "yes"
 ---
 
-No gameplay path reads the stored flag, so a vehicle's leaning is unaffected by it in either direction. What a vehicle does on sloped ground follows from its [`Locomotor`](/keys/locomotor/) instead.
+Neither `yes` nor `no` changes how a vehicle leans on sloped ground. That follows from its [`Locomotor`](/keys/locomotor/).

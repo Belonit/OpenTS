@@ -8,6 +8,8 @@ when_omitted:
   note: A delay of zero, which gives the type a growth pass on every frame.
 ---
 
-The timer is reloaded with this many frames after every [growth pass](/systems/tiberium/#growth), whether or not any cell ripened, and `0` gives the type a pass on every frame. [`TiberiumGrows=yes`](/keys/tiberiumgrows/#scope-scenarios) multiplies the reloaded figure by `0.3`; nothing else scales it.
+After each [growth pass](/systems/tiberium/#growth), the type waits this many frames before the next one, whether or not any cell grew. A lower value makes the type's fields ripen faster.
 
-A scenario with [`TiberiumGrowthEnabled=no`](/keys/tiberiumgrowthenabled/) runs no pass at all, so the delay is never read there.
+When [`TiberiumGrows`](/keys/tiberiumgrows/#scope-scenarios) turns on fast growth, the wait is 30% of this value, rounded down. That page explains when fast growth applies. No other setting shortens or lengthens the wait.
+
+No growth pass runs while the scenario's [`TiberiumGrowthEnabled`](/keys/tiberiumgrowthenabled/) switch is off, whatever this value is.

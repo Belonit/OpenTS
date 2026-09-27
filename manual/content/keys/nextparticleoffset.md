@@ -12,13 +12,14 @@ when_omitted:
 Image=gaslrgmk
 BehavesLike=Gas
 MaxEC=448
+EndStateAI=11
 NextParticle=MYGASCLOUD ; a ParticleType registered in [Particles]
-NextParticleOffset=0,0,150 ; the cloud forms 150 leptons above where the seed died
+NextParticleOffset=0,0,150 ; the cloud forms 150 leptons above where the seed expired
 ```
 
-The value holds three lepton components, X, Y and Z, which are added to the position an expiring particle held when its [`NextParticle`](/keys/nextparticle/) successor is created there. Only gas, weak gas and web systems apply it. A smoke system scatters its pair of successors with [`Radius`](/keys/radius/) and never reads the offset, and fire, spark and railgun systems create no successors at all.
+The successor named by [`NextParticle`](/keys/nextparticle/) appears this far from the point where the particle expired, as X, Y and Z offsets in leptons. Only gas, weak gas and web systems use it. A smoke system places its two successors with [`Radius`](/keys/radius/) instead, and fire, spark and railgun systems create no successors.
 
-The offset is applied once, at the moment of the replacement, and each link of a chain adds its own. A chain of three types that each raise their successor by 150 leptons places its second particle 150 leptons above the first and its third 300 above. The first particle of the chain sits where the system put it; only its replacements are moved.
+The offset belongs to the expiring type, so each link of a chain places the next one. If every type in a chain sets `NextParticleOffset=0,0,150`, each successor appears 150 leptons above the point where the one before it expired. A successor placed below the ground is raised to ground level.
 
 :::note[A value with fewer than three components reads as the default]
 `NextParticleOffset=0,0` is short of the three components an offset needs, so the key reads as its default and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.

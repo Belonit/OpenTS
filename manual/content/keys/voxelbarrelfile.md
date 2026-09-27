@@ -7,7 +7,7 @@ when_omitted:
   value: ""
 ---
 
-The value is a file name without its extension: `<name>.VXL` is loaded as the barrel, with the `<name>.HVA` beside it. At most 15 characters are kept.
+`VoxelBarrelFile` names the voxel model a [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building draws as its barrel. Write the file name without its extension: the engine loads `<name>.VXL` with `<name>.HVA` beside it. At most 15 characters are kept.
 
 ```ini title="rules.ini"
 [MYARTILLERY] ; a BuildingType registered in [BuildingTypes]
@@ -16,4 +16,6 @@ BarrelAnimIsVoxel=yes
 VoxelBarrelFile=MYARTBAR ; the barrel is drawn from MYARTBAR.VXL
 ```
 
-Only a [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building whose turret name yields no barrel name of its own reads the key. A [`TurretAnim`](/keys/turretanim/) name yields one when a scan finds `TUR` in it from the fifth character onward, compared case-blind. The name is cut at the first match, that `TUR` becomes `BARL`, and everything after it is dropped. A `TUR` that sits only inside the first four characters is never seen, so a building with such a name reads this key instead. This setting is then ignored, as it is on a building that draws a voxel turret rather than a voxel barrel.
+The key is used only when the [`TurretAnim`](/keys/turretanim/) name does not supply a barrel name. A `TurretAnim` name supplies one when it contains `TUR`, in any case, starting at the fifth character or later. The engine then loads the barrel from that name with `TUR` and everything after it replaced by `BARL`, and ignores this key. A `TUR` that starts within the first four characters is not found, so a name such as `TURMYART` still uses this key.
+
+A building without `BarrelAnimIsVoxel=yes` ignores the key.

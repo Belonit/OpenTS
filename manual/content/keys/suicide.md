@@ -7,10 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-Three separate reactions are switched off, and between them they cover everything that would otherwise pull a team off its orders.
+`Suicide=yes` switches off three reactions that would otherwise pull a team or its members away from the team's script:
 
-- The team's response to a member being damaged is skipped entirely. A team that has not begun to move does not stop to regroup, and a moving one does not turn on its attacker or [reform](/keys/annoyance/).
-- A member on the Move mission [does not scan](/systems/target-selection/#when-an-object-scans) for a target of opportunity as it travels. That scan belongs to computer houses, so the exemption does too.
-- No member [retaliates](/systems/target-selection/#retaliation), whoever owns it, against anything but a veinhole warhead. That one exemption is settled several tests earlier than this one is reached, so a member struck by it answers as any other object would.
+- The team ignores damage to its members. A team that has not started does not stop to regroup, and a team that is under way does not turn on the attacker or [reform](/keys/annoyance/).
+- Members on the Move mission do not [look for targets along the way](/systems/target-selection/#when-an-object-scans). Only computer houses make that scan, so this change affects only them.
+- Members do not [retaliate](/systems/target-selection/#retaliation), whichever house owns them. Damage from a veinhole warhead is the exception, which a member answers as any other object would.
 
-Members still fire at whatever the team's own script points them at, and still fire on anything their standing mission tells them to scan for once the move is over. The setting withholds only the unprompted reactions.
+Members still attack the targets the team's script gives them. On any mission other than Move, a member still scans for targets as it would without this setting.

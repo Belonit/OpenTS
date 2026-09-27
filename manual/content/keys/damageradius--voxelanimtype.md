@@ -8,17 +8,21 @@ when_omitted:
   value: "0"
 ---
 
-A whole number of leptons, 256 to a cell. On every frame the debris strikes the ground outside water, each object occupying the cell it struck is measured against this reach, and one that falls inside it takes [`Damage`](/keys/damage/#scope-voxelanimtype) through the piece's [`Warhead`](/keys/warhead/#scope-voxelanimtype). The piece deals this damage only if its type names a warhead.
+The reach of a piece's bounce damage, in leptons (256 to a cell). Each time the piece strikes something outside water, every object in the struck cell within this reach of the strike point takes [`Damage`](/keys/damage/#scope-voxelanimtype) through the piece's [`Warhead`](/keys/warhead/#scope-voxelanimtype). A piece with no warhead deals no bounce damage.
 
 ```ini title="rules.ini"
 [MetalShard]     ; a voxel animation type
 Warhead=AP
 Damage=15
-DamageRadius=256 ; objects within a cell of the strike take the damage
+DamageRadius=256 ; objects in the struck cell up to 256 leptons from the strike take the damage
 ```
 
-The distance compared is the sum of the two horizontal separations rather than the straight line between them, so the reach is a diamond and not a circle. `0` therefore reaches only an object centered exactly on the point of impact. Height is not part of the comparison at all. Only occupants of the one cell struck are examined, so a reach wider than a cell still cannot touch anything standing next door.
+The reach is measured as the east-west distance plus the north-south distance, not the straight line, so it covers a diamond, not a circle. Height is ignored. At `0`, only an object standing at exactly the strike point is hit.
 
-A hit is not dealt flat. The damage passes through the piece's warhead like any other damage: the target's armor type modifies it, and it falls off with the object's distance from the impact point, on the same falloff the blast applies.
+Only objects in the struck cell are checked. A reach wider than a cell still cannot hit an object in the next cell.
 
-The blast at the end of the piece's life is a separate matter: it reaches every object in the impact cell and the eight around it, with the warhead's own [`Spread`](/keys/spread/#scope-warheadtype) deciding how the damage falls off across them. It does not read this setting at all.
+Objects on a bridge deck are never hit. A strike on the deck damages objects on the ground beneath it instead.
+
+Each hit is adjusted for the target's armor and for distance, as warhead damage always is. The distance falloff is much gentler than a blast's, because the distance counts at roughly a ninth of its true length.
+
+The blast at the end of the piece's life does not read this setting. It is an ordinary explosion, as [`Warhead`](/keys/warhead/#scope-voxelanimtype) describes, with the warhead's [`Spread`](/keys/spread/#scope-warheadtype) setting its falloff.

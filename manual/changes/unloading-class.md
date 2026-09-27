@@ -15,4 +15,4 @@ targets:
 credit: [ZivDero, CCHyper]
 ---
 
-A docked harvester was drawn as the one vehicle `UnloadingHarvester=` names for every harvester in the rules. A set of harvesters could not have unloading artwork of their own. The new `UnloadingClass=` names that vehicle per type and overrides the rules-wide value, in a type's own section of `rules.ini`. A `Weeder=yes` vein harvester, which the rules-wide value has never reached, can now be exchanged this way too.
+`UnloadingClass=` in a harvester type's section of `rules.ini` names the vehicle drawn in its place while it unloads at a refinery, and overrides `UnloadingHarvester=` for that type. Every Tiberium harvester used to be drawn as the one vehicle `UnloadingHarvester=` in `[AudioVisual]` names. A `Weeder=yes` vein harvester, which `UnloadingHarvester=` never applied to, can use `UnloadingClass=` too.

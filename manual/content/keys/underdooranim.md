@@ -8,6 +8,15 @@ when_omitted:
   note: No under-door shape is loaded and none is drawn.
 ---
 
-The value is a filename without its extension, and only a non-empty value is taken. The named `<value>.SHP` is loaded with the rules, and refetched on the same occasions and with the same theater rewrite [`DoorAnim`](/keys/dooranim/) describes.
+`UnderDoorAnim` names a shape that a structure draws while it is unloading, such as a war factory letting a finished vehicle out. Write the filename without its extension; the engine loads `<value>.SHP`. The name gets the same theater letter rewrite that [`DoorAnim`](/keys/dooranim/) describes.
 
-It is drawn while the structure is unloading, in the same pass as the structure itself and after it, at ground depth. The frame is chosen from health alone: frame `1` at or below [`ConditionYellow`](/keys/conditionyellow/) and frame `0` above it. [`DoorStages`](/keys/doorstages/) has no bearing on it, so the file needs exactly those two frames. Its brightness includes [`ExtraLight`](/keys/extralight/).
+The shape is drawn after the structure and its [`BibShape`](/keys/bibshape/), at ground depth. Only its first two frames are used, chosen by the structure's health alone:
+
+| Structure's health | Frame drawn |
+| --- | --- |
+| Above [`ConditionYellow`](/keys/conditionyellow/) | `0` |
+| At or below `ConditionYellow` | `1` |
+
+[`DoorStages`](/keys/doorstages/) does not apply to this shape.
+
+The shape is lit like the structure, including its [`ExtraLight`](/keys/extralight/). The `DoorAnim` frames, by contrast, ignore `ExtraLight`.

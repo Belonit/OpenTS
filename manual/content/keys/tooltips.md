@@ -7,6 +7,6 @@ when_omitted:
   value: "yes"
 ---
 
-Tooltips are switched to this setting as the game loop is entered and switched off again as it is left. The setting therefore reaches the sidebar cameos, the tabs and the rest of the in-game interface, but never the menus or the dialogs in front of them. [`SidebarCameoText`](/keys/sidebarcameotext/) explains what a cameo's tooltip reports.
+`ToolTips=yes` shows tooltips over the sidebar cameos, the tabs and the rest of the in-game interface while a scenario is being played. Tooltips are off in the menus, and are switched off when the in-game options open, whatever this setting says. [`SidebarCameoText`](/keys/sidebarcameotext/) describes what a cameo's tooltip shows.
 
-The in-game game controls dialog has the same switch and writes the choice back to `sun.ini`. Changing it there takes effect at once, but only while a scenario is running.
+The game controls dialog has the same switch, and accepting the dialog saves the choice to `sun.ini`. A change made during a game takes effect at once. A change made from the main menu takes effect when the next scenario starts.

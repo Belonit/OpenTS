@@ -7,7 +7,7 @@ when_omitted:
   value: "50"
 ---
 
-Each burst a `Spark` system throws holds at least half this figure and never quite the whole of it. The count is half the figure plus a random amount up to one short of that half, so `12` gives a burst of six to eleven. The halves are whole numbers, so an odd figure loses its odd unit: `13` gives the same six-to-eleven burst as `12`. A [`OneFrameLight`](/keys/oneframelight/) system of any behavior reads it a second way: it divides the particles it currently holds by this figure and draws its glow at that fraction of [`LightSize`](/keys/lightsize/). The fraction is held between four tenths and the whole, so the light waxes as the system fills and never falls below the floor.
+A `Spark` system sizes each burst from this figure. A burst holds half the figure, rounded down, plus a random amount below that half. `12` gives bursts of six to eleven particles, and so does `13`.
 
 ```ini title="rules.ini"
 [MySparkSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -18,8 +18,10 @@ SparkSpawnFrames=1
 SpawnSparkPercentage=1
 ```
 
-Nothing enforces the figure as a limit. A system may hold any number of particles at once, and a `Smoke`, `Fire`, `Gas`, `Web` or `Railgun` system is not counted against it at all.
+A [`OneFrameLight`](/keys/oneframelight/) system of any behavior also uses the figure for its glow. The glow is drawn at a fraction of [`LightSize`](/keys/lightsize/): the number of particles the system holds divided by this figure, kept between `0.4` and `1`. A system holding at least this many particles glows at full `LightSize`, and the glow never drops below four tenths of it.
 
-:::danger[A ParticleCap of 1, 0 or -1 crashes a spark system]
-The burst size divides a random number by half the figure, and each of those three halves to zero. A `Spark` system with one of them crashes the game the first time it throws a burst.
+The figure is not a limit. A system can hold any number of particles at once. For a system of any behavior other than `Spark`, the figure affects only the `OneFrameLight` glow.
+
+:::danger[Keep a spark system's ParticleCap at 2 or above]
+`1`, `0` and `-1` all halve to zero, and a `Spark` system with one of them divides by zero and crashes the game when it throws its first burst. A figure of `-2` or below throws empty bursts.
 :::

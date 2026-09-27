@@ -8,8 +8,14 @@ when_omitted:
   value: none
 ---
 
-Only three of the seven [behaviors](/keys/behaveslike/#scope-particletype) reach a warhead at all. A `Gas` particle and a `Fire` particle set [`Damage`](/keys/damage/#scope-particletype) through it on the [`MaxDC`](/keys/maxdc/) cycle, so the warhead's armor multipliers and its [`Spread`](/keys/spread/#scope-warheadtype) decide what each target in the cell actually suffers. A `Web` particle applies it every frame at zero damage; without one it applies nothing at all. `WeakGas`, `Smoke`, `Spark` and `Railgun` particles never reach a damage path, so the assignment does nothing on those types.
+`Warhead` names the warhead a particle applies to the objects in its cell. Only `Gas`, `Fire` and `Web` [behaviors](/keys/behaveslike/#scope-particletype) use it. `WeakGas`, `Smoke`, `Spark` and `Railgun` particles deal no damage, so the setting does nothing for them.
 
-A `Gas` or `Fire` particle with a warhead but no damage applies nothing, because both of those paths test the damage figure before they run. A `Web` particle is the reverse: its damage figure is never read, and the warhead alone decides what the repeated hit does.
+A `Gas` particle hits every object in its cell once every [`MaxDC`](/keys/maxdc/) frames, applying its [`Damage`](/keys/damage/#scope-particletype) through this warhead. The warhead's armor multipliers and its [`Spread`](/keys/spread/#scope-warheadtype) decide how much each object takes.
 
-`Warhead=none` and `Warhead=<none>` both clear the setting. Any other unrecognized name silently registers a WarheadType of that name with nothing configured in it, rather than being rejected.
+A `Fire` particle does the same while its animation state is at or below [`FinalDamageState`](/keys/finaldamagestate/). It never hits the object that fired it.
+
+A `Gas` or `Fire` particle deals no damage when it has no warhead or when `Damage=0`.
+
+A `Web` particle hits every object in its cell every frame with zero damage. It ignores `Damage`, so only the warhead's own effects apply. A `Web` particle with no warhead affects nothing.
+
+`Warhead=none` and `Warhead=<none>` both clear the setting. A name that matches no warhead creates a new warhead of that name, so a misspelled name produces a warhead with no section of its own and every setting at its default.

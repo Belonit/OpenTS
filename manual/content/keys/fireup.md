@@ -7,7 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-A soldier that opens fire starts its firing animation, and the round is released on the update where the animation stage matches this figure. The figure counts stages of the run named `FireUp` in the type's [`Sequence`](/keys/sequence/) section, from `0`, so the default releases the round on the same update the animation starts. [`FireProne`](/keys/fireprone/) covers the same stage for a soldier lying down, and a [`JumpJet=yes`](/keys/jumpjet/) soldier plays its `FireFly` run instead but still releases on this stage.
+A standing soldier releases its round when its firing animation reaches this stage. Stages count the frames of the `FireUp` run in the type's [`Sequence`](/keys/sequence/) section, starting from `0`. At `0` the round leaves on the same update the animation starts.
 
 ```ini title="art.ini"
 [E1] ; the Image ID of the stock Light Infantry
@@ -15,8 +15,10 @@ Sequence=E1Sequence
 FireUp=2 ; the third stage of E1Sequence's six-frame FireUp run
 ```
 
-If the shot cannot be taken when the stage arrives, the soldier abandons the firing animation and returns to standing, or to prone if it was lying down.
+A prone soldier uses [`FireProne`](/keys/fireprone/) in place of this key. A [`JumpJet=yes`](/keys/jumpjet/) soldier plays its `FireFly` run in place of `FireUp` while its jumpjet locomotor is in control, and still releases the round at this stage.
 
-:::caution[A figure past the run's frame count can still release the round]
-The stage is matched for exact equality, and the firing run ends once its frame count is reached. The run itself never reaches such a figure. While the soldier keeps its target, the test keeps running against the stage of every animation it plays next. The first of those to reach the figure releases the round.
+If the soldier cannot fire when the stage arrives, it abandons the firing animation and returns to standing, or to prone if it was lying down.
+
+:::caution[Keep `FireUp` no higher than the frame count of the `FireUp` run]
+The firing animation ends once its stage reaches the frame count, so a higher `FireUp` is never reached. A soldier standing still then returns to its standing animation, starts the firing animation again, and never releases a round. A soldier that moves on to an animation whose stage keeps counting, such as walking, releases the round if that animation reaches the figure while the soldier still holds its target.
 :::

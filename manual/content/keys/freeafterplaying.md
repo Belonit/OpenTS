@@ -1,16 +1,18 @@
 ---
 key: FreeAfterPlaying
-summary: Gives a demand-loaded animation's artwork back as soon as an animation of the type leaves the game.
+summary: Frees a demand-loaded animation's artwork each time an animation of the type is removed.
 see_also: ["DemandLoad", "Image", "Next"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The flag is read only on a [`DemandLoad=yes`](/keys/demandload/#scope-animtype) animation. On any other type it parses and does nothing, because there is nothing the type is holding on its own account to give back.
+The flag has an effect only on a [`DemandLoad=yes`](/keys/demandload/#scope-animtype) animation.
 
-Where it does apply, the artwork is released as the animation object is destroyed. It makes no difference whether the animation played to its end, was cut short with the object it was pinned to, or was thrown away when a structure stopped it. The type then reads the shape from disk again the next time anything draws an animation of it. The pair suits a rarely played animation, and costs a disk read per playing on a common one.
+Each time an animation of the type is removed, however it ended, the type frees its artwork. The next time any animation of the type is drawn, including one that is still playing, the shape is read from disk again.
 
-An animation that has chained through [`Next=`](/keys/next/) releases the artwork of the type it was holding when it was destroyed, not the type it started as. The earlier types in a chain therefore keep theirs for the rest of the scenario.
+Set `FreeAfterPlaying=yes` only on a rarely played animation. On a common one, every animation of the type that ends makes the next draw of the type read the shape from disk again.
+
+Only the type an animation ends as frees its artwork. An animation that has chained through [`Next=`](/keys/next/) frees the artwork of its last type, and the earlier types in the chain keep theirs.
 
 [Animation shape](/keys/demandload/#scope-animtype) covers shape ownership and loading.

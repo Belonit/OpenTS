@@ -10,4 +10,4 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-The value is stored with the other scenario flags and never read. The spelling that makes a loaded harvester explode is the [`[CombatDamage]` entry](/keys/tiberiumexplosive/#scope-global-rules).
+Nothing in the game reads this entry. To make a destroyed vehicle carrying Tiberium explode, set [`TiberiumExplosive`](/keys/tiberiumexplosive/#scope-global-rules) in `[CombatDamage]` instead.

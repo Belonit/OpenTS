@@ -12,6 +12,6 @@ when_omitted:
 BaseNormal=no
 ```
 
-With this assignment, a placed `GAPOWR` is not an eligible anchor when the player places another building. The setting belongs to the existing candidate anchor; it does not set a projected radius.
+`BaseNormal=no` stops a placed `GAPOWR` from serving as an [anchor](/systems/base-adjacency/), so a player cannot use it to place another building nearby. This applies to the owner's placements and to an ally's alike.
 
-The building being placed supplies the search distance through [`Adjacent`](/keys/adjacent/).
+The setting belongs to the building already on the map. How far a pending building searches for an anchor is set by that pending building's [`Adjacent`](/keys/adjacent/).

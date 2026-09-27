@@ -8,4 +8,4 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The four pieces build a tunnel exactly as the road mouths do, and [`Tunnels`](/keys/tunnels/) covers what that means and how the facing is read off a piece's place in the set. This role is tested third of the four, after the road and railway sets have both been offered the tile.
+The four pieces build road tunnels exactly as the [`Tunnels`](/keys/tunnels/) pieces do; that page explains the tunnel and which facing each piece stands for. This role is checked third of the four tunnel roles, after [`Tunnels`](/keys/tunnels/) and [`TrackTunnels`](/keys/tracktunnels/), so a tile that also falls inside either of those sets is claimed by that set instead.

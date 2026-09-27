@@ -7,15 +7,25 @@ when_omitted:
   value: 65535,65535
 ---
 
-Two whole numbers, `X,Y`, in screen pixels from the point the building's artwork is drawn at: a positive `X` moves right and a positive `Y` down. Any pair other than `65535,65535` replaces both the mounting and the muzzle, and moves the point the building measures its aim from with them. The mounting is where the projectile is created and the firing solution is measured from. The muzzle is where the fire animation and beam appear. The replacement covers every weapon the building fires, not only the first.
+Two whole numbers, `X,Y`, in screen pixels from the point the building's artwork is drawn at. A positive `X` moves right and a positive `Y` moves down.
+
+Any pair other than `65535,65535` places three points of the building at that offset:
+
+- the mounting, where the projectile is created and the firing solution is measured from;
+- the muzzle, where the fire animation and beam appear;
+- the point the building aims from when it turns to face a target, which is measured from the building's center instead of its draw point.
+
+The offset applies to every weapon the building fires, not only the first.
 
 ```ini title="art.ini"
 [MYOBELISK] ; the Image ID of a BuildingType
 PrimaryFirePixelOffset=2,-38 ; the beam leaves 38 pixels above the draw point
 ```
 
-The offset is projected back onto the ground rather than applied as a height, so the shot appears exactly that many pixels from the artwork, at the building's own height. It also outranks the barrel: a [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building with this set fires from the fixed screen point rather than from the end of its barrel, and [`PrimaryFireFLH`](/keys/primaryfireflh/) covers the offsets it displaces.
+The offset does not raise or lower the shot. It moves the shot's starting point across the map, at the building's height, to the spot that is drawn that many pixels from the draw point. A negative `Y` therefore starts the shot on the map north of the building.
+
+The offset also takes precedence over the barrel. A [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building with this set fires from the fixed screen point, not from the end of its barrel. [`PrimaryFireFLH`](/keys/primaryfireflh/) covers the offsets it displaces.
 
 :::caution[Write both numbers]
-The test that switches the offset on is against the exact pair `65535,65535`. A value with fewer than two whole numbers is malformed, and the read rejects the line whole, so the offset stays off.
+Only the exact pair `65535,65535` leaves the offset off. A value with fewer than two whole numbers is rejected whole, so the offset also stays off.
 :::

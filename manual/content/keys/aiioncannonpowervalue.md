@@ -7,4 +7,8 @@ when_omitted:
   value: ""
 ---
 
-The rating applies to any structure whose [`Power=`](/keys/power/) is positive. The test is on the type's rated output against its rated drain, not on the house's balance, and a structure that also builds something is caught by the two factory tests first. Like every list in this family it is read at the firing house's own difficulty slot, and must have one entry each for easy, normal and hard. A missing or short list is read past its end. The rating is read only while [the target's strength is at or below `IonCannonDamage`](/systems/superweapons/#the-computers-use). A structure above that figure keeps the flat structure rating of 3.
+Applies to a structure whose [`Power=`](/keys/power/#scope-buildingtype) is positive, that is, one that supplies power. The test reads the type's `Power=`, not the house's power balance. A structure that builds structures or vehicles is tested first and takes [`AIIonCannonConYardValue`](/keys/aiioncannonconyardvalue/) or [`AIIonCannonWarFactoryValue`](/keys/aiioncannonwarfactoryvalue/) instead.
+
+The computer uses this rating only while the structure's current strength is at or below [`IonCannonDamage`](/keys/ioncannondamage/). A stronger structure keeps its starting rating of 3. A cloaked structure is rated at random at any strength. The computer strikes one of the [highest-rated targets](/systems/superweapons/#the-computers-use), so a higher value puts power plants ahead of more kinds of target.
+
+Each entry belongs to one [difficulty slot](/systems/difficulty/#the-per-difficulty-lists) of the firing house, so give the list three entries. For a computer house the first entry is used at the Hard setting and the last at Easy. The key has no built-in list. If no rules file sets it, the game crashes the first time the computer rates a power plant at or below `IonCannonDamage`. A list with fewer than three entries gives an unpredictable rating in the slots it does not cover.

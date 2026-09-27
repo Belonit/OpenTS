@@ -30,6 +30,6 @@ targets:
 credit: [ZivDero, CCHyper]
 ---
 
-Four commands scroll the view one step to the north-east, south-east, south-west or north-west, the way the four existing scroll commands step along the axes. Four more jump it to the west, east, north or south edge of the map, and all eight arrive unbound.
+Four commands scroll the view one step to the north-east, south-east, south-west or north-west, as the existing scroll commands do along the four main directions. Four more jump the view to the west, east, north or south edge of the map. None of the eight has a default key.
 
 CCHyper is credited for the Vinifera commands this follows.

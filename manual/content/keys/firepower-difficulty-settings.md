@@ -5,14 +5,26 @@ see_also: ["system:difficulty"]
 when_omitted:
   kind: value
   value: "1"
-  note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section without this key restores 1 rather than keeping the earlier value.
+  note: A later file that contains the section without this key resets it to 1.
 ---
 
-`[Easy]`, `[Normal]` and `[Difficult]` each set their own multiplier, and a house takes the one for [the difficulty slot it is assigned](/systems/difficulty/#from-the-setting-to-a-slot). A projectile an object of that house fires from a weapon has the weapon's [`Damage`](/keys/damage/#scope-weapontype) multiplied by it, so a figure above 1 hits harder. Projectiles the engine creates outside that path deal their own damage and are never scaled: a nuke silo's launch, either kind of EM pulse, a superweapon, a trigger action, and a bullet splitting into more. A sonic weapon, and one driven by fire particles, creates its projectile with zero damage before the multiplier is reached, so neither is scaled by it.
-
-The product is worked out once, when the house is given its slot, alongside the country's own [`Firepower=`](/keys/firepower-housetype/) outside campaign games. In a campaign game the country's figure is dropped and this one stands alone.
+`FirePower` multiplies the damage of the weapons fired by houses in this difficulty slot. A value above 1 deals more damage. `[Easy]`, `[Normal]` and `[Difficult]` each set a value, and a house uses the one for [its difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot).
 
 ```ini title="rules.ini"
 [Difficult]
 FirePower=1.2
 ```
+
+The multiplier scales the [`Damage`](/keys/damage/#scope-weapontype) of each projectile an object fires from its weapon. A firepower crate and the veteran firepower bonus ([`VeteranCombat`](/keys/veterancombat/)) scale the same damage further.
+
+These deal their damage without the multiplier:
+
+- a nuclear missile launch;
+- an EM pulse, from a structure or from a vehicle;
+- other superweapon launches;
+- projectiles created by a trigger action;
+- the projectiles a splitting projectile releases;
+- sonic weapons and weapons that use fire particles;
+- weapons with a `Damage` of 0 or below, such as healing weapons.
+
+A house's multiplier is computed each time the house is [assigned its slot](/systems/difficulty/#when-a-house-is-re-handicapped), so a later change to the section reaches the house only then. Outside a campaign game, it is also multiplied by the country's [`Firepower=`](/keys/firepower-housetype/); a campaign game ignores the country value.

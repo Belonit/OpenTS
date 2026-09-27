@@ -9,4 +9,4 @@ when_omitted:
 no_effect: true
 ---
 
-The eight pieces close the [random map generator](/formats/map-seed/)'s road library, appended after the 101 flat pieces counted from [`DirtRoadCurve`](/keys/dirtroadcurve/). Each has the same connection data the flat pieces do. Nothing ever selects one: the generator draws its candidates from a fixed list of library entries that stops short of the ramps. A road it lays therefore stops at a slope rather than climbing it. [`PavedRoadSlopes`](/keys/pavedroadslopes/) is the paved counterpart, and it is equally inert.
+The [random map generator](/systems/map-generation/) lists the eight ramp pieces in its dirt road table, after the 101 flat pieces counted from [`DirtRoadCurve`](/keys/dirtroadcurve/), but never lays one. The pieces it chooses from all come from the flat run, so a generated dirt road never climbs a ramp. [`PavedRoadSlopes`](/keys/pavedroadslopes/) is the paved counterpart and has no effect either.

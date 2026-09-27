@@ -8,4 +8,4 @@ when_omitted:
   value: "yes"
 ---
 
-Every path that reads the value belongs to an object a house owns and tracks, and an animation is neither. The value is stored for an AnimType and never read back.
+Every behavior this flag controls applies only to vehicles, infantry, aircraft and structures that a house owns. A house never owns an animation, so the value has no effect.

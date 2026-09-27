@@ -8,6 +8,6 @@ credit:
 - Rampastring
 ---
 
-Malformed, oversized, truncated, and misattributed network packets are rejected before they change peer state or enter the simulation queue. Packet layouts and event IDs are unchanged; all players must use the same OpenTS snapshot.
+A multiplayer packet that is malformed, too large, cut short, or sent from an address other than its player's is now dropped before it changes any player's connection or queues a command. A packet shorter than its header used to be read past its end, and a frame report from an unknown address that named a player moved that player's connection to the new address.
 
 Rampastring is credited for the Vinifera fixes against crafted network requests this follows.

@@ -1,6 +1,6 @@
 ---
 key: OptionsChanged
-summary: Sound played when the main menu accepts a typed cheat string.
+summary: Sound played when the classic main menu recognizes a typed code.
 see_also: [PlayerJoined, PlayerLeft, SystemError]
 when_omitted:
   kind: value
@@ -12,6 +12,6 @@ when_omitted:
 OptionsChanged=OPTCHG ; a sound ID registered in SOUND.INI
 ```
 
-The one path is on the plain menu the game falls back to when the graphical main menu cannot be built. A run whose graphical menu builds never reaches the sound at all. [Developer mode and diagnostics](/systems/developer-mode/#the-main-menu-code-recognizer) covers the strings the menu recognizes.
+The sound plays each time the classic main menu recognizes a typed code. That menu appears only when the graphical main menu cannot be built, so a game whose graphical menu loads never plays this sound. [The main-menu code recognizer](/systems/developer-mode/#the-main-menu-code-recognizer) lists the codes.
 
-The sound answered the multiplayer lobby it is named for, where each side heard it as the other's settings arrived. That lobby is no longer in the engine.
+Nothing else plays this sound, including the options screens its name suggests.

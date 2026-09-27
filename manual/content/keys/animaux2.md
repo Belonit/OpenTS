@@ -7,6 +7,6 @@ when_omitted:
   value: "0,1,0"
 ---
 
-The value has the form [`AnimIdle`](/keys/animidle/) describes, and the same damaged-frame arithmetic applies to it.
+`AnimAux2` is the frame sequence a [`NukeSilo=yes`](/keys/nukesilo/) structure plays while it closes its door after a launch. No other structure plays it. The value takes the same three numbers as [`AnimIdle`](/keys/animidle/): first frame, frame count and delay. The delay is used as written, with no game-speed adjustment. A damaged structure running this sequence draws damaged frames placed after the end of all four sequences, as `AnimIdle` describes.
 
-One path reaches the sequence. A [`NukeSilo=yes`](/keys/nukesilo/) structure closes its door on it once the missile is away, and drops back to [`AnimIdle`](/keys/animidle/) six game frames later.
+The silo switches to this sequence once the missile has left, after [`AnimAux1`](/keys/animaux1/) has held the door open. Six game frames later it returns to `AnimIdle`, whether or not this sequence has reached its last frame.

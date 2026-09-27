@@ -10,4 +10,4 @@ credit:
 - ZivDero
 ---
 
-A cell could be queued to grow many times over, most often after a chain reaction across a field, and every stale copy taken off the queue spent one of the growth pass's slots without growing anything. Growth stayed slow until the queue drained. A cell now holds at most one place in the queue.
+A Tiberium cell is now queued to grow at most once. It could be queued many times over, most often after a chain reaction across a field. Each growth pass grows a limited number of cells, and every stale copy used up one of them without growing anything, so growth stayed slow until the queue drained.

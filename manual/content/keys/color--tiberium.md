@@ -6,9 +6,13 @@ see_also: ["system:tiberium", "Debris"]
 when_omitted:
   kind: value
   value: "0"
-  note: The first color scheme in the loaded list.
+  note: The scheme of the first entry in `[Colors]`.
 ---
 
-The value is a color scheme name, matched against the loaded schemes without regard to letter case. A scheme with only one intensity level is skipped during that match. A name matching no remaining scheme leaves the type on the scheme it already had.
+The value names a color scheme declared in the rules' `[Colors]` section, in any letter case. A name that `[Colors]` does not declare leaves the type on the scheme it already had.
 
-The chosen scheme recolors the type's overlay wherever it is drawn, the cell animation the overlay type declares as the overlay is created, and the [`Debris`](/keys/debris/) animation a chain reaction leaves.
+The scheme recolors three things:
+
+- the type's overlays on the battlefield, though not on the radar minimap;
+- the [`CellAnim`](/keys/cellanim/) animation a Tiberium overlay of this type starts when it is placed;
+- the [`Debris`](/keys/debris/) animation left when a [`TiberiumChainReaction=yes`](/keys/tiberiumchainreaction/) animation clears a cell of this type.

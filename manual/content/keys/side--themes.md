@@ -1,15 +1,15 @@
 ---
 key: Side
 scope: themes
-label: Score side restriction
+label: Track side restriction
 see_also: [Normal, Scenario]
 when_omitted:
   kind: value
   value: <none>
-  note: No restriction, which offers the score to every side.
+  note: No restriction, which offers the track to every side.
 ---
 
-The value is a side identifier. A score that names one is offered only while the local player's country belongs to that side. The check is against the country's [`Side=`](/keys/side/#scope-housetype), not against the country itself, so it covers every country grouped under the same side. Writing `<none>` leaves the score unrestricted, exactly as omitting the key does.
+`Side=` restricts the music track to players of one side. The track is allowed only while the local player's country belongs to the side named here, so every country on that side gets it. A country's side comes from `[Sides]` or its own [`Side=`](/keys/side/#scope-housetype).
 
 ```ini title="theme.ini"
 [DUSKHOUR]
@@ -18,6 +18,8 @@ Length=4.11
 Side=GDI
 ```
 
-The restriction applies to the automatic playlist and to the sound options track list alike. A score can still be started outright by name whatever this is set to. Before a player's house has been settled the test is skipped, so an early score is not withheld for want of a side to compare against.
+For a player of any other side, the track is missing from the automatic playlist and from the sound options track list, and the [next track](/commands/nexttheme/) and [previous track](/commands/prevtheme/) commands skip it. Other ways of starting the track, listed under [`Normal`](/keys/normal/), still play it.
 
-A value naming no declared side is logged and ignored, which leaves the score unrestricted.
+While no game is loaded there is no player's country to compare, so the restriction is not applied.
+
+A value that names no side declared in `[Sides]` is ignored, and the track stays unrestricted.

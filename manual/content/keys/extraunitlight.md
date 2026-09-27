@@ -1,22 +1,22 @@
 ---
 key: ExtraUnitLight
-summary: Extra brightness every vehicle is drawn with, as a fraction of full light.
+summary: Extra brightness every vehicle is drawn with, as a fraction of normal brightness.
 see_also: [ExtraInfantryLight, ExtraAircraftLight]
 when_omitted:
   kind: value
   value: "0"
-  note: "Any file that declares `[AudioVisual]` re-reads the key and hands the read the stored value divided by full light as whole numbers, so a setting below full light comes back as `0`."
+  note: "A later file that declares `[AudioVisual]` without this key keeps only the whole part of the current value, so a value below `1` becomes `0`."
 ---
+
+`ExtraUnitLight` draws every vehicle brighter by a flat amount. The value is a fraction of normal brightness, so `.2` adds a fifth of normal brightness. The amount is added on top of the light the vehicle takes from its cell, including on a bridge and in a shadowed cell.
 
 ```ini title="rules.ini"
 [AudioVisual]
 ExtraUnitLight=.2
 ```
 
-The figure is written as a fraction of full light, where `1` is the full strength the map's own lighting is measured against. It is added to the brightness the cell and the current ambient level already give the vehicle, after the lift a bridge deck gives it and after the darkening an overshadowed cell applies. `.2` therefore lifts a vehicle a fifth of full strength above its surroundings wherever it stands.
+The amount lights the vehicle's body and the harvesting animation drawn beside a working harvester. It changes nothing except how vehicles are drawn.
 
-Three draws take it: the vehicle body, the separate harvesting overlay drawn beside a working harvester, and the flag a vehicle carries in a capture-the-flag game. Nothing outside the drawing of a vehicle reads the setting, so it changes no targeting, cloaking or lighting calculation.
-
-:::caution[A later rules file resets this key]
-The figure is kept as a whole number of light units, full light being 1000, so the `.2` above is stored as 200. Every later read of the key is handed the stored figure divided by full light as its default. That division is whole-number: 200 becomes `0`, and `0` multiplied back by full light is stored as `0`. Any later file that declares `[AudioVisual]` therefore wipes the setting unless it repeats this assignment. `langrule.ini`, the Firestorm rules file, and a scenario map all count, however few keys they set.
+:::caution[Repeat this key wherever `[AudioVisual]` appears again]
+A later file that declares `[AudioVisual]` without this key resets it, even if that file sets only other keys in the section. Later files include `langrule.ini`, the Firestorm rules file, the multiplayer rules files and the scenario map.
 :::

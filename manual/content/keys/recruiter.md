@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-Without it a team considers only objects with its own [group](/systems/ai-team-production/#recruitment), unless that group is `-2`, which matches everything; a team on any other group that no object shares recruits nobody. Setting it widens the scan to every object of the right kind. The 50-cell distance penalty a candidate outside the group is ranked with still applies, so a candidate that does match the group is preferred while one stands within that margin.
+With `Recruiter=yes`, a team [recruits](/systems/ai-team-production/#recruitment) from every object its house owns, whatever the object's group. Without it, the team considers only objects in its own group. The exception is a team whose group is `-2`, which considers every object either way. A team on any other group that no object shares recruits nobody without this setting.
+
+The group still affects which candidate wins. A candidate outside the team's group is ranked as though it stood 50 cells farther away, so the team takes one only when it is more than 50 cells nearer than every candidate from the group.

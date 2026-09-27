@@ -8,6 +8,12 @@ when_omitted:
   value: "-1"
 ---
 
-`0` names the GDI disc, `1` the Nod disc and `2` the Firestorm disc, while `-1` names no disc in particular. No disc is ever asked for, so the number survives only as the side the campaign is treated as belonging to.
+`0` names the GDI disc, `1` the Nod disc and `2` the Firestorm disc, and `-1` names none. The game never asks for a disc. The number decides two things: whether the campaign opens with an introduction movie, and which side's artwork its loading screen shows.
 
-Two decisions read it. The opening cinematic plays ahead of the first mission's briefing only while the value is below `2`. The same value also picks which film plays, and [campaign progression](/systems/campaign-progression/#the-campaign-level-number) records the file names and the fallback. The loading screen picks its backdrop from a pair of GDI pictures for `0` and a pair of Nod pictures for `1`. Each pair is two variants of the same side's loading screen at the current display size, and one of the two is drawn at random on each load. Anything above `1` falls back to searching the campaign's opening scenario file name for `GDI`, and takes the GDI pair when the name is found and the Nod pair when it is not. A negative number, `-1` included, is shown the GDI pair at every screen size.
+Only a campaign whose value is below `2`, `-1` included, can open with an introduction movie before its first mission's briefing, and the value picks which movie. [Campaign progression](/systems/campaign-progression/#the-campaign-level-number) gives the movie file names, the fallback when a file is missing, and the other conditions the movie waits for.
+
+A campaign mission's loading screen shows GDI artwork for `0` and Nod artwork for `1`. Each side has two pictures for each screen size, and one of the two is picked at random on every load. A negative value, `-1` included, gets the GDI artwork.
+
+For a value above `1`, the campaign's [`Scenario`](/keys/scenario/#scope-campaign) value decides instead. If it contains `GDI` anywhere, folder names included and in any letter case, the loading screen shows GDI artwork for every mission of the campaign; otherwise it shows Nod artwork.
+
+A launch file's [`CustomLoadScreen`](/formats/spawn-ini/#what-a-player-is-shown) replaces this artwork whatever this value is, as long as the named picture is found.

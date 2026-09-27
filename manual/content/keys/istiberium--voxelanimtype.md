@@ -8,8 +8,10 @@ when_omitted:
   value: "no"
 ---
 
-Two unrelated effects come from the one flag.
+The flag has two unrelated effects: the piece seeds Tiberium where its life ends, and an unowned piece is drawn in Tiberium colors.
 
-Tiberium is seeded where the piece comes down on solid ground: the ring of eight cells around a meteor's impact, or the single cell beneath any other piece. [Other sources of Tiberium](/systems/tiberium/#other-sources-of-tiberium) covers which type is planted and at what growth stage. A piece that comes down in water, or onto a bridge deck, seeds nothing.
+A piece seeds Tiberium when its life ends on land below bridge-deck height. A meteor seeds the eight cells around its impact cell; any other piece seeds the cell beneath it. A cell that cannot take Tiberium is skipped. A piece that ends in water, or at bridge-deck height or above, seeds nothing. [Other sources of Tiberium](/systems/tiberium/#other-sources-of-tiberium) covers which type is planted and at what growth stage.
 
-The piece is also drawn through the Tiberium color table instead of the plain voxel one, and takes its lighting from the cell beneath it rather than the full brightness an unowned piece otherwise gets. The recoloring reaches only a piece with no owning house, because a house color scheme is chosen ahead of it. Debris thrown off a destroyed vehicle takes that vehicle's house and keeps its colors. Debris a meteor spawns, an exploding barrel throws, or a trigger action places has no house and is recolored.
+A piece with no owning house is drawn with the Tiberium color table and lit by the cell beneath it. Without this flag, an unowned piece uses the plain voxel colors at full brightness. A piece with an owning house always uses that house's colors, so the flag does not change how it looks.
+
+Debris thrown by a destroyed object's [`DebrisTypes`](/keys/debristypes/) belongs to that object's house. Pieces a meteor spawns, debris an exploding barrel throws, and pieces a trigger action creates have no house.

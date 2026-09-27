@@ -12,14 +12,21 @@ when_omitted:
 FlamingInfantry=MYFLAMEGUY ; an AnimType registered in [Animations]
 ```
 
-A warhead with [`InfDeath=4`](/keys/infdeath/) that kills an infantryman replaces the corpse with this animation at his position and deletes the soldier outright, so nothing of him is left to be crushed, shot or targeted. A [`Doggie=yes`](/keys/doggie/) infantryman takes its own fire-death sequence instead. Four earlier branches also take precedence over the warhead's choice. A [`Cyborg=yes`](/keys/cyborg/) infantryman killed by damage that bypasses armor and immunity is deleted outright, bursting into [`InfantryExplode`](/keys/infantryexplode/) only if it was falling. A soldier who was already falling and comes down within ten [leptons](/glossary/#lepton) of water splashes instead. A prone `Cyborg=yes` infantryman and a jumpjet infantryman both take `InfantryExplode`.
+When a warhead with [`InfDeath=4`](/keys/infdeath/) kills an infantryman, this animation plays at his position and the soldier is deleted at once. No corpse remains to be crushed, shot or targeted.
 
-The staggering about is the animation's own behavior, not this setting's. [`IsFlamingGuy=yes`](/keys/isflamingguy/) on the named type is what makes it run from cell to cell for up to seven steps before collapsing, and [`RunningFrames`](/keys/runningframes/) sizes the sequence it collapses into. Naming a type without that flag simply plays the animation where the soldier fell.
+The animation does not play in these cases:
 
-:::caution[The burning figure always wears the local player's colors]
-Its remap is set from the local player's color scheme as it is created, whichever house owned the soldier. Every burning figure on the map is repainted the same way when a saved game is loaded. Two players watching the same death see it in two different colors.
+- A [`Doggie=yes`](/keys/doggie/) infantryman plays its own fire-death sequence instead.
+- A soldier who was falling and dies no more than ten [leptons](/glossary/#lepton) above a water cell splashes instead.
+- A prone [`Cyborg=yes`](/keys/cyborg/) infantryman and a jumpjet infantryman burst into [`InfantryExplode`](/keys/infantryexplode/) instead.
+- A soldier killed by a laser fence is electrocuted instead, whatever the warhead.
+
+How the figure moves depends on the named type. With [`IsFlamingGuy=yes`](/keys/isflamingguy/), it runs from cell to cell and then collapses, using the frames that [`RunningFrames`](/keys/runningframes/) lays out. Without that flag, the animation simply plays where the soldier fell.
+
+:::caution[The burning figure wears the local player's colors]
+The figure takes the local player's color scheme, whichever house owned the soldier. In a multiplayer game, each player sees the same death in his own color. After a saved game is loaded, a figure whose type sets `IsFlamingGuy=yes` is repainted in the local player's colors again, and any other figure is drawn without the remap.
 :::
 
-:::danger[An unset animation crashes the game when `InfDeath=4` kills a soldier that is not a dog]
-The figure is created without first checking that a type was named, so with the key unset the game crashes the first time a warhead with `InfDeath=4` kills a soldier who is not a dog.
+:::danger[Set this key if any warhead uses `InfDeath=4`]
+With the key unset, the game crashes the first time an `InfDeath=4` warhead kills an infantryman who would take this animation.
 :::

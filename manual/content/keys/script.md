@@ -7,7 +7,7 @@ when_omitted:
   value: none
 ---
 
-Each team built from this TeamType is given its own running copy of the named Script and works down its mission list one line at a time; when the list runs out, the team is deleted. Because the copy is per team, several teams of the same type run the same script independently.
+A team built from this TeamType carries out the named Script's team missions one line at a time. When it runs past the last line, the team is disbanded and its members stay on the map. Each team keeps its own place in the Script, so several teams of the same type can be on different lines at once.
 
 ```ini title="ai.ini or map file"
 [MyRaidTeam] ; example TeamType
@@ -17,8 +17,15 @@ TaskForce=MyRaidForce ; defined under [TaskForces]
 Script=MyRaidScript   ; defined under [ScriptTypes]
 ```
 
-The value is matched against the registered ScriptType IDs. `<none>` and `none` clear the reference outright, and a name that no `[ScriptTypes]` entry registers is not an error: a fresh ScriptType is registered under that name with no missions in it. A typo therefore produces an empty script rather than a missing one, and a team given an empty script is deleted the first time it tries to advance. A [Reinforcement (team)](/mapping/actions/taction-reinforcements/) is the exception: rather than let an empty script through, it writes an attack-waypoint mission into the ScriptType itself, permanently, for every later team of that type.
+The value is matched against the IDs registered under `[ScriptTypes]`. A name that is not registered there is not an error. The game creates a new, empty Script under that name, so a misspelled name gives the team no missions. A team with an empty Script is disbanded when it tries to run its first line.
 
-:::danger[A TeamType with no Script at all is a different matter]
-Omitting the key, or clearing it with `<none>`, leaves nothing behind the running copy. A [Reinforcement (team)](/mapping/actions/taction-reinforcements/) reads the mission list before the group has even been built. A team created any other way crashes the game on the logic pass that flags it into action, where it steps the running copy to the next line. Neither checks first. Point every TeamType at a Script, even an empty one.
+The [Reinforcement (team)](/mapping/actions/taction-reinforcements/) and [Reinforcement (team) at waypoint](/mapping/actions/taction-reinforcements-special/) actions handle an empty Script differently. Each adds an attack-waypoint mission to the Script itself, so every later team that uses that Script also gets the mission.
+
+:::danger[Give every TeamType a Script]
+`<none>`, `none` or a missing `Script=` leaves the TeamType with no Script at all, and teams of that type crash the game:
+
+- Either reinforcement action crashes before it creates any object.
+- A team created any other way crashes when it starts. It can crash earlier, while it gathers, if one of its members is underground or is an aircraft in the air.
+
+Name a Script on every TeamType, even one with no missions.
 :::

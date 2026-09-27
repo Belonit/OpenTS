@@ -10,29 +10,48 @@ source_files:
   - code/ccini.cpp
 ---
 
-A section begins with `[`, ends at the first `]`, and supplies the section name between them. An assignment uses the first `=` to separate its key from its value. Surrounding whitespace is removed from both parts.
+A section begins with `[`, ends at the first `]`, and is named by the text between them. An assignment uses the first `=` to separate its key from its value. Whitespace around the key and around the value is removed.
 
 ```ini title="example.ini"
 [General]
 Name=Example ; text after the semicolon is a comment
 ```
 
-A line beginning with `;` is a comment. A semicolon also starts an inline comment. Lines before the first valid section and assignments with an empty key or value are ignored.
+Section and key names are case-sensitive: `[GAPOWR]` and `[gapowr]` are different sections, and `Strength=` does not set `strength`.
 
-Text is UTF-8, and a byte order mark at the start of a file is ignored. A line that is not valid UTF-8 is read as Windows-1252, so a file written in that code page keeps its accented characters. Saving the database writes UTF-8 without a byte order mark.
+A semicolon starts a comment that runs to the end of the line, wherever it appears, so a value cannot contain one.
 
-Loading a second file into a database that already holds sections merges the two rather than replacing what is there. A section the database does not have is added whole, and an assignment repeating a key already present overwrites that key's value.
+These lines are ignored:
 
-A file that repeats a section header continues the section it already opened. An assignment repeating a key overwrites the value read earlier and moves the key to the end of its section. A file is therefore read the same way whether it opens a database or merges into one that already holds sections. A repeat within one file is written to the debug log with the file, section and key; a later file overriding an earlier one is not, since that is how the rules files stack.
+- lines before the first section;
+- lines without `=`;
+- assignments with an empty key or an empty value.
 
-A line may be any length. A reader that copies a value into fixed storage keeps as much of it as the storage holds, and writes the cut to the debug log once per key.
+An empty value therefore cannot clear a value that an earlier file set.
+
+Text is UTF-8, and a byte order mark at the start of a file is ignored. A line that is not valid UTF-8 is read as Windows-1252, so a file written in that code page keeps its accented characters. When the game saves an INI file, it writes UTF-8 without a byte order mark.
+
+A line may be any length. When a setting stores its value in fixed-size storage, the value is cut to fit, and the debug log records the cut once per key.
+
+## Repeats and later files
+
+A repeated section header continues the section already read, and a repeated key replaces the value read earlier. The same happens when a file is loaded on top of an earlier one. A section the earlier file lacks is added, and an existing section gains or replaces keys. With Firestorm enabled, for example, `ARTFS.INI` is loaded on top of `ART.INI`.
+
+A replaced key moves to the end of its section. This changes its position in a section read in order, such as a type list.
+
+A repeat within one file is written to the debug log with the file, section and key. The log does not show a value that a later file replaces, so check the later files to find which one set a value.
 
 ## Malformed values
 
-A written value is converted by the reader for the kind of value expected. A floating-point number, or a list of comma-separated numbers, that the reader cannot convert leaves the setting at its default, and the debug log records the file, section, key and value.
+What happens to a value the game cannot read depends on the kind of value its key expects.
 
-A floating-point number is read from the start of the value, so a value that does not start with a number is malformed. A percent sign anywhere in the value divides the number by 100 after it is read, so `50%` reads as `0.5`.
+| Kind of value | How it is read | When it cannot be read |
+| --- | --- | --- |
+| Yes or no | By its first character, in either case. `Y`, `T` or `1` means yes; `N`, `F` or `0` means no. `On` is not recognized. | The setting keeps its default. |
+| Whole number | From its leading digits, so `12abc` reads as `12`. A value that starts with `$` or ends in `h`, in either case, is read as hexadecimal instead, so `$10` and `10h` both read as `16`. | The value reads as `0`. A value read as hexadecimal keeps the default when no hexadecimal digit starts the number, as in `$G` or `high`. |
+| Decimal number | From the start of the value, so `1.5x` reads as `1.5`. A percent sign anywhere in the value divides the number by 100, so `50%` reads as `0.5`. | The setting keeps its default. |
+| Point, offset, vector, color or rectangle | As two, three or four comma-separated numbers, as the key requires. Spaces around the commas are allowed, and anything after the last number is ignored. | The setting keeps its default; no part of the value is kept. |
 
-A point, offset, vector, color or rectangle is a comma-separated list of numbers, two, three or four of them as the key requires. Spaces around the commas are allowed, and anything after the last number is ignored. A value with fewer numbers than the key requires, or with something other than a number where one is expected, is malformed as a whole: no part of it is kept.
+A decimal number cannot be read when the value does not start with a number. A group of numbers cannot be read when it has fewer numbers than the key requires, or something other than a number where one is expected. For these two kinds, the debug log records the file, section, key and value.
 
-An omitted key is never malformed. It reads as its default without a log line.
+An omitted key is not malformed: it reads as its default.

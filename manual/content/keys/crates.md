@@ -7,8 +7,10 @@ when_omitted:
   value: "yes"
 ---
 
-The value seeds the match's crate option when a session begins, and the game setup screen then writes over it. The starting placement pass and the expiry sweep both read the resulting match option, not this setting.
+The value is read when the game starts and becomes the starting state of the match's crate option. The match setup, or the spawn settings for a spawned match, then sets the option for each match. Placing crates at scenario start and replacing expired crates both follow the match option alone.
 
-:::caution[Pickup replacement also checks this setting]
-A collected crate is replaced only when both this key and the match option are enabled. `Crates=no` in the rules with crates switched on for the match therefore suppresses pickup replacement while the expiry sweep keeps running; switching crates off for the match suppresses both paths whatever this key contains.
+:::caution[Crates=no still stops pickup replacements]
+A collected crate is replaced only when both this key and the match option are on. With `Crates=no` and crates switched on for the match, expired crates are still replaced but collected ones are not. With crates switched off for the match, neither kind is replaced, whatever this key says.
+
+A map's own `[MultiplayerDefaults]` section can set this key for its scenario. That value does not change the match option, but `Crates=no` there also stops pickup replacements. [How long a crate lasts](/systems/crates/#how-long-a-crate-lasts) covers both kinds of replacement.
 :::

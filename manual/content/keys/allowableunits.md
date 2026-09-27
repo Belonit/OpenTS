@@ -5,7 +5,7 @@ see_also: [AllowableUnitMaximums, StartingDropships, TechLevel]
 when_omitted:
   kind: value
   value: ""
-  note: An empty list is not a ban; it hands the loadout screen its own selection of everything the player's house could field.
+  note: The loadout screen offers every infantry and vehicle type that passes the filter described on this page.
 ---
 
 ```ini title="map file"
@@ -15,9 +15,9 @@ AllowableUnits=E1,E2,SMECH
 AllowableUnitMaximums=-1,-1,2
 ```
 
-The list decides which cameos the dropship loadout screen shows before a mission that opens with [`StartingDropships`](/keys/startingdropships/) above zero. It is read nowhere else, so a mission without that screen is unaffected by it.
+The list sets which cameos the dropship loadout screen offers. That screen appears before a mission whose [`StartingDropships`](/keys/startingdropships/) is above zero, and the list has no other effect.
 
-With the list empty, the screen builds its own selection. It considers every infantry and vehicle type, and keeps a type only under **None of:**
+With the list empty, the screen builds its own selection from every infantry and vehicle type. It leaves out a type when **Any of** these is true:
 
 - its build level is above the house's tech level;
 - it is civilian infantry;
@@ -25,10 +25,10 @@ With the list empty, the screen builds its own selection. It considers every inf
 - it costs `10` or less;
 - the player's house may not own it.
 
-With the list populated, that whole filter is replaced: exactly the types named are offered, subject only to house ownership and to a maximum of `0` hiding an entry. Build level and cost no longer matter, so a mission can offer a unit the player could not otherwise build.
+With the list populated, the screen offers exactly the types named, and that filter no longer applies. A named type is left out only when the player's house may not own it or its [`AllowableUnitMaximums`](/keys/allowableunitmaximums/) entry is `0`. Build level and cost are ignored, so a mission can offer a unit the player could not otherwise build.
 
-Entries pair by position with [`AllowableUnitMaximums`](/keys/allowableunitmaximums/), so both lists have to be written in the same order.
+Each name pairs with the number at the same position in [`AllowableUnitMaximums`](/keys/allowableunitmaximums/), so write both lists in the same order.
 
-:::caution[An unrecognized ID is dropped rather than reported]
-A name matching no registered type at all is skipped as the list is parsed, and the surviving entries close the gap. Every maximum written after the missing name then applies to the wrong type.
+:::caution[Check every ID in the list]
+A name that matches no registered type is left out of the list, and the names after it move up one position. Every maximum written after the unknown name then applies to the wrong type. A space beside a comma also breaks the match, so `E1, E2` leaves out `E2`. Write the names without spaces.
 :::

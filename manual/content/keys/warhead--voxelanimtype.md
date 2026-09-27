@@ -8,6 +8,13 @@ when_omitted:
   value: none
 ---
 
-The warhead sets [`Damage`](/keys/damage/#scope-voxelanimtype) at both points a voxel animation deals it. One is the bounce: each object in the bounce cell standing within [`DamageRadius`](/keys/damageradius/#scope-voxelanimtype) of it takes the damage. The other is the blast where the piece's life ends on land or above a bridge, which fires only when the type also sets [`ExpireAnim`](/keys/expireanim/#scope-voxelanimtype). Its armor multipliers and its [`Spread`](/keys/spread/#scope-warheadtype) decide what that damage is worth against a given target, and its [`Bright`](/keys/bright/#scope-warheadtype) flag decides whether the blast throws a flash of light.
+The warhead a voxel debris piece deals its [`Damage`](/keys/damage/#scope-voxelanimtype) through. The warhead's armor multipliers and its [`Spread`](/keys/spread/#scope-warheadtype) decide how much each object takes. A piece deals damage at two points in its life.
 
-A piece with no warhead named deals nothing at either point: the blast is refused before it starts, and a bounce skips its damage pass. The piece still bounces and plays its effects, and a meteor still craters or seeds the ground it lands on. Its stored [`Damage`](/keys/damage/#scope-voxelanimtype) is left unchanged.
+- **Each bounce on land.** Every object in the cell the piece strikes takes the damage if it stands within [`DamageRadius`](/keys/damageradius/#scope-voxelanimtype) of the landing point. A bounce in water ends the piece's life instead.
+- **The end of its life.** The piece explodes where it comes to rest or where its time runs out, unless that point is low over water. This blast happens only when the type also names an [`ExpireAnim`](/keys/expireanim/#scope-voxelanimtype). It is an ordinary explosion that reaches objects in the surrounding cells, and `DamageRadius` does not limit it.
+
+If the warhead sets [`Bright=yes`](/keys/bright/#scope-warheadtype), the end-of-life blast also lights up the ground around it. A bounce never does.
+
+A piece with no warhead deals no damage at either point. It still bounces and plays its animations and sounds, and cratering and Tiberium seeding happen as they would with a warhead.
+
+`Warhead=none` and `Warhead=<none>` both clear the setting. A name that matches no warhead is not rejected. It creates a new warhead of that name, so a misspelled name produces a warhead with no section of its own and every setting at its default.

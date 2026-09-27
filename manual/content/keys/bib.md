@@ -7,15 +7,15 @@ when_omitted:
   value: "no"
 ---
 
-One test reads the flag, and it runs when a vehicle checks whether it may enter a cell. A flagged structure standing in that cell stops blocking it whenever the cell one step east is not also part of the same structure (for a rectangular foundation, its whole eastern column). Vehicles drive onto that column as though the structure were not there; infantry are unaffected, since their own entry test never looks at the flag.
+`Bib=yes` lets vehicles drive onto the eastern column of the structure's foundation, the cells with no cell of the same structure directly east of them. Every other foundation cell still blocks them. Infantry are unaffected, because their movement never reads the flag.
 
-Two narrower carve-outs open one more cell, on foundations wide enough that the cell two east and one south of the structure's own cell is not already in that eastern column:
+Two exceptions open one more cell: the cell two east and one south of the foundation's north-west corner. They matter only when that cell is part of the foundation but not in its eastern column. Each applies only to a vehicle whose house and the structure's house are allied both ways:
 
-- a [`Refinery=yes`](/keys/refinery/) structure stops blocking an allied vehicle that sets [`Harvester=yes`](/keys/harvester/#scope-unittype);
-- a [`Weeder=yes`](/keys/weeder/#scope-buildingtype) structure does the same for an allied vehicle that sets [`Weeder=yes`](/keys/weeder/#scope-unittype).
+- a [`Refinery=yes`](/keys/refinery/) structure lets in a vehicle that sets [`Harvester=yes`](/keys/harvester/#scope-unittype);
+- a [`Weeder=yes`](/keys/weeder/#scope-buildingtype) structure lets in a vehicle that sets [`Weeder=yes`](/keys/weeder/#scope-unittype).
 
-Both read the vehicle's own flag and the structure's, not what the vehicle was ordered to do, so any allied harvester passes whether or not it is heading for the dock.
+Both exceptions test only the two types, not the vehicle's orders, so any such harvester may drive onto the cell whether or not it is heading for the dock.
 
-:::caution[The flag neither draws the apron nor enlarges the footprint]
-The apron artwork is [`BibShape`](/keys/bibshape/) in the art file, which is drawn whenever it resolves and never reads this setting; a structure can set either one without the other. The footprint is likewise unchanged: every reader of a structure's height asks for it without the apron, so the cells a structure occupies are exactly the ones [`Foundation`](/keys/foundation/) gives it.
+:::caution[The flag draws no apron and adds no cells]
+The apron artwork is [`BibShape`](/keys/bibshape/) in the art file, which is drawn whether or not this flag is set; a structure can set either one without the other. The flag also leaves the footprint unchanged: the structure occupies exactly the cells [`Foundation`](/keys/foundation/) gives it.
 :::

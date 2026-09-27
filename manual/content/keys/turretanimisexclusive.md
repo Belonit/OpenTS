@@ -7,7 +7,12 @@ when_omitted:
   value: "no"
 ---
 
-A building normally runs its turret animation and its [`ActiveAnimTwo`](/keys/activeanimtwo/) alongside each other. Set, the two never run together. The turret animation exists only while the weapon is charging or holding its charge; `ActiveAnimTwo` is stopped for as long as it does and started again once the charge is spent. A building that is not charging shows `ActiveAnimTwo` and no turret animation at all, whether it has just been built, is being repaired, or has just lost its target.
+A building normally runs its turret animation and its [`ActiveAnimTwo`](/keys/activeanimtwo/) at the same time. With `TurretAnimIsExclusive=yes`, it never runs both:
+
+- While its weapon is charging or holds a charge, the building shows its turret animation and stops `ActiveAnimTwo`.
+- At every other time it shows `ActiveAnimTwo` and no turret animation. This includes a building that has just been built, is being repaired or has just lost its target.
+
+`ActiveAnimTwo` starts again as soon as the charge is spent.
 
 ```ini title="rules.ini"
 [MYOBELISK] ; a BuildingType registered in [BuildingTypes]
@@ -16,4 +21,4 @@ TurretAnim=MYOBEL_C   ; an AnimType registered in [Animations]
 TurretAnimIsExclusive=yes
 ```
 
-Only a building whose primary weapon is [`Charges=yes`](/keys/charges/) ever reaches the charging or charged state, so on any other building the flag leaves the turret animation suppressed for good.
+Only a building whose primary weapon is [`Charges=yes`](/keys/charges/) ever charges. On any other building, this flag hides the turret animation permanently.

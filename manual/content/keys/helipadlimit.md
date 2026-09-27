@@ -8,4 +8,4 @@ when_omitted:
   value: "5"
 ---
 
-No routine counts the helipads a computer house owns against a maximum. How many a plan holds is fixed as [the plan is assembled](/systems/ai-base-building/#building-the-plan), where a [`Helipad=yes`](/keys/helipad/) type is appended a random number of extra times.
+No maximum applies to the helipads a computer house builds. The number is decided when [the base plan is assembled](/systems/ai-base-building/#building-the-plan): each [`Helipad=yes`](/keys/helipad/) type the plan takes is added a random number of extra times.

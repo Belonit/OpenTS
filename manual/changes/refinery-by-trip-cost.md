@@ -12,4 +12,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-A loaded harvester now weighs every refinery type in its [`Dock`](/keys/dock/) list together and goes to the nearest free bay; it used to take the first listed type that had one. When a busy refinery is so much nearer that waiting is quicker than driving to a free one, the harvester waits. The wait is estimated from the loads being unloaded and queued, so it follows a mod's [`Storage`](/keys/storage/), [`Speed`](/keys/speed/) and [`HarvesterDumpRate`](/keys/harvesterdumprate/).
+A loaded harvester now heads for the nearest free refinery of any type in its [`Dock`](/keys/dock/) list; it used to take the first listed type that had a free one. It waits at a busy refinery instead when driving there and waiting takes less time than driving to a free one. The wait is estimated from the loads the harvesters there still have to unload and the drive the docking harvester has left, so it follows a mod's [`Storage`](/keys/storage/), [`Speed`](/keys/speed/) and [`HarvesterDumpRate`](/keys/harvesterdumprate/).

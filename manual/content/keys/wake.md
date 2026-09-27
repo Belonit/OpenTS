@@ -12,14 +12,14 @@ when_omitted:
 Wake=MYWAKE ; an AnimType registered in [Animations]
 ```
 
-Three families of path create it, and only one of them checks that an animation was named first.
+The animation plays in three situations.
 
-**Movement.** An object whose [Locomotor](/keys/locomotor/) is Drive, Hover or Levitate lays one at its own position every tenth frame while it is moving over open water and is not riding a bridge. All three of these read the setting through a guard, so a mod that leaves the key unset simply produces no trail.
+**Movement.** An object whose [`Locomotor`](/keys/locomotor/) is Drive, Hover or Levitate lays one at its position every tenth frame while it moves over open water and is not on a bridge. With the key unset, it leaves no trail.
 
-**Impacts.** [`SplashList`](/keys/splashlist/) covers which of the paths that make a splash lay a ripple down beside it and which do not.
+**Splashes.** Some of the splashes that [`SplashList`](/keys/splashlist/) plays also lay a wake beside them. That page lists which ones.
 
-**Ice giving way.** When a heavy vehicle breaks through ice, everything standing on the break cell and the cells beside it gets one. A vehicle that is not amphibious is stunned and starts to sink under it. An aircraft or infantryman is deleted and leaves it behind.
+**Ice giving way.** When ice breaks open into water, each object lost with it gets one. A vehicle that is not amphibious starts to sink, and an infantryman or aircraft is removed. An amphibious vehicle stays up and gets none. The exception is the vehicle whose weight broke the ice: it sinks even when it is amphibious, and then it gets no wake. [`IceBreakingWeight`](/keys/icebreakingweight/) and [`Fire`](/keys/fire/) cover what breaks ice.
 
-:::danger[An unset animation crashes the game when a splash lays a ripple or ice gives way]
-Only the three movement paths check the setting before using it. The impact and ice paths create the animation outright. With the key unset, the game crashes the first time one of the splashes that lays a ripple happens, or the first time ice gives way under a heavy vehicle.
+:::danger[Set Wake in any mod with water or breakable ice]
+Only the movement trail checks that the key is set. With `Wake` unset, the game crashes the first time a splash or breaking ice lays one.
 :::

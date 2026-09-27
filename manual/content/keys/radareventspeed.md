@@ -1,16 +1,18 @@
 ---
 key: RadarEventSpeed
-summary: Pixels of the radar pane a radar event's box loses from its radius each frame.
+summary: Pixels of the radar pane a radar event's box loses from its radius each time the screen is redrawn.
 see_also: ["system:map-visibility", RadarEventMinRadius, RadarEventRotationSpeed]
 when_omitted:
   kind: value
   value: "1"
 ---
 
-A [radar event](/reference/enums/radar-event/) opens as a box whose corners stand as far from the flagged pixel as the furthest edge of the pane. The box then closes in on the cell it is flagging. Each frame the radius drops by this value, and the result is then held at no less than [`RadarEventMinRadius`](/keys/radareventminradius/). The sweep inward therefore runs for the gap between the opening radius and that floor, divided by this value. At the default of `1` that is one frame for every pixel of the gap. [The radar map](/systems/map-visibility/#the-radar-map) covers the pane the box is drawn over.
+A [radar event](/reference/enums/radar-event/) opens as a box around the flagged cell, with its corners as far from that cell as the pane's furthest edge. Each time the screen is redrawn, the distance from the cell to the box's corners shrinks by this many pixels, until it reaches [`RadarEventMinRadius`](/keys/radareventminradius/). A larger value closes the box faster: the sweep lasts one redraw for each step of this size between the opening distance and that floor.
 
-Landing on that floor is what lets the box settle. Only then does the event test whether it may stop turning, and only a settled event loads its timers and becomes eligible for removal.
+The screen is redrawn once every game frame while the game window has focus, and again while the game waits for the next frame. The sweep therefore takes less game time on a faster machine or at a slower game speed. While the game window is out of focus or an in-game menu is open, the box does not move.
 
-:::caution[A non-positive value leaves every event on the radar for good]
-At zero the radius never moves, and a negative value grows it. Unless [`RadarEventMinRadius`](/keys/radareventminradius/) already stands at or above the opening radius, the box never reaches the floor, so it never stops turning, never loads [`RadarEventDurations`](/keys/radareventdurations/) and is never removed. Every event raised goes on being drawn for the rest of the match, and for the three suppressible kinds goes on swallowing later events of its kind.
+The box can settle only after it reaches the floor. The event's [`RadarEventDurations`](/keys/radareventdurations/) and [`RadarEventVisibilityDurations`](/keys/radareventvisibilitydurations/) counts start when it settles, and an event that has not settled is never removed.
+
+:::caution[Keep the value above 0]
+At `0` the box never shrinks, and a negative value makes it grow. Unless `RadarEventMinRadius` is large enough to catch the box on its first redraw, the box never settles. Every event then stays on the radar for the rest of the game, and each combat, harvester-attacked or enemy-sensed event goes on [suppressing](/keys/radareventsuppressiondistances/) later events of its kind nearby.
 :::

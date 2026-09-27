@@ -12,18 +12,19 @@ when_omitted:
 InfantryExplode=MYINFBANG ; an AnimType registered in [Animations]
 ```
 
-The animation is created at the soldier's own position, and the soldier is deleted rather than being left to play a death sequence, so no corpse from [`DeadBodies`](/keys/deadbodies/) follows it.
+When an infantryman dies with this animation, the animation plays at its position and the infantryman is removed at once. It plays no death sequence and leaves no [`DeadBodies`](/keys/deadbodies/) corpse.
 
-Four deaths reach it, and one non-death:
+When an infantryman is killed, the engine checks these cases in order and uses the first that matches:
 
-- a warhead with [`InfDeath=3`](/keys/infdeath/), which is the plain choice a mod makes for an exploding death;
-- a [`Cyborg=yes`](/keys/cyborg/) infantryman killed while prone;
-- a jumpjet infantryman, whatever killed it;
-- a forced kill of a `Cyborg=yes` infantryman that was already falling at the time;
-- and a `Cyborg=yes` infantryman brought to zero strength while upright by damage that was not forced. That soldier is not killed at all: he is set back to a quarter of his maximum strength, dropped prone and put into a crawl, and this explosion marks the moment his legs go.
+1. It was knocked off a height and dies no more than 10 leptons above water. It leaves a wake and a splash instead of this animation, apart from the cyborg case below the list.
+2. It is a [`Cyborg=yes`](/keys/cyborg/) type lying prone. It plays this animation.
+3. It is a [`JumpJet=yes`](/keys/jumpjet/) type. It plays this animation, whatever killed it.
+4. The killing warhead sets [`InfDeath=3`](/keys/infdeath/). It plays this animation, unless a [laser fence](/systems/laser-fences/) made the kill, which gives the electrocution death. A [`Doggie=yes`](/keys/doggie/) type killed by a laser fence plays its fire death instead.
 
-Because the forced-kill case is a separate test rather than part of the chain, a falling cyborg that is forced to die while prone and not standing low over water creates the animation twice on the same frame.
+A `Cyborg=yes` infantryman that was knocked off a height also plays the animation when forced damage kills it. Forced damage ignores [`Immune=yes`](/keys/immune/#scope-aircrafttype), and the impact at the end of a fall is forced. This animation plays before the list is checked, and the list still applies. A cyborg that also matches case 2, 3 or 4 plays the animation twice on the same frame, and one that matches case 1 plays it alongside the wake and splash.
 
-:::danger[An unset animation crashes the game at the first cyborg or jumpjet death]
-The explosion is created without first checking that an animation was named. Even a mod that never sets `InfDeath=3` reaches it through the cyborg and jumpjet paths, so leaving the key unset crashes the game the first time either dies.
+The animation also marks a `Cyborg=yes` infantryman losing its legs without dying. When ordinary damage would bring an upright cyborg to zero strength, it survives instead: it plays this animation, drops to a quarter of its maximum strength with a minimum of 1, goes prone and starts crawling. Forced damage kills an upright cyborg outright.
+
+:::danger[Name an animation before any cyborg or jumpjet takes fatal damage]
+With the key unset, the game crashes the first time one of these cases plays the animation, including the first time a cyborg loses its legs. Cyborgs and jumpjets reach it without any warhead setting `InfDeath=3`.
 :::

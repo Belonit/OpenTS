@@ -1,7 +1,7 @@
 ---
 key: MinPlayers
 scope: map-packets
-label: Packet-listed player limits
+label: Packet-listed player minimum
 see_also: [MaxPlayers, Description]
 no_effect: true
 when_omitted:
@@ -14,4 +14,4 @@ when_omitted:
 MinPlayers=2
 ```
 
-The value is read into the entry's minimum player count. The count belongs to the listing and nothing reads it afterwards: not the lobby, not the starting-position pass, not the house assignment. A map declaring `MinPlayers=2` can still be started with one player.
+The value is stored with the map's entry in the multiplayer map list, and nothing reads it afterwards. No lobby waits for this many players before a game can start, and starting positions and houses are assigned without it.

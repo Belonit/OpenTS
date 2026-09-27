@@ -12,8 +12,8 @@ when_omitted:
 Adjacent=5
 ```
 
-While the player places `GAPOWR`, this value controls how far the pending foundation searches for an eligible [anchor](/systems/base-adjacency/): a building with [`BaseNormal=yes`](/keys/basenormal/) that belongs to the placing house or to an ally the match admits. The value does not define a radius projected by an already placed `GAPOWR`.
+`Adjacent` sets how far from an [anchor](/systems/base-adjacency/) a player may place a building of this type. An anchor is a building already on the map that has [`BaseNormal=yes`](/keys/basenormal/) and belongs to the placing player, or to a mutual ally when the match allows [building off an ally](/systems/base-adjacency/#building-off-an-ally). A larger value lets the building stand farther from its anchor.
 
-:::note[Zero still allows touching placement]
-The scan adds one cell to the stored value. With `Adjacent=0`, an eligible anchor may still be found directly beside the pending foundation.
-:::
+The search covers every cell up to `Adjacent` + 1 cells beyond each edge of the pending foundation, corners included. With `Adjacent=5`, it reaches six cells out. `Adjacent=0` still finds an anchor that touches the foundation, including diagonally. A negative value leaves no cells to search, so no anchor is ever found.
+
+The value belongs to the building being placed. It is not a radius around a building already on the map, so raising it on one type changes nothing for other types. Computer houses place their buildings without the search, and [Base placement and adjacency](/systems/base-adjacency/) lists the other placements it does not apply to.

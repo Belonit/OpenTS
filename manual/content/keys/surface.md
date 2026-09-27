@@ -1,16 +1,18 @@
 ---
 key: Surface
-summary: Places the animation in the ground layer, among the units and structures, rather than in the layer above them.
+summary: Places the animation in the ground layer, sorted among the objects on the ground, instead of in the layer above them.
 see_also: ["YSortAdjust", "Flat", "Tiled", "FlightLevel"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The ground layer is the only display layer the engine keeps in order. An animation in it is sorted against the units, structures and terrain sharing it, and is drawn in its place among them. An animation left out of it joins the layer above. That layer is drawn after the whole ground layer and after the artwork that hangs off structures, so the animation is laid over that whole scene rather than sorted into it. Fire, smoke and the animations a structure runs want the ground layer; explosions and other effects that read as being in front of everything do not.
+With `yes`, the animation is in the ground layer, the layer of objects on the ground such as infantry, vehicles, structures and trees. The ground layer is sorted, so the animation is drawn in its place among those objects: in front of some and behind others.
 
-[`YSortAdjust`](/keys/ysortadjust/) has an effect only in the ground layer, since that is the only layer whose order is maintained.
+With `no`, the animation is in the layer above. That layer is drawn after the whole ground layer and after the artwork attached to structures, so the animation covers all of them. Use `yes` for fire, smoke and a structure's animations, and `no` for explosions and other effects that should appear in front of everything.
 
-An animation pinned to an object is in the ground layer whatever this says, so the flag matters only to an animation standing on its own.
+[`YSortAdjust`](/keys/ysortadjust/) works only with `yes`, because no other layer is sorted.
 
-The flag also picks a height for the animation as it is created: the rules' [`FlightLevel`](/keys/flightlevel/#scope-global-rules) when it is off, ground level when it is on. The coordinate the animation is placed at overwrites that choice a few lines later, so it never reaches the screen and no decision hangs on it. An animation sits at whatever height the code that created it asked for.
+An animation attached to an object is always in the ground layer, so the flag matters only for an animation that stands on its own.
+
+The flag does not change the animation's height. The animation appears at the height the code that created it chose.

@@ -8,12 +8,12 @@ when_omitted:
   value: "no"
 ---
 
-WaterBound picks the movement kind the engine uses when it tests whether a terrain object may stand on a cell. A water-based object is tested for the floating movement kind; every other object is tested for the kind a tracked vehicle uses. Any of the following fails a cell of the object's footprint:
+The flag decides which ground a terrain object may stand on. A `WaterBound=yes` object is tested against the `Float` column of the [land types](/systems/movement-and-terrain/#the-terrain-table), and any other object against the `Track` column. A cell of the object's [`Foundation`](/keys/foundation/#scope-terraintype) block fails the test when any of these is true:
 
 - It lies outside the playable area.
-- It holds any overlay.
-- Its land type costs nothing for the kind being tested.
+- It holds a wall, or an overlay without [`BuildableOver=yes`](/keys/buildableover/).
+- Its land type's value in the tested column is `0`.
 
-The test never reads [`Buildable=`](/keys/buildable/), the flag that admits building foundations.
+The test does not read [`Buildable=`](/keys/buildable/), which decides where structures may be placed.
 
-The engine does not run the test when a scenario places its terrain, so map terrain stands where the map puts it whatever the ground. The test runs when the ground under a placed object changes, which in play happens when a low bridge is destroyed. An object that fails is destroyed with the bridge.
+Terrain a scenario places is not tested, so it stands where the map puts it whatever the ground. The test runs when a low bridge is destroyed, for each terrain object in a cell under the bridge. For an object larger than one cell, the block is laid out with that bridge cell as its top-left cell, so the cells tested can differ from the cells the object stands on. An object that fails takes damage equal to its remaining strength through [`C4Warhead`](/keys/c4warhead/). That destroys it unless the warhead lacks [`Wood=yes`](/keys/wood/) or the terrain type sets [`Immune=yes`](/keys/immune/#scope-aircrafttype).

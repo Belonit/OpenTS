@@ -7,12 +7,18 @@ when_omitted:
   value: ".016"
 ---
 
-The value is given in minutes and turned into a whole number of frames, so the default is 14 frames at 900 frames to the game minute. Each object has its own countdown, and every ground locomotor reads it before running a search. Wheeled and tracked vehicles, walking infantry, mechanical walkers and hovering craft all stand in place while the countdown runs, and try again on a later frame.
+The value is in minutes and becomes a whole number of frames, so the default is 14 frames at 900 frames to the game minute.
 
-A search that finds a route clears the countdown at once, so the wait falls only on objects that could not be routed. An object that fails a search keeps its order only when it stands within one cell of its destination, and it then retries on this interval instead of every frame. An object farther away gives up the order, which clears the countdown. The countdown is also cleared outright when the object is given a new destination, so a fresh order is never held up by a wait left over from the last one.
+After a route search fails, the object waits this long before it may search again. Each object keeps its own countdown. Driven vehicles, infantry, walkers and hovercraft all use it, and an object that needs a route cannot move on until its countdown ends.
 
-Retrying around a blocking object is throttled by the same countdown, and there the wait is set whether or not the retry found anything.
+A successful route search clears the countdown, with two exceptions that start it again right away: any route search a hovercraft makes, and any object's retry of a route around a blocking object. That retry also waits for the countdown before it runs. Giving an object a new destination clears the countdown too, so a new order never waits out the last one's delay.
 
-:::caution[Lowering this spends search time every frame]
-At `0` the countdown is never running. An object that cannot be routed then runs a full route search on every frame it is asked to move, and every such object pays that cost separately.
+What an object does after a failed search depends on where it is:
+
+- If its destination lies in an area it cannot reach, it drops the order at once.
+- If it is already near its destination, it may stop there, as [`CloseEnough`](/keys/closeenough/) describes.
+- Otherwise it keeps the order and searches again each time the countdown ends. A driven vehicle or hovercraft gives up at the eleventh failed search since its last successful one. Infantry and walkers keep retrying.
+
+:::caution[Low values cost search time]
+At `0` there is no wait. An object that cannot be routed then runs a full route search on every frame it tries to move, and each such object pays that cost separately.
 :::

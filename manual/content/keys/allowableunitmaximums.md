@@ -4,7 +4,7 @@ summary: How many of each restricted type a mission's dropship loadout may hold.
 see_also: [AllowableUnits, StartingDropships]
 when_omitted:
   kind: computed
-  note: "Roughly half the missing numbers: the padding loop re-reads both list lengths on every turn, so it closes only half the gap between the two, and the pairing lookup then reads past the end of the shorter list for every name beyond it."
+  note: "Half the names, rounded up, receive -1, starting from the front of the list. The names after them get no number, and their limits are unpredictable."
 ---
 
 ```ini title="map file"
@@ -13,16 +13,21 @@ AllowableUnits=E1,E2,SMECH
 AllowableUnitMaximums=-1,-1,2
 ```
 
-Each number pairs by position with the name at the same place in [`AllowableUnits`](/keys/allowableunits/) and caps how many of that type may be loaded across all of the mission's dropships together. Three values behave distinctly:
+Each number caps how many of one type may be loaded across all of the mission's dropships together. It applies to the name at the same position in [`AllowableUnits`](/keys/allowableunits/).
 
 | Value | Effect |
 | --- | --- |
 | `-1` | The type is offered and never counted, so it may fill the whole loadout |
-| `0` | The type is dropped from the cameo list and cannot be loaded at all |
-| Positive | The type is offered until that many have been taken aboard, then its cameo stops responding |
+| `0` | The type is left off the cameo list and cannot be loaded |
+| Positive | The type is offered until that many are aboard, then its cameo stops responding |
+| Other negative | The type is offered, but its cameo never responds |
 
-A list shorter than its companion is padded with `-1`, but the padding closes only half the gap. The loop re-counts the number list after every entry it adds, so padding stops once the number list holds about half as many entries as the name list. Three names and no numbers gain two numbers, leaving one name unpaired. An unpaired name is still looked up at its own position, and that position in the number list was never written; the value that answers is whatever the list's storage holds past its last entry. A longer list keeps its extra numbers, and they pair with nothing and do nothing.
+:::caution[Give every name a number]
+Write one number for each name in [`AllowableUnits`](/keys/allowableunits/). A shorter number list is padded with `-1`, but the padding supplies only half of the missing numbers, rounded up. For example, four names and one number gain two `-1` entries, and the fourth name has none. A name without a number gets an unpredictable limit.
+:::
 
-:::caution[A mismatched pair silently shifts every later limit]
-Nothing checks that the two lists describe the same units. Writing them in a different order, or dropping a name and leaving its number in place, applies each remaining limit to whichever type now sits at that position.
+Extra numbers beyond the last name have no effect.
+
+:::caution[Keep both lists in the same order]
+Nothing checks that the two lists match. If they are written in a different order, or a name is removed and its number left in place, each later limit applies to whichever type now sits at that position.
 :::

@@ -12,4 +12,8 @@ when_omitted:
 VeinGrowthEnabled=no
 ```
 
-The switch is the last clause of the test every monster runs before a [growth step](/systems/veins/#growth), so with it off no field advances by a single cell. Everything else the system does carries on. Fields already on the map stay where they are, still damage what stands in them, and are still harvested. A destroyed monster's field still withers, because withering is not gated by this switch. The [Vein growth](/mapping/actions/taction-vein-growth/) trigger action writes the same switch while the scenario is running.
+With the switch off, no veinhole monster takes a [growth step](/systems/veins/#growth). Its field gains no cells, and cells that harvesting left thin do not grow back.
+
+The rest of the vein system carries on. Fields already on the map still attack what stands in them and can still be harvested. A destroyed monster's field still withers.
+
+The [Vein growth](/mapping/actions/taction-vein-growth/) trigger action writes the same switch while the scenario is running.

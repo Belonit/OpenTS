@@ -7,19 +7,21 @@ when_omitted:
   value: "-1"
 ---
 
-Firing a vehicle's primary weapon starts a countdown at `2 × FiringFrames − 1` that falls by one each game frame, and the frame on screen is that countdown halved. This setting holds the countdown value at which the round is actually released, so it places the shot inside the animation rather than in front of it. `FiringSyncFrame1=8` releases while the run's frame 4 is drawn; because each frame is held for two game frames, `9` shows that same frame and releases one game frame earlier.
+The setting releases the round partway through the vehicle's firing animation, so the shot lines up with the artwork. At the default `-1` the round leaves first and the animation plays after it.
 
-While the countdown is running and has not reached the value, the weapon reports itself as still rearming and the shot is held. On the frame the countdown matches, the round leaves without the rate-of-fire timer being read at all: the animation, not the timer, paces the shot.
+The value is matched against a countdown. When the vehicle starts to fire, the countdown begins at `2 × FiringFrames − 1` and falls by one each game frame. The frame drawn is the countdown halved, counting the run's first frame as 0, so the run plays from its last frame down to its first. `FiringSyncFrame1=8` releases the round while frame 4 is drawn, and frames 3 to 0 play after the shot. Each frame is held for two game frames, so `9` shows the same frame and releases one game frame earlier.
 
 ```ini title="art.ini"
 [DEFENDER] ; the Image ID of the stock Core Defender
-FiringFrames=12   ; the countdown runs 23 down to 0
+FiringFrames=12    ; the countdown runs 23 down to 0
 FiringSyncFrame1=8 ; first round at frame 4 of the run
 FiringSyncFrame2=3 ; second round at frame 1
 ```
 
-At the default `-1` the round is not tied to the animation at all: it leaves first and the countdown starts behind it. The setting reaches only a UnitType's primary weapon and only the first two rounds of a [`Burst`](/keys/burst/); a secondary weapon and every later round of a burst fire untied whatever is set here.
+The weapon's rate of fire decides when the animation can start. Once it has started, the round waits for the countdown to reach the value and then leaves at once, without waiting on the rate of fire again.
+
+The setting covers only the primary weapon, and only the first round of each [`Burst`](/keys/burst/). A weapon with `Burst=1` has only first rounds, so every shot is tied. [`FiringSyncFrame2`](/keys/firingsyncframe2/) covers the second round. The secondary weapon and the third and later rounds of a burst are never tied to the animation.
 
 :::caution[A value the countdown never reaches stops the weapon]
-The countdown only ever holds the values from `2 × FiringFrames − 1` down to `0`. A larger figure, or a negative one other than `-1`, is never matched, so the round is never released and the vehicle's primary weapon never fires at all. A vehicle with no [`FiringFrames`](/keys/firingframes/) has no countdown to gate against and fires normally whatever is set here.
+Keep the value between `0` and `2 × FiringFrames − 1`, or leave it at `-1`. Any other value is never matched, so the vehicle's primary weapon never fires. A vehicle with no [`FiringFrames`](/keys/firingframes/) has no countdown and fires normally whatever is set here.
 :::

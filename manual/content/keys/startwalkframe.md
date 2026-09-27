@@ -7,7 +7,11 @@ when_omitted:
   value: "0"
 ---
 
-The walk block runs from here: one run of [`WalkFrames`](/keys/walkframes/) frames for each facing in turn, in the [`Facings`](/keys/facings/) block order. A vehicle that declares no [`StandingFrames`](/keys/standingframes/) is drawn from this same block while it stands still, on the first frame of its facing's run.
+The walk animation starts at this frame, with one run of [`WalkFrames`](/keys/walkframes/) frames for each of its [`Facings`](/keys/facings/) in turn.
+
+A vehicle with no standing frames also rests on these runs ([`StandingFrames`](/keys/standingframes/) explains).
+
+Setting `StartWalkFrame` moves no other default. The default standing, firing, death and turret start frames are counted from frame 0 whatever this key holds, so set them too when they must follow the moved walk runs.
 
 ```ini title="art.ini"
 [REAPER] ; the Image ID of the stock Cyborg Reaper

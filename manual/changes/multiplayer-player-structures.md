@@ -11,6 +11,6 @@ credit:
 - Iran
 ---
 
-A skirmish or multiplayer scenario no longer skips a `[Structures]` row whose owner resolves to the house the local machine plays. Each machine loaded a different set of structures whenever a map owned one by a country a person was playing. A spawn house's structures could never reach their owner.
+In skirmish and network games, a structure that a map's `[Structures]` section gives to the local player's house is now placed. Such a structure used to be skipped on its owner's machine and placed on every other machine, so the machines held different structures whenever a map gave one to a country a person was playing. Structures given to a spawn house now also reach the player who takes that house.
 
 Iran is credited for the CnCNet spawner patch that lifts the same check.

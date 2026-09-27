@@ -5,7 +5,7 @@ label: Scenario lighting
 see_also: [Ground, IonLevel, "system:ion-storms"]
 when_omitted:
   kind: context-dependent
-  note: This scenario's Ground value truncated to a whole number, because the fallback divides two whole numbers. Every Ground value below 1 therefore yields 0.
+  note: This scenario's Ground value with any fraction dropped, so every Ground value below 1 gives 0.
 ---
 
 ```ini title="map file"
@@ -14,8 +14,8 @@ Ground=.1
 IonGround=.1
 ```
 
-While a storm runs, this figure replaces [`Ground`](/keys/ground/) as the flat amount subtracted from every cell's brightness. The swap happens on the frame the storm breaks and reverses on the frame it ends, with no fade in either direction.
+While an ion storm runs, `IonGround` replaces [`Ground`](/keys/ground/) as the light subtracted from every cell. It uses the same scale, a fraction of full light, so `0` darkens nothing and `.1` removes a tenth of full light. `IonGround` takes over on the frame the storm breaks, and `Ground` returns on the frame it ends. Neither change fades.
 
-:::danger[The fallback cannot reproduce an ordinary ground value]
-Leaving this key out does not copy `Ground` across: the fallback is a whole-number division that truncates any fraction below `1` to `0`. A map that sets `Ground=.1` and omits this key loses its ground darkening for the length of every storm. State the value outright to keep it.
+:::caution[Set IonGround whenever the map sets Ground]
+A map that sets `Ground` below `1` and omits `IonGround` has no ground darkening for the length of every storm. Write the value to both keys to keep the darkening during storms.
 :::

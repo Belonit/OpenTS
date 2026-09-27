@@ -17,9 +17,7 @@ related:
     id: opents-ini
 ---
 
-A rules file read only when the game is not a campaign. It accepts everything
-`RULES.INI` accepts, and is processed the same way, so a deployment can give
-multiplayer its own balance without a second copy of the whole rules file.
+`MPLAYER.INI` is a rules file that applies only outside a campaign. It accepts everything `RULES.INI` accepts, so a deployment can give multiplayer and skirmish their own balance without a second copy of the whole rules file.
 
 ```ini title="mplayer.ini"
 [155mm]
@@ -27,16 +25,15 @@ Damage=115
 ROF=150
 ```
 
-Both files are optional, and the game starts without them.
+In every game that is not a campaign, the `155mm` weapon uses these two values unless the map sets them. In a campaign it uses its `RULES.INI` values.
+
+`MPLAYERFS.INI` is the expansion's copy. Both files are optional, and the game starts without them. The game reads them once at startup, so an edit to either file takes effect after a restart.
 
 ## When they are read
 
-`MPLAYER.INI` is read in every game type except a campaign, which includes
-skirmish against the computer. `MPLAYERFS.INI` is read on the same terms, and
-only while Firestorm is enabled.
+`MPLAYER.INI` applies in every game that is not a campaign, including skirmish against the computer. `MPLAYERFS.INI` applies on the same terms, and only while Firestorm is enabled.
 
-They sit at the end of the rules layering, after the expansion and the
-translated rules and before the scenario:
+Each time a scenario loads, the game applies the rules files in this order, and a later file overrides an earlier one:
 
 1. the selected `RULE*.INI`
 2. `LANGRULE.INI`
@@ -44,55 +41,35 @@ translated rules and before the scenario:
 4. `LANGFS.INI`
 5. `MPLAYER.INI`, outside a campaign
 6. `MPLAYERFS.INI`, outside a campaign and with Firestorm enabled
-7. the scenario's own overrides
+7. the scenario's overrides
 
-A map is therefore still the last word: a scenario that sets one of these
-values wins, as it does over every other rules layer.
+A scenario that sets one of these values therefore overrides both files, as it overrides every other rules file.
 
-The files are named in [`OPENTS.INI`](/formats/opents-ini/#the-files-it-reads)
-by `MultiplayerRules=` and `MultiplayerRulesExpansion=`, and are searched for in
-the same order as everything else the game opens. Unlike the rules, they are not
-gathered by a wildcard: the game opens the name it is given and no other.
+`MultiplayerRules=` and `MultiplayerRulesExpansion=` in [`OPENTS.INI`](/formats/opents-ini/#the-files-it-reads) name the two files. The game looks for them in the same folders, in the same order, as every other file it opens. Only the named file is read: unlike `RULE*.INI`, no wildcard gathers other multiplayer rules files.
 
 ## Write only keys the rules also write
 
-The rules are rebuilt from the files each time a scenario loads, but a setting
-no file names keeps whatever it last held. So a key written **only** here keeps
-its multiplayer value into the next campaign played without restarting the game.
+Each time a scenario loads, the game rebuilds its object types from the rules files: vehicles, infantry, aircraft, structures, weapons, warheads, projectiles, superweapons, animations, voxel animations, particles, particle systems, overlays, terrain objects, smudges, countries and the colors in `[Colors]`. A key in one of their sections therefore returns to the value the other rules files give it, or to its default, when a campaign loads.
 
-Write a key here only where `RULES.INI` writes it too. Then the campaign load
-reads the rules value back over it and the two game types stay separate.
+Other settings are not reset between scenarios. A key in a section such as `[General]`, `[CombatDamage]` or a Tiberium's section keeps the last value any file gave it. If only `MPLAYER.INI` writes such a key, the multiplayer value stays in force in a campaign started later without restarting the game.
 
-The expansion rules and a map's own overrides carry the same trap. It is easier
-to walk into here, because these files exist to hold values that differ from the
-rules.
+Write such a key here only where `RULES.INI` writes it too. The campaign load then reads the `RULES.INI` value back over it, and the two kinds of game stay separate.
+
+The expansion rules and a map's overrides carry the same risk. `MPLAYER.INI` and `MPLAYERFS.INI` meet it most often, because they exist to hold values that differ from the rules.
 
 ## What they cannot do
 
-- **Declare a theater:** `[Theaters]` is read once as the game starts, because a
-  theater's position is the number maps, saves and the multiplayer checksum all
-  carry. [Rules registration](/formats/rules-registries/) covers why.
-- **Resize the heaps:** `[Maximums]` is read from the rules alone, before any
-  game type is known.
-- **Add a country a player can pick:** the list of countries a player chooses
-  from is built from the rules alone, so a country declared only here is missing
-  from it. The country itself does exist once the scenario loads, and a map may
-  place houses of it. `FIRESTRM.INI` has the same limit.
-- **Seed the lobby defaults from the expansion:** `[MultiplayerDefaults]` in
-  `MPLAYER.INI` sets the starting credits, unit count, tech level and match
-  options a host sees, because that file is read before the menus. The addon is
-  not chosen until later, so `MPLAYERFS.INI` is too late to change them, exactly
-  as `FIRESTRM.INI` is.
+- **Declare a theater or change its settings:** `[Theaters]` and each theater's section are read once at startup, from the selected rules file and `FIRESTRM.INI` only. [Rules registration](/formats/rules-registries/) explains why the list of theaters cannot change after that.
+- **Set `[Maximums]`:** that section is read only from the selected rules file.
+- **Add a country a player can pick:** the countries a player chooses from are read from the selected rules file alone, so a country declared only here is missing from that list. The country does exist once the scenario loads, and a map may place houses of it. `FIRESTRM.INI` has the same limit.
+- **Set the lobby's starting values from the expansion:** `[MultiplayerDefaults]` in `MPLAYER.INI` sets the starting credits, unit count, tech level and match options a host sees, because the game reads that file before the menus. `MPLAYERFS.INI` cannot change them, and neither can `FIRESTRM.INI`, because the game does not know whether Firestorm is enabled until later. The section is still read from every rules file when a scenario loads, so a key that acts during the match, such as [`BuildOffAllyAnyStructure=`](/keys/buildoffallyanystructure/), takes effect from either file.
 
-Anything else `RULES.INI` can do, these can. New object types registered here
-exist for the multiplayer game and are saved with it, so a saved game restores
-them whether or not the file is still on disk.
+Anything else `RULES.INI` can do, these files can do. Object types that only these files declare exist in the multiplayer game and are stored in its saves, so loading such a save restores them even when the file is no longer on disk.
 
 ## Every player needs the same copy
 
-Both files count toward the rules checksum a host compares against each joining
-player, alongside `RULES.INI` and `FIRESTRM.INI`. A player whose copy differs,
-including one who has the file where the host does not, is refused at the lobby
-rather than left to desync later.
+In a game hosted from the game's own network lobby, the host compares a checksum of its rules with each joining player's. The checksum covers the selected rules file and `MPLAYER.INI`, plus `FIRESTRM.INI` and `MPLAYERFS.INI` while Firestorm is enabled. A player whose copy of any of them differs is refused, including a player who has one of these files where the host does not.
 
-A file absent from every machine changes no checksum.
+A file that is absent from every machine, or that has no sections, changes no checksum.
+
+A game started by an external client does not make this comparison. Give every player the same files there, because a difference is not detected when the game starts.

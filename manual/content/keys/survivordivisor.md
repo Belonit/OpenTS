@@ -7,7 +7,7 @@ when_omitted:
   value: "100"
 ---
 
-The count is the cost the structure's owner pays for it, multiplied by [`SurvivorRate`](/keys/survivorrate/) and divided by this figure, then clamped to between 1 and 5. The divisor is a price per survivor. At `100`, a structure yields one survivor for every hundred credits of the part of its cost that `SurvivorRate` keeps. The clamp then bites at both ends: a kept part of five times this figure or more yields five, and one below this figure yields one.
+`SurvivorDivisor` works as a price per survivor. A structure yields one survivor for every `SurvivorDivisor` credits of the part of its cost that [`SurvivorRate`](/keys/survivorrate/) keeps, rounded down. That part must reach five times the divisor to yield the maximum of five survivors. A part smaller than the divisor still yields one.
 
 ```ini title="rules.ini"
 [General]
@@ -15,4 +15,6 @@ SurvivorRate=.4
 SurvivorDivisor=200  ; a 1,000-credit structure yields two survivors
 ```
 
-A structure that has [changed hands](/systems/capture/#what-changes-hands) doubles the divisor, halving its count for the rest of the match. It doubles once however often the structure changed hands. A value of `0` is checked before the division and produces no survivors rather than a division by zero.
+A structure that has [changed hands](/systems/capture/#what-changes-hands) uses twice the divisor for the rest of the match, which roughly halves its survivors. The divisor doubles only once, however many times the structure changes hands.
+
+`SurvivorDivisor=0` gives every structure no survivors.

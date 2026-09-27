@@ -7,10 +7,14 @@ when_omitted:
   value: "-1"
 ---
 
-Degrees per frame, converted to radians as it is read. A piece is given one tumbling rate for the whole of its life, drawn once when it is created. In practice that rate is this figure: the pick that would raise it is quantized in whole radians, so it contributes nothing until [`MaxAngularVelocity`](/keys/maxangularvelocity/) stands about 57 degrees above this setting.
+The setting is in degrees per frame, and the engine works with it in radians. Each piece draws one tumbling rate when it is created and keeps it for its whole life.
 
-A value of exactly `0` is discarded rather than stored: the rate already held stands, which for a type no earlier file touched is zero as well.
+In practice the rate is usually this minimum. The random part of the pick adds whole radians, about 57 degrees each. It adds something only when [`MaxAngularVelocity`](/keys/maxangularvelocity/) is at least about 57 degrees above this setting, or at least about 172 degrees below it.
 
-:::danger[A minimum written without a maximum usually crashes the game]
-An unwritten [`MaxAngularVelocity`](/keys/maxangularvelocity/) leaves minus one degree per frame stored rather than the built-in ten. A section that writes this key and not that one therefore leaves a maximum below its minimum. The pick's divisor, the truncated whole number of radians between the two plus one, then comes out zero for any minimum above minus one degree and below about 56.3 degrees. The division faults, and the game stops the moment a piece of the type is created. Writing both settings with the maximum above the minimum avoids it, and so does a minimum of minus one degree or less.
+Writing exactly `0` changes nothing. The minimum keeps the value the previous read of the section left, or 0 if no earlier file declared the section.
+
+:::danger[Write MaxAngularVelocity whenever you write this key]
+When a section leaves out [`MaxAngularVelocity`](/keys/maxangularvelocity/), its maximum is minus one degree per frame, not the built-in ten. A minimum above minus one degree and below about 113.6 degrees then makes the random pick divide by zero, and the game crashes as soon as a piece of the type is created. Meteors are affected too.
+
+To avoid it, write `MaxAngularVelocity` at or above this setting, or keep this setting at minus one degree or lower.
 :::

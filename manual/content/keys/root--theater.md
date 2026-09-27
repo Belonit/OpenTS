@@ -8,15 +8,19 @@ when_omitted:
   note: "`TEMPERAT` for TEMPERATE and `SNOW` for SNOW, which keep their original settings; for any other theater, the theater's own name."
 ---
 
-The root names three files:
+`Root` names three theater files:
 
-- `<Root>.MIX`, the archive the theater's artwork is read from
-- `<Root>.PAL`, the palette everything on the map is drawn through
-- `<Root>.INI`, the [theater control file](/formats/theater-control/), which lists its tile sets
+- `<Root>.MIX`, the theater's main archive
+- `<Root>.PAL`, the theater palette
+- `<Root>.INI`, the [theater control file](/formats/theater-control/), which lists the theater's tile sets
 
 ```ini title="rules.ini"
 [DESERT]
 Root=DESERT     ; DESERT.MIX, DESERT.PAL and DESERT.INI
 ```
 
-A missing palette is survivable and a missing control file is not. Where no `<Root>.PAL` is found, the game builds a placeholder gradient and carries on. A theater whose control file is absent declares no tile sets, and every cell of a map drawn in it is empty.
+The game reads up to 16 characters of the value and cuts a longer one short.
+
+A theater with no `<Root>.PAL` still loads in a Release build, which substitutes a placeholder gradient palette. A Debug build stops at an assertion first.
+
+A theater with no `<Root>.INI` has no tile sets, so give every theater a control file.

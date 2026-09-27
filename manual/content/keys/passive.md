@@ -1,19 +1,19 @@
 ---
 key: Passive
-summary: Marks a vehicle as holding a fixed route at a fixed pace, which is how the cars behind a locomotive move.
+summary: Makes a vehicle take its speed from the vehicle it follows and refuse routes that stop short of its destination.
 see_also: ["IsTrain", "Accelerates", "MovementRestrictedTo"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The flag changes three things about how a vehicle is driven, and nothing about what it is or what it may be ordered to do.
+`Passive=yes` changes three things about how a vehicle drives.
 
-Its speed is left out of the ramping. Even with [`Accelerates=yes`](/keys/accelerates/) set, the step that walks a driving vehicle's throttle toward the speed of the ground under it never runs for a passive one. It is neither brought up to speed nor braked as it nears its destination.
+A passive vehicle does not set its own speed while [`Accelerates=yes`](/keys/accelerates/) is on. It is neither sped up nor braked near its destination, and keeps the speed it was last given. A vehicle at the head of a line hands its speed to each vehicle following it on every step, as long as the leader has `Accelerates=yes` and is not passive itself. That is how cars keep pace with a locomotive. Without `Accelerates=yes`, the flag does not affect speed.
 
-Its route must reach the destination outright. When the search arrives at the destination cell and finds it impassable, an ordinary vehicle settles for the route it has and stops beside it. A passive vehicle takes no such offer and keeps searching, so a blocked destination leaves it with no route at all rather than a shortened one.
+A passive vehicle needs a route that reaches its destination. When the destination cell is blocked, an ordinary vehicle accepts a route that ends beside it. A passive vehicle does not, so a blocked destination leaves it with no route at all.
 
-It may change track in mid-move. At a junction where the next cell can be entered, an ordinary vehicle holds the track it is on. A passive vehicle switches to the new turn track there and then, which is what lets a car follow the vehicle ahead of it around a corner.
+Partway through a turn, when the next cell of its route is enterable, a passive vehicle starts the following turn at once. An ordinary vehicle finishes its current turn first.
 
 ```ini title="rules.ini"
 [MYORECAR] ; a UnitType registered in [VehicleTypes]

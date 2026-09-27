@@ -12,4 +12,4 @@ when_omitted:
 GDIPowerPlant=GAPOWR
 ```
 
-The named BuildingType becomes the first side's [`RegularPowerPlant`](/keys/regularpowerplant/) as each rules file that has the key sets it; a `RegularPowerPlant=` in that side's own section of the same file overrides it. It has no other effect.
+The value becomes the [`RegularPowerPlant`](/keys/regularpowerplant/) of the first side in the rules' [`[Sides]`](/formats/rules-registries/) list, in each rules file that sets this key. A `RegularPowerPlant=` in that side's own section of the same file overrides it. A file that omits this key leaves the side's value alone. [`NodRegularPower`](/keys/nodregularpower/) does the same for the second side, and nothing else reads this key.

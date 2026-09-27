@@ -6,9 +6,9 @@ see_also: ["Cell", "Target", "Type", "Frame"]
 when_omitted:
   kind: value
   value: "0"
-  note: Parsed like any other value, and the trap coordinate keeps the no-coordinate value it was constructed with either way.
+  note: A written value is discarded as it is read, so omitting the key gives the same result as writing it.
 ---
 
-The sync-bug settings are read only as the multiplayer menu is entered, and only while recording playback is armed. The name promises the world coordinate of the object the hunt should stop on, written as three comma-separated numbers.
+The value is meant to be the world coordinate of an object to watch, written as three comma-separated numbers.
 
-All three are pulled out of the value and then discarded without being stored anywhere, and the coordinate the hunt would have compared against keeps the no-coordinate value it was constructed with. No gameplay path reads the setting.
+`Coord` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/playback/).

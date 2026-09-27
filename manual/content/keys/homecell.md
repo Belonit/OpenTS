@@ -1,6 +1,6 @@
 ---
 key: HomeCell
-summary: The waypoint the tactical view opens on and the bookmarks start at.
+summary: The waypoint a single-player mission's view opens on and its bookmarks start at.
 see_also: [AltHomeCell]
 when_omitted:
   kind: value
@@ -12,10 +12,14 @@ when_omitted:
 HomeCell=98
 ```
 
-Despite the name, the value is a waypoint number rather than a cell number. It selects an entry of the scenario's `[Waypoints]` list, and the cell that entry names is where the view is centered as the map opens. All four view bookmarks are set to the same place, so pressing any of them before recording one returns there. Waypoint `98` is the engine's home waypoint slot.
+The value is a waypoint number, not a cell number. It names an entry of the map's `[Waypoints]` section, and a single-player mission opens with the view centered on that waypoint's cell. All four view bookmarks start at the same cell, so pressing one before storing a position returns there. The default, `98`, is the number the game sets aside for the home waypoint.
 
-A waypoint that the scenario never placed is given the middle of the [playfield](/glossary/#playable-area) instead, so a map with no home waypoint still opens somewhere sensible. When global flag `0` is set as the mission loads, [`AltHomeCell`](/keys/althomecell/) is used in its place.
+If the map places no waypoint with this number, the engine places it at the center of the [playfield](/glossary/#playable-area) and opens the view there.
 
-:::danger[A waypoint number outside 0 to 100 is written outside the waypoint table]
-The table holds waypoints `0` through `100`. The check that decides whether the home waypoint was placed rejects a number outside that range correctly. The repair that follows then stores the fallback cell at that same out-of-range position, and the view is read back from it, so the map still opens centered on the fallback cell. Both accesses land outside the table and corrupt whatever the scenario keeps beside it.
+When a mission starts with global flag `0` set, the view opens on [`AltHomeCell`](/keys/althomecell/) and this key is not used.
+
+In skirmish and multiplayer games, the view opens over the player's own starting objects, and this key does not move it.
+
+:::danger[Keep the waypoint number between 0 and 100]
+The waypoint table holds numbers `0` through `100`. A number outside that range counts as an unplaced waypoint, so the engine writes the fallback cell outside the table, over other scenario data, in every game mode. A number far outside the range can crash the game. A Debug build stops at a failed assertion first.
 :::

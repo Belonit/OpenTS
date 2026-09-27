@@ -8,13 +8,15 @@ when_omitted:
   note: The first color scheme in the loaded list.
 ---
 
-The value is a color scheme name, matched without regard to letter case against [the schemes the rules declare in `[Colors]`](/keys/color/). A scheme with only one intensity level is skipped during that match, and a name matching no remaining scheme leaves the country on the scheme it already had.
+The value names an entry in `[Colors]`, in any letter case. A name that matches no entry leaves the country on the scheme it already had. [The `Color` overview](/keys/color/) describes `[Colors]` and the other `Color=` settings.
 
 ```ini title="rules.ini"
 [GDI]
 Color=Gold
 ```
 
-Each house takes this scheme as it is created and recolors everything it owns with it. Two things then move it. A campaign scenario may override the house's copy with a [`Color=`](/keys/color/#scope-house-per-scenario) in its own house record, which leaves the country's copy alone. A skirmish or multiplayer game overwrites *both* copies with the color the player picked in the lobby, so the country's own setting survives only into a campaign.
+Every house of this country starts with this scheme and draws everything it owns in it. The setting has a visible effect only in a campaign game, and there a house record in the scenario map can override it for that one house with [`Color=`](/keys/color/#scope-house-per-scenario).
 
-That second overwrite is why the country's copy is worth knowing about at all. Several places color their text from the country rather than from the house, the alliance and connection messages among them, and in a lobby game those follow whichever house of that country was set up last.
+In a skirmish or multiplayer game, each human player's house takes the color picked in the lobby, and each computer player gets an unused color at random or the one a launch file names. The `Neutral` and `Special` houses are drawn in `LightGrey`. The country's `Color=` is not used.
+
+Lobby setup also changes the country's scheme, and the alliance, declaration-of-war and connection messages about a player take their color from the country, not the house. In a lobby game these messages therefore show one of the first four schemes declared in `[Colors]`, chosen by the lobby color of the last house of that country to be set up. They do not show the player's color.

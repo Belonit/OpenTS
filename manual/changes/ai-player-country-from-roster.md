@@ -9,4 +9,6 @@ targets:
 credit: [ZivDero]
 ---
 
-A computer player the menu seats is now given one of the countries the lobby offers, drawn at random from those with `Multiplay=yes`. It previously drew from the first two countries in the rules, whatever they were. The shipped rules mark two countries `Multiplay=yes`, and both are among the first two. A game on the shipped rules draws as it did before.
+A computer player whose country the launch file does not name now gets a random country from those whose `rules.ini` sections set `Multiplay=yes`, which are the countries the lobby offers. If no country sets it, the computer player gets the first country in `[Houses]`. It used to get one of the first two countries in `[Houses]`, whether or not the lobby offered them.
+
+The shipped rules set `Multiplay=yes` on exactly those first two countries, so games on the shipped rules draw the same countries as before.

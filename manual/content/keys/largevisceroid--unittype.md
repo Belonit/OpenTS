@@ -8,8 +8,17 @@ when_omitted:
   value: "no"
 ---
 
-The flag puts the vehicle on the same creature conduct that [`SmallVisceroid=yes`](/keys/smallvisceroid/#scope-unittype) describes: the aimless wandering, the run for Tiberium below [`ConditionYellow`](/keys/conditionyellow/) health, and the attack frames from [`AltImage`](/keys/altimage/). It also shares the exemptions from EM pulses, immobilization, turret facing, jellyfish stings and shadows, and it forces [`NonVehicle`](/keys/nonvehicle/) on in the same way.
+The flag gives the vehicle the creature behavior that [`SmallVisceroid=yes`](/keys/smallvisceroid/#scope-unittype) describes, except merging. It wanders aimlessly, heads for Tiberium below [`ConditionYellow`](/keys/conditionyellow/) health, and draws its attack frames from [`AltImage`](/keys/altimage/).
 
-What it does not have is merging. A large visceroid neither summons a neighbor nor is summoned by one, and two of them standing beside each other block one another's cells like any other pair of vehicles. Marking a type this way is therefore the whole of the difference: whether it grows by absorbing its own kind, or is what that absorption produces.
+It also has the same exemptions as a small visceroid:
 
-A type is not obliged to be reachable through merging to set the flag. The UnitType a merge actually produces is the one named by [`LargeVisceroid`](/keys/largevisceroid/#scope-global-rules) in the global rules, which is a separate choice from this one. A type with this flag that nothing names there simply behaves as a large visceroid wherever it is placed.
+- [`NonVehicle`](/keys/nonvehicle/) is forced on, whatever its section says;
+- an EM pulse does not stun it;
+- being immobilized does not stop it firing;
+- it does not have to bring a turret to bear before it shoots;
+- a [`Jellyfish=yes`](/keys/jellyfish/) unit never stings it;
+- it is drawn without a shadow.
+
+A large visceroid never merges. It neither calls a neighbor over nor is called over by one, and two of them beside each other block each other's cells like any other pair of vehicles.
+
+This flag is separate from the type a merge produces, which [`LargeVisceroid`](/keys/largevisceroid/#scope-global-rules) in the global rules names. A type with this flag behaves as a large visceroid wherever it is placed, whether or not a merge can produce it.

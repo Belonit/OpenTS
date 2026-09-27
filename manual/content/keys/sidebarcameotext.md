@@ -7,6 +7,8 @@ when_omitted:
   value: "yes"
 ---
 
-The caption shows the name alone, wrapped to the width of the slot and broken at spaces and hyphens. The price moves with the setting rather than disappearing: with captions on, the tooltip reports the price by itself; with captions off, it reports the name and the price together. A superweapon's tooltip is its name either way.
+The caption is the object's name alone, wrapped to the width of the cameo. The setting also changes the cameo's tooltip: with captions on, the tooltip shows only the price, and with captions off it shows the name and the price. [Captions and tooltips](/systems/sidebar/#captions-and-tooltips) describes both.
 
-The in-game options dialog has the same switch and writes the choice back to `sun.ini`.
+The game controls dialog has the same switch. Accepting the dialog applies the change at once and saves it to `sun.ini`.
+
+A loaded saved game shows captions as they were when it was saved, whatever the setting says. The setting applies again from the next scenario that starts.

@@ -8,10 +8,15 @@ when_omitted:
   value: none
 ---
 
-The sound plays once at the animation's position when the animation starts. That is not always the moment it is created: an animation asked for with a delay stays silent until the delay runs out and it begins. An animation that chains into another through [`Next`](/keys/next/) starts again as the new type and plays that type's sound too.
+`Report=` names the sound the animation plays at its position when it starts. An animation created with a delay starts, and plays the sound, when the delay runs out.
 
-This is the only sound an animation type plays when it starts, whatever [`StartSound`](/keys/startsound/#scope-animtype) says.
+The sound plays again each time the animation starts over:
 
-An animation placed by [Play Anim At](/mapping/actions/taction-play-anim/), and the flare that [Drop Zone Flare](/mapping/actions/taction-dz/) plants, are marked inert only after they are created. Both still play this sound on the frame they appear. The mark takes hold from then on, silencing the type an animation chains into through `Next`.
+- after each pause set by [`RandomLoopDelay`](/keys/randomloopdelay/);
+- when the animation changes type through [`Next`](/keys/next/), which plays the new type's sound.
 
-A value naming no registered sound leaves whatever was set before in place.
+This is the only sound an animation plays when it starts. [`StartSound`](/keys/startsound/#scope-animtype) has no effect on it.
+
+Animations placed by the [Play Anim At](/mapping/actions/taction-play-anim/) and [Drop Zone Flare](/mapping/actions/taction-dz/) trigger actions play this sound when they appear. After that they are silent, so they play no sound after a pause or after changing type through `Next`.
+
+A value that names no registered sound is ignored, and the type keeps the sound it had.

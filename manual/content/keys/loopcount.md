@@ -7,15 +7,13 @@ when_omitted:
   value: "0"
 ---
 
-The figure is multiplied by the number of passes the code creating the animation asks for (one, for almost everything that creates an animation), and the product is what the animation counts down. `0` and `1` both give a single pass, because a product below one is raised to one.
+The game multiplies this setting by the number of passes it requests when it creates the animation. The result wraps into the range `0` to `255`, and a result of `0` then counts as `1`. Most animations are requested for one pass. Some are requested for several, such as the fires on a damaged building. `0` and `1` therefore both give a single pass when one is requested. When several are requested, `1` plays them all and `0` still plays one.
 
-More than one pass changes which frames play. The opening pass begins on [`Start`](/keys/start/) and ends on [`LoopEnd`](/keys/loopend/). Each pass after it begins on [`LoopStart`](/keys/loopstart/) and ends on `LoopEnd`. The final pass begins on `LoopStart` but runs to the end of the stage count in [`End`](/keys/end/) instead.
+With one pass requested, the extremes behave as follows:
 
-The count is kept in a single byte, which decides what the extremes do:
-
-- `-1` is stored as 255, and 255 is the one value that is never counted down: the animation loops until something else takes it away. This is how an animation that has to run for as long as the structure or effect it belongs to is written.
-- A figure of 256 or more wraps into the byte before the raise to one is applied, so `LoopCount=256` gives a single pass and `LoopCount=257` gives one as well.
-- A negative figure other than `-1` wraps to a large positive count: `LoopCount=-2` runs 254 passes.
+- `-1` loops until something else removes the animation, such as the structure it belongs to. `255` and `-257` do the same. When several passes are requested, `-1` is multiplied first and gives a finite count: 254 passes when two are requested.
+- `256` acts like `0` and `257` like `1`, so both give a single pass. `-256` and `-255` also give a single pass.
+- `-2` to `-254` give long finite counts: `LoopCount=-2` plays 254 passes.
 
 ```ini title="art.ini"
 [MYREFN_C] ; an active animation for a refinery
@@ -27,4 +25,17 @@ Rate=350
 Surface=yes
 ```
 
-A [`PingPong=yes`](/keys/pingpong/) animation never spends a pass. It turns around instead of finishing, so the count never ticks down and never ends the animation. The figure still chooses the turn points: the stage count in [`End`](/keys/end/) and the first stage once the count is spent or single, or [`LoopEnd`](/keys/loopend/) and the stage matching [`Start`](/keys/start/) while passes remain.
+With more than one pass, each pass plays a different stretch of frames:
+
+1. The first pass starts on [`Start`](/keys/start/) and ends at [`LoopEnd`](/keys/loopend/).
+2. Each middle pass starts on [`LoopStart`](/keys/loopstart/) and ends at `LoopEnd`.
+3. The last pass starts on `LoopStart` and runs to the end of the stage count in [`End`](/keys/end/).
+
+A [`PingPong=yes`](/keys/pingpong/) animation never uses up a pass. It reverses direction at each end instead of finishing, so the count never ends it. The count still decides where it turns:
+
+- With a single pass, it turns at the end of the `End` stage count and at its first frame.
+- With more than one pass and `Start=0`, it turns at `LoopEnd` and at its first frame.
+
+:::caution[Give a multi-pass ping-pong animation Start=0]
+With a nonzero [`Start`](/keys/start/) and more than one pass, a `PingPong=yes` animation turns only once, at the frame numbered twice `Start` or at `LoopEnd`, whichever it reaches first. It then steps backward without end, past the first frame of the shape. Set `Start=0`, or set `LoopCount=0` so the animation gets a single pass.
+:::

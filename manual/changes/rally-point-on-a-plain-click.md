@@ -18,8 +18,10 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-A plain click on the ground with a factory selected now sets its rally point, where it used to do nothing. The force-move key, which used to set it, gives the structure a move order instead. On Firestorm's mobile war factories, the only shipped structures that both take a rally point and pack up, the plain click now sets the rally point and the force-move key packs them up.
+A plain click on the ground with a vehicle, infantry or aircraft factory selected now sets its rally point, where it used to do nothing. The force-move key, which used to set the rally point, now does nothing on a factory that cannot pack up.
 
-`AltToRally=yes` in `sun.ini` restores the old controls for the player who sets it.
+On a factory that can pack up, such as Firestorm's mobile war factory, the plain click used to pack it up and now sets the rally point. The force-move key packs it up instead.
+
+`AltToRally=yes` under `[Options]` in `sun.ini` restores the old controls for the player who sets it.
 
 AlexB is credited for the ts-patches option this follows.

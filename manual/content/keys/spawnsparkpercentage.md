@@ -7,7 +7,9 @@ when_omitted:
   value: "0.0"
 ---
 
-A fraction from `0` to `1`, rolled once per frame while the system still has [`SparkSpawnFrames`](/keys/sparkspawnframes/) left. At `.4` about two frames in five throw a burst, which is what makes a welding shower stutter rather than pour. Each throw scatters one burst, its size set against [`ParticleCap`](/keys/particlecap/). Only the `Spark` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+A `Spark` system rolls against this chance on each frame it has [`SparkSpawnFrames`](/keys/sparkspawnframes/) left, and throws a burst when the roll succeeds. `.4` throws on about two frames in five, which makes the shower stutter, and `1` or above throws on every frame. The last of the `SparkSpawnFrames` always throws a burst, whatever the roll. [`ParticleCap`](/keys/particlecap/) sets the size of each burst. Only the `Spark` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
+
+The value is a fraction, not a percentage: `40` throws on every frame. Write `.4`, or `40%`, since [a percent sign divides the number by 100](/formats/ini-syntax/#malformed-values).
 
 ```ini title="rules.ini"
 [MySparkSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -17,5 +19,3 @@ ParticleCap=12
 SparkSpawnFrames=20
 SpawnSparkPercentage=.4 ; roughly two frames in five throw
 ```
-
-The roll is skipped on the system's final spark frame, which throws unconditionally, so a system whose rolls all fail still produces that one burst before it clears away. A figure of `1` or above throws on every frame.

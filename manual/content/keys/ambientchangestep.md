@@ -7,13 +7,14 @@ when_omitted:
   value: ".1"
 ---
 
-```ini title="rules.ini"
-[AudioVisual]
-AmbientChangeStep=.1
-```
+Each step moves the ambient level toward its target by this fraction of full light. The step is converted to the hundredths that [`Ambient`](/keys/ambient/) is stored in, so `.1` moves the level by 10 hundredths. A step never passes the target, so the last step of a fade can be smaller.
 
-The value is multiplied by 100 to give the step in the same hundredths [`Ambient`](/keys/ambient/) is stored in. `.1` therefore moves the level by ten hundredths each time. Steps are clamped at the target, so a fade never overshoots and the last step is whatever remains.
+The conversion truncates to whole hundredths. Floating-point rounding can take a value one hundredth lower, so `.29` moves the level by 28 hundredths.
 
-Every completed step raises the flag that admits the [Ambient light <= ...](/mapping/events/tevent-ambient-less-than/) and [Ambient light >= ...](/mapping/events/tevent-ambient-greater-than/) trigger events to that frame's evaluation. Those events are only ever tested while a fade is actually stepping.
+:::caution[Keep AmbientChangeStep at .01 or above]
+A smaller value truncates to a step of 0, so the ambient level never reaches a new target. A negative value moves the level away from its target.
+:::
 
-The [Set ambient step...](/mapping/actions/taction-set-ambient-step/) trigger action overwrites this value in the loaded rules, and the overwrite outlives the trigger that made it.
+The [Ambient light <= ...](/mapping/events/tevent-ambient-less-than/) and [Ambient light >= ...](/mapping/events/tevent-ambient-greater-than/) trigger events compare the current ambient level, which moves one step at a time. A trigger that waits for a new target level fires only when the fade reaches that level.
+
+The [Set ambient step...](/mapping/actions/taction-set-ambient-step/) trigger action changes this value, and a saved game keeps the change. The change lasts until a later scenario loads a rules file or map that sets the key. If none sets `AmbientChangeStep`, later scenarios in the same session keep the changed value.

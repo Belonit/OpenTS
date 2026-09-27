@@ -8,12 +8,10 @@ when_omitted:
   value: none
 ---
 
-For as long as the animation is alive, it creates an animation of the named type at its own position. The creations happen on every frame of the game clock whose number is a multiple of [`TrailerSeperation`](/keys/trailerseperation/). The count is the clock's rather than the animation's own, so every animation of the type sheds its trail on the same frames. A trailer begins one frame after the animation that sheds it is created.
+While the animation exists, it drops an animation of the named type at its position on every game frame whose number is a multiple of [`TrailerSeperation`](/keys/trailerseperation/). The frame number is the game's, not the animation's, so every animation of the type drops its trail on the same frames. Each trail animation appears one frame after it is dropped.
 
-Nothing restricts this to thrown animations. An explosion or a smoke column that names a trailer sheds one just as a meteor does.
+Any animation can leave a trail, not only a thrown one. An explosion or a smoke column that names a trail animation leaves one just as a meteor does.
 
-A value naming no registered animation is not refused. A type of that name is created on the spot, holding no artwork and every setting at its built-in value.
+A name that matches no animation type creates a new type of that name. The new type reads its settings from the `art.ini` section of that name. Without that section it has no artwork, and the trail shows nothing.
 
-:::danger[A trail without a separation stops the game]
-`TrailerSeperation` is `0` unless the section sets it, and the frame test divides by it. Naming a trailer animation without also giving a separation faults on the animation's first logic frame, so the game stops the moment an animation of the type is created.
-:::
+Always set [`TrailerSeperation`](/keys/trailerseperation/) with a trail; its page describes the crash that follows otherwise.

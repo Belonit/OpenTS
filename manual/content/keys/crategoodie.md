@@ -7,6 +7,12 @@ when_omitted:
   value: "no"
 ---
 
-The draw is reached only when [`UnitCrateType`](/keys/unitcratetype/) names nothing and the crate has not already been spent on a free unit ([crates](/systems/crates/)). There are two: the MCV handed to a house that has lost every building but can still afford to rebuild, and the harvester handed to a house that owns a refinery but no harvesters. The pick then chooses registered UnitTypes at random until one qualifies: the type sets this flag, it is ownable by the collector's house, and a type in the [`BaseUnit`](/keys/baseunit/) list qualifies only when the match has bases enabled.
+A unit crate gives a random vehicle from this pool unless another rule has already chosen the vehicle. Those rules are the free MCV or harvester given to a house that needs one, and a type named by [`UnitCrateType`](/keys/unitcratetype/). [Money and free units](/systems/crates/#money-and-free-units) gives the full order.
 
-The engine first checks that the pool is not empty. If no registered type qualifies for the collecting house, the draw is skipped and nothing is produced. When at least one type qualifies, the random pick repeats without an attempt limit until it lands on one.
+A vehicle type enters the pool under **All of:**
+
+- it sets `CrateGoodie=yes`;
+- the country the collector's house acts as may own it;
+- **Any of:** bases are enabled for the match, or it is not in the [`BaseUnit`](/keys/baseunit/) list.
+
+If no vehicle type qualifies for the collecting house, the crate gives nothing: no vehicle and no money.

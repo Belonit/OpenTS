@@ -1,13 +1,13 @@
 ---
 key: PlayerControl
-summary: Marks a scenario's house as the one the local player is playing, which in a campaign decides the difficulty slot it is given and whether it is spoken to.
+summary: Hands a campaign house to the local player, who commands its objects, and gives the house the player's difficulty slot.
 see_also: ["system:difficulty"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A campaign scenario decides what counts as the local player's house by asking each house two questions: whether it is flagged as human, and whether it has this setting. Either one is enough. Outside a campaign the question is answered by identity instead: only the house the local machine is actually playing counts, and this setting is ignored there.
+`PlayerControl=yes` hands a campaign house to the local player. The player can select and command its objects, and EVA announcements and radar events about the house reach the player. The computer runs no production or base-building AI for it.
 
 ```ini title="scenario map file"
 [GDI] ; a house record in the scenario's own house list
@@ -15,10 +15,8 @@ PlayerControl=yes
 Edge=North
 ```
 
-What that answer governs is everything the engine does *for* a player rather than *to* a house. It decides the difficulty slot the house is given, the EVA lines it hears, the radar events drawn for it, and the sidebar and placement feedback it is given. [Difficulty settings and handicaps](/systems/difficulty/#from-the-setting-to-a-slot) covers that first half, which is where a missing flag is felt hardest.
+The setting also gives the house the player's [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot) in place of the computer's. Set it on the house that `[Basic] Player=` names. Without it, that house plays the mission with the computer's handicap.
 
-Nothing clears the setting in a campaign. Only a multiplayer game clears it, when the computer takes over the house of a player who has left.
+More than one house may set it. Each such house is controlled by the player and gets the player's difficulty slot. The sidebar still builds only for the `[Basic] Player=` house, so any other house with this setting has neither a sidebar nor computer production.
 
-:::caution[Setting it on more than one house is allowed]
-Nothing restricts the flag to a single house, and each house with it is treated as player-controlled in its own right. When difficulty slots are assigned, every one of them is given the player's slot rather than the computer's.
-:::
+Outside a campaign this setting is ignored. Only the house the local machine is playing counts as the player's.

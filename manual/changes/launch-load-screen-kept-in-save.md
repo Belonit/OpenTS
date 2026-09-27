@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-The scenario now keeps the loading picture and bar position a launch file asked for. A mission restarted from within the game, or resumed from a save in a session with no launch file, therefore shows the same picture. The override used to live only in the session that read the launch file. Such a restart or resume fell back to the game's own backdrop. Where the launch file's picture was the only one the deployment had, it fell back to none at all.
+A save now records the loading picture and bar position that the game's launch file set with `CustomLoadScreen` and `CustomLoadScreenPos` under `[Settings]`. Restarting a mission resumed from such a save shows that picture even when the current session has no launch file, or has one that names no picture; it used to show the game's own loading picture. Only the first restart after the resume keeps the picture.

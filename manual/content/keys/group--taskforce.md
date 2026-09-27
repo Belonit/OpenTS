@@ -8,4 +8,4 @@ when_omitted:
   value: "-1"
 ---
 
-Only the TeamTypes that use this TaskForce read its value, and only when they leave their own [`Group`](/keys/group/#scope-teamtype) at `-1`. Setting it gives every TeamType built on it one [recruitment group](/systems/ai-team-production/#recruitment). Any of those TeamTypes overrides it by naming a group of its own.
+A TeamType that uses this TaskForce and leaves its own [`Group`](/keys/group/#scope-teamtype) at `-1` uses this value in its place, both as its [recruitment group](/systems/ai-team-production/#recruitment) and as the group it gives its members. A TeamType that sets its own `Group` to any other value, including the wildcard `-2`, ignores this one.

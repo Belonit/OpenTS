@@ -13,12 +13,19 @@ when_omitted:
 HarvesterImmune=yes
 ```
 
-Four separate protections switch on together. A harvester is dropped from the list of objects an explosion collects, so it is never caught in a blast aimed at something beside it. Damage aimed at the harvester itself is refused whenever it arrives with a warhead whose [`LimpetFactor`](/keys/limpetfactor/) is not positive, so limpet drones remain able to attach, and damage delivered without a warhead at all still lands. [Target evaluation](/systems/target-selection/) rejects a harvester as a candidate, so nothing picks one on its own. A vehicle thief ordered onto an enemy harvester selects it rather than moving to capture it. Two last effects wait for a harvester's death: its Tiberium cargo is not scattered over the ground beside it, and the [`[CombatDamage]` TiberiumExplosive entry](/keys/tiberiumexplosive/#scope-global-rules) does not detonate it.
+`HarvesterImmune=yes` declares a harvester truce. While it is on, a vehicle whose type is listed in [`HarvesterUnit`](/keys/harvesterunit/) is protected in four ways:
 
-:::caution[Two different definitions of "harvester" are in play]
-All four test membership of the [`HarvesterUnit`](/keys/harvesterunit/) list. One further protection does not: the hunter-seeker drone, which chooses at random among every enemy object on the map, passes over any unit whose type harvests, listed or not.
-:::
+- Explosions never damage it, including a blast aimed at something beside it.
+- Damage that carries a warhead is refused, unless the warhead's [`LimpetFactor`](/keys/limpetfactor/) is above `0`.
+- [Target selection](/systems/target-selection/) rejects it, so no object picks it as a target on its own.
+- A vehicle thief cannot be ordered to steal it: clicking an enemy harvester with the thief selects the harvester instead.
+
+Two further protections cover every destroyed vehicle that carries Tiberium, listed in `HarvesterUnit` or not. Its load is not spilled onto the ground around it, and [`TiberiumExplosive`](/keys/tiberiumexplosive/#scope-global-rules) in `[CombatDamage]` does not make it explode.
+
+While the truce is on, the hunter-seeker drone skips any vehicle whose type is [`Harvester=yes`](/keys/harvester/#scope-unittype), whether or not it is listed in `HarvesterUnit`.
+
+Outside single-player missions the truce has two more effects. When a player is defeated, all of that player's vehicles are taken off the map. Outside a short game, vehicles listed in `HarvesterUnit` do not count toward keeping a player in the game.
 
 :::caution[The entry is read in campaigns only]
-The `[SpecialFlags]` block is read from the map only in a single-player mission. Every other game type replaces the scenario's whole set of flags with the set the game options carry once the map has been read. Outside a campaign, a match against other machines takes the truce from the game options, and a skirmish never applies it at all. While it is on outside a campaign, a defeated player's vehicles are destroyed and every type named in [`HarvesterUnit`](/keys/harvesterunit/) is discounted when deciding that a player has been defeated.
+Only a single-player mission reads `[SpecialFlags]` from the map. In a game against other machines, the game's harvester truce option sets the truce: the launch file's `HarvesterTruce`, or the truce checkbox in the network lobby. A skirmish leaves it off, unless a network match earlier in the same session turned it on.
 :::

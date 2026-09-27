@@ -7,4 +7,12 @@ when_omitted:
   value: "no"
 ---
 
-The flag is read while [the base plan is assembled](/systems/ai-base-building/#building-the-plan), beside the type's [`Owner`](/keys/owner/) entry and the scenario tech level, and nowhere else. A house whose node list came with the scenario never reads it, and `AIBuildThis=no` restricts nothing a player, a trigger or a team builds.
+`AIBuildThis=yes` makes the BuildingType a candidate when a computer house [generates a base plan](/systems/ai-base-building/#building-the-plan). A candidate still has to pass the plan's other tests, such as [`Owner`](/keys/owner/), [`TechLevel`](/keys/techlevel/) and its prerequisites.
+
+The flag controls only that list of candidates. The planner adds these types whether or not they set it:
+
+- the first [`BuildPower`](/keys/buildpower/) entry the house's country may own;
+- the first [`AIWallTowers`](/keys/aiwalltowers/) entry of the house's side that its country may own;
+- the [base defenses](/systems/ai-base-building/#base-defenses) chosen to fill placeholder nodes.
+
+The flag has no effect on a house that follows a node list supplied by the scenario. `AIBuildThis=no` does not stop a player, a trigger or a team from building the type.

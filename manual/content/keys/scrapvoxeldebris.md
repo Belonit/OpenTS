@@ -8,4 +8,6 @@ when_omitted:
   value: none
 ---
 
-By its name this is the scrap a destroyed vehicle sheds. Nothing reads the stored type. A type's destruction debris comes from its own [`DebrisTypes`](/keys/debristypes/) list, as [`ExplosiveVoxelDebris`](/keys/explosivevoxeldebris/) describes.
+The name suggests the scrap a destroyed vehicle throws, but nothing in the game uses this setting. A destroyed object's debris is set by its type through [`DebrisTypes`](/keys/debristypes/) and related keys, as [`ExplosiveVoxelDebris`](/keys/explosivevoxeldebris/) describes.
+
+Naming a voxel animation the game does not know yet still registers a voxel animation type of that name.

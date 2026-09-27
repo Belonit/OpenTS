@@ -7,14 +7,20 @@ when_omitted:
   value: "yes"
 ---
 
-Only an animation a structure runs in one of its animation slots reads the flag. The animation is handed the owning house's color scheme and the structure's own brightness to draw with. That happens as the slot is filled, and again whenever the structure's appearance is brought back in line after a lighting or ownership change. The remembered copy that stands in for the structure under the fog of war makes the same choice.
+Only an animation that a structure runs in one of its animation slots uses this flag. With `yes`, the animation is drawn in the owning house's color scheme and at the structure's brightness. It keeps following the structure while it plays, so it changes along with the structure's lighting, its flashing, and its owner.
 
-With `no`, the animation is left with the shared animation palette, or with the first declared color scheme if it also sets [`AltPalette=yes`](/keys/altpalette/). It is lit by the ground it stands on instead of by the structure. A fireball or a light bloom that should look the same for every house wants this; a chimney's smoke that should take the owner's color does not.
+A [`Tiled=yes`](/keys/tiled/) animation is drawn in the shared animation palette with either value; only its brightness follows this flag.
 
-Despite the name, no other animation reaches the flag. An animation belonging to the terrain tile it stands on already draws through the same tinted terrain palette as the ground beneath it, and does so whatever this is set to.
+With `no`, the animation is drawn in the shared animation palette, or in the first declared color scheme if it also sets [`AltPalette=yes`](/keys/altpalette/). It takes its brightness from the cell it stands on. Use `no` for a fireball or a light glow that should look the same for every house. Keep `yes` for smoke or machinery that should take the owner's colors.
+
+With either value, [`UseNormalLight=yes`](/keys/usenormallight/) draws the animation at normal brightness instead.
+
+Under the fog of war, the structure's animation is drawn as the player last saw it. That copy follows the same color rule, but it ignores `AltPalette`, and with `yes` it takes the cell's brightness instead of the structure's.
+
+The flag has no effect on any other animation. An animation that belongs to the terrain tile it stands on is always drawn in the same tinted terrain palette as the ground beneath it.
 
 ```ini title="art.ini"
-[MYREFN_B] ; a refinery's fire ball, the same color for every house
+[MYREFN_B] ; a refinery's fireball, the same color for every house
 Image=MYREFN_B
 LoopCount=-1
 Rate=350

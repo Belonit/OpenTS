@@ -4,11 +4,16 @@ scope: aircrafttype
 label: Damage immunity
 when_omitted:
   kind: context-dependent
-  note: Most object types start at no. An AnimType, BulletType, SmudgeType or VoxelAnimType section starts at yes.
+  note: A BulletType, SmudgeType or VoxelAnimType section starts at yes. Every other type starts at no.
 ---
 
-Damage processing leaves a runtime instance of an immune type at its current strength and reports no result, so the shot lands and nothing happens. Only damage marked [forced](/keys/c4warhead/) gets through. Paths that must not be resisted still kill an immune object: Tiberium poisons an infantryman, and a demolition charge counts down on a structure.
+An object of an immune type ignores damage unless the damage is [forced](/keys/c4warhead/). A shot still lands on it, but the object keeps its current strength. A healing weapon cannot restore its strength either.
 
-A TerrainType is reachable only by a warhead marked [`Wood=yes`](/keys/wood/) to begin with, so an immune one has no damage path left at all. A vehicle treats it as impassable rather than repeatedly trying to clear it.
+Forced damage includes, for example, Tiberium poisoning an infantryman and a demolition charge destroying a structure when its countdown ends.
 
-The [low-power damage tick](/systems/power/#the-structure-damage-tick) is not forced, so `Immune=yes` is one way to keep a structure that draws power from decaying while its house is short.
+Two kinds of object ignore forced damage too when their type is immune:
+
+- A TerrainType can be damaged only by a warhead marked [`Wood=yes`](/keys/wood/), and an immune one takes no damage at all. A vehicle armed with a `Wood=yes` warhead normally plans to shoot a TerrainType out of its path, but treats an immune one as impassable.
+- A [`BridgeRepairHut=yes`](/keys/bridgerepairhut/) structure takes no damage at all.
+
+The [low-power damage tick](/systems/power/#the-structure-damage-tick) is not forced, so `Immune=yes` keeps a structure that draws power from being worn down while its house is short of power.

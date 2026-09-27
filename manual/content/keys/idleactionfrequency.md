@@ -9,13 +9,28 @@ when_omitted:
 
 ```ini title="rules.ini"
 [AudioVisual]
-IdleActionFrequency=.083
+IdleActionFrequency=.15 ; the stock value, a wait of 4.5 to 18 seconds
 ```
 
-Every time an infantryman performs an idle action it sets its own next one, drawing a random interval between half the value and twice it. The figure is therefore the middle of a spread rather than a fixed period. The value is in minutes at fifteen frames a second, which makes the default a wait of between two and a half and ten seconds. One figure covers the whole game, so lowering it makes every infantryman on the map fidget more often rather than picking out a type.
+After each idle action, an infantryman waits a random time between half this value and twice it before the next one. The value is in minutes. At 15 frames a second, the default `.083` gives a wait of between about two and a half and ten seconds. The setting applies to all infantry; lowering it makes every infantryman idle more often.
 
-The wait is only checked while the infantryman is standing still with nothing worth shooting at, under a guard, hunt or guard-area mission. The interval is therefore a floor rather than a schedule: one under fire or on the move never reaches the check at all.
+The wait is a minimum. When it has passed, the infantryman idles at the next check of its guard, hunt or area guard mission, and only if all of these hold:
 
-When it does fire, one of eleven equally likely outcomes is drawn. Three play the plain idle animation, three play an idle animation with a turn and an occasional muttered [`VoiceComment`](/keys/voicecomment/), four turn to a random facing, and one does nothing. A frightened [`Fraidycat=yes`](/keys/fraidycat/) infantryman under a computer house scatters instead of drawing at all.
+- it is standing in its guard or ready stance;
+- it is not moving, firing or prone;
+- it has no target nearby.
 
-Only infantry idle. Vehicles, aircraft and structures have no idle action and never read the value.
+Each idle action is one of eleven equally likely outcomes. The animations are the `Idle1` and `Idle2` entries of the infantry type's [`Sequence`](/keys/sequence/).
+
+| Outcomes | Action |
+| --- | --- |
+| 3 | Plays the `Idle1` animation. |
+| 3 | Plays the `Idle2` animation and turns to a random facing. |
+| 4 | Turns to a random facing. |
+| 1 | Does nothing. |
+
+On an `Idle2` outcome, an infantryman the player owns and has not selected has a one-in-three chance to play the first sound in its [`VoiceComment`](/keys/voicecomment/) list.
+
+A computer-owned [`Fraidycat=yes`](/keys/fraidycat/) infantryman also scatters. It scatters in place of the idle action while it is frightened, and on one of the four turning outcomes otherwise.
+
+Vehicles, aircraft and structures have no idle actions.

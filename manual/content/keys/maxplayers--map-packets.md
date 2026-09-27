@@ -15,4 +15,4 @@ MinPlayers=2
 MaxPlayers=4
 ```
 
-The value is read into the entry's maximum player count. The count belongs to the listing and nothing reads it afterwards: not the lobby, not the starting-position pass, not the house assignment. A map declaring `MaxPlayers=4` can still be started with eight players.
+The value is stored with the map's entry in the multiplayer map list, and nothing reads it afterwards. No lobby caps the number of players at it, and starting positions and houses are assigned without it. A map declaring `MaxPlayers=4` still accepts as many players as the lobby allows.

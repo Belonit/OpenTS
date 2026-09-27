@@ -10,9 +10,11 @@ when_omitted:
 
 ```ini title="rules.ini"
 [4TNK] ; a UnitType registered in [VehicleTypes]
-SelfHealingRate=.004
+SelfHealingRate=.004 ; example value, one tick every 3 frames
 ```
 
-The type's own answer to [`SelfHealRate`](/keys/selfhealrate/), a fraction of a minute multiplied by 900 frames and truncated, used in place of the game-wide interval while the object is [mending itself](/systems/repair/#self-healing).
+`SelfHealingRate` sets the time between [self-healing](/systems/repair/#self-healing) ticks for this type. It replaces the rules-wide [`SelfHealRate`](/keys/selfhealrate/) for this type. A smaller value heals faster.
 
-The tick still lands on the global frame counter rather than on a count of its own, so two types sharing an interval heal on the same frames. An interval that truncates below one frame is raised to one frame.
+The value is in minutes: it is multiplied by 900 frames and truncated to whole frames. An interval that truncates to zero frames is raised to one, so the object heals on every frame.
+
+Ticks fall on game frames whose number is a multiple of the interval. Every object on the same interval therefore heals on the same frames.

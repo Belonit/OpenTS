@@ -7,10 +7,22 @@ when_omitted:
   value: "no"
 ---
 
-The flag changes drawing only, and only for a vehicle whose image is assembled from separate pieces before it goes on the screen. A shape-drawn vehicle needs [`Turret=yes`](/keys/turret/); a voxel-drawn one needs either that with a turret voxel present or a barrel voxel of its own. Such a vehicle is composed on a scratch surface so that hull, turret and barrel layer correctly against one another. This flag governs how the finished composite is then put down. A vehicle drawn in one piece never reaches that step, so the flag does nothing for it whatever its height.
+On a vehicle whose hull, turret and barrel are combined into one image, `TooBigToFitUnderBridge=yes` draws that image in two pieces that are depth-sorted separately, under the conditions below. The top of the vehicle and the rest of it can then layer differently against a bridge deck. The flag changes only how the vehicle is drawn.
 
-When the flag is set and the branch applies, the composite goes down in two pieces, a band 32 pixels deep off the top and the remainder below it. Each piece gets a depth bias and a depth gradient of its own, so the upper and lower halves of the vehicle sort against the bridge deck independently instead of as one sprite.
+These vehicles combine their parts into one image:
 
-Two conditions reach that split. The first is the vehicle being under a bridge with no bridge support tile registered beside it. Being under a bridge is its own cell covered, or a covered cell alongside whose deck still reaches over it, exactly the test [`ZFudgeBridge`](/keys/zfudgebridge/) describes; the neighbor count is the same one [`ZFudgeColumn`](/keys/zfudgecolumn/) covers. The second is the vehicle having a destination assigned while in radio contact with a [`WeaponsFactory=yes`](/keys/weaponsfactory/) building. That is the tall vehicle rolling out of the factory it was built in.
+- a vehicle drawn from shape artwork with [`Turret=yes`](/keys/turret/);
+- a voxel vehicle with `Turret=yes` and a turret voxel, or with a barrel voxel.
 
-The whole flag is inert on a vehicle that is not under a bridge and not leaving a war factory: it neither restricts movement nor keeps the vehicle off a bridge cell. No movement rule reads the flag at all. A type marked with it passes under a deck, or is refused, on exactly the same terms as one without it. What governs that passage is the height step of the per-cell test, which [Movement and terrain](/systems/movement-and-terrain/#height-ramps-and-bridges) owns; this flag answers only how a vehicle already passing is drawn.
+Any other vehicle is drawn in one piece, and the flag has no effect on it. The stock Wolverine, for example, sets the flag but has `Turret=no`.
+
+The split draws a band 32 pixels deep from the top of the image as one piece and the remainder as the other. Each piece gets its own depth adjustment.
+
+The split applies when either of these holds, tested in this order:
+
+1. The vehicle is under a bridge as [`ZFudgeBridge`](/keys/zfudgebridge/) defines it, and no road bridge middle span tile lies to its south, east or south-east. Those are the tiles [`ZFudgeColumn`](/keys/zfudgecolumn/) counts.
+2. The vehicle has a destination and is in radio contact with a [`WeaponsFactory=yes`](/keys/weaponsfactory/) structure, as when it drives out of the structure that built it.
+
+Otherwise the vehicle is drawn in one piece.
+
+The flag does not affect movement. A vehicle with it passes under a bridge deck, or is refused, exactly as one without it would be. [Height, ramps and bridges](/systems/movement-and-terrain/#height-ramps-and-bridges) gives those rules.

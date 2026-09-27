@@ -8,4 +8,4 @@ when_omitted:
   value: "3"
 ---
 
-Nothing paces a computer house's offensives on an interval of its own. Attacking forces reach the map as ordinary teams, drawn one suggestion at a time by [the AI trigger pass](/systems/ai-team-production/#when-the-pass-runs), whose countdown is [`TeamDelays`](/keys/teamdelays/).
+No setting spaces a computer house's attacks on a fixed interval. Attacking forces reach the map as ordinary teams, raised one at a time by [the AI trigger pass](/systems/ai-team-production/#when-the-pass-runs). [`TeamDelays`](/keys/teamdelays/) sets how often that pass runs.

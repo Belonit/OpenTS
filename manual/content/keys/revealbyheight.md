@@ -7,8 +7,8 @@ when_omitted:
   value: "yes"
 ---
 
-At `yes` each cell inside the sight radius is checked against one probed cell before it is revealed. The probe is the candidate cell's ground cell, displaced two cells on both axes and then stepped once toward the object doing the looking. The reveal is refused while that probed ground stands more than three height levels above that object. At `no` the check is skipped and every cell inside the sight radius is revealed regardless of the terrain between.
+With `yes`, high ground can hide cells from a look. Each cell in the sight radius is revealed only if the ground at one nearby probe cell is no more than three height levels above the object looking. With `no`, every cell in the sight radius is revealed, whatever the terrain.
 
-Switching it off also turns on a second behavior. An object that has moved one cell can rescan the outer rings of its sight radius rather than the whole disc, and that shortcut is guarded on this flag being `no`. At the default every look scans the full disc.
+`no` also changes how often the whole radius is scanned. A vehicle or infantryman that has moved one cell then rescans only the outer rings of its sight radius. With `yes`, every look scans the whole radius.
 
-[The scan](/systems/map-visibility/#the-scan) covers both, including which cell is probed.
+[The scan](/systems/map-visibility/#the-scan) shows which cell is probed.

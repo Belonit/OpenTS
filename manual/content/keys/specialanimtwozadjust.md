@@ -7,4 +7,8 @@ when_omitted:
   value: "0"
 ---
 
-The bias that decides whether the second special slot's animation is drawn over the structure or behind it. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers which direction each sign moves it and the signed byte, -128 through 127, that the figure has to fit in. [`SpecialAnim`](/systems/building-animations/#where-each-setting-is-read-from) covers why it is not written in the same section as the slot's animation names.
+A negative value brings the [`SpecialAnimTwo`](/keys/specialanimtwo/) animation toward the viewer, so it is drawn over the structure and anything else at that depth. A positive value pushes it back, so the structure covers it.
+
+Keep the value between -128 and 127. It is stored in one signed byte, so a value outside that range wraps around; [Placement and draw order](/systems/building-animations/#placement-and-draw-order) gives an example.
+
+The slot's animation names come from a different art entry when the structure sets [`Image=`](/keys/image/); [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) covers the split.

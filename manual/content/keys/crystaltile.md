@@ -8,6 +8,6 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-Only the set's first tile is used, as the unbroken crystal that [`ClearToCrystalLat`](/keys/cleartocrystallat/) blends against and the tile a crystal cell reverts to when crystal surrounds it.
+Only the set's first tile is used. It is the plain crystal ground that [`ClearToCrystalLat`](/keys/cleartocrystallat/) blends against, and the tile a crystal cell returns to when all four of its edge neighbors are crystal.
 
-Crystal is a mutated-biome feature of the random map generator, which maps to the temperate theater. The generator floods a spread of cells with this tile, then makes up to five random draws among those cells. Each drawn cell is dressed with a crystal terrain object when it is still plain crystal and not reserved for something else.
+The random map generator lays crystal ground only on mutated-biome maps, which use the temperate theater. Each crystal deposit covers a spread of cells with this tile. The generator then plants up to five crystal terrain objects, drawn from `FONA06` to `FONA15`, each on a random cell of the deposit that still holds this tile and is not protected.

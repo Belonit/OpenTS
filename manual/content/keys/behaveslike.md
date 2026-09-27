@@ -1,4 +1,4 @@
 ---
 key: BehavesLike
-summary: The named behavior that decides which fixed routines drive a particle or a particle system.
+summary: The behavior a particle or a particle system follows, such as smoke, gas or sparks.
 ---

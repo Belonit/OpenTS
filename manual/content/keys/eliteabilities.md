@@ -7,7 +7,9 @@ when_omitted:
   value: ""
 ---
 
-A comma-separated list of ability tokens, matched without regard to letter case and parsed exactly like [`VeteranAbilities`](/keys/veteranabilities/), including the whitespace rule described there. The list is read only at elite rank: a veteran of the same type gets nothing from it, and an elite holds the union of both lists. [The ability table](/systems/veterancy/#abilities) lists the eighteen accepted tokens and what each one does.
+An elite object has every ability in this list as well as every ability in its type's [`VeteranAbilities`](/keys/veteranabilities/). A veteran of the same type gets nothing from this list.
+
+The value is a comma-separated list of ability tokens, matched without regard to letter case and parsed exactly like `VeteranAbilities`, including the whitespace rule described there. [The ability table](/systems/veterancy/#abilities) lists the accepted tokens and what each one does.
 
 ```ini title="rules.ini"
 [MYTANK] ; example UnitType
@@ -15,4 +17,4 @@ VeteranAbilities=FIREPOWER
 EliteAbilities=ROF,SELF_HEAL
 ```
 
-An elite `MYTANK` fires harder, reloads faster, and repairs itself; a veteran one only fires harder.
+An elite `MYTANK` deals more damage, reloads faster and repairs itself; a veteran one only deals more damage.

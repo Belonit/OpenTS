@@ -7,16 +7,22 @@ when_omitted:
   note: 8 × WalkFrames, counted from frame 0, whatever Facings holds.
 ---
 
-The turret strip runs from here, one frame for each of the vehicle's [`TurretFacings`](/keys/turretfacings/).
+The turret frames start at this frame, one frame for each of the vehicle's [`TurretFacings`](/keys/turretfacings/). Only a [`Turret=yes`](/keys/turret/) vehicle drawn from shape artwork draws them.
 
-The derived default leaves room for eight walk blocks, and that eight is fixed. A vehicle cut into more than eight [`Facings`](/keys/facings/) therefore has walk blocks that would run through its own turret strip. Its artwork then either puts the walk block after the strip or names this key to move the strip elsewhere.
+The default leaves room for exactly eight walk runs from frame 0, whatever [`Facings`](/keys/facings/) holds. It takes no account of [`StartWalkFrame`](/keys/startwalkframe/) or of the standing and firing frames. By default the turret frames therefore overlap other artwork on a vehicle that has any of these:
+
+- more than eight facings, whose later walk runs pass the turret frames' start;
+- a `StartWalkFrame` above `0`, which pushes the last walk runs past it;
+- eight facings and [`FiringFrames`](/keys/firingframes/) above `0`, whose default standing or firing frames start at the same frame ([`StandingFrames`](/keys/standingframes/) explains).
+
+To separate them, set `StartTurretFrame` to put the turret frames after the other artwork, or move the other runs after the turret frames with their start keys. The fragment below moves the walk runs.
 
 ```ini title="art.ini"
-[MYTANK] ; the Image ID of a shape-drawn UnitType
+[MYTANK] ; the Image ID of a shape-drawn Turret=yes UnitType
 Facings=32
 WalkFrames=3
-                  ; the derived strip: frames 24-55, eight blocks of 3
-StartWalkFrame=56 ; the 32 walk blocks begin after it
+                  ; default turret frames: 24-55, after eight runs of 3
+StartWalkFrame=56 ; the 32 walk runs start after them
 ```
 
-The move has none of the derived frames with it: every default is settled before the section's own `StartWalkFrame` line is read. A vehicle with no standing artwork, like this one, draws its resting frames from the walk block itself. Standing, firing or death artwork that has to sit past the strip names its start frame outright.
+Moving the walk runs moves no other default ([`StartWalkFrame`](/keys/startwalkframe/) lists them). This vehicle has no standing frames, so it rests on its walk runs and needs nothing more. Standing, firing or death frames placed after the turret frames need their start frames set.

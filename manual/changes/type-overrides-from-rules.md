@@ -28,16 +28,6 @@ credit:
 - ZivDero
 ---
 
-Seven object types no longer have values rewritten in code after their section
-is read. [`Strength`](/keys/strength/), [`Cost`](/keys/cost/),
-[`Explodes`](/keys/explodes/), [`BaseNormal`](/keys/basenormal/) and
-[`GuardRange`](/keys/guardrange/) now decide what those types use, in every
-game type.
+Seven object types now take [`Strength`](/keys/strength/), [`Cost`](/keys/cost/), [`Explodes`](/keys/explodes/), [`BaseNormal`](/keys/basenormal/) and [`GuardRange`](/keys/guardrange/) from their sections of `rules.ini` in every game type. OpenTS 0.1.0 replaced those values with fixed ones for `HMEC`, `GAFSDF`, `GAWALL`, `NAWALL`, `E2`, `NAFNCE` and `NAPOST`, in campaigns as well as multiplayer, so the migration below applies to single-player too.
 
-The affected IDs are `HMEC`, `GAFSDF`, `GAWALL`, `NAWALL`, `E2`, `NAFNCE` and
-`NAPOST`. Unlike the multiplayer weapon overrides, these were applied in
-campaigns too, so the migration below matters to single-player as well.
-
-Two of the overrides were already writing the value the rules gave them, so they
-need no migration. All three wall sections carry `GuardRange=5`, which is the
-five cells the code pinned, and `[NAPOST]` already carries `BaseNormal=no`.
+Two of the fixed values already matched stock data and need no migration. All three wall sections set `GuardRange=5`, the five cells the fixed value used, and `[NAPOST]` already sets `BaseNormal=no`.

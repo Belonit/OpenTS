@@ -7,7 +7,11 @@ when_omitted:
   value: "yes"
 ---
 
-The lines continue from the end of the movement line through each destination queued with the [queue-move key](/systems/action-lines/#when-the-lines-are-shown), in the order they will be traveled. A looping queue draws a closed ring. With `no` only the movement line to the end of the current route is drawn. [Action lines](/systems/action-lines/) covers when the lines are drawn.
+The lines continue from the end of the movement line through each queued destination, in the order they will be traveled. A looping queue draws a closed ring. [Action lines](/systems/action-lines/) covers when the lines are drawn.
+
+The player usually queues destinations with the [queue-move key](/systems/action-lines/#when-the-lines-are-shown). The game also queues some destinations itself. For example, a vehicle ordered to move while it is still leaving a weapons factory keeps that destination queued behind the factory exit.
+
+With `no`, the queue lines are hidden. The movement line and the target line are still drawn.
 
 ```ini title="UI.INI"
 [Ingame]

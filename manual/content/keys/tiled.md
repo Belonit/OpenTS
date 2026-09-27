@@ -7,18 +7,17 @@ when_omitted:
   value: "no"
 ---
 
-The frame the animation has reached is drawn again and again up the screen. Each copy sits one frame-height above the last, and the first sits half a frame-height above the animation's own position. The repetition stops once a copy has been placed above the top edge of the view. A column of smoke written this way reaches the top of the screen at any resolution rather than at the one it was drawn for. Every copy shows the same frame, so the column moves as one.
+The animation's current frame is drawn again and again up the screen, so a column such as the shipped ion cannon beam (`IONBEAM`) reaches the top of the view at any resolution. The first copy sits half a frame-height above the animation's position, and each further copy one frame-height above the last. Copies stop once one has been drawn above the top edge of the view. Every copy shows the same frame, so the whole column animates together.
 
-The step between copies is the height the shape file's header records for the first frame specifically, not the shape set's overall height. A shape whose frames vary in height tiles by whatever the first frame records.
+The step between copies is the height the shape file records for its first frame, whichever frame is showing. It is not the shape's overall height. A shape whose frames differ in height tiles every frame by the first frame's height.
 
-This is a separate drawing path from the ordinary one, and three things do not survive the change:
+A tiled animation is drawn differently from an ordinary one:
 
-- Every copy is drawn through the shared animation palette, so [`AltPalette=yes`](/keys/altpalette/), a structure's house colors and the tinted terrain palette of the cell below are all ignored.
-- The copies are clipped against the whole tactical view rather than against the rectangle the animation was asked to draw into.
-- [`Flat=yes`](/keys/flat/#scope-animtype) is never reached, because the repeated path is taken first.
+- Every copy uses the shared animation palette. [`AltPalette=yes`](/keys/altpalette/), the house colors that [`ShouldUseCellDrawer`](/keys/shouldusecelldrawer/) gives a structure's animation, and the tinted terrain palette of an animation that a terrain tile starts are ignored.
+- [`Flat=yes`](/keys/flat/#scope-animtype) has no effect.
 
-The animation's translucency does survive: every copy is drawn at the level the animation had reached.
+The animation's brightness and fade still apply, and every copy is drawn at the same fade level.
 
-:::danger[A first frame that measures zero pixels tall hangs the game]
-The copies step upward by the height the header records for the first frame, and the loop ends only once a copy has been placed above the top edge. A first frame recorded as zero pixels tall never moves them along, so the same copy is drawn in the same place without end and the game stops responding. A shape holding no frames at all records the same way, since the record of a frame the shape does not have comes back as nothing.
+:::danger[Give the first frame a height]
+If the shape records a height of zero for its first frame, or has no frames at all, the copies never move up the screen. The game then hangs as soon as the animation is drawn on screen.
 :::

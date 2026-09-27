@@ -9,8 +9,10 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-Each type's [`Growth`](/keys/growth/) delay is multiplied by `0.3` when it is reloaded, which is the whole of the switch's effect. It does not decide whether Tiberium grows: growth runs at the full delay with the switch off and stops only when [`TiberiumGrowthEnabled=no`](/keys/tiberiumgrowthenabled/).
+`TiberiumGrows=yes` makes Tiberium grow faster: after each growth pass, a type waits 30% of its [`Growth`](/keys/growth/) delay instead of the full delay. The [`Spread`](/keys/spread/#scope-tiberium) delay between spread passes is unchanged.
+
+The switch does not decide whether Tiberium grows at all. With it off, growth runs at the full `Growth` delay. Among the map's switches, only [`TiberiumGrowthEnabled=no`](/keys/tiberiumgrowthenabled/) stops growth. A Tiberium type with [`GrowthPercentage=0`](/keys/growthpercentage/) never grows.
 
 :::caution[The entry is read in campaigns only]
-The `[SpecialFlags]` block is read from the map only in a single-player mission. A network lobby switches fast growth on for the game it launches; a skirmish gets no such hand-over and runs at the full delay, unless a lobby match earlier in the same session left the switch on. The map's entry is ignored in both.
+Only a single-player mission reads `[SpecialFlags]` from the map. A game against other machines always uses fast growth. A skirmish uses the full delay, unless a network match earlier in the same session turned fast growth on.
 :::

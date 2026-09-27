@@ -8,7 +8,7 @@ when_omitted:
   note: The theater read stops at this section, and no tile set numbered at or above it is loaded.
 ---
 
-The figure is how many tiles the set defines. Each one becomes a tile type in the theater heap, numbered consecutively from wherever the previous set left off. Each one is looked for on disk as [`FileName`](/keys/filename/) plus a two-digit index counting from `01`. A set is registered before its count is read, so a set whose count says zero still claims a position in the theater's tile numbering, but contributes no tiles. This is the numbering a [`General`](/formats/theater-control/) role resolves against: `ShorePieces=NNNN` names a tile set, and the engine records the number of that set's first tile.
+The count is how many tiles the set adds to the theater. The tiles are numbered on from the last tile of the previous set, and a tile's lettered alternates share its number. [Theater control files](/formats/theater-control/) covers how each tile's artwork file is named from [`FileName`](/keys/filename/).
 
 ```ini title="TEMPERAT.INI"
 [TileSet0631]      ; example set
@@ -17,4 +17,8 @@ FileName=RVCLIF
 TilesInSet=8       ; RVCLIF01 through RVCLIF08
 ```
 
-The count is trusted as written. A count larger than the artwork on disk still creates that many tile types; the surplus ones hold no image, report zero width and height, and draw nothing where a cell places them. A negative count other than the omission marker ends the read at that section: the set contributes nothing, and no set numbered at or above it is loaded.
+A `[General]` role such as `ShorePieces=` names a tile set by its section number, and the engine resolves it to the number of that set's first tile. A set with a count of `0` still uses up its section number but adds no tiles. A role naming it therefore resolves to the tile number where the next set starts.
+
+The count is not checked against the artwork on disk. A count larger than the files present still creates that many tile types, and the extra ones have no artwork and a width and height of zero.
+
+Any negative count has the same effect as omitting the key.

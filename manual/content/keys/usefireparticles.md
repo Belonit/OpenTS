@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-The projectile is still created and still flies, but its firepower is forced to nothing, so [`Damage=`](/keys/damage/#scope-weapontype) is never delivered. Everything the weapon does is done by the particle system named in [`AttachedParticleSystem=`](/keys/attachedparticlesystem/), which is spawned at the muzzle and aimed at the target as the shot leaves.
+Whatever damage the weapon deals comes from the particle system named in [`AttachedParticleSystem=`](/keys/attachedparticlesystem/). The system is spawned at the muzzle and aimed at the target as the shot leaves. The projectile is still created and still flies, but it carries no damage, so [`Damage=`](/keys/damage/#scope-weapontype) is never delivered.
 
 ```ini title="rules.ini"
 [MyFlamer] ; example WeaponType
@@ -16,10 +16,12 @@ AttachedParticleSystem=FireStreamSys ; a ParticleSystemType registered in [Parti
 ROF=30
 ```
 
-The firer must stand still, and more than still: a vehicle and an infantry both refuse the shot while a destination is pending, whether or not they have started moving toward it. Neither of the object's weapons may fire again while the stream is alive. The reload delay is then exactly [`ROF`](/keys/rof/): the house's rate of fire bias, the burst gaps and the random padding are all skipped. The stream's own lifetime and `ROF` together set the firing rate. A structure with more than one round left waits a single frame instead, so only the effect's own lifetime paces it.
+A vehicle or infantry with a destination refuses to fire the weapon, even before it starts moving.
 
-Assigning the object a target it cannot reach kills the stream at once: the system is removed the moment a new target is set that is out of range. Clearing the target altogether is not one of these moments; the removal check passes over an empty target and the stream stays.
+While the stream is alive, neither of the object's weapons can fire, as [Firing geometry](/systems/firing-geometry/#effects-that-hold-the-weapon-shut) describes. The next shot waits for the stream to end and for [`ROF`](/keys/rof/#scope-weapontype) to pass. The weapon's `ROF` is used as written, without the house multiplier, burst gaps or random extra frames. A structure that had more than one round of ammunition when it fired waits a single frame instead, so only the stream's lifetime paces it.
 
-:::danger[A fire weapon with no particle system named crashes the game]
-Nothing checks that [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) resolved to anything before the stream is spawned, and the game stops the first time such a weapon fires.
+The stream ends early when the firer is given a destination, or a new target outside its first weapon's range. The particles already thrown finish their flight. The weapon can fire again once the delay set at the shot has passed. Clearing the target does not end the stream.
+
+:::danger[Name a particle system for every fire weapon]
+If [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) is missing or names no registered particle system, the game crashes the first time the weapon fires.
 :::

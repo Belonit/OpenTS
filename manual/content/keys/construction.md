@@ -8,6 +8,4 @@ when_omitted:
   value: none
 ---
 
-The name promises a sound for a structure going up. The value is resolved against the sound registry and stored, and no gameplay path reads the slot back. An unregistered sound name is not even stored; the slot keeps whatever it already held.
-
-The sounds a structure does make as it appears belong to other settings: [`BuildingSlam`](/keys/buildingslam/) when the player places one, [`BuildingDrop`](/keys/buildingdrop/) when a construction vehicle deploys into one.
+The name suggests a sound for a structure going up, but nothing plays it. The sounds a structure makes as it appears come from two other settings: [`BuildingSlam`](/keys/buildingslam/) when the player places one, and [`BuildingDrop`](/keys/buildingdrop/) when the player's vehicle deploys into one.

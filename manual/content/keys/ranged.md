@@ -7,9 +7,11 @@ when_omitted:
   value: "no"
 ---
 
-The distance the projectile covers each game frame is taken off its remaining allowance, and it detonates wherever it happens to be when the allowance runs out. Both flight models spend fuel the same way.
+The projectile carries a flight allowance and detonates wherever it is when the allowance runs out. Each game frame, the distance it moved is taken off the allowance. Homing and ballistic projectiles spend it the same way.
 
-The allowance is the firing weapon's [`ProjectileRange`](/keys/projectilerange/) and not its [`Range`](/keys/range/). Those are separate settings: `Range` is how far the weapon may be fired, `ProjectileRange` is how far the shot may then travel. A weapon that never narrows `ProjectileRange` gives its projectile roughly 390 cells to spend, so marking the projectile fueled without also setting `ProjectileRange` leaves it flying effectively without limit. A bomblet released by a [`Splits=yes`](/keys/splits/) projectile works the other way round: it is given its [`AirburstWeapon`](/keys/airburstweapon/)'s `Range` as the allowance.
+The allowance is the firing weapon's [`ProjectileRange`](/keys/projectilerange/), not its [`Range`](/keys/range/). `Range` is how far away the weapon may fire from, and `ProjectileRange` is how far the shot may then travel. A weapon that does not set `ProjectileRange` gives its projectile about 390 cells, so a `Ranged=yes` projectile needs `ProjectileRange` on its weapon to run out in practice.
+
+A bomblet released by a [`Splits=yes`](/keys/splits/) projectile takes its allowance from its [`AirburstWeapon`](/keys/airburstweapon/)'s `Range` instead.
 
 ```ini title="rules.ini"
 [MYROCKET] ; a BulletType, registered by a weapon naming it as its Projectile
@@ -20,5 +22,5 @@ Ranged=yes
 [MyRocketLauncher] ; a WeaponType, registered by an object naming it as its Primary
 Projectile=MYROCKET
 Range=7
-ProjectileRange=9 ; two cells of chase beyond the range it may be fired at
+ProjectileRange=9 ; the rocket may fly 9 cells, 2 more than the firing range
 ```

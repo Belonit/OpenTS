@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-With [`DemandLoadBuildup=yes`](/keys/demandloadbuildup/), this flag releases construction art after draw-area measurement, structure creation and its sellability check, buildup completion, and structure destruction. The next request reloads it.
+With [`DemandLoadBuildup=yes`](/keys/demandloadbuildup/), this flag unloads the type's construction artwork after each use. That happens after a structure of the type is created, when a structure finishes its construction animation, when a structure of the type is removed from the game, and once more by the time the first structure of the type is drawn. The artwork is read from disk again the next time it is needed.
 
-Without `DemandLoadBuildup=yes`, it does nothing and leaves archive art attached. Prior OpenTS stripped that art after the first structure, so later structures lost construction and deconstruction, sellability, and technician conversion for nominal crew on destruction.
+Without `DemandLoadBuildup=yes`, the flag has no effect, and the construction artwork loaded with the rules stays loaded.

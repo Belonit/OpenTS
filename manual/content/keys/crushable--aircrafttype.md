@@ -8,8 +8,24 @@ when_omitted:
   note: An InfantryType section starts at yes. Every other object type in this scope starts at no.
 ---
 
-The crusher on the other side of this setting is a [`Crusher=yes`](/keys/crusher/) UnitType or a unit whose type lists the `CRUSHER` ability on [`VeteranAbilities=`](/keys/veteranabilities/) or [`EliteAbilities=`](/keys/eliteabilities/) and has been promoted to the matching rank. Everything below applies to that pairing only; nothing else in the game destroys the object or overlay over it, though the flag does shape pathfinding and the track a driving vehicle takes.
+`Crushable=yes` lets a crusher drive over the object or overlay. A crusher is a [`Crusher=yes`](/keys/crusher/) UnitType, or a vehicle whose type lists the `CRUSHER` ability on [`VeteranAbilities=`](/keys/veteranabilities/) or [`EliteAbilities=`](/keys/eliteabilities/) and that has reached the matching rank.
 
-**An overlay** marked crushable and [`Wall=yes`](/keys/wall/) is destroyed outright the moment such a vehicle drives onto it. The cell plays the overlay's [`CrushSound`](/keys/crushsound/#scope-aircrafttype), the wall segment is removed with no regard for its owner or its damage stage, and the vehicle rocks forward. A crushable overlay that is not a wall gets the same sound and the same rocking but survives. The removal step is written for wall segments and does nothing to it. The cell also reports itself as crushable terrain, which lets a crusher's pathfinding route straight through a crushable wall. A wall owned by an ally is also flagged as friendly and destroyable.
+**An object** marked crushable is destroyed when a crusher enters its cell. The crusher plays the object's [`CrushSound`](/keys/crushsound/#scope-aircrafttype) and is credited with the kill. A crusher that is not a train leaves allied objects alone, and a train crusher crushes them too. An infantryman on its way to steal a crusher that is not a train is not crushed: the crusher is captured instead.
 
-**An object** marked crushable is run over rather than shot. A crusher that finds one in the cell it is entering deletes it, plays its `CrushSound`, and records the kill. Allied objects are passed over unharmed unless the crusher is a train. A computer-controlled crusher drives at a crushable target that is inside the `[CombatDamage] Crush=` distance instead of firing on it. [`AutoCrush=yes`](/keys/autocrush/) and `[CombatDamage] PlayerAutoCrush=` are tested only on branches a house a human is playing never reaches. An unarmed crusher pointed at a crushable object is offered a move cursor in place of the attack cursor it could not use.
+The lead car of a [train](/keys/istrain/), crusher or not, damages every object in a cell it enters except the crushable ones.
+
+A crusher also plans around crushable objects:
+
+- Its pathfinding does not treat a cell holding a crushable enemy object as blocked.
+- A computer-controlled crusher drives at a crushable target inside the [`[CombatDamage] Crush=`](/keys/crush/) distance instead of firing on it. A crusher belonging to a human player never does this on its own, whatever [`AutoCrush=`](/keys/autocrush/#scope-aircrafttype) and [`PlayerAutoCrush=`](/keys/playerautocrush/) say.
+- A crusher that has no weapon shows the move cursor over a crushable object, where an armed one would show the attack cursor.
+
+**A wall overlay** marked crushable is destroyed outright when a crusher drives onto it, whatever its owner or damage stage. The crusher plays the overlay's `CrushSound` and rocks forward.
+
+A crusher's pathfinding treats an enemy or unowned crushable wall as open ground. A crushable wall owned by an ally stays an obstacle, which the pathfinding routes around where it can.
+
+**Any other overlay** marked crushable survives. A crusher driving onto it still plays the sound and rocks forward.
+
+Route planning treats a cell that holds any crushable overlay, wall or not, as closed to a type whose [`MovementZone=`](/keys/movementzone/) is `Normal`, `Amphibious` or `Infantry`. Such a type plans its routes around the cell.
+
+Any vehicle that moves with the drive locomotor, crusher or not, drives straight through a cell holding a crushable overlay. It does not curve into or out of that cell.

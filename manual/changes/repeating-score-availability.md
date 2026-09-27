@@ -1,5 +1,5 @@
 ---
-title: Do not repeat a score the game does not have
+title: Do not repeat a music track the game does not have
 category: fix
 release: 0.2.0
 targets:
@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-A score marked to repeat was handed back by the playlist forever when its audio file was missing from the mixfiles. Nothing else was ever picked, and the game played no music at all until a track was chosen by hand. Such a score is no longer offered. Starting a score that will not play no longer records it as the one playing either. Before, a score that never started could not be stopped, so it stayed current and was tried again on every frame.
+A repeating music track whose audio file was missing was tried again on every frame, and the game played no music until the player chose a track by hand. This affected a track set to restart when it ends with `Repeat=yes` in its `theme.ini` section, and any track while the sound options' repeat setting was on. During a game, another track from the playlist now plays instead.

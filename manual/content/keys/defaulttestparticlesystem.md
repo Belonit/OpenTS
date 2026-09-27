@@ -8,4 +8,4 @@ when_omitted:
   value: none
 ---
 
-One of the ten `Default…System` names the section sets, each parsed into its own place and nine of the ten never read. [`DefaultDebrisSmokeSystem`](/keys/defaultdebrissmokesystem/) covers where the systems an object or a weapon gives off are actually named.
+This is one of nine `Default…System` keys with no effect. [`DefaultDebrisSmokeSystem`](/keys/defaultdebrissmokesystem/) lists them and names the keys that do give objects, weapons and warheads their particle systems.

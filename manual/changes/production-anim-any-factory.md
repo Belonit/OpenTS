@@ -1,5 +1,5 @@
 ---
-title: Let any factory run its production animation
+title: Let barracks and vehicle factories run their production animation
 category: feature
 release: 0.2.0
 targets:
@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-`ProductionAnim=` now plays as the finished object leaves any factory, including a barracks and a vehicle factory without `WeaponsFactory=yes`. It used to play only on a construction yard, refinery, repair bay or weapons factory. A hospital or armory does not play it, since it produces nothing.
+`ProductionAnim=` in a structure's `art.ini` entry now also plays when a finished infantryman leaves a barracks or a finished vehicle leaves a factory without `WeaponsFactory=yes`. It used to play only on a construction yard, refinery, repair bay or weapons factory. An aircraft factory still does not play it, and neither does a hospital or armory when a healed or upgraded infantryman leaves, unless the structure also builds infantry.

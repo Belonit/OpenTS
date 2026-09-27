@@ -13,6 +13,8 @@ when_omitted:
 SelfHealingCap=100%
 ```
 
-The type's own answer to [`SelfHealCap`](/keys/selfhealcap/), used in place of the game-wide ceiling: a [self-healing](/systems/repair/#self-healing) tick is refused once the object stands above this share of its maximum strength. A percentage and a plain fraction read the same, and `100%` mends the type completely.
+`SelfHealingCap` sets how far objects of this type can [heal themselves](/systems/repair/#self-healing), as a share of maximum strength. It replaces the rules-wide [`SelfHealCap`](/keys/selfhealcap/) for this type. A higher value lets the object heal further.
 
-[`ConditionYellow`](/keys/conditionyellow/) keeps deciding when the object's damage smoke goes out, whatever this is set to.
+A tick heals only while the object's strength is at or below this share, so healing stops up to one step past it. `100%` heals the object to maximum strength. A percentage and a plain fraction are read the same way, so `100%` equals `1`.
+
+[`ConditionYellow`](/keys/conditionyellow/) still decides when the object counts as damaged and when its damage smoke stops, whatever this key is set to.

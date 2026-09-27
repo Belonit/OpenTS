@@ -15,6 +15,4 @@ MinPlayers=2
 MaxPlayers=4
 ```
 
-A loose `.MPR` in the game directory declares its player limits in its own `[Multiplay]` section. The value is read into the listing's maximum player count, which is private to the listing. A map declaring `MaxPlayers=4` can still be started with eight players.
-
-The section is read only while the map file is available; a listing for a file that has gone missing keeps the initial counts of `2` and `4`.
+The value is stored with the map's entry in the multiplayer map list, and nothing reads it afterwards. No lobby caps the number of players at it, and starting positions and houses are assigned without it. A map declaring `MaxPlayers=4` still accepts as many players as the lobby allows.

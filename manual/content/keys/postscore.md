@@ -13,6 +13,6 @@ PostScore=GDI_M09B
 PreMapSelect=GDI_M11
 ```
 
-The movie follows the score screen and precedes [`PreMapSelect`](/keys/premapselect/). It plays whether or not the score screen itself was shown, so a mission that sets [`SkipScore`](/keys/skipscore/) still gets it, and a recorded game being played back gets neither.
+The movie plays after the score screen and before [`PreMapSelect`](/keys/premapselect/). It still plays when [`SkipScore`](/keys/skipscore/) hides the score screen. Neither the score screen nor the movie appears while a recorded game is played back.
 
 [`Intro`](/keys/intro/) covers how a movie name is resolved and what happens to one that cannot be found.

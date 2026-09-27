@@ -7,6 +7,8 @@ when_omitted:
   value: "6"
 ---
 
-The value is reached only by an aircraft whose type sets [`Sight=0`](/keys/sight/). That aircraft must also be off the ground, and fog of war must be on. No other aircraft reads the setting.
+Only an airborne aircraft whose type sets [`Sight=0`](/keys/sight/) uses this radius, and only while [fog of war](/keys/fogofwar/) is on; without fog, such an aircraft reveals nothing while airborne. Other aircraft reveal terrain with their `Sight=`, and a landed aircraft sees 1 cell.
 
-The pass it drives is not an ordinary reveal. It lifts fog from cells that are already out from under the shroud and leaves shrouded cells alone. An aircraft of this kind therefore clears the way ahead of it without ever uncovering new map. The height test that blocks a reveal behind high ground applies only while the aircraft is below half the `[General]` [`FlightLevel`](/keys/flightlevel/), the rules-wide figure rather than the type's own key of that name. Above that height it clears every cell in the radius.
+Within the radius, the aircraft lifts fog only from cells that are already out from under the shroud. It never uncovers shrouded cells, so it clears the view along its path without mapping new ground. A radius above 10 acts as 10.
+
+High ground can block cells from this reveal while [`RevealByHeight=yes`](/keys/revealbyheight/) and the aircraft flies below half the `[General]` [`FlightLevel`](/keys/flightlevel/#scope-global-rules). At or above that height, high ground blocks nothing, and the aircraft lifts fog from every cell in the radius that is already out from under the shroud. The `FlightLevel` set on the aircraft type does not move this threshold.

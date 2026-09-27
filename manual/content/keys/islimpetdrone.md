@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The flag is presentational. A vehicle with it starts on frame 0 with its stage counter advancing once per game frame. The counter is sent back to 0 the moment it reaches 10, so the artwork loops over frames 0 through 9 in about two thirds of a second. The vehicle is then drawn straight from that frame with no facing frames at all, so the shape never turns with the vehicle's heading.
+The flag changes only how a vehicle drawn from shape artwork is animated. The vehicle shows frames 0 to 9 of its shape in a loop, one frame per game frame, and never turns them to match its heading. A voxel vehicle is drawn as usual.
 
-Nothing else in the engine reads it. Everything else a drone does follows from the rest of its section: what it turns into through [`DeploysInto`](/keys/deploysinto/), how it moves, what it may be targeted by. Clearing the flag changes none of that, only the animation.
+The flag changes nothing else. What a drone turns into through [`DeploysInto`](/keys/deploysinto/), how it moves, and what may target it come from the rest of its section.

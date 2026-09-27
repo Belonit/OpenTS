@@ -8,8 +8,8 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-Swamp blends by the rule [`ClearToRoughLat`](/keys/cleartoroughlat/) describes, with a wider neighbor test than the other families. A neighbor counts as swamp when it falls anywhere in the run of ten tiles beginning at the plain [`SwampTile`](/keys/swamptile/) tile. That is one tile more than the `SwampTile` set holds, so the tenth entry is whatever tile occupies the position after those nine. The eight decorative variants sit inside that run: they count as swamp to the test, and no blend edge forms against them.
+Swamp blends by the rule [`ClearToRoughLat`](/keys/cleartoroughlat/) describes, except that more neighbors count as swamp. Besides the sixteen tiles here, a neighbor counts when it holds any of the ten tiles that start at the plain [`SwampTile`](/keys/swamptile/) tile. The `SwampTile` set's nine tiles are the first nine, and the tenth is whatever tile the theater loads next. The eight decorative swamp tiles fall inside that run, so no blend edge forms against them.
 
-These sixteen tiles also answer as swamp to the terrain test that asks whether a cell is swamp, which is what keeps a blended shoreline of swamp behaving like the swamp it borders rather than like the water.
+When [`SwampTile`](/keys/swamptile/) is resolved, the random map generator counts these sixteen tiles as swamp. When it divides the map into [regions](/systems/map-generation/#regions-cliffs-and-ramps), it therefore groups them with the swamp and water beside them at the same height.
 
-Swamp is one of the four families that keep blending even when their set is unresolved, and here the terrain test misreads with it. That test is gated on the swamp ground role alone, so a theater resolving `SwampTile` but not this set reports its own first fifteen tiles as swamp.
+Resolve this set whenever `SwampTile` is resolved. With this set unresolved, swamp still blends, but a blended cell gets one of the theater's first fifteen tiles; [`ClearToRoughLat`](/keys/cleartoroughlat/) says which. The random map generator also counts those fifteen tiles as swamp, and groups cells holding them with water when it divides the map into regions.

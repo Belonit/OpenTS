@@ -7,7 +7,11 @@ when_omitted:
   value: "0"
 ---
 
-The figure is a strength, not a distance: it scales the brightness the glow is drawn at, with `64` leaving it at its natural level. The stock systems' `21` lands at about a third of that and `25` at about two fifths. Zero or below casts no light at all.
+Sets how large and bright a system's glow is. `0` or below casts no light.
+
+`64` draws the glow at full size and brightness, and lower values shrink and dim it in proportion. `32` gives a glow about half as large and bright, and the stock systems' `21` and `25` give about a third and two fifths.
+
+The glow is drawn from 64 numbered ramps, each wider and brighter than the one before. On each frame of the light, the game picks a ramp and scales its number by this value divided by `64`.
 
 ```ini title="rules.ini"
 [MyWeldingSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -19,8 +23,11 @@ LightSize=25
 OneFrameLight=true
 ```
 
-There are two lights, and [`OneFrameLight`](/keys/oneframelight/) chooses between them. With the flag set, the glow is drawn afresh on every frame the system holds a particle, at this strength scaled by how full the system is against [`ParticleCap`](/keys/particlecap/). A system of any behavior can have one, and every detail setting draws it. Without the flag, a single glow is thrown at this strength when a `Spark` system's first frame bursts. It spreads and burns out over the next ten frames on its own, is drawn only at the highest detail setting, and only the `Spark` [behavior](/keys/behaveslike/#scope-particlesystemtype) casts it.
+[`OneFrameLight`](/keys/oneframelight/) chooses which of two lights the system casts at this strength:
 
-:::danger[A light size above 75 draws the glow from unrelated memory]
-The glow is picked from a fixed run of 74 brightness ramps by scaling the ramp the light's age selects by this figure, and the pick is never tested against the run's length. From `76` up it can land past the last ramp, and the glow is then drawn through whatever value lies beyond the run rather than through a ramp. Keep the figure at `75` or below.
+- With `OneFrameLight=yes`, a system of any behavior draws its glow on every frame it holds a particle, reduced as it empties. That page describes this light.
+- With `OneFrameLight=no`, only a `Spark` [system](/keys/behaveslike/#scope-particlesystemtype) casts a light, and only at the highest detail setting. It throws one glow if its first frame throws a burst. The glow lasts ten frames: it brightens over the first three and fades over the remaining seven.
+
+:::danger[Keep `LightSize` at 75 or below]
+For the flash a `Spark` system throws with `OneFrameLight=no`, values up to `65` use only the 64 glow ramps. From `66` to `75`, the brightest frames pick one of ten flat, evenly lit discs numbered after the ramps, so the glow changes shape at its peak. From `76` up, the brightest frames pick a number past the last disc. The game then reads whatever lies beyond the discs, with unpredictable results that can include a crash. The `OneFrameLight=yes` glow reaches the discs and the overrun only at higher values, so `75` is safe for both lights.
 :::

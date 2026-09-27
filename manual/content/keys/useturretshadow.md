@@ -8,4 +8,6 @@ when_omitted:
   value: "no"
 ---
 
-No drawing path reads the flag. A [`Turret=yes`](/keys/turret/) vehicle drawn from shape artwork casts its shadow from the frame at its own body frame plus half the frame count of its shape file: body frame `45` in a `240`-frame file shadows from frame `165`. The shadow follows the hull rather than the gun, whatever `UseTurretShadow` is set to. A voxel vehicle has [`ShadowIndex`](/keys/shadowindex/) to name the section its shadow renders from; a shape turret's shadow frame is computed, and no setting names it.
+A [`Turret=yes`](/keys/turret/) vehicle drawn from shape artwork always casts the shadow of its hull, not of its turret. The shadow frame is the hull's current frame plus half the frame count of the shape file: hull frame `45` in a `240`-frame file casts its shadow from frame `165`. No setting selects a different frame. A voxel vehicle uses [`ShadowIndex`](/keys/shadowindex/) to choose the section its shadow is drawn from.
+
+Stock art sets `UseTurretShadow=yes` only on the Mammoth Mk. II, a voxel vehicle.

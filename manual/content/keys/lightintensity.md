@@ -16,12 +16,16 @@ LightGreenTint=0.05
 LightBlueTint=0.01
 ```
 
-The figure is a fraction of full brightness on the same scale the map's own ambient light uses. A structure with `LightIntensity=1` adds as much light at its own cell as a fully lit map already has, and the contribution falls away in a straight line to nothing at [`LightVisibility`](/keys/lightvisibility/). The contribution itself does not scale with the map's ambient light; only the brightness it lands on does. A negative figure darkens instead, which is how the stock negative light post takes light out of the ground around it.
+The value is how much light the structure adds to the cells around it, as a fraction of full daylight. At the structure's center, `LightIntensity=1` adds as much light as a map at [`Ambient=1`](/keys/ambient/) already has. The added light falls off in a straight line to nothing at [`LightVisibility`](/keys/lightvisibility/).
 
-A figure of exactly zero means the structure has no light source at all, and the radius and the three tints are then never read. Otherwise the glow is created with the structure, switched off while it is unpowered, and destroyed with it; [Fields, fences and lights](/systems/power/#fields-fences-and-lights) covers the power condition. The glow is unrelated to the swept beam that [`HasSpotlight`](/keys/hasspotlight/) covers.
+The glow is added to the map's ambient light, not scaled by it, so a structure adds the same amount of light on a dark map as on a bright one. A negative value darkens the cells instead, as the stock negative light post does.
 
-A file read after `rules.ini` (an expansion rules file, or a scenario's own rules) that names the same section without this key cuts the stored figure back to a whole number before storing it again. A `0.2` light set in the rules therefore goes out entirely the moment a map touches that section for any other reason, and a `1.5` light drops to `1`. The three tints round off the same way.
+A value of `0` gives the structure no light at all, and its radius and tints then have no effect.
+
+The light comes on when the structure is placed or finishes building. It goes out while the structure is switched off or stunned by an [EM pulse](/systems/emp-pulse/), and for good when the structure is destroyed, sold or undeployed. A power shortage in its house does not dim it. The glow is unrelated to the swept beam that [`HasSpotlight`](/keys/hasspotlight/) covers.
+
+A later rules file can wipe out a fractional value. If any later rules file, such as the expansion's rules or a map's own rules, contains the structure's section but not this key, the stored value loses its fraction. A `0.2` light therefore goes out entirely when a map names the section for any other reason, and a `1.5` light drops to `1`. The three tints lose their fractions the same way.
 
 :::caution[Set the tints whenever you set the intensity]
-The three tint keys start at `1000`, against stock figures that all sit between `-1.5` and `2`, and a structure that sets this key without setting all three of them keeps that starting figure. The tints of a cell are normalized against each other before the ground is drawn, so such a light adds no color at all. The scale divided out of them is multiplied into the cell's brightness, and being that large it runs past the range that brightness is computed in. The cells inside the radius then sit at full brightness or at none rather than in an even pool.
+Give a structure with a light all three tint keys. Each tint left unset stays at its built-in `1000`, far above the stock values, which lie between `-1.5` and `2`. If all three are left unset, the light adds no color, because the tints are balanced against each other as [`LightRedTint`](/keys/lightredtint/) describes. If only some are left unset, those channels swamp the others and the light casts their color. A tint that large also overflows the ground's brightness calculation, so the ground's brightness jumps erratically from cell to cell inside the radius instead of forming an even glow.
 :::

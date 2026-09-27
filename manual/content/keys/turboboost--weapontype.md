@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-The engine parses this yes/no flag into each weapon and stores it. No gameplay path reads the stored flag, and the [global multiplier](/keys/turboboost/#scope-global-rules) that shares the name has no reader either.
+In Red Alert, a weapon with this flag launched its projectiles faster at aircraft, by the [global `TurboBoost`](/keys/turboboost/#scope-global-rules) multiplier.

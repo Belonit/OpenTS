@@ -10,19 +10,12 @@ credit:
 - ZivDero
 ---
 
-Compressed games start at a two-frame send period with six frames of
-look-ahead, then calibrate from every player's process time and worst local
-round trip. A worsening takes effect at the evaluation that sees it. Recovery
-needs sustained headroom and no player waiting 0.1 s or longer, and a decrease
-drains the old scheduling horizon before it takes effect. The inherited
-per-frame slowdown for a lagging player is gone; at adaptive send periods it
-fired on every frame.
+A network game now adjusts its timing during play: how often each machine sends its commands, and how many frames ahead each command is scheduled. The game starts by sending every two frames with commands scheduled six frames ahead. It then follows the slowest player's processing time and the worst round trip between any two players.
 
-The disabled WOL Connection slider shows the effective rung, 1 to 10, and its
-tier, and the message list announces a change of target tier. The Speed slider
-still sets game speed. `LATENCYFUDGE` keeps its place in the replay layout, but
-nothing emits it and the timing policy does not read it.
+The timing slows at the first evaluation that finds a worse connection. It speeds up again only after repeated evaluations find spare margin, and only while no player has recently waited 0.1 seconds or longer for the others.
 
-`NETWORK_REPORT` is a new network event and appears in multiplayer recordings,
-so every player and every recording needs the same OpenTS snapshot. Existing
-event IDs are unchanged, and no configuration migration is needed.
+Internet games used to lengthen every frame by up to 30 milliseconds while a player's latency was high compared with how far ahead commands were scheduled. That slowdown is gone.
+
+In an internet game, the disabled Connection slider in the options dialog shows the timing in force as a rung from 1, the fastest, to 10, and names its quality tier. The message list announces each change of target tier.
+
+Every player now sends a new `NETWORK_REPORT` event during a network game, so all players need the same OpenTS build. Recordings contain the event, so play a recording with the build that wrote it. Existing events keep their IDs, and `LATENCYFUDGE` and `PROCESS_TIME` are no longer sent.

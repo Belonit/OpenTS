@@ -2,4 +2,20 @@
 command_id: VeterancyFilter
 ---
 
-Sorts the selected objects the player controls into three ranks, elite, veteran and rookie, as [veterancy](/systems/veterancy/) defines them. On a mixed selection the first press keeps only the highest rank present and remembers the whole selection. While the selection is still that remembered group, one of its ranks, or two of them together, each further press moves to the next rank the group holds, wrapping from rookie back to elite. From the two ranks the add-lower form produces, it moves to the third rank, if the group holds one. A remembered object that is destroyed leaves the group, and the cycle carries on over what is left. With one elite, one veteran and one rookie selected, the first press keeps only the elite, the second only the veteran, the third only the rookie, and the fourth the elite again. Any other selection starts over, and a fresh selection of one rank does nothing. [`VeterancyFilterAddLower`](/commands/veterancyfilteraddlower/) grows the selection back instead of replacing it. The remembered group is forgotten when the scenario ends and when a saved game is loaded. Neither filter acts while a structure is being placed.
+Narrows the selection to one [veterancy](/systems/veterancy/) rank at a time: elite, veteran or rookie. Only selected objects the player controls count. Ranks are worked out again on every press, so an object promoted since the previous press counts at its new rank.
+
+The command remembers the selection it first narrowed as its group. A press continues that group when the selection is exactly the group, all of one of its ranks, or all of two of its ranks. What the press does depends on which of these the selection is:
+
+- The whole group: keeps only its highest rank.
+- One rank: keeps only the next lower rank the group holds, wrapping from rookie back to elite. If the group holds no other rank, the selection stays the same.
+- Two ranks of a group that holds all three: keeps only the third rank.
+
+With one elite, one veteran and one rookie selected, the first press keeps only the elite, the second only the veteran, the third only the rookie, and the fourth the elite again.
+
+A selection that does not continue the group and holds more than one rank becomes the new group, and the press keeps only its highest rank. A single-rank selection that does not continue the group does nothing, and the previous group stays remembered.
+
+A remembered object counts as part of the group only while it exists, belongs to the player and is on the map. Infantry inside a transport does not count, and counts again once it unloads. The cycle continues over the objects that count.
+
+The group is forgotten when a scenario or a saved game is loaded.
+
+[`VeterancyFilterAddLower`](/commands/veterancyfilteraddlower/) adds the next rank to the selection instead of replacing it. Neither command does anything while the player is placing a structure.

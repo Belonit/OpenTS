@@ -7,15 +7,20 @@ when_omitted:
   value: "60"
 ---
 
-The value is a raw frame count, so the default is four seconds at 15 frames to the second. For a two-second wait the line reads:
+`BlockagePathDelay` sets how long an object blocked by another moving object prefers to wait for it before routing around it. It applies to infantry, walkers, hovercraft and driven vehicles. The value is a frame count, so the default is four seconds at 15 frames a second. For a two-second wait:
 
 ```ini title="rules.ini"
 [AI]
 BlockagePathDelay=30
 ```
 
-It is loaded into the object's own countdown twice: once when the object is given a destination, and again the first time a step is refused because another moving object stands in the way. Each load sets the full figure again rather than adding to the time left.
+A higher value keeps traffic queued behind a blocker for longer. A lower value sends objects around each other sooner and spreads them over more ground.
 
-While that countdown is running, a retry prices a cell held by a moving object at four times a clear step. That usually finds the same route again, which leaves the object waiting for the other one to clear. Once the countdown reaches zero, the same cell is priced at a thousand times a clear step instead. The search then takes almost any detour over waiting, but it still routes through the blocker when no detour exists. Raising the figure makes traffic queue up behind itself for longer; lowering it sends objects around each other sooner and spreads them over more ground.
+Each object has its own countdown, which starts again from the full value in two cases:
 
-The driving, walking, mechanical and hovering locomotors all use the same countdown. Reaching zero only changes what a retry asks for: the object is not rerouted until it is blocked again.
+- the object is given a new destination;
+- a moving object blocks it for the first time since it last moved.
+
+While the countdown runs, a new path search costs a cell held by a moving object at up to four times a clear cell. The search usually finds the same route, so the object waits for the blocker to clear. After the countdown reaches zero, the same cell costs a thousand times a clear cell. The search then takes almost any detour, but still goes through the blocker when no detour exists.
+
+Reaching zero does not reroute the object by itself. It changes only how the next path search treats blockers. That search runs the next time the object is blocked after its [`PathDelay`](/keys/pathdelay/) countdown has ended.

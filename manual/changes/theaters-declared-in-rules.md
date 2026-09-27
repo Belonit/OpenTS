@@ -47,8 +47,10 @@ targets:
 credit: [ZivDero]
 ---
 
-A `[Theaters]` list in the rules declares the theaters a game has. Each entry names a section with that theater's archives, its artwork extension, its image letter, and whether it has ice or arctic terrain. Rules declaring no such list keep `TEMPERATE` and `SNOW`. A list that names a theater is the whole roster, so a mod may drop, reorder or replace them, and has to write out any it means to keep.
+`[Theaters]` lists in `rules.ini` and, when Firestorm is installed, in `firestrm.ini` now declare the theaters a game has. The theaters `rules.ini` lists come first, followed by any new names `firestrm.ini` lists. A list in either file replaces the built-in `TEMPERATE` and `SNOW`, so a mod may drop, reorder or replace them and must list any it keeps. Rules with no list in either file keep those two.
 
-`NewTheater` artwork is renamed wherever its second letter is already some theater's image letter. Six fixed two-letter prefixes were matched before. Every piece of artwork the game ships is renamed exactly as it was, and a mod's own prefixes now reach a theater.
+Each theater's archive names, artwork extensions, image letter, arctic terrain, ice growth and radar brightness come from a section named after the theater. That section is read from `rules.ini` and then, when Firestorm is installed, from `firestrm.ini`, so a value set in `firestrm.ini` wins.
 
-A map naming a theater no rules file declares is reported and played in the first declared theater. It used to load whatever archive names lay in front of the theater table in memory.
+A `NewTheater=yes` type's image in `art.ini`, and a structure's artwork, is now renamed when the second letter of its name is any declared theater's image letter. That letter is replaced by the current theater's image letter. Only names starting `GA`, `NA`, `GT`, `NT`, `CA` or `CT` were renamed before. In a new game the shipped artwork gets the same names as before, and a mod's artwork names now follow the theater.
+
+A map whose `Theater=` names no declared theater is now played in the first declared theater. It used to load archives under whatever names lay in memory before the theater table.

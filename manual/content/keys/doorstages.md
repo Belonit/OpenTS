@@ -7,9 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-The door's completion fraction, which [`DeployTime`](/keys/deploytime/) spreads from shut to fully open, is scaled by this count to pick the frame of [`DoorAnim`](/keys/dooranim/) to draw. A closing door counts down from the count instead, and a shut door draws frame `0`. A frame at or past the count is pulled back to the last one in the range, and a negative frame is raised to `0`.
-
-The count is the number of healthy door frames in the animation. With `DoorStages=9`, the door's travel draws frames `0` through `8`.
+`DoorStages` is the number of healthy frames in the [`DoorAnim`](/keys/dooranim/) animation. While the door opens over [`DeployTime`](/keys/deploytime/), it steps evenly through frames `0` to `DoorStages - 1`. A closing door runs the same frames in reverse, and a shut door shows frame `0`. With `DoorStages=9`, the door's travel shows frames `0` through `8`.
 
 ```ini title="art.ini"
 [MYWEAP] ; example war factory, drawn from its own Image ID
@@ -17,6 +15,6 @@ DoorAnim=GAWEAP_D
 DoorStages=9
 ```
 
-At the default of `0` every frame resolves to `0`, so a door animation is drawn standing on its first frame throughout.
+At `0`, the door animation stays on frame `0` throughout.
 
-A [`DamagedDoor=yes`](/keys/damageddoor/) structure at or below [`ConditionYellow`](/keys/conditionyellow/) adds the count to the frame after that clamp, so the damaged block runs from this frame number through twice it less one and the art has to hold both blocks.
+A [`DamagedDoor=yes`](/keys/damageddoor/) structure whose health is at or below [`ConditionYellow`](/keys/conditionyellow/) shows the damaged frames instead. They follow the healthy block: frames `DoorStages` through `2 × DoorStages - 1`. The door artwork must then hold both blocks, healthy first.

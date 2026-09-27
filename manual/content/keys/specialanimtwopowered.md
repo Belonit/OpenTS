@@ -7,4 +7,8 @@ when_omitted:
   value: "yes"
 ---
 
-[Power](/systems/building-animations/#power) covers what the freeze does and does not stop, and which routes to it ignore the structure's own power settings. [`SpecialAnim`](/systems/building-animations/#where-each-setting-is-read-from) covers why it is not written in the same section as the slot's animation names.
+With `yes`, the [`SpecialAnimTwo`](/keys/specialanimtwo/) animation freezes on its current frame while the structure is without power, stays on screen, and resumes when power returns. With `no`, it keeps playing, unless [`SpecialAnimTwoPoweredLight=yes`](/keys/specialanimtwopoweredlight/) removes it instead.
+
+[Power](/systems/building-animations/#power) covers which structures freeze when their house is short of power, and the power cursor, trigger action and EMP pulse that freeze an animation on one structure.
+
+The slot's animation names come from a different art entry when the structure sets [`Image=`](/keys/image/); [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) covers the split.

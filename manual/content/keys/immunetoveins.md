@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The exemption is read twice. A [vein cell](/systems/veins/#standing-in-veins) skips an exempt object when it decides whether to start its attack, so an exempt object standing alone on mature veins never sets one off. The attack, once running for something else in the same cell, passes over the exempt object when it deals out its damage. The `VEIN_PROOF` veteran ability grants a single object the same exemption without the type with this flag.
+[Vein attacks](/systems/veins/#standing-in-veins) leave an object of an exempt type alone. It does not start an attack by standing in flat, mature veins, and it takes no damage from an attack that another object in the same cell started.
+
+The `VEIN_PROOF` [veteran ability](/systems/veterancy/#abilities) gives the same exemption to a single object whose type does not set this key.

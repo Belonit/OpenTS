@@ -24,8 +24,8 @@ targets:
 credit: [Krisztiaan, ZivDero]
 ---
 
-A structure with `DemandLoad=yes` could corrupt the heap during theater setup, construction-art cleanup or shutdown, because it freed shared archive memory or released its own art through a mismatched call. It now detaches archive-owned art after rules or save loading and loads and releases only its own copy on demand. Demand-loaded animations and overlays do the same.
+`DemandLoad=yes` in an `art.ini` section loads that art only when it is first needed. A structure with it could corrupt the game's memory when a theater was set up, when its construction art was released, or at shutdown, because the game released art that belonged to an archive. It now loads and releases only its own copy of the art. Animations and overlays with `DemandLoad=yes` are fixed the same way.
 
-`FreeBuildup=yes` releases construction art only alongside `DemandLoadBuildup=yes`. Used alone it leaves archive art attached, so later structures keep their construction and deconstruction sequences, their sellability, and the technicians a nominal crew leaves on destruction.
+`DemandLoadBuildup=yes` in a structure's `art.ini` section loads its construction art on first use. `FreeBuildup=yes` in the same section now releases that art only when `DemandLoadBuildup=yes` is also set. Set alone, it used to release the archive's copy, so later structures of that type lost their construction and deconstruction animations, could not be sold, and left no technicians among the survivors when destroyed.
 
-An ordinary overlay's deferred `.SHP` name is built from its Image ID instead of an uninitialized buffer.
+A demand-loaded overlay that is not theater-specific now loads the `.SHP` file its Image ID names. The file name used to be built from uninitialized memory.

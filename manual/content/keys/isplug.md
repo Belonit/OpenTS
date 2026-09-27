@@ -7,8 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-Exactly one test reads the flag: [the rating a computer house gives each candidate](/systems/superweapons/#the-computers-use) while its ion cannon looks for something worth striking. A flagged structure that reaches the plug test takes [`AIIonCannonPlugValue`](/keys/aiioncannonplugvalue/) in place of the rating an unremarkable structure gets.
+The flag's only effect is on [the rating a computer house gives each ion cannon target](/systems/superweapons/#the-computers-use). A flagged structure that reaches the plug test is rated with [`AIIonCannonPlugValue`](/keys/aiioncannonplugvalue/) in place of the rating an ordinary structure gets.
 
 :::caution[The flag does not make a structure an upgrade plug]
-[`PowersUpBuilding=`](/keys/powersupbuilding/) is what names the host a plug slots into. Everything a fitted plug brings with it follows from occupying that slot rather than from this setting: [a turret for a host that has none](/keys/turret/), [a superweapon granted without the `AuxBuilding=` test](/systems/superweapons/#from-a-structure-or-a-plug). A plug that omits `IsPlug=` is fitted and behaves identically. A structure that names a host in `PowersUpBuilding=` is absorbed into that host and deleted as it is placed. It never stands on the map, and the computer never rates it at all. That is why the shipped rules put this flag on the GDI Upgrade Center, the host that accepts plugs, rather than on the plugs themselves.
+[`PowersUpBuilding=`](/keys/powersupbuilding/) names the host a plug fits into, and everything a fitted plug brings comes from that key, such as [a turret for a host that has none](/keys/turret/) or [a superweapon granted without the `AuxBuilding=` test](/systems/superweapons/#from-a-structure-or-a-plug). A plug without `IsPlug=` fits and behaves the same.
+
+A plug is absorbed into its host and deleted as it is placed, so it never stands on the map for the computer to rate. The shipped rules therefore put this flag on the GDI Upgrade Center, the host that accepts plugs, and not on the plugs.
 :::

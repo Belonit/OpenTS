@@ -7,7 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-The value is in leptons, 256 to a cell, and is added to the `Z` component of [`PrimaryFireFLH`](/keys/primaryfireflh/) before the barrel is pitched. Where [`PBarrelLength`](/keys/pbarrellength/) measures along the barrel, this measures across it: raising the pivot lifts the muzzle onto the middle of the barrel artwork instead of leaving it at the barrel's base.
+The barrel pivots this many leptons, 256 to a cell, above the mounting point that [`PrimaryFireFLH`](/keys/primaryfireflh/) sets. The pivot is raised before the barrel is pitched, so the muzzle rises by the same amount at every elevation. [`PBarrelLength`](/keys/pbarrellength/) then measures along the barrel from the raised pivot.
 
 ```ini title="art.ini"
 [MYTANK] ; the Image ID of a UnitType
@@ -16,6 +16,6 @@ PBarrelLength=80
 PBarrelThickness=12 ; lifts the muzzle onto the barrel's centerline
 ```
 
-Only the muzzle position moves: the fire animation, laser beam, sonic wave, and attached particle systems. An AircraftType, BuildingType or UnitType creates its projectile at the mounting point, which the barrel does not move; an InfantryType creates it at the muzzle instead.
+The weapon's fire animation, laser beam, sonic wave and attached particle systems start at the muzzle. A structure that sets [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/) or [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) takes its firing point from that setting instead, and ignores this one. The projectile starts at the muzzle only for infantry. An aircraft, structure or vehicle creates it at the mounting point, which this setting does not raise.
 
-The elite weapon slot is filled from this same setting, so an [`Elite`](/keys/elite/) weapon fires from the same point as the weapon it replaces.
+The [`Elite`](/keys/elite/) weapon slot uses this same setting, so an elite weapon fires from the same point as the weapon it replaces.

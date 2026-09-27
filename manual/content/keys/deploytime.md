@@ -7,31 +7,31 @@ when_omitted:
   value: "0"
 ---
 
-The figure counts game minutes and takes a fraction. One game minute is 900 frames, so `.044` is about 40 frames of travel and `1` would be a full 900. The stock gates ship at `.044`.
+The figure is in game minutes and may be a fraction. One game minute is 900 frames, so `.044` is about 40 frames and `1` is 900. The stock gates and war factories use `.044`.
 
 ```ini title="rules.ini"
 [GAGATE_A]
 Gate=yes
-DeployTime=.044   ; roughly 40 frames of travel each way
+DeployTime=.044   ; about 40 frames each way
 ```
 
-The same figure times the opening and the closing, and two structures show it:
+The same figure times both opening and closing. Two kinds of structure use it:
 
 | Structure | What the figure times |
 | --- | --- |
-| A [`Gate=yes`](/keys/gate/) BuildingType | The [gate's travel](/systems/walls-and-gates/#holding-and-closing) between shut and open. How far along that travel is picks which of the [`GateStages`](/keys/gatestages/) frames to draw. |
-| A [`WeaponsFactory=yes`](/keys/weaponsfactory/) BuildingType | The door animation played while a finished vehicle drives out. How far along it is picks which frame of [`DoorAnim`](/keys/dooranim/) to draw, out of [`DoorStages`](/keys/doorstages/). |
+| A [`Gate=yes`](/keys/gate/) BuildingType | The [gate's movement](/systems/walls-and-gates/#holding-and-closing) between shut and open. How far the movement has got picks which of the [`GateStages`](/keys/gatestages/) frames to draw. |
+| A [`WeaponsFactory=yes`](/keys/weaponsfactory/) BuildingType | The door opening for and closing behind each finished vehicle. The vehicle drives out only once the door is fully open, and the factory releases no other vehicle until the door has closed again, so a longer figure delays every vehicle's exit. How far the door has got picks which frame of [`DoorAnim`](/keys/dooranim/) to draw, out of [`DoorStages`](/keys/doorstages/). |
 
-Both frame counts are set in `art.ini`, which the example above leaves alone.
+Both frame counts are set in `art.ini`.
 
-At `0` the movement reaches its end position on the first pass. A gate then jumps between shut and open without drawing an intermediate frame, and a factory door stands on its first frame throughout.
+At `0` the gate or door switches straight between its shut and open frames without drawing any frame in between.
 
-Despite the name, the figure has no part in an MCV deploying into a structure, which is [`DeploysInto`](/keys/deploysinto/), nor in the automatic deployment that [`MCVDeploy`](/keys/mcvdeploy/) controls.
+The figure does not time a vehicle deploying into a structure; [`DeploysInto`](/keys/deploysinto/) covers that.
 
-:::caution[Only a structure does anything with the figure]
-Setting it on a transport aircraft, a transport vehicle or an infantry type changes nothing a player can see.
+:::caution[Only a structure uses the figure]
+On an aircraft, a vehicle or an infantry type the figure changes nothing a player can see:
 
-A transport aircraft starts the count when a passenger comes aboard and stops it once it is full, but nothing that draws or moves the aircraft ever asks how far the count has got.
-
-A vehicle is only ever asked to end the count, never to start it, and ending a count that never began is refused. A transport vehicle therefore loads and unloads with no delay at all, whatever the figure says. An InfantryType stores the figure and does nothing further with it.
+- A transport aircraft starts opening when a passenger approaches to board and starts closing once it is full, but nothing that draws or moves the aircraft reads the count.
+- A transport vehicle never starts the count, so it loads and unloads with no delay at all.
+- An InfantryType stores the figure and never uses it.
 :::

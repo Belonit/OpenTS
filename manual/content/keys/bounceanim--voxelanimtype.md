@@ -8,6 +8,8 @@ when_omitted:
   value: none
 ---
 
-An animation of the named type is created at the debris' position on every frame the bounce physics report a strike. The strike may be against the ground, a bridge deck, or a building or wall standing in the way. A strike inside a water cell is not one of them: the piece there has its lifetime cleared instead and plays nothing.
+An animation of the named type plays at the piece's position each time the piece strikes something outside water. A strike is contact with the ground, with the top or underside of a bridge deck, or with a building, wall or gate in the piece's path.
 
-The landing that ends the flight does not count either. A contact that leaves the piece with too little motion to keep tracking is reported as settling rather than as a strike, so it takes the expiry path directly. A piece with [`Elasticity=0`](/keys/elasticity/#scope-voxelanimtype) keeps no speed across a contact, so its arrival on the ground settles it and this animation goes unplayed.
+A strike in a water cell plays nothing. It ends the piece's life instead, and the impact follows on the next frame.
+
+The contact that ends the bouncing is not a strike either. When a contact leaves the piece with too little motion to keep going, the piece settles and its life ends, as [`Elasticity`](/keys/elasticity/#scope-voxelanimtype) describes. A piece with `Elasticity=0` keeps no speed after a contact, so it settles the first time it lands and never plays this animation on the ground.

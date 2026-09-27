@@ -7,11 +7,18 @@ when_omitted:
   value: "no"
 ---
 
-Set to `yes` in the map's `[Basic]` section, the house holding start position N reads its base node list from the map section `[Spawn<N+1>]`. Waypoint `0` reads `[Spawn1]` and waypoint `7` reads `[Spawn8]`. These sections set the same [`NodeCount`](/keys/nodecount/), `000` onward, and [`PercentBuilt`](/keys/percentbuilt/) keys a campaign house record uses. The list is read for every house that holds a position, including a human player's, so a house the computer takes over later follows it too. A campaign game ignores the key.
+With the key set to `yes`, the house at start waypoint N reads its base node list from the map section `[Spawn<N+1>]`: the house at waypoint `0` reads `[Spawn1]`, and the house at waypoint `7` reads `[Spawn8]`. These sections take the same node list as a campaign house's section: [`NodeCount`](/keys/nodecount/) and entries numbered `000` onward. A campaign game ignores the key.
 
-A computer house that follows a map plan then builds as a campaign house does, and [AI base planning and building](/systems/ai-base-building/) owns the details. A node's cell is used as written instead of having to touch ground the house already holds. No power plant is inserted ahead of a node the house cannot power. The money-raising and fire-sale interventions are off. A destroyed base defense is rebuilt as the same type on the same cell.
+The list is read for every house at a start waypoint, including a human player's, so a house the computer takes over later follows it too. A section for a waypoint no house starts at is not read. A house that started on open ground because the map's start waypoints ran out is at no start waypoint and reads no list.
 
-A held position whose section has no node list leaves that house's list empty. The house then generates its own plan when its construction vehicle deploys, and it still builds under the rules above. A section for a position nobody holds, and a house started on open ground because the placed waypoints ran out, read nothing.
+With the key set, every computer house builds as a campaign house does. [AI base planning and building](/systems/ai-base-building/) owns the details:
+
+- A node's cell is used as written; it does not have to touch ground the house already holds.
+- No power plant is inserted ahead of a node the house cannot power.
+- The money-raising and fire-sale interventions are off.
+- A destroyed base defense is rebuilt as the same type on the same cell.
+
+A house that reads no node list, or whose section sets no `NodeCount`, starts with an empty list. It generates its own plan when its construction vehicle deploys, and it still builds under the rules above.
 
 ```ini title="multiplayer map file"
 [Basic]
@@ -19,7 +26,7 @@ UseMPAIBaseNodes=yes
 
 [Spawn2] ; whoever starts at waypoint 1
 NodeCount=3
-000=GACNST,54,71 ; construction yard BuildingType on the start position
+000=GACNST,54,71 ; construction yard BuildingType; this node moves onto the yard when it deploys
 001=GAPOWR,57,70 ; power plant BuildingType
 002=GAPILE,0,0   ; barracks BuildingType; the cell is picked at build time
 ```

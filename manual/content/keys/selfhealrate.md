@@ -10,11 +10,11 @@ when_omitted:
 
 ```ini title="rules.ini"
 [General]
-SelfHealRate=.016
+SelfHealRate=.05 ; example value, one tick every 45 frames
 ```
 
-The value is a fraction of a minute, multiplied by 900 frames and truncated, giving 14 frames at the [`RepairRate`](/keys/repairrate/) default it falls back to. Stating it takes [self-healing](/systems/repair/#self-healing) off the wrench's interval, which the two otherwise share. A type that states [`SelfHealingRate`](/keys/selfhealingrate/) uses its own figure instead.
+`SelfHealRate` sets the time between [self-healing](/systems/repair/#self-healing) ticks. A smaller value heals faster. A type that sets [`SelfHealingRate`](/keys/selfhealingrate/) uses that value instead.
 
-Like the game's other repair intervals it is tested against the global frame counter rather than counted from the moment an object was hurt, so everything healing on the same interval steps on the same frames.
+The value is in minutes: it is multiplied by 900 frames and truncated to whole frames. At its default, [`RepairRate`](/keys/repairrate/) gives 14 frames.
 
-An interval that truncates below one frame is raised to one frame, whichever setting supplied it, so a value under `1/900` heals once per frame here instead of dividing by zero. The structure repair tick has no such floor and still [crashes on one](/keys/repairrate/).
+An interval that truncates to zero frames is raised to one, whichever key supplied it. A value below `1/900` therefore heals on every frame. `RepairRate` has no such floor for structure repair, where a value that small [crashes the game](/keys/repairrate/).

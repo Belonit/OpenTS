@@ -7,8 +7,15 @@ when_omitted:
   value: ".25"
 ---
 
-A projectile with a [`ROT`](/keys/rot/#scope-bullettype) above zero is steered by the homing flight model, and this figure is what makes it weave rather than track straight. The rate of turn is scaled by a factor that swings over a fifteen-frame cycle: `1` at the bottom of the cycle, and `1` plus twice this figure at the top. The swing therefore stays at or above the nominal rate for any positive value. At `0` the factor is a constant `1`, so the projectile still turns at its nominal rate but never weaves.
+`MissileROTVar` makes homing projectiles weave. It applies to every projectile whose BulletType has a [`ROT`](/keys/rot/#scope-bullettype) above zero.
 
-Each projectile enters the cycle at its own point, so missiles launched together do not weave in step.
+A homing projectile's turn rate swings over a 15-frame cycle. At the bottom of the cycle the projectile turns at its `ROT`, and at the top it turns at `ROT` × (1 + 2 × `MissileROTVar`). A larger value makes the weave wider. At `0` the projectile turns at its `ROT` throughout and flies without weaving.
 
-Two adjustments sit outside the cycle. A projectile still working up to speed after launch is given no turn at all. One within a cell of its target turns half again as fast as the cycle asks.
+Each projectile starts the cycle at a different point, so missiles launched together do not weave in step.
+
+Two cases override the cycle:
+
+- A projectile fired by a weapon whose [`Speed`](/keys/speed/#scope-weapontype) is below `40` does not turn until it has accelerated to that speed.
+- A projectile within one cell of its target turns 1.5 times as fast as the cycle allows.
+
+[Steered flight](/systems/projectile-flight/#steered-flight) explains how the turn rate steers the projectile.

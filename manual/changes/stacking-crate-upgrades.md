@@ -15,6 +15,6 @@ targets:
 credit: [ZivDero, dkeeton]
 ---
 
-`ArmorCrateStacks=yes` and `FirepowerCrateStacks=yes` in `[CrateRules]` of `rules.ini` let an armor or firepower crate upgrade objects that a crate of the same kind already upgraded, multiplying their multiplier again each time. An upgraded collector then also keeps the drawn result instead of receiving money. Both default to `no`, which keeps each upgrade to one crate.
+`ArmorCrateStacks` and `FirepowerCrateStacks` in `[CrateRules]` of `rules.ini` let armor and firepower crates stack. At `yes`, a crate of that kind also upgrades objects that already have the upgrade and multiplies their armor or firepower multiplier again each time. A collector that already has the upgrade then gets it again instead of money. At `no`, each object takes that upgrade only once.
 
 dkeeton is credited for the ts-patches crate patch that first let armor crates stack.

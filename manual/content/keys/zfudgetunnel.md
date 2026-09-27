@@ -7,6 +7,15 @@ when_omitted:
   value: "10"
 ---
 
-The figure is offered as the object's depth bias whenever a tunnel mouth is in the way, and dropped otherwise. The multiplier is only ever 0 or 1, so the figure is used as written when it applies. The test first picks a tunnel cell. It takes the object's own cell if that holds a tunnel, otherwise the neighbor to the north, otherwise the one to the west. It then asks whether the cell two steps north or two steps west of the cell it picked also holds a tunnel. An object riding a bridge deck is never fudged for a tunnel.
+`ZFudgeTunnel` moves an object back in drawing order while it stands at a tunnel mouth, so the tunnel art draws over it. A larger value moves it further back. The value applies as written when the object is at a tunnel mouth and not at all otherwise.
 
-Only the largest of the four fudges applies at any moment, so this one has an effect only while it beats whatever [`ZFudgeBridge`](/keys/zfudgebridge/), [`ZFudgeCliff`](/keys/zfudgecliff/) and [`ZFudgeColumn`](/keys/zfudgecolumn/) are contributing. The winner is added to the bias the object's locomotor asks for and to a second bias the object works out for itself. The stock rules set it on the same 23 vehicles that set a column figure, between 12 and 18.
+The object is at a tunnel mouth when both of these hold:
+
+1. Its own cell holds a tunnel, or failing that its neighbor to the north, or failing that its neighbor to the west. The first of these that holds a tunnel is the tunnel cell.
+2. The cell two steps north or two steps west of the tunnel cell also holds a tunnel.
+
+An object riding a bridge deck gets no tunnel fudge.
+
+Only the largest of the four depth fudges applies; [`ZFudgeBridge`](/keys/zfudgebridge/) describes how they combine.
+
+The stock rules set this value on the same 23 vehicles that set [`ZFudgeColumn`](/keys/zfudgecolumn/), between `12` and `18`.

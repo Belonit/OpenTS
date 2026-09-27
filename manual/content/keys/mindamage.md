@@ -6,13 +6,15 @@ when_omitted:
   value: "1"
 ---
 
-Damage is scaled by the warhead's [`Verses`](/keys/verses/) percentage against the target's armor and then divided by [distance from the impact](/systems/warheads/#how-distance-thins-the-damage). This value is the floor the result is raised to, but only while that divisor is below 4. Past that the shot is allowed to fall away to nothing. The figure is then capped by [`MaxDamage`](/keys/maxdamage/).
+A target close to the blast loses at least this much strength from an ordinary hit. "Close" means fewer than four distance steps from the impact, where the warhead's [`Spread`](/keys/spread/#scope-warheadtype) sets the size of a step. Beyond that the damage can fall to zero. [How distance thins the damage](/systems/warheads/#how-distance-thins-the-damage) gives the distances.
+
+The floor applies after the warhead's [`Verses`](/keys/verses/) entry, so even a `Verses` of `0%` deals this much to a close target. [`MaxDamage`](/keys/maxdamage/) caps the result afterward. [What the target loses](/systems/warheads/#what-the-target-loses) lists the full order of steps.
 
 ```ini title="rules.ini"
 [CombatDamage]
 MinDamage=10
 ```
 
-:::caution[The floor also lifts the low-power damage tick]
-The [structure damage tick](/systems/power/#the-structure-damage-tick) enters this path with a raw damage of 1 and an impact distance of zero, so it comes out at whatever this value holds. Setting it to 10 makes a shortfall cost ten strength per tick instead of one.
+:::caution[The floor also raises the low-power damage tick]
+The [structure damage tick](/systems/power/#the-structure-damage-tick) deals 1 point at distance zero, so it deals at least this value instead. With `MinDamage=10`, a power shortfall costs each affected structure ten strength per tick instead of one.
 :::

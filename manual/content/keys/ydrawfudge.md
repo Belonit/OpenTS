@@ -6,11 +6,11 @@ when_omitted:
   value: "0"
 ---
 
-The figure is added to the vertical screen position the object draws at, so a positive figure moves the artwork down the screen and a negative one lifts it. It is applied to the position of the ordinary draw, and to the render rectangle worked out once when the object is placed. The tactical map dirties that rectangle when the object needs refreshing.
+A positive value moves the artwork down the screen by that many pixels, and a negative value lifts it. The screen area the game redraws for the object moves with the artwork.
 
 ```ini title="rules.ini"
 [MYROCK]         ; example boulder whose artwork sits high in its frame
-YDrawFudge=-6    ; lift it six pixels so it meets the ground
+YDrawFudge=6     ; push it six pixels down so it meets the ground
 ```
 
-The ordinary draw also biases the object's depth by a third of the figure, discarding the remainder, so any figure from `-2` to `2` biases the depth by nothing at all. That bias is what decides how a placed object sorts against its neighbors. The whole figure goes into the render rectangle, which affects only how much of the map gets redrawn.
+The value also shifts the object's depth, which decides how it overlaps nearby objects, but only by a third of the value with the remainder dropped. Any value from `-2` to `2` therefore leaves the depth unchanged.

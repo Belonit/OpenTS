@@ -9,15 +9,15 @@ when_omitted:
 
 ```ini title="rules.ini"
 [General]
-WeedCapacity=56
+WeedCapacity=56 ; the value the stock rules.ini sets
 ```
 
-One figure covers every house. A weeder handing its load over adds units one at a time until the house holds this many and throws the rest away, and the [weed pool](/systems/veins/#the-weed-pool) is never converted to credits at any point. The figure also bounds the pip gauge a [`Weeder=yes`](/keys/weeder/#scope-buildingtype) building draws, which shows the house's pool rather than the building's own contents.
+Each house can store up to this many units of weed, and the same figure applies to every house. Weed a weeder unloads while its house's pool is full is lost.
 
-:::caution[The pool must be exactly full to be worth anything]
-The chemical missile superweapon is the pool's only consumer, and it draws on the pool only while the house holds exactly this many units. Anything less charges nothing, and a recharge empties the pool outright rather than deducting a price.
-:::
+When the pool is full and the house's chemical missile superweapon is not ready, the pool is emptied and the weapon's charge starts over. [The weed pool](/systems/veins/#the-weed-pool) covers the full rules, including why weed never becomes credits.
 
-:::caution[At zero the store holds nothing]
-`0` is the figure in force when no rules file sets it. The store compares the house's holdings against it before taking each unit, so at `0` it refuses the first unit offered: a weeder loads, drives home, unloads, and the pool stays empty.
+A [`Weeder=yes`](/keys/weeder/#scope-buildingtype) building with [`PipScale=Tiberium`](/keys/pipscale/) shows its house's pool on its pip gauge, not its own contents, with at most this many pips.
+
+:::caution[Set WeedCapacity above 0]
+At `0` or below, including when no rules file sets the key, the pool refuses every unit: weeders load, drive home and unload, and the pool stays empty.
 :::

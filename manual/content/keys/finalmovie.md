@@ -7,6 +7,8 @@ when_omitted:
   value: none
 ---
 
-The movie plays when a won mission sets [`EndOfGame=yes`](/keys/endofgame/), just before the credits roll. The value is matched, without regard to letter case, against the movie names registered by the art layer's `[Movies]` list. That list is a registry a deployment can add to rather than a fixed engine table, so a custom film plays once its name is registered there. The file the engine then opens is the registered name with `.VQA` appended ([registering a movie](/formats/vqa/#registering-a-movie)).
+The movie plays after a mission with [`EndOfGame=yes`](/keys/endofgame/) is won, just before the credits. A mission that also sets [`OneTimeOnly=yes`](/keys/onetimeonly/) ends the game before that point, so neither this movie nor the credits play.
 
-A name the list does not hold, `<none>` included, sets nothing: the campaign keeps the closing movie its last read left in place. That is none at all unless an earlier battle file naming the same campaign set one. The campaign then goes from the mission's after-mission movies straight to the credits with no closing film.
+The value must be a movie name registered in the `[Movies]` section of `ART.INI` or `ARTFS.INI`, matched in any letter case. The game plays the registered name with `.VQA` appended, so a custom movie plays once its name is registered there ([registering a movie](/formats/vqa/#registering-a-movie)).
+
+A name that is not registered, `<none>` included, leaves the setting unchanged. The campaign keeps a movie that an earlier battle file set for it, or has none. With no movie, the won mission goes from its after-mission movies straight to the credits.

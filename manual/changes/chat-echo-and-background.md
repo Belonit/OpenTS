@@ -9,6 +9,6 @@ targets:
 credit: [ZivDero, Iran, dkeeton, CCHyper, tomsons26]
 ---
 
-Your own chat line now appears on your screen as it is sent, as the recipients see it, tagged with who it went to. `TextBackgroundColor` under `[Options]` in `sun.ini` draws a color behind every glyph of the message list and its editor. The default `12` is the black box the CnCNet client's chat background option writes, and `0` draws none. A name is now followed by a space before the text.
+Each chat line you send now appears in your own message list as you send it, with the same name and tag its recipients see. `TextBackgroundColor` under `[Options]` in `sun.ini` sets the palette color drawn behind the text of the message list and of the line being typed. A line used to read `Name:text` and now reads `Name: text`, with a space after the colon.
 
-Iran wrote the echo, from the code he wrote for Red Alert, and dkeeton the message background. CCHyper and tomsons26 are credited for the Vinifera versions of both.
+Iran wrote the echo, adapted from his Red Alert code; dkeeton wrote the message background; CCHyper and tomsons26 are credited for the Vinifera versions of both.

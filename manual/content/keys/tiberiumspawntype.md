@@ -7,9 +7,11 @@ when_omitted:
   value: none
 ---
 
-Each cell the growth reaches gets one of four consecutive overlay types, drawn at random from the one named here and the three that follow it in the rules' overlay list. A patch therefore comes out uneven rather than uniform. The cell is then set to one of the first three growth stages, also at random, and left to grow on its own from there.
+Each cell that takes Tiberium gets one of four overlay types, chosen at random: the one named here or one of the three that follow it in `[OverlayTypes]`. A patch therefore mixes the four overlays. [`IsTiberium`](/keys/istiberium/#scope-animtype) covers which cells take Tiberium and the growth stage they start at.
 
-The setting is read only where the animation also declares [`IsTiberium=yes`](/keys/istiberium/#scope-animtype) and is thrown by [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype). Without a type named here, an animation with all of that still plants nothing, however far [`TiberiumSpreadRadius`](/keys/tiberiumspreadradius/) reaches. The shipped small meteor is in exactly that position: it sets the Tiberium flag and names no type, so the Tiberium a meteor strike leaves behind comes from the debris it spawns rather than from the meteor itself.
+The setting applies only to an animation that sets `IsTiberium=yes` and is thrown by [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype). Such an animation with no type named here plants nothing, whatever [`TiberiumSpreadRadius`](/keys/tiberiumspreadradius/) says.
+
+The shipped small meteor, `METSMALL`, sets `IsTiberium` but names no type here, so it plants nothing itself. The Tiberium left by a meteor strike comes from the debris it breaks into:
 
 ```ini title="art.ini"
 [METDEBRI]              ; the chunks a meteor breaks into
@@ -18,8 +20,8 @@ IsTiberium=true
 TiberiumSpawnType=TIB01 ; the first of the green Tiberium overlays
 ```
 
-The shipped section spells that flag `true` where the prose above says `yes`; the read looks only at the value's first character, so the two spell the same setting. The fragment above leaves out the rest of that section, among it the [`LoopCount=-1`](/keys/loopcount/) a thrown animation needs to keep looping until it lands.
+The fragment omits the rest of the section, including the [`LoopCount=-1`](/keys/loopcount/) that keeps a thrown animation playing until it lands.
 
-:::danger[A type near the end of the overlay list crashes the game]
-The three overlays that follow the named one are taken by position with no check that they exist. Naming one of the last three entries of the rules' overlay list (`CRATE`, `VEINHOLEDUMMY` or `TROCK05` in the shipped rules) lets the pick run off the end. The game reads a pointer that was never an overlay type and faults as the growth is placed.
+:::danger[Name a listed overlay type with three more after it]
+The three overlay types that follow the named one are taken by position, with no check that they exist. If the named type is one of the last three entries in `[OverlayTypes]`, the pick can run past the end of the list and crash the game when it plants the Tiberium. In the shipped rules, those last three entries are `TROCK05`, `VEINHOLEDUMMY` and `CRATE`. A name missing from `[OverlayTypes]` is added at the end of the list, so a misspelled name can crash the game the same way.
 :::

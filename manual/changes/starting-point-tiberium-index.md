@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-The extra field a generated map plants at a player's start point sits on that player's own waypoint again. OpenTS 0.1.0 shifted every one by a player, so the first player got none and the last grew from a waypoint no start point had been given. In a debug build that tripped an assertion. In a release build the field grew from cell 0.
+On a generated random map, the extra Tiberium field each player gets at their start point now grows from that player's own start waypoint. OpenTS 0.1.0 put each field on the next player's waypoint, so the first player got no field. The last player's field went to an unset waypoint, which tripped an assertion in a debug build and grew the field from cell 0,0 in a release build.

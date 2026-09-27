@@ -8,4 +8,4 @@ when_omitted:
   value: none
 ---
 
-The name promises the projectile an EM pulse cannon launches. [Firing the cannon](/systems/emp-pulse/#em-pulse-cannon-superweapon) instead fires the building's own primary weapon, so the shot takes that weapon's [`Projectile=`](/keys/projectile/). Nothing beyond the save file and the cleanup that clears the pointer when a projectile type is deleted touches the value stored here.
+An EM pulse cannon does not launch this projectile. [Firing the cannon](/systems/emp-pulse/#em-pulse-cannon-superweapon) fires the structure's primary weapon, so the shot uses that weapon's [`Projectile=`](/keys/projectile/).

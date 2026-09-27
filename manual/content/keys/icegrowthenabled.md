@@ -12,6 +12,11 @@ when_omitted:
 IceGrowthEnabled=no
 ```
 
-The switch gates two passes. One thickens the thin tiles at the fringe of a sheet into full ice, which is how a sheet creeps outward over the course of a mission; it runs on the scenario's ice-growth timer rather than every frame. The other runs once a frame and heals ice that something cracked by crossing it, once its delay has elapsed, taking the cracked neighbors with it.
+With the switch on, ice changes during the mission in two ways:
 
-Both passes also require the snow theater, so the switch changes nothing on a temperate map. Turning it off leaves cracked ice cracked for the rest of the mission. The [Ice growth](/mapping/actions/taction-ice-growth/) trigger action writes the same switch while the scenario is running.
+- Ice sheets creep outward. At the interval [`IceGrowthRate`](/keys/icegrowthrate/) sets, each growth step turns the thin ice at a sheet's edge into full ice. Only cells that the map data marks as allowing ice growth take part.
+- Cracked ice refreezes. A cracked cell heals once [`IceSolidifyFrameTime`](/keys/icesolidifyframetime/) has passed, and cracked cells beside it heal with it.
+
+Both need a theater whose [`IsIceGrowthEnabled`](/keys/isicegrowthenabled/) is `yes`; by default only the snow theater sets it. In any other theater the switch changes nothing.
+
+With the switch off, cracks stay cracked until it is turned back on; ice can still crack and break. The [Ice growth](/mapping/actions/taction-ice-growth/) trigger action turns the switch on or off during the mission.

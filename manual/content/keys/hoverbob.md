@@ -7,10 +7,12 @@ when_omitted:
   value: "30"
 ---
 
-The bob is a sine wave laid over whatever height the cushion has settled on. Only its period is configurable: the amplitude is a fixed two leptons up or down, against the 256 leptons that make a cell. The figure is converted at 900 frames to the minute, so the stock `.04` gives a cycle of 36 frames, a little over two seconds.
+This value is how long one rise and fall of a hover unit's bob takes, in game minutes of 900 frames. The stock `.04` is a cycle of 36 frames. The unit bobs about the height its cushion holds it at, which [`HoverHeight`](/keys/hoverheight/) sets.
 
-Hover units are split between exactly this period and 1.1 times it, and each runtime instance enters the cycle at its own point, so a group of them does not rise and fall in unison. The levitation locomotor bobs on the same figure.
+Only the period can be changed. In each frame of the rising half of the cycle the bob lifts the unit by up to two leptons, and in each frame of the falling half it lowers the unit by as much. These steps add up, so a longer period gives a deeper bob. The cushion pushes back, so `HoverHeight`, [`HoverDampen`](/keys/hoverdampen/) and [`Gravity`](/keys/gravity/) also change the depth. With the stock rules a unit swings through about 20 leptons, between about 80 and 104 leptons above the ground. A cell is 256 leptons across.
 
-:::danger[A period under one frame crashes the game]
-The period is truncated to whole frames and then used as a divisor. A value below `1/900` of a minute truncates to zero, and the engine takes a remainder by zero as it computes the bob.
+Each hover unit bobs with either exactly this period or 1.1 times it, and starts the cycle at its own point, so a group of hover units does not rise and fall in unison. The levitation locomotor, which the stock Tiberium Floater uses, bobs with the same period.
+
+:::danger[Keep HoverBob at 0.0012 or more]
+The engine rounds the period down to whole frames and divides by it. A value from `0` up to `1/900` of a minute rounds the period to zero frames for some or all hover and levitating units, and the game crashes once one of those units is on the map.
 :::

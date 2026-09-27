@@ -7,11 +7,11 @@ when_omitted:
   value: "0.05"
 ---
 
-A levitating unit travels in bursts: it thrusts for a fixed number of frames, coasts, brakes to a stop, and thrusts again. This figure is the loss applied on every frame of that cycle except two. The braking frame is governed by [`IntentionalDeacceleration`](/keys/intentionaldeacceleration/) instead, and the drifting frames apply no loss at all. It is subtracted from the unit's speed rather than scaling it, so the slowdown is a steady one and not a curve that tails off.
+A levitating unit moves in bursts. It thrusts for [`AccelerationDuration`](/keys/accelerationduration/) frames, coasts, and often brakes to a stop before it thrusts again. `Drag` is the speed the unit loses on every frame of the thrust and the coast. Braking uses [`IntentionalDeacceleration`](/keys/intentionaldeacceleration/) instead, and a drift at [`IntentionalDriftVelocity`](/keys/intentionaldriftvelocity/) loses no speed at all.
 
-Once the loss is as large as the speed the unit is holding, its motion is zeroed on the spot rather than reversed. A figure at or above the speed a thrust reaches therefore leaves the unit stationary between thrusts.
+The loss is subtracted from the unit's speed, not applied as a percentage, so a coasting unit slows at a steady rate. When the loss is at least as large as the unit's speed, the unit stops dead on that frame instead of reversing. A `Drag` at least as large as both [`Acceleration`](/keys/acceleration/#scope-levitation-controls) and [`InitialBoost`](/keys/initialboost/) therefore stops the unit on the first frame after each thrust, so it moves only while thrusting.
 
-Speeds and losses in this section are in leptons per frame (256 leptons to a cell, 15 frames to the second). A unit coasting at four leptons per frame comes to rest in eighty frames at a loss of `0.05` per frame, and in eight frames at `0.5`.
+Speeds and losses in `[LEVITATION]` are in leptons per frame, with 256 leptons to a cell and 15 frames to the second. If nothing else changes its speed, a unit coasting at 4 leptons per frame stops in 80 frames at a `Drag` of `0.05`, a little over five seconds, and in 8 frames at `0.5`.
 
 ```ini title="rules.ini"
 [LEVITATION]
@@ -22,6 +22,6 @@ MaxVelocityWhenHappy=5.0
 Locomotor={3DC0B295-6546-11D3-80B0-00902792494C} ; the levitation drive
 ```
 
-The section governs only objects whose [`Locomotor`](/keys/locomotor/) is that identifier. The jumpjet drive's figures live in a separate `[JumpjetControls]` section and never reach a levitating unit; [what each locomotor drives its speed from](/systems/movement-and-terrain/#what-each-locomotor-drives-its-speed-from) gives the full mapping. Its values are held once for the whole game rather than per object, so a change to any of them moves every levitating object at once.
+`[LEVITATION]` applies only to objects whose [`Locomotor`](/keys/locomotor/) is that identifier. Every such object shares the same values; no type can override them. The jumpjet drive reads `[JumpjetControls]` instead, and [what each locomotor drives its speed from](/systems/movement-and-terrain/#what-each-locomotor-drives-its-speed-from) gives the full mapping.
 
-The whole section is read only from a file that also contains a `[General]` section. The read is made from inside the routine that handles `[General]`, and that routine returns without doing anything when the file has no such section. A map overriding any `[LEVITATION]` value must therefore contain a `[General]` section of its own, holding at least one assignment. A section with no entries in it is discarded as the file is read.
+A file's `[LEVITATION]` section is read only when the same file has a `[General]` section with at least one assignment, because the engine reads `[LEVITATION]` while it processes `[General]`. A map that overrides any `[LEVITATION]` value therefore needs a non-empty `[General]` section as well. A `[General]` header with no assignments under it does not count.

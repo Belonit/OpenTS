@@ -4,7 +4,7 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- Remove `-MESSAGES` from any shortcut. The option is gone; a chat line is accepted only from a seat of the match.
+- Remove `-MESSAGES` from any shortcut. The option is gone; a chat line is accepted only from a player or observer in the match.
 targets:
 - type: system
   id: chat
@@ -30,6 +30,8 @@ targets:
 credit: [ZivDero, dkeeton, CCHyper]
 ---
 
-In-game chat now has a line to the team and, for an observer, a line to the other observers. Both come beside the lines to everyone and to one player that chat always had. Backspace starts a team line and Enter a line to everyone unless the keyboard file gives those keys or commands to something else. A line is delivered and shown only where its kind allows. A team line reaches the houses the sender is allied with, an observers line reaches the other observers, and a line from outside the match is dropped. The `-MESSAGES` switch that let such lines through is gone.
+In-game chat in a network game can now be sent to the sender's team, and an observer can send a line to the other observers. These join the lines to everyone and to one player that chat already had. By default Backspace starts a team line, or an observers line for an observer, and Enter starts a line to everyone. A `KEYBOARD.INI` that binds either key to another command, or either chat command to another key, keeps its bindings.
+
+Each line now reaches only the players it is for. A team line reaches the houses the sender is allied with, and an observers line reaches only the other observers. A line from a machine that is not playing or observing in the match is dropped. The `-MESSAGES` switch, which let such lines through, is removed.
 
 dkeeton is credited for the ts-patches team and observer chat this follows, and CCHyper for the Vinifera routing and echo.

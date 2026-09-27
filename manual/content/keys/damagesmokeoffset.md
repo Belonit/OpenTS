@@ -10,13 +10,15 @@ when_omitted:
 ```ini title="rules.ini"
 [MYTANK] ; a UnitType registered in [VehicleTypes]
 DamageParticleSystems=MYSPARKSYS,MYSMOKESYS ; ParticleSystemTypes registered in [ParticleSystems]
-DamageSmokeOffset=0,0,90 ; smoke rises from 90 leptons above the hull
+DamageSmokeOffset=0,0,90 ; sparks and smoke start 90 leptons above the tank
 ```
 
-Three lepton components, X, Y and Z, added to the object when one of its [`DamageParticleSystems`](/keys/damageparticlesystems/) is attached. The single offset serves both kinds. On a vehicle, an infantryman or an aircraft the two anchors are the same point, because an object's center and its position are one and the same. They part only on a structure: its center sits at the middle of its footprint while its position is the reference cell, a horizontal difference with no difference in height.
+The offset is three lepton distances, X, Y and Z, added to the object's anchor point when one of its [`DamageParticleSystems`](/keys/damageparticlesystems/) is created. X and Y are map directions, so the offset does not turn with the object's facing.
 
-The offset is applied once, when the system is created. The system is attached to the object and follows it from there, so the offset fixes where the plume sits on the object rather than where it sits on the map.
+Sparks are anchored at the object's center and smoke at its position. On a vehicle, infantryman or aircraft these are the same point. On a structure the center is the middle of its footprint and the position is its reference cell, so the two anchors differ horizontally but not in height.
+
+A smoke system then moves with a vehicle, infantryman or aircraft, so on those the offset sets where the plume sits on the object. A spark burst stays at the point where it started.
 
 :::note[A value with fewer than three components reads as the default]
-`DamageSmokeOffset=0,90` is short of the three components an offset needs, so the key reads as its default and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.
+`DamageSmokeOffset=0,90` has only two of the three components an offset needs, so the key reads as its default and the debug log records the line. [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.
 :::

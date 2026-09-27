@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-Every shot the weapon fires sets the flag with it. A shot that has it lights the ground where it lands, whatever the shot did or failed to do on arrival. The flash is a spotlight sized at a quarter of the damage the shot was dealing when it landed, rounded down and held between 21 and 63. Anything up to 87 damage gives the smallest flash, anything from 252 up gives the largest. The flash burns out after ten game frames whatever its size; the size scales how strongly the glow shines as it spreads, not how long it lasts.
+`Bright=yes` makes every projectile the weapon fires light up the ground where it explodes.
 
 ```ini title="rules.ini"
 [MyCannon] ; example WeaponType
@@ -15,6 +15,8 @@ Damage=400
 Bright=yes ; the impact lights the surrounding ground
 ```
 
-:::caution[A projectile impact never reads the warhead's flag]
-The [warhead's own](/keys/bright/#scope-warheadtype) `Bright=` is not read when a shot lands. It governs the explosions staged without a projectile instead, which that page describes. A warhead marked bright therefore leaves every shot that has it unlit unless the weapon is marked too.
+The flash is larger for a stronger shot. Its size is a quarter of the damage the projectile carries when it explodes, rounded down and held between 21 and 63. A shot of up to 87 damage gives the smallest flash, and a shot of 252 or more gives the largest. Whatever its size, every flash grows to full size within three game frames and shrinks away over the next seven.
+
+:::caution[Set Bright on the weapon to light projectile impacts]
+A projectile's explosion ignores the [warhead's `Bright=`](/keys/bright/#scope-warheadtype). That setting lights explosions created without a projectile, which its page lists. A projectile whose warhead sets `Bright=yes` explodes without a flash unless its weapon sets `Bright=yes` too.
 :::

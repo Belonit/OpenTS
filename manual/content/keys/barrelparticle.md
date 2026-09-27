@@ -12,10 +12,8 @@ when_omitted:
 BarrelParticle=MyGraySmokeSys ; a ParticleSystemType registered in [ParticleSystems]
 ```
 
-:::danger[An unset system crashes the game on the roll that reaches it]
-Building the system reads the named type before checking that one was named. Because only one blast in four gets that far, an unset value can survive several explosions and then crash the game on the next.
+An exploding overlay starts a particle system of this type on a 25% chance. The system starts where the triggering explosion landed, which need not be the center of the overlay's cell. If the system type holds a particle type, one particle of it is released at once, on the same frame as the blast. [`Explodes=yes`](/keys/explodes/#scope-overlaytype) covers the rest of the explosion.
+
+:::danger[Set a particle system before any overlay explodes]
+If `BarrelParticle` names no particle system, the game crashes on the first explosion that wins the 25% chance. Earlier explosions that lose the chance do not crash, so the fault can appear only after several.
 :::
-
-On a twenty-five percent roll a system of this type is created at the coordinate handed to the blast, a point inside the cell the overlay stood in rather than its center. It is immediately told to release its held particle, so the smoke starts on the same frame as the blast rather than on the system's own first spawn. [`AmmoCrateDamage`](/keys/ammocratedamage/) covers the rest of the explosion.
-
-The system has no source object, so it is anchored to the cell and drifts on its own type's settings alone.

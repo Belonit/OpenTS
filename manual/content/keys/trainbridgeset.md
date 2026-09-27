@@ -8,12 +8,16 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The set is laid out exactly like the road one and is read through the same ten `Bridge` position keys; [`BridgeSet`](/keys/bridgeset/) covers how a position is turned into a tile.
+The set is laid out like the road bridge set and uses the same ten `Bridge` position keys. [`BridgeSet`](/keys/bridgeset/) covers how a position selects a tile.
 
-This set alone decides which kind of span an engineer rebuilds. On arrival at a [`BridgeRepairHut=yes`](/keys/bridgerepairhut/) structure the five-by-five block of cells centered on the soldier is searched, and one tile of this set anywhere inside it selects the rail repair; the road repair runs otherwise. [Repairing a bridge](/systems/capture/#repairing-a-bridge) covers the rest of that arrival.
+This set decides which kind of bridge an engineer rebuilds. When an engineer enters a [`BridgeRepairHut=yes`](/keys/bridgerepairhut/) structure, the engine searches the five-by-five block of cells centered on the engineer. One tile of this set anywhere in that block selects the railway repair; otherwise the road repair runs. [Repairing a bridge](/systems/capture/#repairing-a-bridge) covers the rest of that visit.
 
-Combat damage takes the sets in the other order. A struck cell with a low bridge overlay is handled as a low bridge, and neither set is read. Otherwise the road set is tested first. The cell reaches the rail handler only once it has failed both the road middle-piece test and the road deck test that [`BridgeMiddle1`](/keys/bridgemiddle1/) covers.
+Weapon damage tests the road set first. Both sets are tested for the same middle pieces: the first four middle pieces of either span direction, counted from [`BridgeMiddle1`](/keys/bridgemiddle1/) or [`BridgeMiddle2`](/keys/bridgemiddle2/). A struck cell is damaged as a railway bridge when it holds one of those pieces from this set or carries a railway bridge deck, and none of these apply:
 
-:::caution[An unresolved set claims the theater's first tiles]
-The railway-bridge test has no guard against a role that no tile set answered. Left unresolved, it accepts every tile index from `0` through `14`, so the first fifteen tiles the theater loads answer as railway bridge pieces wherever it is asked.
+- The cell has a low bridge overlay. A low bridge is damaged as one, and neither set is read.
+- The cell holds one of those pieces from the road set.
+- The cell carries a road bridge deck.
+
+:::caution[An unresolved role makes the theater's first tiles railway bridge]
+The railway bridge test does not check that the role resolved. Left unresolved, it treats the theater's first fifteen tiles as railway bridge pieces, and those include the clear ground tile. An engineer at a repair hut then runs the railway repair whenever such a cell lies in the searched block, and route-finding treats those cells as bridge cells.
 :::

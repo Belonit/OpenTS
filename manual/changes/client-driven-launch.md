@@ -15,8 +15,6 @@ targets:
 credit: [ZivDero, Rampastring, dkeeton, FunkyFr3sh, CCHyper, Belonit, hifi, Iran]
 ---
 
-Starting the game with `-SPAWN` now plays the match `SPAWN.INI` describes: a skirmish, a campaign mission, or a game against other machines, through a CnCNet tunnel or straight between them. Any of those can be resumed from a saved game. The startup movies and the menu are skipped, and the game exits when the match ends.
-
-A client-launched game against other machines can now be saved from its options dialog.
+Starting the game with `-SPAWN` now plays the match `SPAWN.INI` describes: a skirmish, a campaign mission, or a game against other machines, played through a CnCNet tunnel or directly between them. Any of these can also resume a saved game. The game skips the startup movies and the menu, and exits when the match ends.
 
 The people credited here wrote the earlier spawners this one follows.

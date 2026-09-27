@@ -9,4 +9,8 @@ targets:
 credit: [ZivDero]
 ---
 
-A file that names the same section twice now continues the section it already opened. An assignment repeating a key takes the later value and moves the key to the end of its section, which is what merging a later file already did. The two blocks of a repeated section used to be kept as rival copies, which left the keys of one of them unreachable. The stock `nod10a` mission contains `[HMEC]` twice and lost one of its two keys. A debug build stopped on an assertion at either kind of repeat. A repeat within one file is now written to the debug log with the file, section and key. Where a repeated key sat inside a numbered list such as `[VehicleTypes]`, the entries after it move up by one, since only one copy remains.
+A section that appears twice in one file is now read as one section, with the keys of both blocks. The two blocks used to be kept as separate copies, and the keys of one of them could not be read. The stock `nod10a` mission contains `[HMEC]` twice and lost one of its two keys.
+
+A key assigned twice in one section now takes the later value and moves to the end of its section, as a key overridden by a later file already did. In a numbered list such as `[VehicleTypes]`, only one copy of the entry now remains, so the entries that followed its first appearance each move up by one.
+
+A Debug build used to stop on an assertion at either kind of repeat. It now continues, and a repeat within one file is written to the debug log with the file and section, and the key for a repeated key.

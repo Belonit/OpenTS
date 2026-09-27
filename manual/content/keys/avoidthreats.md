@@ -7,6 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-Each time a member asks how much weight to give [the region threat figures](/systems/base-attacked/#what-reads-the-map), the answer is a weight of `1` while its team's TeamType is marked this way, whatever [`ThreatAvoidanceCoefficient`](/keys/threatavoidancecoefficient/) its own type sets. The weight multiplies each region's threat figure, so at `1` every figure counts at face value. The question is asked afresh on every route, so a member reverts to its type's own coefficient the moment it leaves the team.
+`AvoidThreats=yes` gives each member a threat avoidance coefficient of `1` while it is on the team. The value replaces the coefficient from the member's type, [`ThreatAvoidanceCoefficient`](/keys/threatavoidancecoefficient/), whether that is higher or lower. The pathfinder reads the coefficient on every route, so a member that leaves the team goes back to its type's coefficient.
 
-At `1` the pathfinder refuses a diagonal shortcut out of any region with a threat figure of `1` or more. On a straight-line leg, a cell counts as threatened when its region has any threat figure above zero.
+The coefficient scales [the region threat figures](/systems/base-attacked/#what-reads-the-map) the pathfinder weighs. At `1`, any cell whose region has a threat figure above zero counts as threatened: a diagonal shortcut that starts there is refused, and a straight-line shortcut counts the cell against its limit. The coarse corridor search also adds each region's full threat figure to the price of a step.
+
+A type that leaves `ThreatAvoidanceCoefficient` at its default ignores threat entirely. For members of such types, this setting is what turns threat avoidance on.

@@ -1,14 +1,14 @@
 ---
 key: DemandLoadBuildup
-summary: Defers loading the structure's construction artwork until a structure of the type is placed.
+summary: Defers loading the structure's construction artwork until a structure of the type is first created.
 see_also: ["Buildup", "FreeBuildup", "DemandLoad"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-By default the file [`Buildup=`](/keys/buildup/) names is fetched from the archives as the rules are read. It is fetched again whenever a [`Theater=yes`](/keys/theater/) structure's theater is set up, and on a [`NewTheater=yes`](/keys/newtheater/) type as each theater is set up. With the flag set, neither fetch happens. The file is instead read from disk the first time a structure of the type asks its type for the construction artwork, which is as that structure is created. The block then belongs to the type and is released with it.
+With `DemandLoadBuildup=yes`, the file [`Buildup=`](/keys/buildup/) names is not loaded with the rules. The game loads it the first time a structure of the type is created. Unless `FreeBuildup=yes` releases it sooner, the type keeps that copy until its rules are read again, the type is destroyed, or a theater is set up for a [`Theater=yes`](/keys/theater/) or [`NewTheater=yes`](/keys/newtheater/) type. Without the flag, the file is loaded with the rules and loaded again on those theater setups.
 
-The deferred read builds the filename with a `.SHP` extension and applies the structure-art theater rewrite whatever the type's own theater settings say. A `Theater=yes` structure that defers its construction artwork therefore looks for the rewritten name with a `.SHP` extension rather than for its theater-suffixed file. The deferred read gives the step count and the rate their ordinary treatment: half the frames in the file, divided into [`BuildupTime`](/keys/builduptime/). The theater fetch gives neither.
+The deferred load always looks for the name rewritten for the theater by the structure-art convention, with a `.SHP` extension, whatever the type's theater settings say. A `Theater=yes` structure that sets this flag therefore does not look for a file with the theater's own extension. The deferred load also times the animation the ordinary way `Buildup=` describes, spreading [`BuildupTime`](/keys/builduptime/) over the steps. The five-second timing of a `Theater=yes` type does not apply.
 
-Only artwork read this way is released by [`FreeBuildup=yes`](/keys/freebuildup/). Without `DemandLoadBuildup=yes`, `FreeBuildup=yes` has no effect.
+[`FreeBuildup=yes`](/keys/freebuildup/) releases only construction artwork loaded this way. Without `DemandLoadBuildup=yes`, `FreeBuildup=yes` has no effect.

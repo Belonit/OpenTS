@@ -5,16 +5,20 @@ label: Saved map name
 see_also: [Seed, NumPlayers]
 when_omitted:
   kind: context-dependent
-  note: The read falls back on the name the game itself gives a random map, which is taken from the language files, so the stored text follows the language the game is running in.
+  note: The name the language files give a random map, so the text follows the language the game is running in.
 ---
 
-The text is what the load and delete dialogs list the seed under and what the multiplayer lobby shows as the scenario name once the map is generated. It is kept in a 128-character buffer and anything longer is cut to fit. [Map seed files](/formats/map-seed/) covers the section it is written in.
+The text is the name a saved map seed is listed under in the load, save and delete dialogs. Saving a seed writes the description the player types in the save dialog. At most 127 characters are kept; a longer value is cut. [Map seed files](/formats/map-seed/) covers the section it is written in.
 
 ```ini title="MyMap.SED"
 [RandomMap]
 Description=Four player temperate map
 ```
 
-The dialogs build their lists by reading the assignment out of each candidate file directly, and that read has no fallback. A file whose `Description` is missing or empty is listed as unusable rather than under a substitute name, and cannot be picked. The generator's own scratch file is passed over and never listed at all.
+When a player sets up a game on a map generated from a loaded seed, their game setup screen shows this text as the scenario name. Players who join them over the network see the language's name for a random map instead.
 
-The text takes no part in what is built. It is deliberately blanked before the settings are digested into the identifier a lobby matches maps by, so renaming a seed does not make it a different map.
+A seed file whose `Description` is missing or empty appears in the dialogs as a blank row. Loading it still works, and the loaded seed is then described by the language's name for a random map. Saving onto a blank row writes a new file and leaves the old one in place.
+
+`RandMap.Sed`, the file the game writes for the generated map being played, is never listed.
+
+The text does not affect the map that is built. It is left out of the identifier that network games use to match maps, so changing a seed's description does not make it a different map.

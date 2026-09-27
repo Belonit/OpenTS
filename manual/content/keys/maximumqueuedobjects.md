@@ -7,6 +7,6 @@ when_omitted:
   value: "5"
 ---
 
-The count is of entries waiting behind the object under construction, not of objects outstanding, so a house can have this many plus one on order for each kind of object. An order that would exceed it is dropped and plays [`ScoldSound`](/keys/scoldsound/) for a player-controlled house.
+A production slot holds one object in progress and up to this many orders waiting behind it. At the default `5`, a player can have six objects of one category, such as infantry, on order at once. An order past the limit is refused, and the player who gave it hears [`ScoldSound`](/keys/scoldsound/).
 
-Structures are never queued, so the value has no bearing on them; [the queue](/systems/production/#the-queue) covers what a second structure order does instead.
+Structures never queue, so the limit does not apply to them. [The queue](/systems/production/#the-queue) describes what a second structure order does instead.

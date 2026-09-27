@@ -1,13 +1,20 @@
 ---
 key: Lifetime
-summary: How many frames a particle system runs before it is retired.
+summary: How many frames a particle system runs before it winds down.
 see_also: [BehavesLike, SpawnCutoff, SparkSpawnFrames]
 when_omitted:
   kind: value
   value: "-1"
 ---
 
-The count runs down one a frame from the moment the system appears and is the one retirement condition every [behavior](/keys/behaveslike/#scope-particlesystemtype) shares. The others each have at most one of their own, and `Gas`, `WeakGas` and `Web` have none. Reaching the end stops the system on that frame, whatever its behavior. Its update routine never runs again, and any particles it still holds stop where they are instead of aging on. Their aging and drift run only inside that routine, so nothing else ever moves or removes them: a plume caught this way sits on the map for the rest of the scenario. A smoke system that passes [SpawnCutoff](/keys/spawncutoff/) or a spark shower whose [SparkSpawnFrames](/keys/sparkspawnframes/) have run out stops emitting but keeps aging its particles. It leaves the map only when the last of them has died.
+A positive value ends the system that many frames after it is created, whatever its [behavior](/keys/behaveslike/#scope-particlesystemtype). From then on, the system is removed as soon as it holds no particles, which can be on that same frame. [Ending a system](/systems/particle-systems/#ending-a-system) covers the other ways a system ends.
+
+What the system still does until it is removed depends on its behavior:
+
+- A `Smoke` or `Fire` system stops emitting at once.
+- A `Spark` system keeps throwing bursts until its [`SparkSpawnFrames`](/keys/sparkspawnframes/) run out. If every particle it holds expires between two bursts, it is removed early.
+- A `Railgun` system is unaffected, because it ends by itself after laying its trace.
+- A `Gas`, `WeakGas` or `Web` system emits nothing anyway. Its particles still turn into their successors until the chain ends.
 
 ```ini title="rules.ini"
 [MyGasPuffSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -16,6 +23,12 @@ HoldsWhat=MyWeakGas ; a ParticleType registered in [Particles]
 Lifetime=3
 ```
 
-:::caution[Zero and below mean forever, not at once]
-The count is tested for exactly zero after each frame's decrement, so a value of `0` steps straight past the test to `-1` and every value below it moves further away. Only a positive figure ever retires a system this way. A gas or web type has no other retirement, so a system of one of those left at or below zero runs for the rest of the scenario. A smoke type has its cutoff and a spark type its burst count, when that count is positive, to retire it instead.
+`Gas`, `WeakGas` and `Web` systems, and systems with no behavior, have no end condition of their own. Without a positive `Lifetime`, such a system ends only through an outside route, such as the loss of the object it is attached to. A system that belongs to no object, such as a `WeakGas` or `Web` system built by a warhead's blast, then stays on the map, empty once its particles are gone, unless a [Remove particle anim at...](/mapping/actions/taction-remove-particle-anim/) action names a waypoint in its cell.
+
+:::caution[Zero and below never end the system]
+The count drops by one on each of the system's turns, and the system ends only when the result is exactly `0`. A value of `0` drops to `-1` on the first turn, and a negative value drops further, so neither ever ends the system.
+:::
+
+:::danger[Leave `Lifetime` unset on `GasCloudSys`]
+The scenario's shared gas cloud is never rebuilt. A positive `Lifetime` in its section removes the cloud once its last particle expires, and the next gas warhead or veinhole gas release after that crashes the game. [Keep the shared gas cloud alive](/systems/particle-systems/#systems-that-no-attachment-holds) has the details.
 :::

@@ -8,4 +8,4 @@ when_omitted:
   value: "4"
 ---
 
-Aircraft are not replaced on their own account, and no intelligence level gates them. A computer house orders one through [the same demand tally that chooses its vehicles and infantry](/systems/ai-team-production/#production-demand), which counts the places its teams cannot fill and never reads the house's [`IQ`](/keys/iq/). The one replacement the intelligence scale really does gate is [`Harvester`](/keys/harvester/#scope-global-rules).
+No intelligence level gates aircraft production. A computer house orders aircraft only to fill places in its teams, through [the same demand count it uses for vehicles and infantry](/systems/ai-team-production/#production-demand), and that count ignores the house's [`IQ`](/keys/iq/). [`Harvester`](/keys/harvester/#scope-global-rules) is the `[IQ]` key that gates a rebuild: it sets the IQ at which a computer house starts replacing lost harvesters.

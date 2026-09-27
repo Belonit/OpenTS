@@ -8,11 +8,19 @@ when_omitted:
   value: "3"
 ---
 
-How many copies of the sound may play at once; `0` allows any number. When the limit is reached, a new copy louder than the quietest one playing takes its place, and a new copy no louder is refused. Loudness means the copy as played, its [`Volume=`](/keys/volume/) scaled by distance and its [`VShift=`](/keys/vshift/) draw, not the setting alone. With `INTERRUPT` in the sound's [`Control=`](/keys/control/), a copy as loud as the quietest also takes its place instead of being refused. With `QUEUE`, a refused copy waits up to two seconds for a place.
+How many copies of this sound can play at once; `0` allows any number. A copy counts from the moment the game plays it, including while it waits out a `PREDELAY` silence, waits for a voice under `QUEUE`, or sits in the silence between cycles of a loop with a [`Delay=`](/keys/delay/).
+
+When the limit is reached, the new copy is compared in loudness with the quietest copy already counted. A copy's loudness is its [`Volume=`](/keys/volume/), times its distance fade or the loudness the game asked for, times its [`VShift=`](/keys/vshift/) draw.
+
+- If the new copy is louder by more than one percent, the quietest copy stops.
+- If the two are within one percent, the quietest copy stops only with `INTERRUPT` in the sound's [`Control=`](/keys/control/). Otherwise the new copy is refused.
+- If the new copy is quieter, it is refused.
+
+A refused copy does not play. With `QUEUE` in `Control=`, a copy refused when the game plays it keeps trying for up to two seconds first.
 
 ```ini title="sound01.ini"
 [GUN5]
 Limit=2
 ```
 
-The limit is applied before the voice budget of [`Channels=`](/keys/channels/), and only among copies of the same sound. [`Priority=`](/keys/priority/) decides between different sounds.
+The limit compares only copies of the same sound, and it applies before the new copy looks for a voice. A new copy that stops the quietest copy must still get a voice under [`Channels=`](/keys/channels/) and [`Priority=`](/keys/priority/#scope-sounds). If the new copy is refused there, the stopped copy does not resume. `Priority=` decides between different sounds when all voices are in use.

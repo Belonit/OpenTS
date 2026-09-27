@@ -7,12 +7,18 @@ when_omitted:
   value: "20"
 ---
 
-The value is written in degrees and converted to radians as it is read. Only the fly locomotor reads it, and for anything but a dropship only while the aircraft is off the ground.
+`PitchAngle` sets how far an aircraft tips its nose down in flight. The value is in degrees. It affects only a type that flies with the aircraft (Flyer) [`Locomotor`](/keys/locomotor/).
 
-An ordinary aircraft holds this nose-down attitude for as long as its throttle is above [`PitchSpeed`](/keys/pitchspeed/), and levels off below that. A [`HunterSeeker=yes`](/keys/hunterseeker/) type is excluded from the nose-down, whatever its throttle. An aircraft rocked by a nearby jolt adds the angle on top of the jolt's tilt, but only while its throttle is above [`PitchSpeed`](/keys/pitchspeed/).
+An ordinary aircraft pitches nose down while it is off the ground and its throttle is above [`PitchSpeed`](/keys/pitchspeed/). At or below that throttle it flies level. A [`HunterSeeker=yes`](/keys/hunterseeker/#scope-aircrafttype) type never pitches nose down in ordinary flight.
 
-An [`IsDropship=yes`](/keys/isdropship/) type ignores that rule entirely and treats the figure as a ceiling instead: it tips over gradually as it comes in to land, reaching the full angle four tenths of the way through its [`SlowdownDistance`](/keys/slowdowndistance/). Once down it levels off again at 0.02 radians per frame.
+An aircraft destroyed in the air tumbles as it falls. While its throttle is above [`PitchSpeed`](/keys/pitchspeed/), `PitchAngle` is added to its forward tumble. This applies to every aircraft, including dropships and hunter-seekers.
+
+## Dropships
+
+An [`IsDropship=yes`](/keys/isdropship/) type ignores the throttle rule. It raises its nose by up to `PitchAngle` as it comes in to land. The tilt starts once the dropship is within [`SlowdownDistance`](/keys/slowdowndistance/) of its landing point, and grows until the dropship has covered four tenths of that distance. From there it holds at `PitchAngle`.
+
+A dropship that is taking off or retreating is drawn without the tilt. After touching down, it levels off by about 1.15 degrees per frame, so the default 20 degrees takes 18 frames. It does not finish landing until it is level.
 
 :::caution[Writing `-1` is the same as leaving the key out]
-The read uses `-1` as its own marker for a missing key, so `PitchAngle=-1` leaves the stored 20 degrees in place. Write `PitchAngle=0` to make a type fly level.
+`PitchAngle=-1` leaves the previous value in place, which is 20 degrees unless an earlier rules file changed it. Write `PitchAngle=0` to make a type fly level.
 :::

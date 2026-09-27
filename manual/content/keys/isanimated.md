@@ -7,9 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-The flag turns on three separate behaviors at once.
+The flag has two effects on terrain objects of the type:
 
-Once per frame, an object of the type whose animation is stopped rolls against [`AnimationProbability`](/keys/animationprobability/) to start it again. A successful roll returns the object to its first frame and sets the pace from [`AnimationRate`](/keys/animationrate/). The frame drawn is then the animation's own, which displaces both the damaged frame an ordinary terrain object shows below two health and the crumbling frames a dying one shows. And the object stops writing its silhouette into the depth buffer for as long as the flag is set, so that a shape changing from frame to frame cannot stamp a stale outline there.
+- The object starts its animation by chance. On each game frame while the animation is stopped, it starts with the chance set by [`AnimationProbability`](/keys/animationprobability/). The animation runs from the first frame of the artwork at the pace set by [`AnimationRate`](/keys/animationrate/).
+- The object always shows its current animation frame. It no longer switches to its damaged frame when its strength drops below 2.
 
 ```ini title="rules.ini"
 [MYTREE]              ; example blossom tree
@@ -19,6 +20,8 @@ AnimationProbability=.02
 SpawnsTiberium=yes
 ```
 
-:::caution[Only a Tiberium-spawning type stops at the end of its artwork]
-An animated [`SpawnsTiberium=yes`](/keys/spawnstiberium/) object returns to its first frame and halts when it reaches the middle of its shape file, the point where the shadow frames begin, and seeds the ground as it does so. On any other animated terrain type nothing stops the count. The frame number walks on into the shadow frames, so the object shows its own shadow artwork as its body. Past the last frame the file holds, every draw asks for a frame that is not there and puts nothing on the screen.
+:::caution[Only a Tiberium-spawning type stops its animation]
+An animated [`SpawnsTiberium=yes`](/keys/spawnstiberium/) object stops when it reaches the middle frame of its shape file, where the shadow frames begin. It returns to its first frame, [seeds Tiberium](/systems/tiberium/#other-sources-of-tiberium) in a neighboring cell, and waits for `AnimationProbability` to start it again.
+
+Any other animated type never stops once it has started. It runs on into the shadow frames and shows its shadow artwork as its body. Past the last frame in the file, it draws nothing.
 :::

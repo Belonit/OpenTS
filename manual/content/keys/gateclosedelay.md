@@ -7,12 +7,14 @@ when_omitted:
   value: "0"
 ---
 
+Only a [`Gate=yes`](/keys/gate/) BuildingType reads the value. A game minute is 900 frames.
+
 ```ini title="rules.ini"
-[GAGATE_A] ; example gate BuildingType
+[GAGATE_A] ; a stock GDI gate
 Gate=yes
-GateCloseDelay=.03
+GateCloseDelay=.2
 ```
 
-A game minute is 900 frames, so the fragment above holds the gate open for 27 frames after the last thing steps out of its footprint. At the default the gate begins closing on the first pass after its footprint is clear.
+The timer starts when the door starts to open, so the door's travel time, [`DeployTime`](/keys/deploytime/), counts against it. While the door stands fully open and anything other than the gate occupies its footprint, the timer restarts, so the gate never closes on traffic. Once the footprint is clear and the timer has run out, the door closes. With the stock `.2`, the timer is 180 frames. A gate whose footprint stays clear while it is fully open starts closing 180 frames after it began to open. Otherwise it starts closing 180 frames after its footprint last cleared. At `0` it starts closing as soon as the door is fully open and the footprint is clear.
 
-The timer is reloaded from scratch on every pass while anything other than the gate itself stands anywhere in the footprint, so the delay never runs while traffic is crossing. Only a gate still in its open state is held that way: once the door has begun closing, an object entering the footprint neither reloads the timer nor reverses it. Only a [`Gate=yes`](/keys/gate/) BuildingType reads the value; the travel time of the door itself is [`DeployTime`](/keys/deploytime/).
+Once the door has started to close, something standing in the footprint no longer holds it open. Only an allied unit asking to pass reverses the door.

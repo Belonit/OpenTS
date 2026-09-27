@@ -1,6 +1,6 @@
 ---
 key: TeslaZap
-summary: Parsed sound that no turret ever discharges.
+summary: Parsed sound that no structure plays when a charged weapon fires.
 no_effect: true
 see_also: [TeslaCharge, Charges, IsLaser]
 when_omitted:
@@ -8,6 +8,6 @@ when_omitted:
   value: none
 ---
 
-The name promises the discharge of a charging turret. The value is resolved against the sound registry and stored, and no gameplay path reads the slot back.
+No structure plays this sound when it fires. The shot that follows a charge makes only the sounds its own weapon names.
 
-Its companion is live: a structure whose primary weapon sets [`Charges=yes`](/keys/charges/), and which is switched on, fully powered and has a target, plays [`TeslaCharge`](/keys/teslacharge/) at its own position as the wind-up starts. The shot that follows makes only the sounds its own weapon names.
+The companion sound [`TeslaCharge`](/keys/teslacharge/) does play, as a structure with a [`Charges=yes`](/keys/charges/) primary weapon starts charging.

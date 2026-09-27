@@ -8,6 +8,12 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The first tile is plain swamp: what [`WaterToSwampLat`](/keys/watertoswamplat/) blends against, and what a swamp cell reverts to when swamp surrounds it. The eight that follow are decorative. The random map generator writes the plain tile over every flooded cell of a swamp spread, then places the decorative tiles only where every cell under the candidate patch is still plain swamp.
+The first tile is plain swamp and the eight after it are decorative. [`WaterToSwampLat`](/keys/watertoswamplat/) blends other ground against the plain tile. A swamp blend cell whose four neighbors are all swamp or swamp blend turns back into the plain tile.
 
-Whether the role resolved at all gates the terrain test that asks whether a cell is swamp, the one test in this group that is gated. A theater with no swamp always answers no, which is why a theater may leave both swamp roles out without the test misreading its ordinary ground.
+The random map generator grows swamp only on mutated-biome maps, which use the temperate theater. It writes the plain tile over each water cell a swamp spreads into. It then lays up to eight decorative tiles, each only where every cell the tile would cover still holds plain swamp.
+
+A cell counts as swamp when it holds any of the nine tiles or a `WaterToSwampLat` piece. The generator groups swamp with water when it divides the map into [regions](/systems/map-generation/#regions-cliffs-and-ramps). With the role unresolved, no cell counts as swamp.
+
+:::danger[Resolve this role in a theater that mutated maps use]
+The swamp spread does not check that the role resolved. With it unresolved, a mutated-biome map that grows swamp writes an invalid tile number into the swamp cells, and the engine later looks that number up outside the tile list. The decorative patches are taken from the theater's first eight tiles.
+:::

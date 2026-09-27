@@ -7,11 +7,11 @@ when_omitted:
   value: "no"
 ---
 
-The flag is one of the eight that make a structure [one of the deployed-vehicle kinds](/keys/deploysinto/). Such a structure is put down on the deploying vehicle's own cell rather than one cell away, returns to that cell when it undeploys, and may be taken back down whether or not the session allows redeploying.
+`IsLimpetMine=yes` makes the structure one of the [deployed-vehicle kinds](/keys/deploysinto/). A vehicle that deploys into it places it on the vehicle's cell, not one cell away, and the structure undeploys back onto that cell. It can be undeployed whether or not the session allows redeploying.
 
-Four further effects follow from it.
+The flag also has these effects:
 
-- A vehicle is never blocked by one. The mine is skipped by the test a vehicle runs before entering a cell, the same way an [`InvisibleInGame=yes`](/keys/invisibleingame/) structure is, so traffic drives straight over it.
-- A selected limpet mine offers no attack cursor over anything, so a player cannot force fire it. The suppression is the one an [`EMPulseCannon=yes`](/keys/empulsecannon/) structure gets: no cursor over an object and none over a bare cell.
-- [An EM pulse destroys it outright](/systems/emp-pulse/#what-a-pulse-reaches), and the firer is credited with the kill; other structures are only powered off and stunned. A mine whose type sets [`ImmuneToEMP=yes`](/keys/immunetoemp/) is not destroyed.
-- The [Deploy Object](/commands/deployobject/) command accepts it. Every other structure fails that command's readiness test unless it sets [`Passengers=`](/keys/passengers/) of its own; this flag and [`IsMobileWar=yes`](/keys/ismobilewar/) clear it outright.
+- **Vehicles drive over it.** A limpet mine never blocks a vehicle from entering its cell, as with an [`InvisibleInGame=yes`](/keys/invisibleingame/) structure.
+- **It offers no attack cursor.** A selected limpet mine shows no attack cursor over an object or a bare cell, even with force fire, so the player cannot order it to attack. An [`EMPulseCannon=yes`](/keys/empulsecannon/) structure is limited the same way.
+- **An EM pulse destroys it.** [The pulse](/systems/emp-pulse/#what-a-pulse-reaches) credits the kill to its firer, where other structures are only powered off and stunned. A mine whose type sets [`ImmuneToEMP=yes`](/keys/immunetoemp/) is not destroyed.
+- **The [Deploy Object](/commands/deployobject/) command accepts it.** Other structures pass that command's readiness test only when they set [`Passengers=`](/keys/passengers/) above `0`. `IsLimpetMine=yes` and [`IsMobileWar=yes`](/keys/ismobilewar/) structures pass it without.

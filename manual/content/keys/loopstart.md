@@ -7,15 +7,18 @@ when_omitted:
   value: "0"
 ---
 
-The value is a frame number in the shape, not a count from [`Start`](/keys/start/). It is read only when a pass has just ended and the animation still has passes left, so it needs [`LoopCount`](/keys/loopcount/) above one to do anything; the opening pass always begins on the animation's start frame whatever this says.
+The value is a frame number in the shape, not a count from [`Start`](/keys/start/). Every pass after the first restarts on this frame. The first pass always starts on `Start`, so the setting has an effect only when the animation plays more than one pass; see [`LoopCount`](/keys/loopcount/).
 
 ```ini title="art.ini"
 [MYANIM] ; an animation of a 60-frame shape
 Start=10
+End=50      ; 50 stages from frame 10 end on frame 59
 LoopStart=20
 LoopCount=3
 ```
 
-A [`Reverse=yes`](/keys/reverse/) animation ignores it entirely: a reversed pass restarts on [`LoopEnd`](/keys/loopend/) and walks back down.
+This animation plays frames 10 to 59 on its first pass, then 20 to 59 on each of the other two.
 
-A frame number below the animation's start frame is turned back into itself: the engine subtracts the start frame to get a stage and adds it again to draw, so the pass restarts on exactly that frame. A figure past the end of the shape is not corrected. One far enough above the start frame restarts the animation past the end of its own stage count. The pass then ends again on the next advance, and the animation burns through its remaining passes at one per frame delay.
+A [`Reverse=yes`](/keys/reverse/) animation ignores the setting. Each reversed pass restarts at [`LoopEnd`](/keys/loopend/) and steps backward.
+
+The value is not checked against the shape or the other settings. A `LoopStart` below `Start` still restarts on exactly that frame. A `LoopStart` at or past `LoopEnd` makes each pass after the first, except the last, show only the `LoopStart` frame for one frame delay before it ends.

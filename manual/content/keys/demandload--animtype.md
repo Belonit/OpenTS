@@ -8,8 +8,8 @@ when_omitted:
   value: "no"
 ---
 
-The flag removes the shape the engine already holds under the animation's [Image ID](/keys/image/#scope-animtype), both after settings and save loading. The first time the shape is needed, the engine loads a private copy and fills any unset frame count or loop end.
+The animation's shape file is not loaded with the rest of the art when the settings or a saved game are read. The engine loads it the first time the animation needs its artwork, and then fills in any frame count or loop end the section left unset.
 
-That read uses the Image ID, or the AnimType ID when none is set, with a `.SHP` extension. [`Theater=yes`](/keys/theater/#scope-animtype) instead uses the AnimType ID and theater extension; [`NewTheater=yes`](/keys/newtheater/#scope-animtype) rewrites the ordinary name for the theater.
+The file name is the [Image ID](/keys/image/#scope-animtype) with a `.SHP` extension, or the AnimType ID when no image is set. [`Theater=yes`](/keys/theater/#scope-animtype) uses the AnimType ID with the theater's extension instead, and [`NewTheater=yes`](/keys/newtheater/#scope-animtype) adjusts the ordinary name for the theater.
 
-The private copy is released with the type, on theater changes for theater-aware animations, and after playback with [`FreeAfterPlaying=yes`](/keys/freeafterplaying/). That last path is the only release while a match is running.
+Once loaded, the shape stays in memory until the next scenario is loaded. [`FreeAfterPlaying=yes`](/keys/freeafterplaying/) releases it sooner, each time an animation of the type finishes, and the next animation of the type loads it again.

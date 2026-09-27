@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The movement line runs from a selected object to the end of its route. Its dashes are four pixels on and four off. They move along the line by the clock, one pixel every 128 milliseconds, so they run at the same pace whatever the game speed. [Action lines](/systems/action-lines/) covers when the line is drawn.
+Dashes are four pixels on and four off. They move along the line at one pixel every 128 milliseconds, a pace set by the clock, so it does not change with the game speed.
+
+The movement line runs from a selected object to the end of its route. [Action lines](/systems/action-lines/) covers when it is drawn.

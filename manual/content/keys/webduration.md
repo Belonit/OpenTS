@@ -7,17 +7,21 @@ when_omitted:
   value: "300"
 ---
 
-Frames run fifteen to the second, so the built-in `300` pins a soldier for twenty seconds. The figure is the midpoint of the range [`WebDurationVariation`](/keys/webdurationvariation/) spreads around it, not a ceiling.
+Each webbed infantryman waits this many frames, plus a random shift of up to [`WebDurationVariation`](/keys/webdurationvariation/) frames in either direction, so this figure is the middle of the range, not its upper limit. At fifteen frames a second, the default `300` frames is twenty seconds.
 
 ```ini title="rules.ini"
 [MyWebWH] ; example WarheadType
 Webby=yes
 Particle=MyWebSys ; example ParticleSystemType
-WebDuration=600 ; forty seconds, give or take the variation
+WebDuration=600 ; forty seconds, before the variation
 ```
 
-While the count runs the soldier struggles in place: it cannot walk, and pointing it at a destination shows the no-move cursor. When the count reaches zero the soldier drops back to prone and carries on. A second web only ever lengthens the wait. The new figure replaces the remaining one when it is longer and is discarded when it is shorter, so webbing an already-webbed soldier can never free it early.
+While the wait runs, the infantryman struggles in place. It cannot walk or fire, and the player cannot order it to move. When the wait ends, it drops prone and can act again.
 
-A quarter of this figure is the cutoff an object with a web weapon uses when it decides whether a soldier is worth webbing again; [target selection](/systems/target-selection/#which-weapon-the-score-assumes) covers that choice.
+A second web can lengthen the wait but never shorten it. The infantryman keeps whichever is longer, the wait still remaining or the newly drawn one.
 
-The setting is read only while [`Webby=yes`](/keys/webby/) stands in the same section.
+This figure also decides when a webbed infantryman becomes a target again. In its automatic target scan, an object whose web weapon has this warhead skips infantry with more than a quarter of this figure still left to wait: at `300`, more than 75 frames. Against a webbed infantryman that it does target, the object normally uses its other weapon and webs the infantryman again only once the wait has run out. [Target selection](/systems/target-selection/#which-weapon-the-score-assumes) covers how the web weapon is chosen.
+
+A vehicle can still choose the web weapon against a webbed infantryman, for example when neither of its weapons can fire at that moment. If more than a quarter of this figure is left to wait, the vehicle drops the target and returns to guard.
+
+The setting is read only while the warhead is [`Webby=yes`](/keys/webby/).

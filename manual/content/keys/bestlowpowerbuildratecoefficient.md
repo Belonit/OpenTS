@@ -8,4 +8,4 @@ when_omitted:
   value: ".75"
 ---
 
-The gentlest production multiplier a shortfall can impose is fixed in the engine at `0.75`, the same figure this default names. [The production ladder](/systems/power/#production) lists the steps that are actually applied.
+The mildest production slowdown a power shortfall can cause is fixed in the engine at a multiplier of `0.75`, the same as this key's default. [The production table](/systems/power/#production) lists the multipliers that apply.

@@ -7,15 +7,15 @@ when_omitted:
   value: "32"
 ---
 
-Only a [`Turret=yes`](/keys/turret/) vehicle drawn from shape artwork reads this figure, and it owes nothing to the hull's [`Facings`](/keys/facings/). Stock vehicles never name `TurretFacings`, so every stock turret strip is cut into the default thirty-two. The stock hulls are cut into eight facings each, except the Hunter-Seeker droid and Limpet Drone, which have no firing animation and no turret and so take the one-facing default.
+Only a [`Turret=yes`](/keys/turret/) vehicle drawn from shape artwork uses this value. It is independent of the hull's [`Facings`](/keys/facings/). Stock art never sets `TurretFacings`, so the stock Titan's turret has the default 32 frames.
 
-Per-facing drawing happens at `8`, `16`, `32` and `64`. The facing drawn is the turret's own heading rounded to that many compass points and then advanced by an eighth of a turn, wrapping around, so a turret pointing northwest draws facing 0 at every count. At any other value the facing is fixed at 0 and the turret draws the first frame of its strip however it is aimed.
+Use `8`, `16`, `32` or `64`. The turret then shows the frame for its heading rounded to that many compass points. The first frame faces northwest, and the frames after it turn clockwise. With any other value, the turret always shows the first frame, whichever way it aims.
 
 ```ini title="art.ini"
-[MYTANK] ; the Image ID of a shape-drawn UnitType
+[MYTANK] ; the Image ID of a shape-drawn UnitType that sets Turret=yes in rules.ini
 Facings=8        ; eight body facings
 WalkFrames=15
-TurretFacings=32 ; thirty-two turret frames, from frame 120
+TurretFacings=16 ; 16 turret frames, from frame 120 by default
 ```
 
-[`StartTurretFrame`](/keys/startturretframe/) names the frame that strip begins at.
+[`StartTurretFrame`](/keys/startturretframe/) sets the frame the turret frames start at.

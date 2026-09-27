@@ -8,12 +8,23 @@ when_omitted:
   value: "no"
 ---
 
-Ordinary debris is created where it was asked for and thrown up from there. A meteor is created at the far end of a flight instead: a velocity is drawn, and the lifetime is shortened by a random 0 to 19 frames. The piece is placed that many frames back along the velocity, so it travels in and reaches the coordinate it was created for as the lifetime runs out.
+A meteor flies in to the coordinate it is created for. Ordinary debris is thrown up from that coordinate instead.
 
-The velocity itself is drawn differently in three ways.
+When a meteor is created, its velocity is drawn and its lifetime is shortened by a random 0 to 19 frames. The meteor then starts as far back from its target as that velocity would carry it over the shortened lifetime. [`Duration`](/keys/duration/) therefore sets the length of the approach.
 
-- Its vertical component is [`MinZVel`](/keys/minzvel/#scope-voxelanimtype) exactly, with no random pick and no reference to [`MaxZVel`](/keys/maxzvel/). The sign decides the approach: a negative figure brings the meteor down onto the target from above, a positive one brings it up from underneath.
-- Its two horizontal components come from the [`MaxXYVel`](/keys/maxxyvel/#scope-voxelanimtype) range and are then mirrored together whenever `X` falls below `-Y`. The mirror keeps the flight direction in the downward half of the screen, so a meteor always comes in from the upper half of the view and never from the bottom edge.
-- Gravity is added back to the piece each frame after the physics have taken it away, so a meteor travels a straight line where other debris arcs.
+A meteor's velocity differs from ordinary debris in three ways:
 
-Coming down on solid ground adds two effects ordinary debris never gets: the terrain is deformed around the impact cell according to [`CraterLevel`](/keys/craterlevel/), and [`Spawns`](/keys/spawns/#scope-voxelanimtype) breaks the piece into fresh debris. An end low over water substitutes the last animation in the rules' splash list for the wake and small splash other debris makes there.
+- Its vertical speed is [`MinZVel`](/keys/minzvel/#scope-voxelanimtype) minus a fixed 1.4 leptons per frame for gravity. [`MaxZVel`](/keys/maxzvel/) is ignored. With `MinZVel=-10`, for example, the meteor falls 11.4 leptons per frame.
+- Its two horizontal speeds are drawn from the [`MaxXYVel`](/keys/maxxyvel/#scope-voxelanimtype) range, then both are reversed if the result would carry the meteor up the screen. Its horizontal motion therefore always runs down or across the screen.
+- Its vertical speed stays the same until it strikes something, so it flies in a straight line where other debris arcs.
+
+The starting point leaves out the 1.4 leptons per frame for gravity. A meteor falling onto level ground therefore lands before its lifetime runs out and short of its target. With `MinZVel=-10`, it lands after about 88 percent of its shortened lifetime, 88 percent of the way to its target. It then rebounds as [`Elasticity`](/keys/elasticity/#scope-voxelanimtype) describes, and its lifetime ends wherever the rebound has carried it.
+
+A `MinZVel` of 0 or above starts the meteor at or below the height of its target. A meteor aimed at level ground with such a setting starts under the surface and strikes it on its first frame.
+
+When a meteor's life ends anywhere except low over water, it has two effects that ordinary debris never has:
+
+- [`Spawns`](/keys/spawns/#scope-voxelanimtype) breaks it into new pieces of debris.
+- The terrain around the impact cell is deformed according to [`CraterLevel`](/keys/craterlevel/), unless the meteor ends at bridge-deck height or above.
+
+Low over water, as [`ExpireAnim`](/keys/expireanim/#scope-voxelanimtype) defines it, a meteor plays the last animation in [`SplashList`](/keys/splashlist/) in place of the wake and splash other debris makes.

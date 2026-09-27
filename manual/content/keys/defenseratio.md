@@ -8,4 +8,4 @@ when_omitted:
   value: ".5"
 ---
 
-How much of a computer base is given over to defense is decided by [the accumulating build cost of the plan](/systems/ai-base-building/#building-the-plan), scaled by [`GDIBaseDefenseCoefficient`](/keys/gdibasedefensecoefficient/) or [`NodBaseDefenseCoefficient`](/keys/nodbasedefensecoefficient/) according to the house's country name. Those coefficients are the setting that moves the proportion.
+To change how many defenses a computer base plans, set [`AIBaseDefenseCoefficient`](/keys/aibasedefensecoefficient/) in the house's side section. It scales the defense placeholders added as [the plan's build cost grows](/systems/ai-base-building/#building-the-plan). [`GDIBaseDefenseCoefficient`](/keys/gdibasedefensecoefficient/) and [`NodBaseDefenseCoefficient`](/keys/nodbasedefensecoefficient/) set that coefficient for the first and second sides.

@@ -7,9 +7,9 @@ when_omitted:
   value: "0"
 ---
 
-The value is copied to each animation of the type when the animation is created. It is added to the animation's sorting position, which decides the order the ground layer is drawn in. The position is the animation's Y coordinate, measured in leptons; a cell is 256 leptons. A negative figure sorts the animation earlier and so puts it behind the objects it shares the layer with; a positive one puts it in front.
+Moves the animation earlier or later in the ground layer's drawing order. Objects in that layer are drawn in order of their Y coordinate in leptons, and this value is added to the animation's coordinate for that sort; a cell is 256 leptons. A negative value draws the animation behind objects it would otherwise cover, and a positive value draws it in front of them.
 
-The shipped wake animation sets the figure in art.ini:
+Each animation takes the value when it is created. The shipped wake animation sets it:
 
 ```ini title="art.ini"
 [WAKE2]
@@ -21,12 +21,12 @@ Rate=120
 YSortAdjust=-64
 ```
 
-It moves nothing on screen. The artwork is drawn in the same place either way, and only what covers what changes. [`YDrawOffset`](/keys/ydrawoffset/) is the setting that moves the sprite.
+The value moves nothing on screen: the artwork is drawn in the same place, and only what covers what changes. [`YDrawOffset`](/keys/ydrawoffset/) moves the artwork.
 
-The ground layer is the only layer kept in order, so an animation that is neither [`Surface=yes`](/keys/surface/) nor attached to an object is in the air layer instead. A burning structure's fire is attached to its structure, and a weapon's firing animation is attached to the object that fired it. A structure firing a weapon leaves the animation unattached. The air layer is not sorted, and the figure does nothing for it.
+Only the ground layer is sorted, so the value affects only an animation that has [`Surface=yes`](/keys/surface/) or is attached to an object. Every other animation is in the air layer, where the value has no effect. A burning structure's fire is attached to the structure, and a weapon's firing animation to the vehicle, infantry or aircraft that fired it. A structure's firing animation is not attached.
 
-An animation a structure runs in one of its slots receives the slot's own figure instead of this one. That applies even when the slot states nothing, because the slot's figure is then zero. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers that override and the byte the slot's figure has to fit in. The type's own figure has no such limit.
+An animation that a structure runs in one of its animation slots uses the slot's value instead, which is `0` when the slot sets none. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers that value and its range. The type's own value has no such range limit.
 
-:::caution[The move flash animation loses its figure in multiplayer]
-The first time a move order is given in a network game, the figure of the animation named by [`MoveFlash=`](/keys/moveflash/) is overwritten with -5000. The type keeps that value for the rest of the session, so whatever the type states is discarded there. A campaign and a skirmish leave it alone.
+:::caution[Multiplayer overrides the move flash animation's value]
+In a multiplayer game, each move order the player gives sets this value to `-5000` on the animation type named by [`MoveFlash=`](/keys/moveflash/). For the rest of that game, every animation of that type is created with `-5000`, whatever the type sets. Campaign and skirmish games leave the value alone.
 :::

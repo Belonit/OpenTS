@@ -7,8 +7,8 @@ when_omitted:
   value: none
 ---
 
-One tag is built from the named TagType as the team itself is created, and that single tag is attached to each member as the member joins. Every member of the team therefore holds the same instance rather than one of its own. Each trigger behind the tag exists once for the team, so a trigger that can fire only once fires for the team as a whole rather than once per member. [`OnTransOnly=yes`](/keys/ontransonly/) narrows the attachment to the members that can carry passengers.
+Each team of this type creates one tag from the named TagType when the team is created. That tag is attached to each member as it joins, replacing any tag the member already had. All members share the one tag, so a trigger behind it that can fire only once fires once for the whole team, not once per member. [`OnTransOnly=yes`](/keys/ontransonly/) limits the tag to members that can carry passengers.
 
-A member removed from the team has the tag detached again, but only while it belongs to a computer house. A member of a human house keeps it, so a reinforcement team's tag stays on the objects after the player takes them over.
+A member that leaves the team loses the tag if a computer house owns it. A member owned by a human player keeps it, so a tag on a player's reinforcement team stays with its members after they leave the team.
 
-The value is matched against the registered TagType IDs. `<none>` and `none` clear the reference, and a name that no `[Tags]` entry registers is not rejected: a fresh TagType is created under that name with no trigger behind it. A typo therefore gives the team a tag that can never spring.
+The value is matched against the IDs registered under `[Tags]`. `<none>` and `none` clear the reference. A name that is not registered there is not an error: the game creates a new TagType under that name with no triggers, so a misspelled name gives the team a tag that never fires.

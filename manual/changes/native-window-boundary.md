@@ -6,4 +6,4 @@ targets: []
 credit: [Krisztiaan]
 ---
 
-The application shell now supplies the native window handle, physical drawable size, and display refresh rate to the video presenter. The presenter no longer owns Win32 window queries, and the bgfx backend alone translates the native handle into bgfx platform data. This is an internal boundary change; the supported target and video configuration are unchanged.
+The video presenter no longer queries the Win32 window. The application shell passes it the native window handle, the drawable size in physical pixels and the display refresh rate, so a port to another windowing system can supply them from its own window.

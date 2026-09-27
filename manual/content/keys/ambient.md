@@ -12,8 +12,8 @@ when_omitted:
 Ambient=1
 ```
 
-The value is stored in hundredths, so `.5` is half daylight and `1.35` is brighter than daylight. It is applied at load without a fade. When [an ion storm ends](/systems/ion-storms/#the-storm-ends) the map returns to this level, and the return travels through the ambient fade rather than snapping.
+`1` is full daylight, `.5` is half as bright, and a value above `1`, such as `1.35`, is brighter than daylight. The level is kept in hundredths. The map starts at this level as it loads, with no fade.
 
-The engine reads this value before its ion counterpart in the same section, and [`IonAmbient`](/keys/ionambient/) falls back to it. A map that gives only this key therefore darkens no further during a storm.
+[`IonAmbient`](/keys/ionambient/) defaults to this value, so a map that sets only `Ambient` does not darken during an ion storm. When [a storm ends](/systems/ion-storms/#the-storm-ends), the map fades back to this level through [the ambient fade](/systems/ion-storms/#the-ambient-ramp).
 
-The [Set ambient light...](/mapping/actions/taction-set-ambient-light/) trigger action replaces the stored level during play. While a storm is running the replacement is stored but the fade is withheld until the storm clears.
+The [Set ambient light...](/mapping/actions/taction-set-ambient-light/) trigger action replaces this level during play, and the map fades to the new level. During an ion storm the new level is kept, and the fade to it starts when the storm ends.

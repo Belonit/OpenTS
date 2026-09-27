@@ -7,8 +7,14 @@ when_omitted:
   value: "-1"
 ---
 
-Only a [`Fire`](/keys/behaveslike/#scope-particletype) particle has the two fade states, and it tests them on the frames its state advances, never in between. A state at or below [`StartStateAI`](/keys/startstateai/) is therefore never matched, because the first test happens after the first advance, and neither is one above [`EndStateAI`](/keys/endstateai/), which the sequence stops at.
+A [`Fire`](/keys/behaveslike/#scope-particletype) particle becomes a quarter faded when its animation state reaches this number. No other behavior reads the setting.
 
-The state is held in one unsigned byte while the particle's own state is signed, so anything from 128 to 255 is beyond what a particle can reach. A `-1` is stored as 255, which is what leaves a flame that never thins. Setting this and [`Translucent50State`](/keys/translucent50state/) to the same state leaves the particle at the half fade, since that one is applied second.
+The flame checks this number only when its state advances. To be matched, the number must therefore be above [`StartStateAI`](/keys/startstateai/), where the state begins, and no higher than [`EndStateAI`](/keys/endstateai/), where it stops. With [`DeleteOnStateLimit=yes`](/keys/deleteonstatelimit/) the number must be below `EndStateAI`, because the flame is removed in the frame it reaches that state, before the fade is drawn.
 
-The fade only shows at the High detail setting; [`Translucency`](/keys/translucency/#scope-particletype) covers what the three levels look like and what happens at the lower settings.
+The flame must also reach the state before it is removed for another reason: its speed runs out, its [`MaxEC`](/keys/maxec/) lifetime ends, or the ground ahead of it rises.
+
+The engine keeps only the low byte of the value, so `-1` becomes `255` and `266` becomes `10`. A result from `128` to `255` never matches, because a particle's state never climbs past `127`. That is why the default `-1` leaves a flame that never thins.
+
+If this and [`Translucent50State`](/keys/translucent50state/) name the same state, the flame ends at the half fade, because the half fade is applied second.
+
+Fading is drawn only at the High detail setting. [`Translucency`](/keys/translucency/#scope-particletype) describes the three fade levels and the lower detail settings.

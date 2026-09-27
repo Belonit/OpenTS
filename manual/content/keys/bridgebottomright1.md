@@ -5,9 +5,13 @@ see_also: [BridgeBottomRight2, BridgeTopLeft1, BridgeMiddle1]
 when_omitted:
   kind: value
   value: "-1"
-  note: The position lands two tiles before the set's first piece rather than on a piece of it.
+  note: The position lands two tiles before the set's first piece, outside the set.
 ---
 
-This is where an eastward repair stops. The repair steps a cell at a time from the [top-left end](/keys/bridgetopleft1/), or from a middle piece at subtile `5`, restoring middle sections as it goes. It finishes when it meets a cell at this position showing subtile `4`. A walk that has not met one within twenty-nine cells returns without laying the bridge deck back down. A collapse walks the same way but stops at the first end at this position or the first middle section it meets. [`BridgeMiddle1`](/keys/bridgemiddle1/) covers how a position is measured.
+`BridgeBottomRight1` is the position of the piece that draws the bottom-right end of an east-west span, where the span finishes. [`BridgeBottomRight2`](/keys/bridgebottomright2/) names a second piece for the same end, and [`BridgeMiddle1`](/keys/bridgemiddle1/) covers how positions are counted.
 
-An end piece has no condition ladder of its own. It is marked whole or damaged instead, and the mark is copied to every neighboring cell drawn from the same piece. A set may give the end one piece or two. [`BridgeBottomRight2`](/keys/bridgebottomright2/) names the second position of the same end, and every test accepts either key without telling them apart.
+A repair starts where the [top-left end](/keys/bridgetopleft1/) search found the span and works east one cell at a time, returning each middle section it passes to whole. It finishes at the first cell at this position showing subtile `4`: it marks that end whole and lays the bridge deck back down along the span. A repair that meets no such cell within 29 cells stops there. The middle sections it passed stay whole, but the deck is not put back.
+
+A collapse works east the same way to find the far end of the fallen stretch. It stops at the first cell at this position showing subtile `4`, or at the first middle section that has not collapsed.
+
+An end piece has two looks, whole and damaged. Damage or a repair changes the end only when the cell it reaches is one the tile file marks as randomized. The change then spreads to every connected cell drawn from the same piece. A damaged end draws the piece's first [lettered alternate](/formats/theater-control/) on its randomized cells, if the piece has one, and a whole end draws the base tile there.

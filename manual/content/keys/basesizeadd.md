@@ -8,4 +8,4 @@ when_omitted:
   value: "3"
 ---
 
-Nothing compares one house's base against another's, and no cap bounds how far a computer base may grow. Its extent follows from [the node list it works through](/systems/ai-base-building/#building-the-plan) and from the ground its [placement search](/systems/ai-base-building/#choosing-a-spot) can accept.
+The engine never compares one house's base with another's, and no cap limits how far a computer base grows. A computer base's size follows from [the node list it builds from](/systems/ai-base-building/#building-the-plan) and from the ground its [placement search](/systems/ai-base-building/#choosing-a-spot) accepts.

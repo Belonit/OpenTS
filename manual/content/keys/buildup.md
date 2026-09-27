@@ -8,21 +8,23 @@ when_omitted:
   note: The type has no construction artwork.
 ---
 
-The value is a filename without its extension. Only a non-empty value is taken, and only the first 15 characters of it are kept. The named `<value>.SHP` is loaded with the rules, after the name has been rewritten for the scenario theater on the structure-art convention that [`DoorAnim`](/keys/dooranim/) describes.
-
-The file supplies both the frames of the construction animation and its length. Each step draws one frame of the file, starting at the first, and half the file's frames are the step count. A [`Gate=yes`](/keys/gate/) type instead takes the step count from [`GateStages`](/keys/gatestages/) plus one rather than from the file's size. [`BuildupTime`](/keys/builduptime/) is divided by that count to give the delay between one step and the next. [Buildup](/systems/production/#buildup) covers what happens around the animation while it runs.
+The value is a filename without its extension. An empty value keeps the previous one, and only the first 15 characters are kept. Unless [`DemandLoadBuildup=yes`](/keys/demandloadbuildup/) defers it, the game loads `<value>.SHP` with the rules, after rewriting the name for the scenario theater by the structure-art convention that [`DoorAnim`](/keys/dooranim/) describes.
 
 ```ini title="art.ini"
 [MYWEAP] ; example war factory, drawn from its own Image ID
 Buildup=GAWEAPMK ; loaded as GTWEAPMK.SHP in temperate
 ```
 
+The file sets both the frames and the length of the construction animation. The animation shows the first half of the file's frames in order, one per step. A [`Gate=yes`](/keys/gate/) type has [`GateStages`](/keys/gatestages/) plus one steps instead. [Buildup](/systems/production/#buildup) covers how [`BuildupTime`](/keys/builduptime/) spreads over those steps and what happens while the animation runs.
+
 ## A type with no construction artwork cannot be sold
 
-Each structure asks its type for the construction artwork as it is created, and records the answer. A type that has none leaves every structure of that type with no answer to record, whether the value is missing or names a file that is not there. The sale is then refused however it is reached: the sell cursor, a trigger, and the computer's own emergency sell-off all pass through the same gate. [Capture](/systems/capture/) covers what a captured structure of such a type does instead. [`Unsellable=yes`](/keys/unsellable/) is the deliberate refusal, and it is the weaker one: the computer's sell-off and the trigger action both bypass that flag, and neither bypasses this gate.
+A structure whose type has no construction artwork can never be sold. That applies whether `Buildup` is missing or names a file the game cannot find. The sell cursor, the [Sell building](/mapping/actions/taction-sell-attached/) trigger action and the computer's sell-offs all refuse it. The one exception is a [`FirestormWall=yes`](/keys/firestormwall/) type, which a sell order removes at once. For the same reason, such a structure cannot be ordered to undeploy into its [`UndeploysInto`](/keys/undeploysinto/) vehicle.
 
-The same answer decides one other thing: only a structure whose type has construction artwork turns a [`Nominal=yes`](/keys/nominal/) survivor into a technician as it is destroyed or sold.
+[`Unsellable=yes`](/keys/unsellable/) is the deliberate way to prevent a sale, and it is weaker. It blocks the sell cursor, but the trigger action and the computer's sell-offs still sell the structure.
+
+Each structure checks for construction artwork once, as it is created. A [`Nominal=yes`](/keys/nominal/) survivor running from a destroyed structure becomes a technician only when that check found construction artwork.
 
 :::caution[A theater-specific structure is timed differently]
-A [`Theater=yes`](/keys/theater/) structure has its construction artwork fetched again as the theater is set up, this time under the theater's own extension rather than `.SHP`. That path counts every frame in the file as a step and fixes the delay at five seconds divided by that count, so `BuildupTime` does not reach it and neither does the halving above.
+A [`Theater=yes`](/keys/theater/) structure has its construction artwork fetched again as the theater is set up. This fetch uses the theater's own extension in place of `.SHP` and does not rewrite the name. It counts every frame in the file as a step and spreads five seconds over them, so neither `BuildupTime` nor the halving above applies. If no file with that extension exists, the type has no construction artwork, unless the map redefines the type afterward.
 :::

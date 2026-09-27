@@ -23,4 +23,8 @@ migration:
 credit: [ZivDero]
 ---
 
-`[Sides]` is now the roster of record. A country it places keeps that side whatever its own `Side=` says, with the conflict logged. The raw Tiberian Sun rules' `[Nod] Side=GDI` therefore no longer moves Nod onto GDI's side. A `Side=` that names a side `[Sides]` never declared, on a country, a theme or a mission's `SpeechSide=`, is logged and ignored instead of creating a side. A `[Sides]` value names countries alone: a side name inside one no longer splices that side's roster in.
+A country listed under `[Sides]` in `rules.ini` now keeps that side whatever `Side=` its section sets. Several shipped missions, such as `gdi10b.map`, write `Side=GDI` in their `[Nod]` section, and that no longer moves Nod onto GDI's side.
+
+A `Side=` on a country or a theme, or a mission's `[Basic] SpeechSide=`, that names a side missing from `[Sides]` used to create that side. It is now ignored and logged.
+
+A `[Sides]` value now lists countries only. A side name in it used to add all of that side's countries. Now it adds only the country of the same name, and is skipped when no country has that name.

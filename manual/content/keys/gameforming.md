@@ -12,6 +12,11 @@ when_omitted:
 GameForming=NEWGAME1 ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the network game list a player sits in before joining a LAN match, and it is played without a position. Two announcements use it: a game already on the list reopening after having been closed, and a game not seen before arriving already open. A game that appears closed is added to the list in silence.
+The sound plays in the LAN game list that a player sees before joining a match. It marks a game becoming joinable in either of two ways:
 
-Both announcements are recognized from the answers hosts broadcast about themselves, and both are skipped once the player has been confirmed into a game. From that point the list announces players rather than games. The chat panel prints a matching line beside each sound.
+- a listed game reopens after having been closed;
+- a game appears on the list for the first time, already open.
+
+A game that first appears closed is added to the list without the sound. A matching line appears in the chat panel with each sound.
+
+A game's host reports these changes when it answers the game queries sent by the list. The sound plays only until the player has been confirmed into a game.

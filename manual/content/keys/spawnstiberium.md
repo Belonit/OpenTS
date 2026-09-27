@@ -7,6 +7,14 @@ when_omitted:
   value: "no"
 ---
 
-The object's own cell reports the Tiberium type named by [`TiberiumToSpawn`](/keys/tiberiumtospawn/) even with no overlay present, so infantry standing there are poisoned. The cell is also refused as a target for new growth, which is what keeps a blossom tree sitting on bare ground. A blossom-tree cell is worth nothing to a harvester, because worth comes from the overlay.
+A Tiberium-spawning terrain object, such as a blossom tree, seeds the cells around it only if its type also sets [`IsAnimated=yes`](/keys/isanimated/). Each time its animation reaches the middle frame of its shape file, the animation stops and the object plants stage 5 Tiberium in one neighboring cell. The type is the one in Tiberium slot [`TiberiumToSpawn`](/keys/tiberiumtospawn/). [Other sources of Tiberium](/systems/tiberium/#other-sources-of-tiberium) covers which neighbors qualify.
 
-An object that also declares [`IsAnimated=yes`](/keys/isanimated/) seeds one neighboring cell at growth stage 5 each time its animation reaches the middle frame. The animation then halts there until chance restarts it. That seeding skips the test the source cell would otherwise have to pass, so it happens however bare the ground beneath the object is.
+Every cell of the object's [`Foundation`](/keys/foundation/#scope-terraintype) block without a Tiberium overlay counts as holding that Tiberium type. Infantry take [Tiberium damage](/systems/tiberium/#damage) there as in any Tiberium cell. A harvester collects nothing from these cells.
+
+Placing the object removes any overlay already in its top-left cell, and new Tiberium cannot take root in any cell of its block.
+
+The flag also changes how the object is drawn and destroyed:
+
+- Its artwork is drawn 16 pixels higher than that of an ordinary terrain object.
+- It never catches fire, as [`TreeFlammability`](/keys/treeflammability/) describes.
+- When destroyed, it explodes, as [What the ground keeps](/systems/destruction-and-debris/#what-the-ground-keeps) describes.

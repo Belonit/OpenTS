@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-A team built from a TeamType that names a [`Tag`](/keys/tag/) attaches that tag to each member as the member joins. With this set, only a member whose type sets [`Passengers`](/keys/passengers/) above zero is given it; every other member joins holding whatever tag it already had.
+A team whose TeamType names a [`Tag`](/keys/tag/) normally attaches that tag to every member as it joins. With this set, only a member whose type sets [`Passengers`](/keys/passengers/) above zero receives it. Every other member joins keeping whatever tag it already had.
 
-A TeamType with no `Tag` is unaffected, since there is nothing to withhold. The narrowing is applied at the moment of joining and nowhere else: a member recruited later is judged by the same test. A member that already holds the team's tag keeps it however this setting changes afterward.
+The setting has no effect on a TeamType without a `Tag`.

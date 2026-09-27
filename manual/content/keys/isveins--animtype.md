@@ -10,11 +10,15 @@ when_omitted:
 
 ```ini title="art.ini"
 [VEINATAC] ; the AnimType named by [AudioVisual] VeinAttack
-IsVeins=true  ; true and yes are read the same
+IsVeins=yes
 ```
 
-The flag, not the [`VeinAttack`](/keys/veinattack/) setting, is what gives an animation the [vein attack behavior](/systems/veins/#standing-in-veins). On every other frame it deals [`VeinDamage`](/keys/veindamage/) to every live unit, structure or infantryman standing in its cell. Being taken off the map releases the cell, so that a later object can set the attack off again. The animation is drawn in the local player's color scheme.
+`IsVeins=yes` makes an animation act as a [vein attack](/systems/veins/#standing-in-veins). On every other frame, the animation deals [`VeinDamage`](/keys/veindamage/) to every object in its cell that veins can harm.
+
+When the animation is removed, its cell can start another attack.
+
+The animation is drawn in the local player's color scheme.
 
 :::caution[The animation named by VeinAttack needs the flag]
-An animation used as `VeinAttack` without the flag plays as ordinary artwork and deals no damage. It never releases the cell it was attached to, so that cell cannot start another attack for the rest of the scenario.
+Without the flag, the [`VeinAttack`](/keys/veinattack/) animation plays as ordinary artwork and deals no damage. Its cell also never starts another attack for the rest of the scenario.
 :::

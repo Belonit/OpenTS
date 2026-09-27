@@ -8,6 +8,6 @@ when_omitted:
   value: "0"
 ---
 
-The credits charged to produce one object of the type, before the country and difficulty multipliers scale it. Three other figures are derived from it: the [base build time](/keys/buildspeed/), the [experience a kill is worth](/systems/veterancy/#earning-experience), and the [price of one repair step](/systems/repair/#the-cost-of-one-step).
+The credits charged to produce one object of the type, before the owner's country and difficulty multipliers scale it. Other figures are worked out from this price, among them the [base build time](/keys/buildspeed/), the [experience a kill is worth](/systems/veterancy/#earning-experience), the score a kill earns, and the [price of one repair step](/systems/repair/#the-cost-of-one-step).
 
-Repair of a structure that comes with a [`FreeUnit`](/keys/freeunit/) or pad aircraft is priced from a reduced figure, which [What a structure gives away](/keys/cost/#what-a-structure-gives-away) explains; its purchase price is unchanged. An aircraft's own repair uses its full written price.
+Repairing an aircraft uses its full written price. An aircraft's price also lowers the repair price of a structure that comes with it, either as the structure's [`FreeUnit=`](/keys/freeunit/) or through the [`PadAircraft=`](/keys/padaircraft/) list. [What a structure gives away](/keys/cost/#what-a-structure-gives-away) gives the exact deduction and its effect on the structure's purchase price.

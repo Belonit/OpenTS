@@ -7,12 +7,14 @@ when_omitted:
   value: "-1"
 ---
 
+`BurstDelay2` is the wait, in game frames, after the third shot of a burst and before the fourth. `-1` gives a random three to five frames instead.
+
 ```ini title="rules.ini"
 [MyQuadCannon] ; example WeaponType
 Burst=4
 BurstDelay2=6 ; six frames between the third shot and the fourth
 ```
 
-The value is the reload delay the firing object is given once its third shot of a burst has gone off, in game frames. `-1` asks for a random three to five frames instead. The assignment is reached only on a weapon whose [`Burst`](/keys/burst/) is above `3`; at a burst of exactly three the third shot is the last one and pays [`ROF`](/keys/rof/).
+The wait applies only when [`Burst`](/keys/burst/) is above `3`. With `Burst=3`, the third shot is the last of the burst and is followed by [`ROF`](/keys/rof/#scope-weapontype) instead.
 
-The gap is taken as written, without the house rate-of-fire bias, the random padding or the veteran rate-of-fire ability that the burst's closing [`ROF`](/keys/rof/) is subject to. [`Burst`](/keys/burst/) covers how the shots of a burst are counted and which weapons ignore the short gap altogether.
+Any value other than `-1` is used as written. The house rate-of-fire bias, the random extra frames and the veteran rate-of-fire ability change only the `ROF` wait. [`Burst`](/keys/burst/) lists the weapons and structures that never use the short gap.

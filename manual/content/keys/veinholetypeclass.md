@@ -19,12 +19,18 @@ Strength=1000
 IsVeinhole=true
 ```
 
-One setting covers every [veinhole monster](/systems/veins/#veinhole-monsters) on the map. A monster has no type of its own: it reports this type whenever the engine asks what it is. The section's [`Strength`](/keys/strength/) is therefore the monster's maximum and current strength, and its [`Armor`](/keys/armor/) and [`Immune`](/keys/immune/) decide what damage does to it. [`IsVeinhole=yes`](/keys/isveinhole/) on the same section is what makes the monster clickable and a legal target.
+Every [veinhole monster](/systems/veins/#veinhole-monsters) on the map uses the TerrainType named here. A monster has no type of its own, so this one setting covers all of them. The section does not need to be listed in `[TerrainTypes]`.
 
-:::danger[An unresolved setting faults while the map loads]
-This setting has no built-in value, and a monster reads its maximum strength off the type without checking what it got. A map holding a veinhole overlay with the setting unresolved faults as the monster is created.
-:::
+The section's settings apply to every monster:
 
-:::danger[A named section that does not exist yields an unkillable monster]
-A value naming a section the rules do not contain still produces a TerrainType. It keeps the negative maximum strength it was constructed with, because the fallback to [`TreeStrength`](/keys/treestrength/) only runs when the section is present. Every monster then spawns below zero strength, and damage is refused before its armor is read, so nothing can kill it. The read order itself is not the problem: `[General]` is read before the object sections, so a type first named here still reads its own section whenever one exists.
+- [`Strength`](/keys/strength/) is the monster's starting and maximum strength.
+- [`Armor`](/keys/armor/) and [`Immune`](/keys/immune/) decide what damage does to it.
+- [`IsVeinhole=yes`](/keys/isveinhole/) lets players click the monster and makes it a legal target.
+
+The monster is drawn from the theater's `VEINHOLE` shape file, not from the section's `Image`.
+
+:::danger[Name an existing TerrainType]
+If `VeinholeTypeClass` is not set, the game crashes when it creates a monster: while it loads a map that holds a veinhole, or while it generates a random map that plants one.
+
+If it names a section the rules do not contain, the type has no strength, and [`TreeStrength`](/keys/treestrength/) does not fill in for it. Every monster then starts below zero strength. An object at zero strength or below takes no damage, so nothing can kill these monsters.
 :::

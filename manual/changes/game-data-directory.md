@@ -9,6 +9,6 @@ targets:
 credit: [ZivDero]
 ---
 
-`-DATADIR=<path>` tells the game where its data is kept. Everything the game reads is looked for there as well as beside the executable. The deployment file that describes how that directory is sorted is read from it too.
+`-DATADIR=<path>` names a directory the game reads its data from, in addition to the directory that holds the executable. `OPENTS.INI`, which describes how the data is laid out, is read from it too.
 
-The game never writes to the directory, so one copy of the data can be shared between the people using a machine. The same copy can be installed somewhere they are not allowed to write to. A directory that is not there stops startup with a message rather than leaving the game to fail later over a missing file.
+The game never writes to the data directory. One copy of the data, even in a folder the players cannot write to, can therefore serve several players who each keep their own settings and saves with `-USERDIR`. A path that is not an existing directory stops startup with an error message.

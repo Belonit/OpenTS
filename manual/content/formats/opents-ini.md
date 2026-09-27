@@ -1,7 +1,7 @@
 ---
 format_id: opents-ini
 title: OPENTS.INI
-summary: Names the folders a deployment keeps its game files sorted into, the files it reads them from, and what its saves hold.
+summary: Names the folders a deployment sorts its game files into, the names of the files the game reads, and what its saves hold.
 kind: file
 source_files:
   - code/deploymentconfig.cpp
@@ -18,18 +18,18 @@ related:
     id: game-data
 ---
 
-This is the deployment's own file, as against `SUN.INI`, which the game writes a player's settings back to.
+`OPENTS.INI` belongs to the deployment and describes how it lays out the game's files. A player's options are kept in a separate settings file, `SUN.INI` unless `Settings` below names another. The game reads `OPENTS.INI` once at startup.
 
 ```ini title="OPENTS.INI"
 [Paths]
 SearchPaths=INI,MIX,Maps,Addons
 ```
 
-`SearchPaths` names folders separated by commas, which the game searches in the order written. The whitespace around a name is dropped, a trailing separator is supplied if the name lacks one, and a folder named twice is searched once. Commas separate the entries because a semicolon opens a comment on the line it appears in.
+`SearchPaths` lists extra folders the game searches for its files, in the order written. Separate the names with commas. Do not use semicolons: a semicolon starts a comment, so the rest of the line is ignored. Spaces around a name are ignored, a name may end in a backslash or not, and a folder written twice is searched once. Each folder is relative to the game data directory described [below](#where-the-file-is-looked-for).
 
-Without the file, and without the key, the game behaves as though `SearchPaths=INI,MIX,Maps` were written: a distribution can sort its files into `INI`, `MIX` and `Maps` folders and ship no configuration at all. A written list replaces that default rather than adding to it, so a deployment that wants the default folders as well as its own names them again.
+Without the file, or without the key, the game searches `INI`, `MIX` and `Maps`, as though `SearchPaths=INI,MIX,Maps` were written. A distribution can therefore sort its files into those three folders and ship no configuration at all. A written list replaces the default, so a deployment that wants those folders as well as its own must name them again.
 
-The game's own directory is examined before any listed folder, so naming it adds nothing. An entry naming it, such as `SearchPaths=.`, is passed over, which makes that a way to ask for no other folder to be searched. An empty `SearchPaths=` does not do this: the file reader passes over an entry with nothing after the equals sign, leaving the default in force.
+`SearchPaths=.` adds no folder to the search. The `.` entry names the game data directory, which is always searched already, so the game skips it. An empty `SearchPaths=` does not have this effect: the game ignores a key with nothing after the equals sign, so the default list stays in force.
 
 ## The files it reads
 
@@ -56,13 +56,31 @@ UI=UI.INI
 Settings=SUN.INI
 ```
 
-Each key names one file, and an unwritten key keeps the name above. `Rules` names the rules, `Art` the artwork, `AI` the computer player's data, `Sound` the [sound registry](/formats/sound-ini/), and `Theme` the [music registry](/formats/theme-ini/). `Battle` names the campaign list, `LanguageRules` the translated rules read over the rest, and `MultiplayerRules` the [rules read only outside a campaign](/formats/multiplayer-rules/). `Tutorial` names the [numbered text lines](/formats/tutorial-ini/), `UI` the [interface settings](/formats/ui-ini/), and `Settings` the file a player's own options are written back to.
+Each key names one file, and a key left out keeps the name shown above.
 
-The eight `Expansion` keys name the expansion's copy of a file, which is read over the base one. `RulesExpansion` also decides whether the expansion is installed: the game looks for that file and nothing else, so renaming it moves the test.
+| Key | File it names |
+| --- | --- |
+| `Rules` | The rules |
+| `Art` | The artwork definitions |
+| `AI` | The computer player's data |
+| `Sound` | The [sound registry](/formats/sound-ini/) |
+| `Theme` | The [music registry](/formats/theme-ini/) |
+| `Battle` | The campaign list |
+| `LanguageRules` | The translated rules, read over the other rules |
+| `MultiplayerRules` | The [rules read only outside a campaign](/formats/multiplayer-rules/) |
+| `Tutorial` | The [numbered text lines](/formats/tutorial-ini/) |
+| `UI` | The [interface settings](/formats/ui-ini/) |
+| `Settings` | The file a player's options are read from and saved to |
 
-Renaming a file does not move it. Every name here is searched for in the order the section below gives, the same as any other file the game opens.
+Each of the eight `Expansion` keys names the expansion's copy of the matching base file, which is read after the base file. The expansion's rules, AI and multiplayer rules files are used only while Firestorm is enabled, and so is its art file, except for that file's `[Movies]` list. Its sound, music, campaign and translated rules files are read whether or not Firestorm is enabled.
 
-Rules and campaign files are also gathered by wildcard, as `RULE*.INI` and `BATTLE*.INI`, and those two patterns are fixed. A rules file named outside the pattern is read anyway, and it is the one the game starts from. Where the search turns up others as well, the game asks which set to play with. Campaign files add to one another, so one named outside the pattern is read alongside those inside it.
+`RulesExpansion` also decides whether the expansion is installed: the game counts Firestorm as installed only when it finds the file this key names.
+
+These keys change only a file's name. The game looks for each named file in the [search order](#the-order-files-are-searched-for-in) below, as it does for every other file.
+
+The game also gathers rules files by the fixed pattern `RULE*.INI`. The file `Rules` names is always read, even when its name does not match the pattern. When it is the only rules file, the game uses it. When other files in the searched folders match `RULE*.INI`, the game asks the player at startup which rules file to play with. Keep backups and other files out of that pattern, because every match is offered as a rules file.
+
+Campaign files are gathered by the fixed pattern `BATTLE*.INI`. Every matching file is read and adds its campaigns to the list. The file `Battle` names is read as well when its name does not match the pattern.
 
 ## The palettes it starts with
 
@@ -72,9 +90,11 @@ Scheme=UNITSNO.PAL
 Game=TEMPERAT.PAL
 ```
 
-`Scheme` names the palette the player colors are built against, and `Game` the one the game is drawn through. Both stand only until a scenario loads its [theater](/formats/theater-control/), which replaces them with the palettes the theater's `Root=` and `Suffix=` name. They are settings of this file because nothing has declared a theater yet when they are read.
+`Scheme` names the palette player colors are built against, and `Game` names the palette the game is drawn with. They apply from startup until a scenario loads its theater. The theater then replaces `Game` with the palette its [`Root=`](/keys/root/) names. It replaces `Scheme` with its `UNIT` palette, such as `UNITSNO.PAL` for a [`Suffix=`](/keys/suffix/#scope-theater) of `SNO`, when it sets a `Suffix=` and that palette is found. These two names belong in this file because the game needs them before any theater is known.
 
-A palette file the deployment does not ship leaves that palette unchanged, and the name goes to the debug log. The game starts either way.
+Two kinds of object are drawn with the `Scheme` palette read at startup, whatever the theater: terrain objects with [`SpawnsTiberium=yes`](/keys/spawnstiberium/), and voxel animations that have no owner.
+
+The game reads these palettes only from archives it caches at startup, such as `CACHE.MIX`, so a loose palette file is not used. [MIX archives](/formats/mix/#caching) covers which files this applies to. If a named palette is not found, the game does not load it, writes the missing name to the debug log, and starts anyway.
 
 ## What a save carries
 
@@ -83,33 +103,38 @@ A palette file the deployment does not ship leaves that palette unchanged, and t
 CarryScenarioFile=yes
 ```
 
-`CarryScenarioFile=yes` makes a [saved game](/formats/save-games/#what-the-file-holds) include the scenario file it was played from, and a restart then reads the mission from that copy rather than from disk. The default is `no`: a save holds no copy and a restart reads the file again.
+With `CarryScenarioFile=yes`, the game keeps a copy of the scenario file when a mission loads and stores it in every [saved game](/formats/save-games/#what-the-file-holds) of that mission. A generated random map has no file, so its saves hold no copy. Restarting the mission reads that copy, including after the save is loaded. With the default, `no`, a save holds no copy and a restart reads the scenario file from disk again.
 
-The copy matters where the file on disk may no longer be the one the mission started from: a client resuming a save replaces `spawnmap.ini` with a stub, and a restart that reads the stub fails. It costs the size of the map, the least compressible part of a save; a large one adds half again to the file.
+Use the copy where the file on disk may have changed since the mission started. A client resuming a save replaces `spawnmap.ini` with a stub, and a restart that reads the stub fails.
 
-A save keeps whatever it was written with, so turning the key off shrinks new saves and leaves the old ones as they are.
+The copy makes every save larger, by about the compressed size of the scenario file.
+
+Each save keeps what it was written with. Turning the key off makes new saves smaller and does not change existing ones, and a save that holds a copy still restarts from it.
 
 ## Where the file is looked for
 
-The file is read from the disk rather than through the game's file layer, so a deployment cannot describe its own layout from inside an archive. It is looked for in the game data directory, then in that directory's `INI` and `MIX` folders, and the first copy found is the one read.
+`OPENTS.INI` must be a loose file, because the game does not read it from an archive. The game looks for it in the game data directory, then in that directory's `INI` and `MIX` folders, and reads the first copy it finds. The user data directory is not searched for it.
 
-The game data directory is what [`-DATADIR`](/using/command-line/data-directory/) names, and the game's own directory when nothing names one. Every folder `SearchPaths` lists is relative to it.
+The game data directory is the one [`-DATADIR`](/using/command-line/data-directory/) names, or the game's own directory when that option is not used.
 
 ## The order files are searched for in
 
 1. the user data directory, when [`-USERDIR`](/using/command-line/user-directory/) names one;
 2. the game's own directory;
 3. the game data directory, when [`-DATADIR`](/using/command-line/data-directory/) names one;
-4. the folders `SearchPaths` lists, in the order written.
+4. the folders `SearchPaths` lists, in the order written;
+5. the `ui` folder in the game's own directory.
 
-Everything the game opens follows that order: archives, rules, artwork, scenarios and launch files alike. A loose file still stands in for an archived one, so a copy found in any of these folders is used ahead of an archived copy of the same name.
+The game opens every file in this order, including archives, INI files, scenarios and launch files, and uses the first copy it finds. A loose copy in any of these directories is used ahead of an archived copy of the same name. The exception is data the game reads straight from a cached archive, such as the palettes above and many shapes, where a loose copy is not used; [MIX archives](/formats/mix/#caching) covers it.
 
-A player's own copy is therefore the one the game reads, whatever a deployment ships under the same name. In a shared installation, a player's settings and hotkeys are theirs, and everything else is read from the copy everyone shares.
+Because the user data directory comes first, the game reads a player's own copy of a file ahead of anything a deployment ships under the same name. In a shared installation, each player keeps their own settings and hotkeys, and every other file is read from the shared copy.
 
-Wildcard searches (for rules, battle files, map packs, map archives and movie archives) cover every directory in the list rather than stopping at the first that holds a match. A name held by more than one is used once, from the one that comes first, which is the same copy an ordinary open of that name would land on.
+A search by pattern covers every directory in the list, and does not stop at the first directory with a match. The game searches this way for rules files, campaign files, map packs, loose multiplayer maps, map archives and movie archives. A name found in more than one directory is used once, from the directory that comes first, which is the same copy an ordinary open of that name reads.
 
-[Saved games](/formats/save-games/) and [screen captures](/commands/screencapture/) are not searched for. Saves are written, listed and loaded only in a `Saved Games` folder inside the user data directory, so a launcher finds every save in one place. Captures go only to a `Screenshots` folder in the same directory.
+[Saved games](/formats/save-games/) and [screen captures](/commands/screencapture/) are not searched for. Saves are written, listed, loaded and deleted only in a `Saved Games` folder in the user data directory, or in the game's own directory when there is none, so a launcher finds every save in one place. Screen captures go only to a `Screenshots` folder in the same directory.
 
-:::caution[Files the game writes are not searched for]
-Settings, saved games, recordings and everything else the game writes go to the user data directory, or to the game's own directory when there is none. A file the game deletes is its own copy, so deleting a player's hotkeys returns the game to the ones a deployment shipped rather than leaving it with none. Nothing listed here is ever written to or deleted from.
+:::caution[Do not ship a file the game writes in the game's own directory]
+Settings, saved games, recordings, screen captures and the other files the game writes go to the user data directory, or to the game's own directory when there is none. The debug log, out-of-sync reports and crash reports always go into folders beside the executable, as [Game data](/using/game-data/#keeping-the-data-somewhere-else) describes. `mpstats.txt` always goes to the game's own directory.
+
+A file the game writes is found ahead of a shipped copy in a later directory, so a player's saved `SUN.INI` is read instead of one shipped in the `INI` folder. When the player's copy of a file such as `KEYBOARD.INI` is removed, the game reads the shipped copy again. Without a user data directory, the game writes and deletes in its own directory, so a copy shipped there is overwritten or removed and cannot be read again.
 :::

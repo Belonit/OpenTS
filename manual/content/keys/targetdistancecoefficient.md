@@ -7,14 +7,12 @@ when_omitted:
   note: Takes the value of TargetDistanceCoefficientDefault in [General], which is itself 0 when that key is absent too.
 ---
 
-The coefficient multiplies the distance from the candidate to the edge of weapon range, and that figure is clamped at zero. The term contributes nothing at all among candidates the object can already shoot. A negative value is what penalizes distance; a positive one rewards it and drives the object toward the farthest candidate it can find. It is read from the type of the object doing the choosing.
+The coefficient multiplies how far a candidate target lies beyond the choosing object's weapon range. On most scans, a candidate within range adds nothing to this term, so the coefficient does not separate candidates the object can already shoot. A negative value penalizes distant candidates. A positive value rewards them and draws the object toward the farthest candidate it can find.
 
-Range comes from the weapon this object would choose against that candidate, and falls back to [`GuardRange`](/keys/guardrange/) when no weapon resolves.
+The ground part of a whole-map scan works differently. A Hunt, Rescue or team attack mission makes such a scan, and it counts distance to ground candidates in leptons, 256 to the cell, while range stays in cells. The distance is measured from the scan's center, which on a Rescue mission need not be the chooser's position. Nearly every ground candidate on such a scan counts as beyond range, including those the object can shoot, and the same coefficient weights it about 256 times as strongly as on other scans.
 
-:::caution[The penalty is far heavier on a full-map scan]
-Range is always counted in cells. Distance is counted in cells on the ring scans used by Guard, Guard Area, Patrol, Move and every building. The full-map scan used by Hunt, Rescue and team attack missions counts distance in leptons (256 to the cell) instead. The same coefficient therefore produces a penalty roughly 256 times larger on the full-map scan than on a ring scan.
-:::
+The coefficient comes from the type of the object doing the choosing. The range is that of the weapon it would use against the candidate, or its [`GuardRange`](/keys/guardrange/) when it has no weapon for that candidate.
 
-:::caution[Zero cannot be pinned on one type]
-The value is read with a fallback that substitutes [`TargetDistanceCoefficientDefault`](/keys/targetdistancecoefficientdefault/) whenever the stored figure is zero, and the rules are read again for each later layer. An explicit `0` therefore lasts only until the first later layer that contains the type's section without this key, which puts the global default back.
+:::caution[An explicit `0` does not last]
+A `0` written on a type is replaced by [`TargetDistanceCoefficientDefault`](/keys/targetdistancecoefficientdefault/) at the next rules layer, such as a map, whose copy of the type's section omits this key. To keep a type at zero while that default is not zero, write `0` in every layer that contains the section.
 :::

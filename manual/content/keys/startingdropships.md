@@ -12,12 +12,23 @@ when_omitted:
 StartingDropships=2
 ```
 
-Any figure above zero opens the loadout screen after the briefing and before the action movie, with five slots to a dropship. The units chosen there fill the player house's three dropship loadouts in order. Zero skips the screen entirely, which is what nearly every mission does.
-
-A reinforcement whose task force names `DSHP` and nothing else is built as a loaded dropship, and the same steps decide its cargo every time. The player's current loadout gates it: while the player has loaded nothing, the reinforcement is refused outright, so nothing goes wrong until the player has filled theirs. The player's loadout also sizes it: the dropship gets one member per unit the player is currently carrying. The sending house supplies the units: each member is read from the loadout of the house the reinforcement is sent for, at that house's current position, and nothing checks the result. Only the player's house is ever given a loadout. The player's own reinforcement therefore arrives carrying exactly what was chosen; one sent for any other house reads loadouts that hold nothing and hands every empty result to the game. Each delivery advances that house's position, and the mission's own triggers decide when each one lands.
+Any value above zero opens the dropship loadout screen after the briefing and before the action movie. Each dropship holds five units, and the units the player picks fill the player's three dropship loadouts in order. Zero skips the screen, which is what nearly every mission does.
 
 [`AllowableUnits`](/keys/allowableunits/) decides what the screen offers.
 
-:::danger[Asking for more than three reads past the end of fixed tables]
-The screen picks its dropship picture and its slot positions out of tables with three entries each, and indexes them with the figure given, minus one, without checking the range. A figure of four or more reads past the end of both tables and hands the result to the file loader and the button layout. The chosen units are then stored into three per-house slots that a fourth dropship also overruns.
+:::danger[Keep the value at 3 or below]
+The screen has pictures and slot positions for one to three dropships only. A value of 4 or more reads past the end of both tables, and any units chosen for a fourth dropship are written past the end of the player's three loadouts.
+:::
+
+The mission's triggers deliver the loadouts as reinforcements. A reinforcement whose task force is a single `DSHP` entry arrives as a loaded dropship. Each dropship reinforcement moves that house on to its next loadout, even when the team then cannot be created and nothing arrives. A refused one, described below, does not. After a house's third delivery, a `DSHP` reinforcement is sent as an ordinary reinforcement with no cargo.
+
+The player's next loadout decides whether a dropship arrives and how many units it carries, whichever house it is sent for:
+
+- While the player's next loadout is empty, the reinforcement is refused.
+- Otherwise the dropship carries one unit per unit in the player's next loadout, taken from the loadout of the house it is sent for.
+
+A dropship sent for the player therefore carries exactly what the player chose. Only the player's house has loadouts.
+
+:::danger[Send dropship reinforcements only for the player]
+A `DSHP` reinforcement sent for any other house while the player's next loadout holds units crashes the game.
 :::

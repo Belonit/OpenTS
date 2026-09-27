@@ -9,10 +9,14 @@ when_omitted:
 ---
 
 ```ini title="rules.ini"
-[GDI] ; the section matching the side's own name
+[GDI] ; the section named after the side
 RegularPowerPlant=GAPOWR
 ```
 
-The BuildingType a computer house playing for this side inserts to cover a [power shortfall](/systems/ai-base-building/#power-and-money-interventions) when neither its [`PowerTurbine`](/keys/powerturbine/) nor its [`AdvancedPowerPlant`](/keys/advancedpowerplant/) is taken. It is also the plant whose free upgrade slot qualifies the house for the turbine. A base the computer takes over gains its turbine nodes on this plant. Writing `<none>` clears an inherited value, which only the first two sides have from the General-section seeding, and a side with no plant at all falls back to the first [`BuildPower`](/keys/buildpower/) entry the house's country may own.
+The BuildingType a computer house playing for this side inserts to cover a [power shortfall](/systems/ai-base-building/#power-and-money-interventions) when neither its [`PowerTurbine`](/keys/powerturbine/) nor its [`AdvancedPowerPlant`](/keys/advancedpowerplant/) qualifies. The house can pick the turbine only while it owns a structure of this type with a free upgrade slot.
 
-The section shares its name with the side, so for the stock rules it is the same `[GDI]` and `[Nod]` sections that describe the countries of those names.
+Writing `<none>` clears a value set earlier, by `[General]` or by an earlier rules file. A side left with no plant inserts the first [`BuildPower`](/keys/buildpower/) entry the house's country may own instead.
+
+When the computer takes over a departed player's house, its plan can gain a node for each standing structure whose type is any side's `RegularPowerPlant` or `AdvancedPowerPlant` and which the house can build. Each node goes at that structure's cell, and enters the plan only at a point where the plan would otherwise run short of power. The house's turbines are added the same way, as [`PowerTurbine`](/keys/powerturbine/) describes.
+
+The section shares its name with the side. In the stock rules, `[GDI]` and `[Nod]` are therefore also the sections that describe the countries of those names.

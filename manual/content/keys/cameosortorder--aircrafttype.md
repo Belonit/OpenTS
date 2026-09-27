@@ -8,4 +8,8 @@ when_omitted:
   value: "0"
 ---
 
-The lowest number comes first, and types sharing a number fall back on [the order of the strips](/systems/sidebar/#the-order-of-the-strips). The number ranks a cameo against the others of its own kind and against nothing outside it. A vehicle never sorts among the infantry however it is numbered. Within the structures strip it outranks the wall, gate and defense grouping, so a numbered building sorts against every other structure whichever group it belongs to.
+Lower numbers come first. Types with the same number are ordered by the remaining rules in [the order of the strips](/systems/sidebar/#the-order-of-the-strips).
+
+The number is compared only among cameos of the same kind, so no number moves a vehicle in among the infantry. Among structures it is compared before the wall, gate and base-defense groups. A wall with a lower number therefore sorts ahead of an ordinary building with a higher one.
+
+The key has an effect only while [`SidebarSorting`](/keys/sidebarsorting/) is on.

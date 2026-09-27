@@ -8,6 +8,6 @@ when_omitted:
   value: none
 ---
 
-The sound plays at the debris' position on every frame the bounce physics report a strike, under exactly the conditions [`BounceAnim`](/keys/bounceanim/#scope-voxelanimtype) describes. It is not played in a water cell, and not on the contact that settles the piece.
+The sound plays at the piece's position each time it strikes something, under the same conditions as [`BounceAnim`](/keys/bounceanim/#scope-voxelanimtype). It does not play in a water cell or on the contact that settles the piece.
 
-A value naming no registered sound leaves whatever was set before in place rather than clearing it, so a misspelled name is silently ignored.
+A name that matches no sound, `none` included, keeps the sound the type already held. A later file therefore cannot clear a bounce sound that an earlier one set.

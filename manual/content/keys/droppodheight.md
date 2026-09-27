@@ -4,11 +4,11 @@ summary: Initial drop-pod altitude above the landing cell, measured in leptons.
 see_also: [DropPodAngle, DropPodSpeed, "system:drop-pods"]
 ---
 
-The engine adds this value to the terrain height at the destination to fix the altitude the pod starts its fall from. Together with [`DropPodAngle`](/keys/droppodangle/), it also determines the horizontal distance between the starting point and the landing cell.
+A pod starts its fall this many leptons above the ground at its landing cell. Together with [`DropPodAngle`](/keys/droppodangle/), the height also sets how far to the side the pod starts. [Approach selection](/systems/drop-pods/#approach-selection) gives that distance and how the start point picks the approach direction.
 
-Larger values lengthen the visible descent and, because falling speed increases with height, change the speed profile as well as the starting altitude.
+A larger value gives a longer fall. It also makes the pod start faster once the height is above about `10 * (DropPodSpeed - 2)` leptons. From a lower height the pod starts at [`DropPodSpeed`](/keys/droppodspeed/). [Descent and airborne effects](/systems/drop-pods/#descent-and-airborne-effects) gives the speed formula.
 
 ```ini title="rules.ini"
 [General]
-DropPodHeight=1500
+DropPodHeight=2000   ; example value
 ```

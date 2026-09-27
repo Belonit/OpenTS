@@ -7,7 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-A structure accepts plugs until the count is reached, and each plug it holds contributes its own [`Power=`](/keys/power/#scope-buildingtype), weapon and superweapon to the host. Reading this value also decides how many `PowerUp1Anim` through `PowerUp<n>Anim` art entries, with their damaged forms and offsets, are read for the type.
+`Upgrades` is the number of upgrade plugs a structure of this type can hold. A plug is a BuildingType with [`PowersUpBuilding`](/keys/powersupbuilding/) naming this type. Each plug the structure holds adds its [`Power=`](/keys/power/#scope-buildingtype) and superweapon to the structure. A plug's weapon replaces the structure's weapon in the same slot; when several plugs carry one, the earliest plug installed wins. [`PowersUpToLevel`](/keys/powersuptolevel/) covers a plug that fills several slots at once.
 
 ```ini title="rules.ini"
 [MYPOWR]   ; example power plant that accepts one turbine
@@ -18,6 +18,10 @@ PowersUpBuilding=MYPOWR
 Power=50
 ```
 
-:::danger[Three plugs is the hard limit]
-A runtime instance keeps room for three plugs. A type that advertises more lets a fourth be installed, and that fourth plug is stored one slot past the end of that store, over the record of the last superweapon the structure launched. A structure that afterwards launches a superweapon reads that record as a position in the declared list, without checking it, and the game crashes. Its art entries land in the [first active animation slot](/systems/building-animations/#the-upgrade-slots-and-the-active-slots-share-one-array) at the same time, overwriting whatever that slot was configured with. Keep the value at 3 or below.
+The count also sets how many sets of `PowerUp<n>` art settings are read for the type, starting with `PowerUp1Anim`. [Building animations](/systems/building-animations/#the-upgrade-slots-and-the-active-slots-share-one-array) covers where those settings go.
+
+:::danger[Keep the value from 1 to 3 on a structure that takes plugs]
+A structure has room to record three plugs. A type with a higher value accepts a fourth plug, and recording that plug overwrites other data the structure keeps, including its record of the last superweapon it launched. If the structure then launches a superweapon, the plug record is overwritten in turn, and the game can crash the next time it reads the structure's plugs. The fourth plug also replaces the type's first active animation, as [the shared animation slots](/systems/building-animations/#the-upgrade-slots-and-the-active-slots-share-one-array) explain.
+
+A value of `0` does not refuse plugs. A structure at `0` accepts every plug that names its type, gains nothing from them, and can crash the game, as [`PowersUpBuilding`](/keys/powersupbuilding/) explains.
 :::

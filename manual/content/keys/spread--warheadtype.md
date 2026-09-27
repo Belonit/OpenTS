@@ -8,12 +8,15 @@ when_omitted:
   value: "1"
 ---
 
-Damage falls off with the distance from the impact point divided by this factor, so a larger value spreads the same damage further rather than adding damage.
+`Spread` sets how slowly a blast's damage thins with distance from the point of impact. A larger value carries more of the damage to targets further out; it does not add damage.
 
-The figure is not how far the blast reaches. How much ground an ordinary blast gathers is fixed at a cell and a half whatever this is set to, and raising it only makes the damage thin out more slowly across that same ground. [Warheads and damage](/systems/warheads/) covers the reach and the steps the falloff runs in. The figure does set a radius in one other place: an [`EMEffect=yes`](/keys/emeffect/) warhead takes the same figure as [the pulse radius in cells](/systems/emp-pulse/#firing-a-pulse). A pulse's reach and its falloff cannot be set apart.
+`Spread` does not set how far a blast reaches. An ordinary blast damages objects within a cell and a half of the impact whatever this value is. [How distance thins the damage](/systems/warheads/#how-distance-thins-the-damage) gives the distances at which damage drops for a given `Spread`.
+
+An [`EMEffect=yes`](/keys/emeffect/) warhead also uses this value as [the pulse radius in cells](/systems/emp-pulse/#firing-a-pulse), so a pulse's reach and its damage falloff cannot be set separately.
 
 ```ini title="rules.ini"
 [MyPulseWH] ; a WarheadType with EMEffect=yes
 Spread=4 ; the pulse reaches four cells out from its center
 ```
 
+The computer also scales its rating of a weapon's strength against armor and against infantry by this value. At `Spread=0` both ratings are zero. A computer-built vehicle or infantryman whose primary weapon uses such a warhead, and cannot fire at aircraft, then waits near the center of its base instead of in one of the four zones around it.

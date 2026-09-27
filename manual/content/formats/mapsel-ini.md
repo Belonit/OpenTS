@@ -18,43 +18,56 @@ related:
     id: aud
 ---
 
-When a campaign mission ends and the campaign goes on, the mission played next is read out of this file. Both ways of advancing decide it there: picking a region on the map selection screen, and a mission naming its own successor. [Campaign progression and carry-over](/systems/campaign-progression/) owns that sequence and the state carried across it; this page owns the file the choice comes from.
+When a campaign mission is won and the campaign continues, the next mission comes from this file. That holds whether the player picks a region on the map selection screen or the mission names its successor. [Campaign progression and carry-over](/systems/campaign-progression/) covers that sequence and the state carried across it.
 
 ## Which file is read
 
-The base game reads `MAPSEL.INI`. A mission demanding an addon reads `MAPSEL` and that addon's two-digit number instead, so Firestorm's file is `MAPSEL01.INI`. The file is read afresh at every advance, and nothing from one read is kept for the next.
+The base game reads `MAPSEL.INI`. After a mission whose [`RequiredAddOn`](/keys/requiredaddon-scenarios/) names an expansion, the game reads `MAPSEL<nn>.INI` instead, where `<nn>` is the expansion's two-digit number. After a Firestorm mission it reads `MAPSEL01.INI`.
 
-The section read is the one named for the playing house's INI name, which follows from the mission's [`Player=`](/keys/player/#scope-scenarios) setting, so a campaign played as GDI never reads the Nod section. A missing file, or a house section with no numbered entries, fails the read, and [the win sequence](/systems/campaign-progression/#the-win-sequence) owns what that does.
+The game reads the house section named after the player's house, the house the mission's [`Player=`](/keys/player/#scope-scenarios) sets. A campaign played as GDI never reads the Nod section. A missing file, or a house section with no numbered entries, fails the read; [the win sequence](/systems/campaign-progression/#the-win-sequence) covers what happens then.
+
+The file is read again at every advance, so an edit takes effect at the next advance.
 
 ## House sections
 
-A house section lists the stages of that house's campaign in order. The numbered keys `1` upward each name a stage section, and the list stops at the first number that is missing, so the entries have to run from `1` without gaps. At most 100 stages can be listed.
+A house section lists the stages of that house's campaign in order. Each numbered key from `1` upward names a stage section. The list ends at the first missing number, so number the entries from `1` without gaps. At most 100 stages are read.
 
-A stage's position in the list is its stage number. That number is what the engine stores in the scenario record, and what it uses to find the current stage again at the next advance.
+A stage's position in the list is its stage number, which the campaign keeps to find the current stage at the next advance. Inserting, removing or reordering entries changes the stage numbers, so a campaign saved before the edit continues from whichever stage now holds its number.
 
-Two further keys name the presentation material the map selection screen uses:
+Two further keys name the sections that hold the map selection screen's decoration:
 
-- `Anims=` names the section of looping map animations.
+- `Anims=` names the section of animations and the screen's palette. The screen does not open without it.
 - `Sounds=` names the section of sound effects.
 
 ## Stage sections
 
-Each stage has a section whose name is the label the house list uses. The section records what the stage plays and how the map screen presents it.
+Each stage has a section whose name is the label the house list uses. Three of its keys describe the stage as a destination: the mission it plays, and the description and voice-over the map selection screen gives a region that leads to it.
 
 | Key | Value |
 | --- | --- |
-| `Scenario=` | The mission file the stage plays. This is the name the screen hands on, and the one [`NextScenario=`](/keys/nextscenario/) has to match. |
-| `Description=` | Text printed while the cursor rests on the stage's region. A number is looked up in the game's string table; a value starting with a letter names a section of numbered lines in this file, read as one description. |
-| `VoiceOver=` | An [AUD](/formats/aud/) sample streamed when the cursor comes to rest on the region. |
-| `MapVQ=` | The [VQA](/formats/vqa/) movie the screen presents the map with. The screen is built around it, and a stage without one cannot be presented. |
-| `Overlays=` | Up to two comma-separated shape names, faded in one after another over the movie's last frame. |
-| `ClickMap=` | A 256-color PCX file, at the movie's resolution, whose pixel colors mark out the selectable regions. |
-| `Targets=` | The count of target markers, then each marker's position in the 640 by 400 presentation area: `<count>,<x>,<y>,<x>,<y>`. The markers pair with the numbered entries in order. |
-| `Text1=` to `Text7=` | Captions printed over the movie, each `<x>,<y>,<delay>,<text>`, the delay in game frames from the start of the movie. |
+| `Scenario=` | The mission file the stage plays. [`NextScenario=`](/keys/nextscenario/) must match this value to reach the stage. |
+| `Description=` | Text printed in the area `TextRect=` sets when the cursor enters a region that leads to the stage. A number selects an entry of the game's string table. A value starting with a letter names a section of this file; every entry of that section, in order, is joined with single spaces into one description of up to 1,023 characters. |
+| `VoiceOver=` | An [AUD](/formats/aud/) file streamed about half a second after the cursor enters a region that leads to the stage. It does not start if the cursor leaves the region first, and fades out when the cursor leaves. |
 
-The numbered assignments of a stage section are its choices. Each value names the stage the choice leads to, and each key is the click-map pixel color that selects it: the screen reads the color under the cursor from the click map and matches it against these keys. A color with no entry selects nothing. Stage labels are matched without regard to case. The key numbers are colors, not an order, so they need not run without gaps.
+The other keys build the map selection screen that appears after the stage's own mission is won.
 
-The shipped GDI chain opens like this, and shows the two shapes a choice list takes:
+| Key | Value |
+| --- | --- |
+| `MapVQ=` | The [VQA](/formats/vqa/) movie the screen opens with. A stage without it skips the screen, provided the palette and click map load; if either fails to load, an error box appears. [When the choice fails](/systems/campaign-progression/#when-the-choice-fails) says what loads next in both cases. |
+| `Overlays=` | Up to two comma-separated shape file names, faded in one after the other over the movie's last frame. A third name is ignored. |
+| `ClickMap=` | A 256-color PCX file whose pixel colors mark out the selectable regions. Its top-left pixel is the top-left corner of the 640 by 400 presentation area. The screen does not open without it. |
+| `Targets=` | `<count>,<x>,<y>,<x>,<y>...`: the number of target markers, then the center of each in the 640 by 400 presentation area. The first marker belongs to the choice with the lowest key number, the second to the next, and so on. Give no more markers than the stage has choices. |
+| `Text1=` to `Text7=` | Captions shown over the movie, each `<x>,<y>,<delay>,<text>`. The delay counts 16-millisecond ticks from the start of the movie, about 60 to the second. The text ends at its first comma. |
+
+The game moves each caption from `<x>,<y>` to the right by half the difference between the width of `TextRect=` and the caption's width, and down by less than half a line. A caption whose `<x>` is the left edge of `TextRect=` is therefore centered on that area's width. Keep captions inside `TextRect=`; the part outside it may not be drawn.
+
+Once its delay has run, a caption appears with its first `<delay>` + 1 characters already drawn, and the rest are typed out one at a time. A caption of `<delay>` + 1 characters or fewer appears whole.
+
+The numbered keys of a stage section are its choices. Each key is a click-map pixel color from `0` to `255`, and its value is the label of the stage that color selects. When the player clicks, the game reads the color under the cursor from the click map and looks it up among these keys. A color with no entry selects nothing. Labels are matched without regard to case. The key numbers are colors, so they need not start at `1` or run without gaps.
+
+List every stage a choice names in the house section. A region whose stage is not listed shows no description while the cursor is over it, and clicking it crashes the game.
+
+This excerpt shows a house list and two stage sections, and the two shapes a choice list takes:
 
 ```ini title="MAPSEL.INI"
 [GDI]
@@ -87,22 +100,34 @@ ClickMap=GDICLK01.PCX
 4=GDI05 ;3B
 ```
 
-`[GDI]` lists four stages, whose stage numbers are 1 to 4 in the order written. Stage `[GDI01]` plays `GDI1A.MAP` and offers one choice. Stage `[GDI02]` plays `GDI2A.MAP` and offers two, selected by the click-map colors 3 and 4. The fence leaves out the animation and sound sections the house section names; both are described below.
+`[GDI]` lists stages 1 to 4 in the order written. Winning `GDI1A.MAP`, the mission of stage `[GDI01]`, shows one choice: color 2 leads to `[GDI02]`. Winning `GDI2A.MAP` shows two. Color 3 leads to `[GDI04]`, with its marker at 290,88, and color 4 leads to `[GDI05]`, with its marker at 218,108. For the second choice to work, `[GDI]` must also list `GDI05`, which this excerpt leaves out. The excerpt also leaves out the animation and sound sections the house section names; both are described below.
 
 ## How a stage is chosen
 
 Both ways of advancing end at a stage of this file, never directly at a mission file.
 
-With the map screen, the stage's movie plays, its overlays and target markers arrive, and the player picks one of the regions the click map colors. The picked region's entry names the next stage, and that stage's `Scenario=` value is the mission that loads.
+With the map screen, the movie of the stage just won plays, its overlays and target markers appear, and the player clicks one of the regions its click map colors. The music track `MAPS` plays meanwhile, or `FSMAP` when the game requires Firestorm. The clicked region's entry names the next stage, and that stage's `Scenario=` value is the mission that loads.
 
-Without the screen, when the mission sets [`SkipMapSelect=yes`](/keys/skipmapselect/), the name given by [`NextScenario=`](/keys/nextscenario/) or [`AltNextScenario=`](/keys/altnextscenario/) is compared, ignoring case, against the `Scenario=` value of each stage the current stage offers, and the first match is taken. Only stages the current stage lists can be reached this way.
+Without the screen, when the mission sets [`SkipMapSelect=yes`](/keys/skipmapselect/), the name given by [`NextScenario=`](/keys/nextscenario/) or [`AltNextScenario=`](/keys/altnextscenario/) is compared, ignoring case, with the `Scenario=` value of each stage the current stage offers. The stages are tried in order of their key numbers, and the first match is taken. Only stages that the current stage offers can be reached this way.
 
 ## Animation and sound sections
 
-The section named by `Anims=` carries the looping animations that decorate the map:
+The section named by `Anims=` sets the screen's text area, its palette and its looping animations:
 
-- `TextRect=` is `<x>,<y>,<width>,<height>`, the area stage descriptions are printed in, relative to the 640 by 400 presentation area. Left out, it is the whole area.
-- `Palette=` names the palette the animations and target markers are drawn through. The screen refuses to start without it.
-- The numbered keys `1` upward, with no gaps and at most 100 of them, each hold `<file>,<x>,<y>,<rate>`: a shape file, its position, and the delay between its frames in game frames.
+- `TextRect=` is `<x>,<y>,<width>,<height>`, the area stage descriptions are printed in, relative to the 640 by 400 presentation area. If it is left out, descriptions use the whole area.
+- `Palette=` names the palette the animations and target markers are drawn with. The screen does not open without it.
+- The numbered keys from `1` upward each hold `<file>,<x>,<y>,<delay>`: a shape file, its position in the presentation area, and the delay between its frames in 16-millisecond ticks. The list ends at the first missing number, and at most 100 are read.
 
-The section named by `Sounds=` maps the screen's sound events to samples. Each key is the name of an event, and each value is `<file>,<volume>`, the volume a percentage clamped to the range `0` to `100`. The events looked up are `Overlay` as each overlay arrives, `TargetFlyIn` as each marker flies in, and `Click` when a region is picked. `EnterRegion` and `ExitRegion` play as the cursor crosses a region's boundary. `MouseOnMap` plays when it moves onto a region from the background, `MouseOffMap` when it moves back. An event the section does not set stays silent.
+The section named by `Sounds=` assigns a sample to each sound event of the screen. Each key is an event name, and each value is `<file>,<volume>`. The volume is a percentage, limited to the range `0` to `100`. Without a volume the sample plays at full volume, and a volume of `0` leaves the event silent. The events are:
+
+| Event | Plays when |
+| --- | --- |
+| `Overlay` | Each overlay appears. |
+| `TargetFlyIn` | Each target marker appears. |
+| `EnterRegion` | The cursor enters a region that has a choice. |
+| `ExitRegion` | The cursor leaves a region that has a choice. |
+| `MouseOnMap` | The cursor moves from color `0` of the click map onto any other color. |
+| `MouseOffMap` | The cursor moves back onto color `0`. |
+| `Click` | The player clicks a region that has a choice. |
+
+An event the section does not set is silent.

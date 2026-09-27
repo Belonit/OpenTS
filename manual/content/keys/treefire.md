@@ -12,12 +12,24 @@ when_omitted:
 TreeFire=MYTREEFIRE1,MYTREEFIRE2 ; AnimTypes registered in [Animations]
 ```
 
-A terrain object catches fire only if it is not already burning, is not crumbling, sets [`Armor=wood`](/keys/armor/) and is not a Tiberium spawner. [`Sparky`](/keys/sparky/) covers the warhead side of that: a [`Wood=yes`](/keys/wood/) warhead against an [`Immune=no`](/keys/immune/) terrain type. [`TreeFlammability`](/keys/treeflammability/) covers a fire spreading from one object to the next.
+A terrain object that catches fire shows one of the first two entries, picked at random with equal odds. The order carries no meaning: naming a small flame first and a large one second does not make small fires more common. Entries past the second are never used.
 
-The flame is placed 80 leptons above the object's center and attached to it, so it follows the sprite. It is given 255 repetitions of the animation's own loop count, so it burns until the object puts it out rather than ending on its own.
+A terrain object can catch fire only when all of the following hold, tested in this order:
 
-Only two slots are ever used. The choice between them is even and has no meaning of its own. Naming a small flame first and a large one second does not make small fires more common; the object simply shows one or the other. Entries past the second are unreachable.
+1. It is not crumbling, the animation a destroyed terrain object plays before it disappears.
+2. It is not already burning.
+3. Its type has [`Armor=wood`](/keys/armor/#scope-aircrafttype), which a TerrainType has unless its section sets another armor.
+4. Its type does not set [`SpawnsTiberium=yes`](/keys/spawnstiberium/), so a blossom tree never burns.
 
-:::danger[Fewer than two entries can crash the game when an object catches fire]
-Nothing checks how many entries the list holds before slot 0 or slot 1 is taken. With one entry, half of all fires read the slot after the end of the list and hand whatever is there to the animation system, so the game either crashes or draws something arbitrary. With an empty list it is every fire.
+Such an object catches fire in two ways:
+
+- A [`Sparky=yes`](/keys/sparky/) warhead damages it. Only a [`Wood=yes`](/keys/wood/) warhead damages a terrain object, and only when the terrain type sets [`Immune=no`](/keys/immune/).
+- A burning neighbor spreads the fire, as [`TreeFlammability`](/keys/treeflammability/) describes.
+
+The flame sits 80 leptons above the center of the object.
+
+How long the flame burns depends on its [`LoopCount`](/keys/loopcount/). With `LoopCount=1` it burns until the terrain object is destroyed. With most other values it plays a fixed number of passes and then ends or moves on to its [`Next`](/keys/next/) animation.
+
+:::danger[Give TreeFire at least two entries]
+With one entry, half of all fires use a second entry that was never set, and the game can crash in either build. With an empty list or `TreeFire=none`, the first fire stops a Debug build at an assertion and crashes a Release build.
 :::

@@ -7,10 +7,12 @@ when_omitted:
   value: none
 ---
 
-It is created at the wall section's own position rather than the victim's, centered and drawn in front of it. It runs its animation type's own [`LoopCount`](/keys/loopcount/), which is a single repetition unless the type sets one. [`FirestormAirAnim`](/keys/firestormairanim/) is the alternative taken above 100 [leptons](/glossary/#lepton) and covers which paths create either.
+`FirestormGroundAnim` plays when a raised firestorm wall catches something at or below 100 [leptons](/glossary/#lepton) above the ground. It appears at the wall section, not at the caught object. Anything higher gets [`FirestormAirAnim`](/keys/firestormairanim/) instead, which lists what the wall catches.
 
-The [approach sweep](/systems/laser-fences/#what-a-raised-section-destroys), the check that destroys anything trying to move into a raised section's cell, is the one lethal path that produces no animation at all: its victim dies short of the section, without either of these.
+The animation plays its type's [`LoopCount`](/keys/loopcount/), once if the type sets none.
 
-:::danger[An unset value faults the moment the animation is due]
-The animation is built from this setting without checking that it resolved to anything. With no value set the pointer is empty, and the first time a raised section catches something at or below that height, the engine builds an animation from it and reads through that empty pointer straight away.
+The [approach sweep](/systems/laser-fences/#what-a-raised-section-destroys) plays neither animation. It destroys objects moving into a raised section's cell, and they die short of the section.
+
+:::danger[Set `FirestormGroundAnim` before a wall can be raised]
+If the key is missing or empty, the game crashes the first time a raised section catches something at or below 100 leptons.
 :::

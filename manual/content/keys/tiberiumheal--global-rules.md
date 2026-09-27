@@ -8,4 +8,8 @@ when_omitted:
   value: ".0167"
 ---
 
-The value is a fraction of a minute, multiplied by 900 frames and truncated. That gives one healing step every 15 frames when the setting is omitted, and every 9 at the stock `.010`. The test is against the global frame counter, so every infantry, vehicle and aircraft standing in Tiberium with [`TiberiumHeal=yes`](/keys/tiberiumheal/#scope-aircrafttype) is healed on the same frames. Any value under `1/900`, `0` included, truncates to a zero interval and crashes the game the moment a damaged object with the flag occupies Tiberium.
+The value sets the time between Tiberium healing steps, in minutes. The game multiplies it by 900 frames and drops the fraction: the default gives one step every 15 frames, and the stock `.010` one every 9. Every infantry, vehicle and aircraft healing on Tiberium through [`TiberiumHeal=yes`](/keys/tiberiumheal/#scope-aircrafttype) heals on the same frames, because the interval is counted from the start of the game, not from when each object reached Tiberium.
+
+:::danger[Keep the interval at one frame or more]
+Any value strictly between `-1/900` and `1/900`, including `0`, rounds to zero frames. The game then crashes as soon as a damaged object that heals on Tiberium stands in Tiberium. Keep the value at `.0012` or above.
+:::

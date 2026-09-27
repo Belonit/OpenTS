@@ -9,6 +9,10 @@ when_omitted:
   note: An empty name, which starts nothing.
 ---
 
-The value is the map file the campaign begins with, and it is folded to upper case as it is stored. The stored name is opened as written, so the `.MAP` extension is part of the value and the shipped campaigns write paths such as `Maps/Missions/GDI1A.MAP`. Choosing the campaign from the mission list starts that file as its first mission. A campaign that names no file fails to start and drops back to the menu. After a mission is won, the next one is picked on the map selection screen, or named by the mission's [`NextScenario`](/keys/nextscenario/) when it skips that screen. That screen is the operation map drawn from `MAPSEL.INI` for the player's house, where the player clicks one of the next-mission targets the won mission offers; [choosing the next mission](/systems/campaign-progression/#choosing-the-next-mission) owns it. The sequence, and the state it carries over, belongs to [campaign progression](/systems/campaign-progression/).
+The value is the map file of the campaign's first mission. Choosing the campaign from the mission list starts that file. Write the path with its extension, as the shipped campaigns do with `Maps/Missions/GDI1A.MAP`.
 
-The same stored name is searched for `GDI` whenever the campaign's disc number is above `1`, which is how a Firestorm campaign's loading screen decides which side's artwork to draw.
+If the file cannot be read, the game shows an error message and returns to the menu. An empty value fails the same way.
+
+Only the first mission is named here. [Choosing the next mission](/systems/campaign-progression/#choosing-the-next-mission) covers how each won mission leads to the next, through the map selection screen or the mission's [`NextScenario`](/keys/nextscenario/). [Campaign progression](/systems/campaign-progression/) covers the whole sequence and the state carried between missions.
+
+When the campaign's `CD` is above `1`, this value also decides its loading-screen artwork; see [`CD`](/keys/cd/).

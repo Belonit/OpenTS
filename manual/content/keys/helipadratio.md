@@ -8,4 +8,4 @@ when_omitted:
   value: ".12"
 ---
 
-Nothing weighs a computer base by proportion. A [`Helipad=yes`](/keys/helipad/) type earns its extra copies during [the pass that assembles the plan](/systems/ai-base-building/#building-the-plan), which is the only place the count is decided.
+No share of a computer base is reserved for helipads. The only helipad count comes from [assembling the base plan](/systems/ai-base-building/#building-the-plan), where each [`Helipad=yes`](/keys/helipad/) type the plan takes is added a random number of extra times.

@@ -8,6 +8,4 @@ when_omitted:
   note: The value this scenario's Green key sets, read before it in the same section. With neither key present that is 1, leaving the green channel unchanged.
 ---
 
-The three ion tints are applied on the frame the storm breaks. They are applied to every tinted terrain palette the map has built, and to every color scheme with more than one intensity level. They are reversed on the frame the storm ends. Neither change is faded, so the whole map switches color in one step while its [ambient level](/keys/ionambient/) is still traveling.
-
-Any tinted palette built while a storm is running also takes these values, so an object or overlay that first appears mid-storm matches the ones already on screen.
+While an ion storm runs, `IonGreen` replaces [`Green`](/keys/green/) as the multiplier on the green channel of every terrain palette. It also tints the [house color schemes](/glossary/#color-scheme) that are shaded by lighting, which `Green` never reaches. [`IonRed`](/keys/ionred/#scope-scenarios) covers how the ion tints replace the ordinary ones, and [the storm's lighting](/systems/ion-storms/#lighting) covers when they switch on and off.

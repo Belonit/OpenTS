@@ -8,6 +8,6 @@ when_omitted:
   value: "no"
 ---
 
-The name promises that the animation pins itself to whatever unit is standing where it appears, which is how an impact explosion would ride the vehicle it went off on. Nothing reads the flag.
+The name suggests that the animation attaches itself to the object standing where it appears, so that an explosion would ride along with the vehicle it hit.
 
-Whether an animation ends up pinned to an object is settled by the code that creates it, never by the animation's own type. The code lowering a parachute pins it to what it lowers, the fire an object catches is pinned to that object, and the sparks an EM pulse leaves are pinned to what they disabled.
+An animation is attached to an object only when the code that creates it attaches it, whatever its type says. For example, a parachute is attached to the object it lowers, a fire is attached to the object that caught fire, and the sparks of an EMP are attached to the object they disabled.

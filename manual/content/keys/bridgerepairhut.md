@@ -7,6 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-For an engineer the setting replaces both ordinary outcomes rather than adding to them, so a hut is never restored and never changes hands whoever owns it and however damaged it is. Three of its readers are the engineer's: the cursor over the structure, the cursor over the cell when the structure is only a fogged record, and [the arrival itself](/systems/capture/#repairing-a-bridge). The cursor is the repair cursor while a bridge within two cells of the hut can still be rebuilt, and the refusal cursor otherwise, so a hut whose bridge is intact offers nothing. Ownership is not tested on any of the three.
+An engineer that walks into a hut [repairs the bridge beside it](/systems/capture/#repairing-a-bridge) and is used up. That replaces the engineer's usual effects: the hut is never restored and never changes hands. Neither the hut's owner nor its strength changes the outcome.
 
-Two more readers have nothing to do with engineers. A cell holding a hut is never offered to an infantry or a vehicle as something to destroy and drive through: the move is refused outright instead. And a hut that also sets [`Immune=yes`](/keys/immune/#scope-aircrafttype) is exempted from damage before the ordinary immunity test is reached, so it survives even the forced damage that gets past `Immune=yes` everywhere else.
+A player's engineer gets the repair cursor over a hut while a bridge within two cells of it can be repaired, and the refusal cursor otherwise. Over a hut whose bridge is intact, the engineer gets only the refusal cursor. Over a visible hut this cursor needs [`Repairable=yes`](/keys/repairable/), which is the default. Over a hut seen only as a fogged record, the cursor appears whatever `Repairable` says.
+
+Infantry and vehicles treat a non-allied hut's cell as impassable. They never plan a route through it by destroying the hut, as armed ones would through another enemy structure.
+
+A hut that also sets [`Immune=yes`](/keys/immune/#scope-aircrafttype) takes no damage at all. That includes the forced damage that ordinarily gets past `Immune=yes`.

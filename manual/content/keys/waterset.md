@@ -8,10 +8,14 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-A cell holding any of the fourteen is open water. That answer is what the random map generator reads from each of a cell's eight neighbors when it works out which shoreline piece belongs there. Together with shore and the four waterfall sets it also answers the broader question of whether a cell holds any water at all. A transport reads that question before taking on a passenger: one standing on water, on a [`ShorePieces`](/keys/shorepieces/) tile, or on a waterfall refuses.
+A cell holding any of the set's fourteen tiles is open water. Open water, [`ShorePieces`](/keys/shorepieces/) tiles and the four waterfall sets together count as holding water, and a transport vehicle standing on any of them refuses to take on a passenger.
 
-The set's first tile is plain open water: it is what `[Map] Fill=Water` stamps into every cell of a map, and what the generator writes when it grows a body of water outward. [`ClearTile`](/keys/cleartile/) covers what fills a map given any other value, and when during the load that fill happens.
+The set's first tile is plain open water. [`Fill=Water`](/keys/fill/) starts every cell of a map with this tile.
 
-:::caution[Clear ground reads as water when the set is unresolved]
-Neither water test is gated on the role resolving. With it unresolved both accept everything from the start of the tile heap up to index 12. The theater's first thirteen tiles, clear ground among them, answer that they are water, and transports standing on plain ground refuse their passengers.
+The random map generator lays lakes, rivers and the pools around a waterfall from the set's first six tiles, picked at random. When it floods the narrow strips of land between stretches of water, it writes the set's first tile. It checks each of a cell's eight neighbors for open water when it chooses the shore piece for that cell.
+
+In a theater with ice growth, the same fourteen tiles count as water when ice breaks and when ice edge pieces are chosen. [`Ice1Set`](/keys/ice1set/) covers those rules.
+
+:::caution[Resolve WaterSet in every theater]
+None of the water tests above checks that the role resolved. With it unresolved, each one counts the theater's first thirteen tiles as open water. When clear ground is among those tiles, a transport standing on plain ground refuses its passengers.
 :::

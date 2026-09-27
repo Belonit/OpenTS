@@ -8,10 +8,10 @@ when_omitted:
   value: "15"
 ---
 
-Leptons per frame: 256 leptons to a cell, 15 frames to the second. The two horizontal components of the launch velocity are drawn independently, each a whole number taken from twice this figure and then shifted down by it. A whole-number setting therefore gives speeds from minus the setting up to one lepton per frame short of it, in either axis, so the positive extreme is never reached.
+The top horizontal speed of a piece at launch, in leptons per frame (256 leptons to a cell, 15 frames to the second). Each of the two horizontal directions gets its own speed, drawn independently from minus this setting up to it. For a whole-number setting, each draw is a whole number from minus the setting to one less than the setting, so the positive extreme is never reached.
 
-A meteor draws both components from the same range and then mirrors the pair whenever `X` falls below `-Y`, which is what confines its approach to one half of the compass. [`IsMeteor`](/keys/ismeteor/#scope-voxelanimtype) describes the full flight.
+A meteor draws both speeds the same way, then may reverse them together to keep its approach down or across the screen. [`IsMeteor`](/keys/ismeteor/#scope-voxelanimtype) describes the full flight.
 
-:::danger[A small setting divides by zero]
-The pick divides by the truncated whole number of twice this figure, so any value between `-0.5` and `0.5` (`0` among them) makes that divisor zero. The division faults, and the game stops the moment a piece of the type is created.
+:::danger[Keep this setting at 0.5 or above]
+Any value between `-0.5` and `0.5`, `0` included, crashes the game when a piece of the type is created.
 :::

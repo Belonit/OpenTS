@@ -12,8 +12,12 @@ when_omitted:
 DetectDisguise=yes
 ```
 
-A [`Disguised=yes`](/keys/disguised/) soldier is normally [rejected while a candidate is being scored](/systems/target-selection/#why-a-candidate-is-rejected), so nothing picks one up by scanning. An object of a type set this way is not stopped by that rejection and scores a disguised soldier like any other candidate. The scanner needs no weapon: an object without one has candidates range-checked against its [`GuardRange=`](/keys/guardrange/) rather than a weapon's range.
+An object of a type set this way can pick a disguised soldier as a target when it scans. A [`Disguised=yes`](/keys/disguised/) soldier is normally [rejected as a scan candidate](/systems/target-selection/#why-a-candidate-is-rejected), so nothing finds one by scanning. This flag lifts that rejection, and the object scores the soldier like any other candidate.
 
-The setting reads the scanning object's own type, not the house that owns it, so a player's own dog and a computer's alike see through a disguise. It changes nothing else about the disguise. The soldier still shows the substituted name, artwork and color, is still drawn in the local player's scheme, and is still avoided by anything deciding on its own whether to run something down.
+The scanning object needs no weapon. [Scan radius](/systems/target-selection/#scan-radius) gives the reach of each scan.
 
-Every other rule about a candidate applies unchanged. An ally is still rejected before the disguise is ever considered, so this cannot turn an object on a friendly spy.
+The flag belongs to the scanning object's type, so it works the same for a player's object and a computer's. A computer house can also see through every disguise with [`AIDetectDisguise=yes`](/keys/aidetectdisguise/), whatever its objects' types set.
+
+Every other rule about a candidate still applies. In particular, an ally is rejected before the disguise is considered, so the flag cannot turn an object on a friendly spy unless the scanning object is an infantryman that has gone berserk.
+
+The flag changes nothing else about the disguise. To other players the soldier still shows the disguise's name and artwork, drawn in the viewing player's colors, and appears on radar in that player's color. A vehicle still refuses to run it over on its own initiative.

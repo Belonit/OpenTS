@@ -7,12 +7,16 @@ when_omitted:
   value: "0"
 ---
 
-Only an [`IsFlamingGuy=yes`](/keys/isflamingguy/) animation reads the figure. A man who has been set on fire runs toward the nearest water he can see. The artwork for that run is laid out as eight consecutive blocks of this many frames, one block per facing. The block is picked from the direction he is traveling. The frame within it advances once every three game frames and wraps round, so the flames appear to face the way he goes.
+`RunningFrames=` sets how many frames each facing of a burning victim's run cycle uses. Only an [`IsFlamingGuy=yes`](/keys/isflamingguy/) animation reads it.
 
-Once he arrives, runs out of anywhere to go, or exhausts the number of cells he is allowed, he switches to his death sequence. That sequence begins at eight times this figure plus one and stops one frame short of the halfway point of the shape. The second half of the shape holds the shadow frames, which are drawn darkened beneath him.
+The run cycle is eight consecutive blocks of this many frames, one block per facing, starting at the animation's [`Start`](/keys/start/) frame. The victim shows the block for the direction he is running. Within the block, the frame advances once every three game frames and wraps around.
 
-The run blocks are laid out from the animation's [`Start`](/keys/start/) frame and are not checked against the artwork. A figure larger than the shape can support therefore leaves the man running on frames that draw nothing.
+When the run ends, the death sequence begins at frame eight times `RunningFrames` plus one, counted from `Start`. The frame right after the run cycle is skipped. The sequence ends on frame half the shape's frame count minus one, also counted from `Start`. With `Start=0`, that is the last frame of the shape's first half.
 
-:::danger[A burning victim with no run cycle stops the game if it can move]
-The frame within a block is worked out as a remainder taken against this figure, and the figure is not tested for zero first. An `IsFlamingGuy=yes` animation that leaves it unstated, or states `RunningFrames=0`, divides by zero and faults on the first logic pass in which it has somewhere to run to. One created with nowhere left to go switches straight to its death sequence and never reaches the division.
+The second half of the shape holds shadow frames. Each drawn frame is paired with the frame half the shape's frame count later, which is drawn darkened beneath the victim. The shadow is not drawn while he falls.
+
+The game does not check the run cycle against the artwork. A value too large for the shape makes the victim run on frames that draw nothing.
+
+:::danger[Set RunningFrames on every burning victim animation]
+An `IsFlamingGuy=yes` animation with `RunningFrames=0`, the default, divides by zero and crashes the game as soon as the victim starts to run. A victim created with nowhere to run goes straight to its death sequence and does not crash.
 :::

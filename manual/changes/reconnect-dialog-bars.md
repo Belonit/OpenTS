@@ -10,4 +10,4 @@ credit:
 - ZivDero
 ---
 
-The reconnect dialog's table of bar controls named the first player's box twice, so the second player's bar was drawn over the first player's and the second box stayed empty. Each bar now draws in its own box.
+In the reconnect dialog, the second player's connection bar was drawn in the first player's box, and the second player's box stayed empty. Each player's bar now appears in that player's own box.

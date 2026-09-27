@@ -8,10 +8,12 @@ when_omitted:
   value: "0"
 ---
 
-A whole number of leptons, 256 to a cell. On the frame a thrown animation strikes something, each object occupying the cell it struck is measured against this reach. One that falls inside it takes [`Damage`](/keys/damage/#scope-animtype) through the animation's [`Warhead`](/keys/warhead/#scope-animtype). The shipped debris pieces use `DamageRadius=50` to `80`, about a fifth to a third of a cell; the meteors use `DamageRadius=300`.
+The reach of a thrown animation's strike, in leptons (256 to a cell). When a contact counts as a strike, each object in the struck cell within this reach takes [`Damage`](/keys/damage/#scope-animtype) through the animation's [`Warhead`](/keys/warhead/#scope-animtype). The shipped debris uses `DamageRadius=50` to `100`, about a fifth to two fifths of a cell, and the meteors use `DamageRadius=300`.
 
-The distance compared is the sum of the two horizontal separations rather than the straight line between them, so the reach is a diamond and not a circle. A value of `0` reaches only an object centered exactly on the point of impact. Height is not part of the comparison at all. Only occupants of the one cell struck are examined, so a reach wider than a cell still cannot touch anything standing next door. The armor and distance reduction is worked out on a copy of the damage figure. The type's stored `Damage` is left as the rules set it, so every later animation of the type starts from the same number.
+The reach is measured as the sum of the two horizontal distances along the map axes, so it covers a diamond, not a circle. Height is ignored. A value of `0` reaches only an object centered exactly on the point of impact.
 
-Reaching this path at all takes a contact the physics report as a strike rather than as settling. [`Elasticity`](/keys/elasticity/#scope-animtype) decides which a contact is, and an ordinary landing by a shipped bouncing animation never produces one.
+Only objects in the struck cell are checked. A reach wider than a cell still cannot damage anything in a neighboring cell.
 
-The blast at the end of the animation's life is a separate matter. It reaches every object in the impact cell and the eight around it, with the warhead's own [`Spread`](/keys/spread/#scope-warheadtype) deciding how the damage falls off across them. It does not read this setting at all.
+Only a strike deals this damage. [`Elasticity`](/keys/elasticity/#scope-animtype) decides whether a contact is a strike, and an ordinary landing by a shipped bouncing animation never is.
+
+The blast that comes with [`ExpireAnim`](/keys/expireanim/#scope-animtype) on landing is separate and ignores this setting. It damages objects in the landing cell and the eight around it, and the warhead's [`Spread`](/keys/spread/#scope-warheadtype) sets how the damage falls off across them.

@@ -7,13 +7,15 @@ when_omitted:
   value: "3"
 ---
 
-The figure is 256ths of a full rotation per game frame, the same scale an object's own [`ROT`](/keys/rot/#scope-aircrafttype) uses. A turn is timed by dividing its arc by that step, and the widest arc a single turn covers is a half circle. A full about-face therefore takes 128 divided by the figure in frames, truncated: the default `3` comes to 42 frames, a little under three seconds. It is read once, when the locomotor is created, and each jumpjet keeps the rate it was built with.
-
-Nothing else in the flight model waits for the turn. A jumpjet begins moving toward its destination as soon as it clears a quarter of its flight level, while it is still swinging around. A low rate therefore sends it off in a wide curve rather than holding it in place.
+`TurnRate` is how far a jumpjet turns each game frame, in 256ths of a full rotation. It uses the same scale as an object's [`ROT`](/keys/rot/#scope-aircrafttype). A turn takes its arc divided by this rate, rounded down to whole frames. No single turn is wider than a half circle, so a full about-face takes `128 ÷ TurnRate` frames: 42 frames at the default `3`, a little under three seconds.
 
 ```ini title="rules.ini"
 [JumpjetControls]
 TurnRate=4
 ```
 
-Values are clamped at `127`, half a rotation per frame. At `0`, or at any negative figure, the facing snaps to whatever heading is asked for, with no turn at all.
+A jumpjet takes the rate when it is created and keeps it for the rest of the game.
+
+A jumpjet does not wait for a turn to finish before it moves. Once it has climbed past a quarter of its flight level, it accelerates along whatever heading it currently faces, and that heading keeps swinging toward the destination as it flies. A low rate therefore sends it off in a wide curve.
+
+A value above `127` is treated as `127`, half a rotation per frame. At `0`, or at any value down to `-128`, the jumpjet snaps to each new heading without turning. Lower values wrap around as they do for `ROT`, and some of them give an ordinary turning rate.

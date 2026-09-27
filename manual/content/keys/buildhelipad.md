@@ -8,4 +8,4 @@ when_omitted:
   value: ""
 ---
 
-What makes a building a helipad to the planner is [`Helipad=yes`](/keys/helipad/) on the type itself, which is what earns it extra copies while [the plan is assembled](/systems/ai-base-building/#building-the-plan). This list is read from the rules, and nothing reads it.
+A computer house's [base plan](/systems/ai-base-building/#building-the-plan) queues one to three extra copies of a [`Helipad=yes`](/keys/helipad/) type. This list adds no copies and does not make a type a helipad.

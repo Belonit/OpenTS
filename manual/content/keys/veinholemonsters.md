@@ -5,7 +5,7 @@ see_also: ["system:veins", "VeinholeTypeClass"]
 when_omitted:
   kind: value
   value: "0"
-  note: The fallback of `0` asks for no veinhole monsters, so the placement pass plants none.
+  note: No veinhole monsters.
 ---
 
 ```ini title="map seed file"
@@ -13,6 +13,10 @@ when_omitted:
 VeinholeMonsters=3
 ```
 
-The generator tries to plant this many veinhole monsters. When a map is [generated from a file](/systems/map-generation/#the-dialog-path-and-the-scenario-path), a value below `0` becomes `0` and one above `5` becomes `5`. The generator makes at most 200 placement attempts in total, so a crowded map can get fewer monsters than requested. Each attempt picks a five-by-five block. The block must be clear, level ground inside the playable area, with no overlay and no cell in the ground reserved around a start point, and its center must pass the [placement test](/systems/veins/#placement). Each monster planted starts with a ring of veins along the border of that block.
+The generator tries to place this many veinhole monsters. It makes at most 200 placement attempts in total, so a crowded map can get fewer monsters than requested.
 
-The pass runs only where the generated map is built in the temperate theater, so a map whose [`Biome`](/keys/biome/) is tundra or taiga is left without monsters whatever the figure says.
+Each monster placed starts with a ring of veins along the border of the five-by-five block centered on it. [Map generation](/systems/map-generation/#veinholes) lists the placement test.
+
+Monsters are placed only on a map built in the temperate theater. A map whose [`Biome`](/keys/biome/) is tundra or taiga gets none, whatever the setting.
+
+Unless the Firestorm addon is enabled, the setting becomes `0` before the map is built. When a map is [generated from a file](/systems/map-generation/#the-dialog-path-and-the-scenario-path), a value below `0` becomes `0` and one above `5` becomes `5`.

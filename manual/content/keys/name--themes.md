@@ -1,15 +1,15 @@
 ---
 key: Name
 scope: themes
-label: Score display name
+label: Track display name
 see_also: [Length, Normal]
 when_omitted:
   kind: value
   value: ""
-  note: An empty name, which leaves the score's name out of its track list row.
+  note: An empty name, which leaves the track's row in the track list without a title.
 ---
 
-The value is displayed literally rather than being looked up as a translatable label. It is held in a 64-byte field, so it is cut off after 63 characters. A player sees it in the sound options track list, where each score the playlist would accept is listed by this name with its [`Length`](/keys/length/) beside it.
+`Name=` sets the track's title as players see it. The title appears in the sound options track list, beside the track's [`Length`](/keys/length/), and in the on-screen message that the [next track](/commands/nexttheme/) and [previous track](/commands/prevtheme/) commands show. The value is shown exactly as written, not looked up as a translatable string. Only the first 63 characters are kept.
 
 ```ini title="theme.ini"
 [DUSKHOUR]
@@ -19,4 +19,11 @@ Scenario=1
 Side=GDI
 ```
 
-The section name is the audio file's own name, and it is what the rest of the engine identifies a score by. The display name is a lookup key as well. Turning a name into a score matches section names first, without regard to letter case. If no section name matches, the search falls back to a case-sensitive substring test over the display names, and the first score whose display name contains the requested text wins. Every request for a score by name runs through that routine: the menu, map selection and score-screen music, a scenario's [`Theme=`](/keys/theme/), and the reader that builds the score list itself. A `[Themes]` entry whose ID appears inside an existing display name therefore amends that score instead of adding one of its own. A later request for that ID resolves to the same score.
+The section name is the track's ID. It names the track's `.AUD` file and is how other settings refer to the track. A value that refers to a track is matched in two steps, so it can also select a track by its display name:
+
+1. The value is compared with every track ID, ignoring case. A match selects that track.
+2. If no ID matches, the first track in `[Themes]` order whose display name contains the value, with case respected, is selected.
+
+Every value that refers to a track is matched this way. That covers a scenario's [`Theme=`](/keys/theme/), the tracks that the main menu, map selection, the score screen and ion storms request by ID, and the IDs listed under `[Themes]`. With the example above, and no track whose ID is `Dusk`, `Theme=Dusk` selects `DUSKHOUR`. `Theme=DUSK` does not, because the display name is matched with case respected.
+
+A `[Themes]` entry can therefore fail to add a track. If its ID matches no earlier track's ID but appears inside an earlier track's display name, the entry is taken as that earlier track. No new track is added, and the entry's own section is never read.

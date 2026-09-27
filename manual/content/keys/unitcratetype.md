@@ -7,8 +7,10 @@ when_omitted:
   value: none
 ---
 
-With a type named here, the unit result always creates that type. With `UnitCrateType=none` the result falls back to the two rescues described below. When neither applies, it draws repeatedly from the registered UnitTypes until it finds one that is [`CrateGoodie=yes`](/keys/crategoodie/) and ownable by the collector's house.
+With a type named here, every unit crate delivers that vehicle type, or pays money if the vehicle cannot be placed. The type is delivered even if it does not set [`CrateGoodie=yes`](/keys/crategoodie/) and even if the collector's country may not own it.
 
-:::caution[Naming a type cancels both free-vehicle rescues]
-The unit result first checks whether the collector's house has lost its base and can afford to rebuild, and then whether it owns a refinery but no unit of the first [`HarvesterUnit`](/keys/harvesterunit/) type. It chooses the MCV or a harvester accordingly. This setting is applied after both and overwrites either one, so naming a type here means a house that has lost its base receives that type instead of an MCV.
+With `UnitCrateType=none`, the unit crate chooses a vehicle as [Money and free units](/systems/crates/#money-and-free-units) describes: a free MCV or harvester when the collector's house needs one, and otherwise a random `CrateGoodie=yes` type the collector's country may own.
+
+:::caution[Naming a type replaces the free MCV and harvester]
+A house that has lost its base, or that owns a refinery but no harvester, receives the named type instead of the MCV or harvester it would otherwise get. Leave the setting at `none` to keep both.
 :::

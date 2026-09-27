@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-The name promises a country whose computer houses start with the smarter behaviors already switched on. The flag is stored on the country and nothing reads it back; what actually opens those behaviors one at a time is the house's [`IQ`](/keys/iq/).
+The flag is stored on the country, and nothing in the game reads it. A computer house's behaviors are unlocked by its [`IQ`](/keys/iq/) instead.

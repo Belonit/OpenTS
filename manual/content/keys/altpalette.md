@@ -7,8 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-The animation's pixels are remapped through the first color scheme the rules declare in `[Colors]`, in place of the shared palette every other animation is drawn with. It changes only the colors, not how brightly the animation is lit.
+The animation is drawn through the first color scheme declared in `[Colors]` instead of the palette that ordinary animations share. Only the colors change. The animation is lit the same way either way.
 
-The choice of palette is made in order, and this flag is the last thing read. A veinhole tendril, an animation belonging to the ground it stands on, and an animation that has been handed a palette of its own are all settled before the flag is reached. None of them looks at the flag. A handed palette means a structure's animation taking its owner's house colors, a piece of tiberium debris, or a burning victim. In practice the flag reaches an animation standing on its own, or one a structure runs with [`ShouldUseCellDrawer=no`](/keys/shouldusecelldrawer/).
+The flag applies only to an animation that nothing else gives a palette. These animations ignore it:
 
-A [`Tiled=yes`](/keys/tiled/) animation is drawn through the shared palette on every copy, so the flag does nothing there. The stand-in a structure's animation leaves behind under the fog of war ignores it as well.
+- an animation with [`IsVeins=yes`](/keys/isveins/#scope-animtype), which uses the player's color scheme
+- a structure's animation, which uses its owner's house colors unless the animation sets [`ShouldUseCellDrawer=no`](/keys/shouldusecelldrawer/)
+- animated Tiberium and Tiberium debris, which use the Tiberium's color
+- burning infantry, which use the player's color scheme
+- a [`Tiled=yes`](/keys/tiled/) animation, which draws every copy through the shared palette
+- the picture of a structure's animation remembered under the fog of war

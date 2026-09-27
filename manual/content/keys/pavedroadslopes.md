@@ -9,4 +9,4 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The resolved set reaches exactly one test, which asks whether a cell has a paved road slope, and nothing calls it. A road climbing a ramp is drawn from these pieces and treated as whatever their artwork reports; the role changes none of that. [`DirtRoadSlopes`](/keys/dirtroadslopes/) is the dirt counterpart.
+Nothing in the game uses this role, and the [random map generator](/systems/map-generation/#settlements) never lays a paved road slope. A map can still use these tiles to carry a road up a ramp. Their terrain type then comes from the tile artwork, as for any other tile. [`DirtRoadSlopes`](/keys/dirtroadslopes/) is the dirt road counterpart.

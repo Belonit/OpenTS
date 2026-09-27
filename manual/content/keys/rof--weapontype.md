@@ -8,7 +8,7 @@ when_omitted:
   value: "0"
 ---
 
-The value is the game frames a firer waits before the shot after this one, at 15 frames to the second. It is a delay rather than a rate, so a larger figure fires more slowly.
+The value is the number of game frames the weapon waits after a shot before it can fire again. There are 15 game frames to the second. It is a delay, so a larger value fires more slowly.
 
 ```ini title="rules.ini"
 [120mm]
@@ -16,17 +16,20 @@ Damage=70
 ROF=80
 ```
 
-Four things reshape it on the way to the firer.
+Unless one of the cases further down applies, the value is adjusted in this order:
 
-- A structure holding more than one round of [`Ammo`](/keys/ammo/) waits a single frame instead, so the figure decides only the pause after its last round.
-- A weapon that fires as a beam uses the figure exactly as written, with none of the adjustments below. A beam weapon is one with [`IsSonic=yes`](/keys/issonic/), which is a property of the weapon itself, or a fire, spark or railgun weapon while its particle system is currently attached to the firer.
-- A shot fired while the burst counter is still short of [`Burst`](/keys/burst/) takes its delay from the matching [`BurstDelay0`](/keys/burstdelay0/) to [`BurstDelay3`](/keys/burstdelay3/) entry instead. The delay after the first shot comes from `BurstDelay0`, the delay after the second from `BurstDelay1`, and so on. Where that entry is left unset, the delay is a random three to five frames.
-- The delay after a burst's last shot, like every shot of a weapon without a burst, is the figure multiplied by the firing house's country [`ROF`](/keys/rof/#scope-housetype) multiplier, plus a random zero to two frames. A firer that has earned the rate-of-fire ability then divides the result by one plus [`VeteranROF`](/keys/veteranrof/).
+1. It is multiplied by the firing house's rate-of-fire multiplier. That multiplier is the [difficulty `ROF`](/keys/rof/#scope-difficulty-settings) of the house's difficulty slot. In skirmish and multiplayer games it is also multiplied by the house's [country `ROF`](/keys/rof/#scope-housetype).
+2. A random 0 to 2 frames is added.
+3. If the firer has earned the rate-of-fire ability, the result is divided by one plus [`VeteranROF`](/keys/veteranrof/).
 
-Shot by shot, a `Burst=3` weapon with every `BurstDelay` entry set fires, waits [`BurstDelay0`](/keys/burstdelay0/), fires, waits [`BurstDelay1`](/keys/burstdelay1/), fires, then waits the adjusted figure before the burst starts over. `BurstDelay2` and `BurstDelay3` stay unused until [`Burst`](/keys/burst/) is raised past 3.
+Three cases use a different delay. The first case that applies decides it:
 
-An aircraft's mission handlers wait the primary weapon's figure between passes, unadjusted, so this also sets how often an attacking aircraft reconsiders what it is doing.
+1. A structure that had more than one round of [`Ammo`](/keys/ammo/) when it fired waits a single frame. `ROF` therefore sets only the pause after its last round.
+2. A beam or particle weapon waits exactly `ROF`, with none of the adjustments above. This covers every [`IsSonic=yes`](/keys/issonic/) weapon. It also covers every [`UseFireParticles=yes`](/keys/usefireparticles/), [`UseSparkParticles=yes`](/keys/usesparkparticles/) or [`IsRailgun=yes`](/keys/israilgun/) weapon. Such a weapon also cannot fire again until its effect has ended, as [Firing geometry](/systems/firing-geometry/#effects-that-hold-the-weapon-shut) describes.
+3. A shot that does not end a [`Burst`](/keys/burst/) waits the gap its [`BurstDelay0`](/keys/burstdelay0/) to [`BurstDelay3`](/keys/burstdelay3/) entry gives. The shot that ends the burst uses the adjusted `ROF`.
 
-:::danger[A weapon with no reload delay stops the game]
-Three routines that rate an object's worth as an anti-air, anti-armor or anti-infantry threat divide by this figure in whole numbers, and none of them checks it first. They run whenever a base's defense zones are scored, whenever a computer house decides where to send an object, and whenever one hunts for a target in the field. The zones are scored for every house each time one of its buildings is placed, captured or sold. A weapon with `ROF=0`, or omitting the key, which stores the same value, therefore divides by zero and stops the game. The anti-air routine is reached only when the projectile is [`AA=yes`](/keys/aa/), the other two when it is [`AG=yes`](/keys/ag/).
+During a [strafing run](/keys/curleyshuffle/), an aircraft also waits its first weapon's `ROF`, unadjusted, after each shot but the last. This sets the spacing between the shots of the run.
+
+:::caution[Keep ROF above 0]
+At `ROF=0`, which is also the value when the key is omitted, the weapon can fire again within two frames. When this is the firer's first weapon, the computer's ratings of the firer as an anti-air, anti-armor and anti-infantry threat also divide by `ROF`, so at 0 they become meaningless values. The computer uses these ratings to station newly built units, to score its base defense zones and to weigh which base defenses to build. The anti-air rating is taken only when the projectile is [`AA=yes`](/keys/aa/), and the other two only when it is [`AG=yes`](/keys/ag/).
 :::

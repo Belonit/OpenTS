@@ -7,15 +7,17 @@ when_omitted:
   value: "7"
 ---
 
-Both fades step through the stages counted by [`CloakingStages`](/keys/cloakingstages/) at this rate, so the value sets how long the object spends part way visible in each direction. A lower figure makes it disappear and reappear faster. [Hiding an object](/systems/cloaking/#the-four-states) covers what each stage looks like.
+A vehicle, infantryman or aircraft advances one [`CloakingStages`](/keys/cloakingstages/) stage every `CloakingSpeed` frames while it fades out or back in. A lower value makes it disappear and reappear faster. [The four states](/systems/cloaking/#the-four-states) shows what each stage looks like and where each fade ends.
 
 ```ini title="rules.ini"
 [MYTANK] ; a UnitType registered in [VehicleTypes]
-CloakingSpeed=2 ; 9 stock stages at 2 frames each: about 18 frames for the whole fade
+CloakingSpeed=2 ; with the stock 9 stages: hidden after about 10 frames, visible again after about 16
 ```
 
-A structure fades on its own fixed schedule of fifteen translucency steps, one per frame, and never reads this value.
+A structure does not use this value. It fades through fifteen fixed translucency levels, one per frame.
 
-:::danger[A rate of zero strands an object part way back]
-A fade that starts at zero frames per stage never advances. The disappearing fade repairs that for itself by falling back to one frame per stage, but the reappearing fade does not. A `CloakingSpeed=0` vehicle, infantryman or aircraft that is forced out of a cloak sticks at the stage the fade began on, drawn as a ripple to other players and shadowy to its owner. From there it can neither finish returning nor hide again. Standing part way through a fade counts as cloaked, so a vehicle or infantryman stuck this way can never fire again. An aircraft still fires, since only a fully hidden aircraft is refused a shot.
+:::caution[Keep `CloakingSpeed` above 0]
+At `CloakingSpeed=0`, an object can still hide, because the fade out runs at one frame per stage instead. The fade back into view never advances. Once the object starts to reappear, it stays on the first stage of that fade and can neither become visible nor hide again. With the stock `CloakingStages`, other players see it as a ripple and its owner sees it as shadowy.
+
+An object part way through a fade counts as cloaked. A stuck vehicle or infantryman therefore never fires again. A stuck aircraft can still fire, because only a fully hidden aircraft is refused a shot.
 :::

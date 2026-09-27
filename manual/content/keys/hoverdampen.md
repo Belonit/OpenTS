@@ -7,8 +7,14 @@ when_omitted:
   value: ".8"
 ---
 
-Every frame the cushion adds its lift, subtracts [`Gravity`](/keys/gravity/), and then multiplies what is left over by this fraction. Subtracting `Gravity` is a constant pull rather than a decay, so this fraction is the only thing that bleeds a bounce away. Below `1`, a hover unit shoved down or crossing a rise settles back to [its rest height](/keys/hoverheight/) instead of oscillating about it. The stock rules write it as `40%`, which the engine reads as `0.4`; a plain `0.4` is the same assignment. Only the percent sign divides by a hundred, so `40` on its own is forty. That shipped line is what a stock game stores, and the fallback above stands only for a rules file that leaves the assignment out. The levitation locomotor damps on the same fraction.
+Each frame the cushion adds its lift, [`Gravity`](/keys/gravity/) pulls the unit down by a fixed amount, and then the unit's remaining vertical motion is multiplied by this fraction. A smaller fraction makes a unit that was shoved down or crossed a rise settle with less bouncing, and it also leaves the unit riding lower.
 
-:::caution[At 1 and above the bounce never settles]
-A fraction of `1` keeps the whole of the accumulated vertical motion. The unit then swings about its rest height for as long as it exists. Above `1` the swing grows every frame, though being driven into the ground clears the accumulated motion and starts it over.
+The unit stops climbing once it would rise less than one lepton in a frame, and with a smaller fraction that happens lower down. With the stock `Gravity` and [`HoverHeight`](/keys/hoverheight/), a unit rising from the ground stops at about 75 leptons at `0.3`, 92 at the stock `0.4` and 103 at `0.5`. At `0.1` it barely leaves the ground.
+
+The stock rules write `40%`, which the engine reads as `0.4`. Only the percent sign divides by a hundred, so a bare `40` means forty. The `.8` fallback applies only when no rules file sets the key.
+
+The levitation locomotor, which the stock Tiberium Floater uses, damps with the same fraction.
+
+:::caution[Keep HoverDampen at 0.8 or less]
+Above about `0.8` the unit no longer settles, and its swing grows with the fraction. With the stock `Gravity` and `HoverHeight`, the swing covers more than 100 leptons at `0.9`. From about `0.92` each swing reaches the ground, which clears the unit's vertical motion, and the unit keeps bouncing off the ground for as long as it exists.
 :::

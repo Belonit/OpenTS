@@ -9,6 +9,12 @@ targets:
 credit: [ZivDero, CCHyper, tomsons26]
 ---
 
-A line longer than 511 characters used to lose its tail without any record of it. The lists that hold the longest values, such as `Prerequisite`, `Explosion`, `DebrisTypes`, `Owner` and the voice lists in `rules.ini`, were cut again at 128. Every line is now read whole, and those lists reach their readers whole. A reader that still copies into fixed storage keeps as much as fits and writes the cut to the debug log once per key. A file with such a line now saves, and digests, with the whole line. A scenario whose digest an earlier build wrote still loads. A `ColorList` written without parentheses now reads as written, and a `[Tubes]` entry short of its five fields no longer crashes.
+The game now reads an INI line of any length. A line longer than 511 characters used to lose its end. List values in `rules.ini`, such as `Prerequisite`, `Explosion`, `DebrisTypes`, `Owner` and the voice lists, were also cut at 128 characters, losing the entries past that point. Every such list is now read whole.
+
+A key whose value is still copied into fixed-size storage keeps as much as fits, and the debug log names the key the first time it is cut. An INI file the game writes back keeps a long line whole.
+
+`ColorList` in a particle type's section used to lose the first digit of each red value and the last digit of each blue value when a color had no parentheses. It now reads such a list correctly.
+
+A `[Tubes]` line in a map that is cut short used to crash the game. A missing position or facing now reads as `0`, and the tunnel's path ends at the last direction the line gives.
 
 CCHyper and tomsons26 are credited for the Vinifera fix that widened the `Owner` buffer.

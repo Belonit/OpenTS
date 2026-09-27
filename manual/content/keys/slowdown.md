@@ -7,7 +7,7 @@ when_omitted:
   value: "0.0"
 ---
 
-The amount is added to the system's working interval on every frame it runs, not on every particle it emits, so the plume pours fastest when it appears and thins steadily from there. Only the `Smoke` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it, and the puffs' own sideways drift is governed by the particle type's [WindEffect](/keys/windeffect/).
+A `Smoke` system adds this amount to its spawn interval on every frame it runs, whether or not it emits a particle on that frame. The spawn interval is the number of frames between new particles, and it starts at [`SpawnFrames`](/keys/spawnframes/). A positive value therefore makes the plume pour fastest when it appears and thin steadily from there. Only the `Smoke` [behavior](/keys/behaveslike/#scope-particlesystemtype) reads it.
 
 ```ini title="rules.ini"
 [MySmokeSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -19,8 +19,10 @@ SpawnTranslucencyCutoff=13.0
 SpawnCutoff=15.0
 ```
 
-The rate sets the plume's whole life span, because it is what takes the interval up to [`SpawnCutoff`](/keys/spawncutoff/). The system above stretches from `10` to `15` at `.0025` a frame, which is 2000 frames (a little over two minutes), and crosses [`SpawnTranslucencyCutoff`](/keys/spawntranslucencycutoff/) after 1200 of them. Left at zero the interval never moves, so the plume either runs until something else removes it or, where the cutoff is lower than [`SpawnFrames`](/keys/spawnframes/), is retired on its first frame.
+Together with [`SpawnCutoff`](/keys/spawncutoff/), this amount sets how long the plume emits, because the plume stops once its interval passes the cutoff. The system above grows from `10` to `15` at `.0025` a frame. That takes 2000 frames. At the default [game speed](/keys/gamespeed/), that is 100 seconds in a multiplayer game and about 67 seconds in a campaign mission or skirmish. After 1200 of those frames it passes [`SpawnTranslucencyCutoff`](/keys/spawntranslucencycutoff/), and its new particles are more translucent from then on.
 
-:::danger[A negative value can crash the game]
-Nothing stops the interval shrinking. A negative amount walks it back down toward zero. The frame counter is divided by the whole-number part of it, so a plume whose interval is dragged below `1` crashes the game on the next frame it tests. It takes a [`SpawnCutoff`](/keys/spawncutoff/) at or above the opening interval to get there: with a lower cutoff the system is marked spent on its first frame and stops testing the interval at all.
+At zero the interval stays at `SpawnFrames`. With a `SpawnCutoff` at or above that, the plume emits until another route [ends it](/systems/particle-systems/#ending-a-system).
+
+:::danger[Keep Slowdown at zero or above]
+A negative value shrinks the interval. Once the interval falls between `-1` and `1`, the next frame's emission test divides by zero and the game crashes. Every negative value closer to zero than `-2` reaches that range. A plume escapes only if it ends first, such as one whose `SpawnCutoff` is below `SpawnFrames` plus this value, which ends on its first frame.
 :::

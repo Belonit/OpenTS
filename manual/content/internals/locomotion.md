@@ -12,32 +12,46 @@ source_files:
   - code/techtype.cpp
   - code/droppod.h
   - code/droppod.cpp
+  - code/drive.cpp
+  - code/walk.cpp
 ---
 
-`FootClass::Locomotion` owns the current `ILocomotion` locomotor for one mobile runtime instance. The locomotor is a separate object linked to the `FootClass`; it is not a behavioral base class of `FootClass`.
+Every aircraft, infantryman and vehicle moves through one locomotor: the `ILocomotion` object that its `FootClass::Locomotion` pointer owns. The locomotor is a separate object linked to that `FootClass`. `FootClass` does not inherit movement behavior from it.
 
 ## Object locomotion
 
-`TechnoTypeClass::Locomotor` stores the class identifier used to create a type's ordinary locomotor; the [`Locomotor`](/keys/locomotor/) assignment selects it. Concrete `FootClass` constructors create that locomotor, call `Link_To_Object`, and assign it to `FootClass::Locomotion`.
+The [`Locomotor`](/keys/locomotor/) key sets `TechnoTypeClass::Locomotor`, the class identifier of the type's ordinary locomotor. The aircraft, infantry and vehicle constructors create a locomotor of that class, link it to the new object with `Link_To_Object`, and store it in `FootClass::Locomotion`.
 
-Movement, destination, layer, occupation, and locomotor-specific drawing queries go through the current interface. Code must therefore inspect the runtime `Locomotion` pointer when temporary locomotion is possible; the type's `Locomotor` identifier describes the ordinary implementation, not necessarily the one currently in control.
+Movement, destination, layer, cell occupation and locomotor-specific drawing queries all go to the locomotor currently in `FootClass::Locomotion`. That locomotor can be a temporary one, so code that depends on how an object moves must check the class of the current `Locomotion` pointer. The type's `Locomotor` identifier names only the ordinary locomotor.
 
 ## Piggybacking
 
-`IPiggyback` lets one locomotor take control while retaining the previous locomotor for restoration. Only the drive, walk, and drop-pod locomotors implement `IPiggyback`, and `LocomotionClass` supplies none of the four methods, `Begin_Piggyback`, `End_Piggyback`, `Is_Ok_To_End`, and `Is_Piggybacking`. A new locomotor that is to carry another must write all four.
+A piggyback lets a temporary locomotor, the carrier, move an object while it holds the object's previous locomotor for later restoration. Only the drive, walk and drop-pod locomotors can be carriers, because only they derive from `IPiggyback`. `LocomotionClass` does not derive from it and supplies none of its four methods. A new carrier must derive from `IPiggyback` and implement `Begin_Piggyback`, `End_Piggyback`, `Is_Ok_To_End` and `Is_Piggybacking`.
 
-| Operation | State transition |
+A piggyback has three steps:
+
+| Step | Effect |
 | --- | --- |
-| `Begin_Piggyback(previous)` | Stores `previous` inside the new locomotor and takes ownership of it. Answers `false` and leaves `previous` with the caller when there is nothing to store or the carrier already holds one. |
-| Replace `FootClass::Locomotion` | Makes the new locomotor the object's active movement interface. The new locomotor must already be linked to the same object. |
-| `End_Piggyback()` | Hands the carried locomotor back to the caller and releases its hold on it. Answers with an empty pointer when no locomotor was carried. |
+| `carrier->Begin_Piggyback(previous)` | The carrier takes ownership of `previous` and answers `true`. It answers `false` and leaves `previous` with the caller when `previous` is empty or the carrier already holds a locomotor. |
+| Assign the carrier to `FootClass::Locomotion` | The carrier now moves the object. Link the carrier to the same object with `Link_To_Object` before this assignment. |
+| `carrier->End_Piggyback()` | Returns the carried locomotor to the caller, which assigns it back to `FootClass::Locomotion`. Returns an empty pointer when the carrier holds nothing. |
 
-`FootClass::Link_DropPod` applies this sequence with the drop pod's ballistic locomotor: it retains the passenger's current locomotor through `Begin_Piggyback`, then installs the ballistic interface. Drop-pod touchdown assigns the locomotor `End_Piggyback` returns back to `FootClass::Locomotion`, when the pod carried one, before attempting ground placement.
+The engine starts a piggyback in these cases:
 
-Callers that perform opportunistic restoration first read `Is_Ok_To_End`, which reports whether the locomotor may be handed back yet. `Is_Piggybacking` reports whether anything is carried at all. Every carrier refuses while the object is still moving or while it carries nothing. The drive locomotor also refuses while it is locked, and the walk locomotor while its own movement pass is running. The drop-pod touchdown path calls `End_Piggyback` directly at ground contact, because a pod always reports itself moving and its own `Is_Ok_To_End` would never agree.
+- A passenger delivered by drop pod gets a drop-pod carrier for the fall.
+- A tunneler that surfaces, or leaves a war factory, gets a drive carrier.
+- A jumpjet infantryman on a trip it should make on foot gets a walk carrier.
+
+`FootClass::Link_DropPod` creates the drop-pod locomotor, hands it the passenger's current locomotor through `Begin_Piggyback`, and makes the drop pod the passenger's `Locomotion`. At touchdown the drop pod takes the carried locomotor back with `End_Piggyback` and restores it before placing the passenger on the ground. A drop pod that carries nothing stays the passenger's locomotor.
+
+### Ending a piggyback
+
+`Is_Piggybacking` reports whether the carrier holds a locomotor. `Is_Ok_To_End` reports whether that locomotor may be restored now. Code that restores the carried locomotor whenever it can, such as the switch to idle mode, checks `Is_Ok_To_End` first.
+
+Every carrier answers `false` to `Is_Ok_To_End` while it reports movement or holds nothing. The drive carrier also answers `false` while it is locked, and the walk carrier while a movement step is in progress.
+
+A drop pod always reports movement, so its `Is_Ok_To_End` never answers `true`. Touchdown therefore calls `End_Piggyback` directly.
 
 ## Persistence identity
 
-`FootClass::Serialize` writes the active locomotor as a record of its own, headed by its class identifier, and recreates it from that identifier when loading. A piggyback-capable locomotor writes whether it carries another locomotor and serializes that nested locomotor when present. A save made during a temporary movement state therefore retains both the active locomotor and the one to restore.
-
-`Class_ID` identifies the active locomotor implementation, and the carried locomotor keeps its own. These identities are distinct while a temporary locomotor is in control.
+`FootClass::Serialize` saves the current locomotor as a separate record headed by its class identifier, and loading creates a locomotor of that class from the record. Each carrier also saves whether it holds a locomotor and, when it does, saves that locomotor as a nested record with its own class identifier. A save made during a piggyback therefore records the carrier's class identifier for `Locomotion` and restores both the carrier and the locomotor it will hand back.

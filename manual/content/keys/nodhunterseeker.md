@@ -7,4 +7,4 @@ when_omitted:
   value: none
 ---
 
-The value becomes the [`HunterSeeker`](/keys/hunterseeker/#scope-side) of the second side in the rules' [`[Sides]`](/formats/rules-registries/) list, as each rules file sets it. A `HunterSeeker=` in that side's own section of the same file overrides it. [`GDIHunterSeeker`](/keys/gdihunterseeker/) does the same for the first side, and nothing else reads this key.
+Each rules file that sets this key copies its value into the [`HunterSeeker`](/keys/hunterseeker/#scope-side) of the second side in the rules' [`[Sides]`](/formats/rules-registries/) list. A `HunterSeeker=` in that side's own section of the same file then overrides it. [`GDIHunterSeeker`](/keys/gdihunterseeker/) does the same for the first side. Nothing else reads this key.

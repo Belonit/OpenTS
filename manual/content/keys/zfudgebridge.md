@@ -7,8 +7,17 @@ when_omitted:
   value: "0"
 ---
 
-An object counts as under a bridge when its own cell is covered by one, or when it stands alongside a covered cell that the deck still reaches over. Alongside means a covered cell to the north or south for an east-west bridge, and to the east or west for a north-south one. An object riding the deck itself never counts. While it counts, this figure is offered as the object's depth bias.
+`ZFudgeBridge` moves an object back in drawing order while it is under a bridge, so the bridge deck draws over it. A larger value moves it further back. The value applies as written, with no strength multiplier.
 
-Unlike the other three fudges the figure is used as written, with no multiplier of its own. Only the largest of the four applies at any moment, and [`ZFudgeCliff`](/keys/zfudgecliff/), [`ZFudgeColumn`](/keys/zfudgecolumn/) and [`ZFudgeTunnel`](/keys/zfudgetunnel/) each have their own condition. The winner is added to the bias the object's locomotor asks for and to a second bias the object works out for itself. The stock rules raise it on three types only, from 2 on the Titan to 25 on the Mammoth Mk. II, and leave every other type at 0.
+An object counts as under a bridge when either of these holds:
 
-Only an aircraft, an infantryman or a vehicle has its depth biased this way. A structure stores all four figures and is never biased by any of them.
+- Its own cell is covered by the bridge.
+- The cell beside it across the bridge's width is covered: the cell to the north or south for an east-west bridge, or the cell to the east or west for a north-south bridge.
+
+An object riding on the deck never counts.
+
+Only the largest of an object's four depth fudges applies: this one, [`ZFudgeCliff`](/keys/zfudgecliff/), [`ZFudgeColumn`](/keys/zfudgecolumn/) and [`ZFudgeTunnel`](/keys/zfudgetunnel/). It is added to the object's other depth adjustments, such as those for its height and its locomotor. A fudge whose condition does not hold counts as `0`, so a negative value takes effect only when the conditions of all four fudges hold at once.
+
+Only aircraft, infantry and vehicles use the depth fudges. A structure reads all four values and never applies them.
+
+The stock rules set this value on three types only: the Titan (`2`), the harvester (`7`) and the Mammoth Mk. II (`25`).

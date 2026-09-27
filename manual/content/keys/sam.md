@@ -1,23 +1,29 @@
 ---
 key: SAM
-summary: Runs the structure on an anti-air firing routine of its own that holds only airborne targets.
+summary: Gives a defense an anti-aircraft attack routine that keeps only airborne targets.
 see_also: [AA, Powered, "system:power", "system:target-selection"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-Two paths read the flag, and between them they replace the ordinary firing behavior of a defense.
+`SAM=yes` replaces a defense's ordinary attack behavior with an anti-aircraft routine that engages only aircraft in flight.
 
-Every pass of the structure's logic drops its current target when that target is not in the air. Nothing else is read: not range, not whether the weapon could have hit it. A launcher handed a ground target by [target selection](/systems/target-selection/) or by retaliation loses it again before it acts on it. A player cannot hand it one either: the attack cursor appears over an airborne aircraft in range, so a launcher takes an order against a chosen aircraft and none against the ground.
+The structure never keeps a target that is not in the air. It drops such a target on its next update, whether [target selection](/systems/target-selection/), retaliation or a player's attack order supplied it. Range and whether the weapon could hit are not considered at this step.
 
-On the attack mission the structure then runs a two-state routine in place of the general one:
+On the attack mission the structure alternates between two states, and checks its state on every frame:
 
-1. **Tracking.** It stalls while its house is short of power, on [the test the defense gate uses](/systems/power/#defenses). It drops the target unless that target is an aircraft standing above ground level. Otherwise it turns the structure's primary facing toward the target and moves to firing once that facing is within 45 degrees of the aim direction. No turret takes part, so a `Turret=` setup is neither demanded nor used.
-2. **Firing.** It re-tests the target the same way, then asks its first weapon slot whether the shot is clear. An illegal, impossible or out-of-range shot drops the target and returns it to tracking. A facing refusal returns it without dropping the target. Any other refusal, reloading above all, leaves it in the firing state and re-tests every frame. A clear shot fires the first and second weapon slots in the same pass, then returns to tracking.
+1. **Tracking.** While its type is `Powered=yes` with drain and its house is short of power, the structure waits in this state; [Defenses](/systems/power/#defenses) covers that test. If the target is not an aircraft above the ground, the structure drops it and returns to guard. Otherwise it turns toward the target, and switches to firing once it faces within 45 degrees of it.
+2. **Firing.** The structure checks the target again the same way, then asks whether its first weapon slot can fire:
+   - If the structure is switched off or stunned by an [EM pulse](/systems/emp-pulse/), or the target is illegal, cannot be hit by that weapon, or is out of range, the structure drops the target and returns to tracking.
+   - If the structure has a turret that does not face the target closely enough, it returns to tracking and keeps the target. A turret must face within 11.25 degrees of the target, or exactly at it for a voxel turret. A structure without a turret is not tested for facing here.
+   - If the weapon is refused for any other reason, such as reloading, the structure stays in this state and tries again on the next frame.
+   - If the shot is clear, the structure fires its first and then its second weapon slot, and returns to tracking.
 
-Two things the general attack path does are missing from that routine: nothing chooses between the weapon slots, and there is no allowance for snapping a turret onto a target it is nearly facing. Each pass also schedules the next one frame later, so a launcher on the attack mission is serviced every frame.
+Tracking turns the turret only when it faces more than 45 degrees away from the target, and firing needs a much closer facing. A turreted structure whose target lies between the two limits therefore neither turns toward the target nor fires at it. This lasts until the target moves within the firing limit, which lets the structure fire, or more than 45 degrees away, which makes tracking turn the turret onto it again.
+
+The routine never chooses between the weapon slots. The second weapon slot fires whenever the first slot's shot is clear, without its own range, reload or anti-aircraft check. When the second slot has a weapon, its reload time sets the wait before the next volley.
 
 :::caution[The flag does not make the weapon anti-air]
-Whether a shot may be taken at an airborne target is decided by [`AA=yes`](/keys/aa/) on the projectile. A launcher whose weapon lacks it drops every ground target it is given and is then refused every air target it turns to.
+A shot at an airborne target needs [`AA=yes`](/keys/aa/) on the weapon's projectile. Without it, the structure drops every ground target, and its first weapon slot refuses every aircraft, so it never fires.
 :::

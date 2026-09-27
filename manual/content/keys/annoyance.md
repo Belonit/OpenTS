@@ -1,18 +1,26 @@
 ---
 key: Annoyance
-summary: Makes a team that is already under way regroup when one of its members is fired on.
+summary: Makes a team that is under way stop and regroup when an enemy damages one of its members.
 see_also: [Suicide, Stray, "system:base-attacked"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-Damage to a member is handed to its team, and what the team does with it depends on whether the team is under way. A team is under way once it has been judged fit to begin and has started working through its script. A team that is still gathering, or that has been pulled back to regroup, is not. A team that is not under way always drops its center point and goes back to regrouping and reforming, wherever the damage came from. A team that is under way normally answers by turning on the attacker instead, and this setting adds the regroup to that case: the center point is dropped and the team reforms before it presses on with its script.
+`Annoyance=yes` makes a team that is under way stop and regroup when an enemy damages one of its members. A team is under way once it has started running its script. A team that is still gathering, or that was sent back to regroup, is not under way. With or without this setting, damage to such a team drops its center and marks it to reform, so once it starts it gathers on a new center before running its script. [Answering damage](/systems/ai-team-execution/#answering-damage) covers both cases.
 
-Five conditions gate the moving case, and all five are already required before this setting is read. The damage must have a source that is neither allied with the team's house nor a member of the team. The member that most recently joined, not the one that was hit, must be a non-aircraft with a primary weapon. The source must not already be the team's target. If any of the five fails, a team that is under way does nothing in response: it neither regroups nor turns on the attacker.
+A team that is under way responds to damage only under **all of** these conditions:
 
-:::caution[The regroup happens even when the target does not change]
-The steps run in a fixed order, and the regroup comes first. Deciding whether to switch to the attacker starts from the team's center point, and the regroup has just emptied it, so an armed current target is always kept. A team of this type that is already shooting at something armed therefore always stops to reform and never turns on its attacker. A team with no armed current target takes the attacker as its new target, but an aircraft attacker is refused, and the old target stands.
+- the attacker is not allied with the team's house and is not a member of the team;
+- the team's most recently joined member, which need not be the member that was hit, is not an aircraft and has a primary weapon;
+- the attacker is not already the team's current target.
+
+If any condition fails, the team does nothing: it neither regroups nor turns on the attacker, whatever this setting says.
+
+When the conditions hold, a team without this setting takes the attacker as its new target. It keeps its current target instead when that target has a primary weapon and either can fire on the team's center or the team has no center. It never switches to an aircraft attacker. With `Annoyance=yes`, the team first drops its center and reforms. It stops running its script, gathers on a newly computed center, and then resumes the script line it was on.
+
+:::caution[A reforming team keeps an armed target]
+The regroup comes before the team decides whether to switch targets, and a team with no center keeps a current target that has a primary weapon. A team of this type that is shooting at something armed therefore stops to reform and never turns on its attacker. A team whose current target is unarmed, or that has no target, takes the attacker as its new target, unless the attacker is an aircraft.
 :::
 
-[`Suicide=yes`](/keys/suicide/) switches the whole damage response off, this setting included.
+[`Suicide=yes`](/keys/suicide/) switches off the whole response to damage, including this setting.

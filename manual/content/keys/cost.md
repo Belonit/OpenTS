@@ -3,24 +3,34 @@ key: Cost
 summary: The credit price of one object of this type, or the multiplier a country or a difficulty applies to every price it pays.
 ---
 
-An object's price is the figure most credit amounts in the game are worked out from: what a factory charges, what a sale refunds, the score a kill adds, and the experience it awards. [`Points=`](/keys/points/) governs none of these.
+An object's `Cost=` is the base for most credit amounts in the game: what a factory charges, what selling refunds, the score a kill or capture adds, and the experience a kill awards. [`Points=`](/keys/points/) affects none of these.
 
 ## What a structure gives away
 
-A structure that comes with something else has that thing's price taken out of its own to make a second, lower figure:
+A structure with a [`FreeUnit=`](/keys/freeunit/), and the pad dock, have a second, reduced price: their `Cost=` minus one or two deductions.
 
-- a [`FreeUnit=`](/keys/freeunit/) grant deducts that unit's own price, and the result is held at `0` rather than allowed to go negative;
-- the first structure in the [`Dock=`](/keys/dock/) list of the first [`PadAircraft=`](/keys/padaircraft/) entry deducts the average price of the whole `PadAircraft=` list, rounded down, unless [`SeparateAircraft=yes`](/keys/separateaircraft/) is set or the structure's own [`FreeUnit=`](/keys/freeunit/) is an aircraft.
+- A `FreeUnit=` deducts that unit's `Cost=`.
+- The pad dock deducts the average `Cost=` of the whole [`PadAircraft=`](/keys/padaircraft/) list, rounded down. The pad dock is the first structure type in the [`Dock=`](/keys/dock/) list of the first `PadAircraft=` entry. No structure is the pad dock when [`SeparateAircraft=yes`](/keys/separateaircraft/) is set, and a structure whose `FreeUnit=` is an aircraft never is.
 
-Almost nothing uses that lower figure. The price asked for the structure adds both deductions straight back, so what a factory charges, what a sale refunds, and what a kill is worth in score and experience all come to the written number. A refinery written at `2000` that hands over a `1400` harvester is still bought, sold and killed as a `2000` structure.
+One pad aircraft goes to each [`HoverPad=yes`](/keys/hoverpad/) structure, as `PadAircraft=` explains. A pad dock that is not one of them gets the reduced price and gives no aircraft.
 
-The lower figure reaches three things. It prices a step of [repair](/systems/repair/), which is the only place a player sees it, so a structure that comes with something else is cheaper to repair than its written price implies. It is the figure the test for handing over the free unit compares the price paid against, which [`FreeUnit=`](/keys/freeunit/) covers. And it sizes how much resentment damage to the structure earns its attacker, so hitting a refinery that has handed over its harvester stirs up less anger than its written price suggests.
+A structure with a `FreeUnit=` never has a reduced price below `0`. A pad dock with no `FreeUnit=` goes below `0` when its `Cost=` is below its deduction.
 
-Where the deduction would take the figure below nothing it stops at nothing. The price then adds back only what was given away, so a structure priced at or under the unit it hands out is worth that unit's price rather than its own.
+The full price adds the deductions back. A factory charges it, selling refunds it, and a kill scores and awards experience from it, so these all work from the written `Cost=`. A refinery with `Cost=2000` that gives a 1400-credit harvester still costs 2000 to buy and is still worth 2000 when destroyed.
+
+The exception is a structure with a `FreeUnit=` whose deductions exceed its `Cost=`. Its reduced price stops at `0`, so its full price is the total of the deductions, which is more than its `Cost=`.
+
+The reduced price is used in three places:
+
+- **Repair.** Each [repair step](/systems/repair/#the-cost-of-one-step) is priced from it, so a structure that comes with something costs less to repair than its `Cost=` suggests. A pad dock with a negative reduced price pays 1 credit per step.
+- **The free-unit test.** A human owner receives the `FreeUnit=` only when the price paid for the structure exceeds the reduced price. [`FreeUnit=`](/keys/freeunit/) explains the test.
+- **Anger.** Damage to the structure raises its owner's [anger](/systems/base-attacked/#anger-and-the-declared-enemy) toward the attacker in proportion to the reduced price. Hitting a refinery that gives a harvester therefore raises less anger than its `Cost=` suggests, and hitting a pad dock with a negative reduced price lowers anger.
 
 ## What a house pays
 
-The two fractional forms of this key are multipliers rather than prices. A [country](/keys/cost/#scope-housetype) sets one and a [difficulty](/keys/cost/#scope-difficulty-settings) sets another, both starting at `1`, and a house multiplies the price by:
+The country and difficulty forms of this key are price multipliers. A [country](/keys/cost/#scope-housetype) sets one and a [difficulty](/keys/cost/#scope-difficulty-settings) sets the other. A house multiplies the price of every object it buys by:
 
-- **In a skirmish or a multiplayer match**, its country's multiplier and its difficulty's together.
-- **In a single-player campaign**, its difficulty's alone. The country's is not read at all, so a country priced above or below par plays a campaign at par.
+- **In a skirmish or a multiplayer match**, its country's multiplier times its difficulty's.
+- **In a single-player campaign**, its difficulty's alone. The country's multiplier has no effect in a campaign.
+
+Under a price multiplier, the reduced price and each deduction are multiplied separately, and each drops any fraction. The full price of a structure with a reduced price can therefore differ by a few credits from `Cost=` times the multiplier.

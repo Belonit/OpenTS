@@ -8,4 +8,4 @@ when_omitted:
   value: ".3"
 ---
 
-The worst production multiplier a shortfall can impose is fixed in the engine and floored by [`MinProductionSpeed`](/keys/minproductionspeed/); nothing reads this value. [The production ladder](/systems/power/#production) lists the steps that are actually applied.
+The slowest production a power shortfall can cause is fixed in the engine at a multiplier of `0.5`, or at [`MinProductionSpeed`](/keys/minproductionspeed/) when that is higher. [The production table](/systems/power/#production) lists the multipliers that apply.

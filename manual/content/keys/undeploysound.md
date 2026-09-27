@@ -13,8 +13,15 @@ when_omitted:
 UndeploySound=MYUP1 ; a sound ID registered in SOUND.INI
 ```
 
-A structure plays this at its own position as a deconstruction begins (a sale or an undeploy), once its animations have stopped. For an [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure it waits until the body and barrel have returned to [`StartFacing`](/keys/startfacing/) and [`StartPitch`](/keys/startpitch/). The reverse build-up follows it, so this is the opening sound of a sale rather than its closing one. The crew evacuation and the [`SellSound`](/keys/sellsound/) come after it too. A structure with an [`UndeploysInto`](/keys/undeploysinto/) vehicle puts out no crew. The game counts that structure as a vehicle, so it plays no `SellSound` either; a sold construction yard, which also has an `UndeploysInto`, still sounds it.
+A structure plays this sound at its position when it starts to deconstruct, whether it is being sold or undeployed. It is the first sound of the deconstruction. Any crew evacuation and the [`SellSound`](/keys/sellsound/) come after it, and then the reverse build-up.
 
-:::caution[It replaces `AuxSound2`]
-The key stores into the same slot as [`AuxSound2`](/keys/auxsound2/) and is read after it, so a BuildingType that sets both keeps only this one. A name that matches no registered sound leaves the slot alone rather than clearing it.
+The structure stops every animation running on it as the sound plays. An [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure first turns its body and barrel back to [`StartFacing`](/keys/startfacing/) and [`StartPitch`](/keys/startpitch/), and plays the sound once it gets there.
+
+Two sell orders stop short of deconstruction and play no `UndeploySound`:
+
+- Selling a structure that holds an upgrade plug sells its most recent plug instead.
+- Selling a [`UnitRepair=yes`](/keys/unitrepair/) service depot with an object parked on it sells that object instead.
+
+:::caution[Set either `UndeploySound` or `AuxSound2`, not both]
+`UndeploySound` and [`AuxSound2`](/keys/auxsound2/) set the same sound, and `UndeploySound` is read second. A BuildingType that sets both keeps only `UndeploySound`. A name that matches no registered sound is ignored, so the earlier value stays in place.
 :::

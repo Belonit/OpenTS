@@ -12,6 +12,8 @@ when_omitted:
 VoiceDie=MYTANK_Die1,MYTANK_Die2 ; sound IDs registered in SOUND.INI
 ```
 
-The response comes first on the destruction path, ahead of the object's wreckage, its explosion animation and any [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) blast. Unlike the order acknowledgements, it is played at the object's own position and fades with distance from the visible screen. There is no test of whose house the object belongs to: an enemy object dying in view is heard exactly as a friendly one is.
+When damage destroys an object, it speaks one entry picked at random from this list. The response plays before the object's debris, its explosion animation and any [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) blast.
 
-One entry is picked at random. Names are matched and picked as [`VoiceSelect`](/keys/voiceselect/) describes.
+Unlike the order responses, it is a placed sound at the object's position, so it fades and pans with where the object is on screen; see [Placed sounds](/systems/sound-effects/#placed-sounds). The owner does not matter: an enemy object dying in view is heard the same as one of the player's own.
+
+Names are matched as described in [Writing the list](/keys/voiceselect/#writing-the-list).

@@ -23,10 +23,10 @@ credit:
 - Rampastring
 ---
 
-An out-of-sync game used to show a two-button box whose Continue dropped every connection. It now opens a dialog: the master loads one of the match's saved games, plays on, or quits. Everyone else waits with a player list and a chat box, and the lowest remaining seat takes over if the master leaves. Continue drops only the players whose checksum disagreed with this machine's. The master can also load a multiplayer save from the options menu during play, and a new `Host=` in the launch file's `[Settings]` section makes this machine the master after an in-game load. Until then, and without it, the lowest seat is.
+A network game that went out of sync used to show a two-button box whose Continue dropped every connection. It now halts and opens a dialog in which the master loads one of the match's saved games, continues, or quits. Everyone else waits with a player list and a chat box and can quit after ten seconds. Continue now makes each machine drop only the players out of sync with it.
 
-Multiplayer saves are numbered by the game, `SVGM_000.NET` upward, in every network game, and a new match drops the previous match's files. A client-launched match writes `spawnSG.ini` at its first save. `SAVEGAME.NET`, which the client watched for to do both, is no longer written.
+The master can also load one of the match's saves from the options menu during play. `Host=yes` in the `[Settings]` section of `spawn.ini` makes that machine the master after such a load. Before any load, and in a match without it, the lowest seat is the master.
 
-Two dialog faults are fixed with this. A dialog larger than the 640 by 400 backdrop art showed uninitialized memory past the art's edge and now shows black. A windowed game that lost the focus stopped painting its dialogs, so one opening then, such as the frame-sync reconnect dialog, stayed blank.
+Every network game now numbers its saves `SVGM_000.NET` upward, and a new match deletes the previous match's numbered saves. A match started from `spawn.ini` copies that file to `spawnSG.ini` at its first save. `SAVEGAME.NET` is no longer written.
 
 The dialog and the in-game load follow Vinifera's, by ZivDero and Rampastring.

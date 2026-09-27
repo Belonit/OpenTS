@@ -1,12 +1,14 @@
 ---
 key: MaxIQLevels
-summary: The top of the house intelligence scale, which computer houses hold outside campaign games.
+summary: The top of the house intelligence scale, which computer opponents hold outside campaign games.
 see_also: [IQ]
 when_omitted:
   kind: value
   value: "5"
 ---
 
-The value caps what a scenario may write into a house's [`IQ`](/keys/iq/): a larger figure there is replaced by `1`, not by this ceiling. Outside campaign games every computer house is set to exactly this level when it is created or taken over. The behaviors the `[IQ]` thresholds gate are therefore all open for it as long as they sit at or below this value.
+Outside a campaign game, every computer opponent plays at exactly this [`IQ`](/keys/iq/) level. That covers the computer players set up for the match and a player's house that the computer takes over after the player leaves. Every `[IQ]` threshold at or below this value is therefore open to those houses, and every threshold above it stays closed.
 
-The level also marks the trigger for computer paranoia. When a computer house holding exactly this value is defeated in a multiplayer game and [`Paranoid=yes`](/keys/paranoid/) allows it, every surviving computer house allies with the other computers and turns hostile to every human player.
+A scenario's `IQ=` for a house is limited to this value. A larger figure is replaced by `1`, not by this value.
+
+The level also triggers computer paranoia. When a computer house at exactly this IQ is defeated and [`Paranoid=yes`](/keys/paranoid/), every surviving computer house allies with the other computer houses and turns hostile to every human player. In a campaign, this happens only when the [Destroy all of...](/mapping/actions/taction-house-destroy-all/) trigger action defeats a house whose `IQ=` equals this value.

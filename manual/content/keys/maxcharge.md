@@ -7,8 +7,10 @@ when_omitted:
   value: "0"
 ---
 
-Charge rises by one each frame the vehicle is not immobilized and stops at this figure, so the value is also the number of frames a discharged vehicle needs before its next pulse. With [`PipScale=Charge`](/keys/pipscale/) the pip bar shows the fraction reached.
+The vehicle gains one point of charge each game frame it is not immobilized, and stops gaining at this value. It may discharge once its charge reaches this value, and a pulse empties the charge. After a pulse, the vehicle therefore needs this many game frames before it can fire again, not counting frames spent immobilized.
 
-:::caution[Zero leaves the vehicle permanently ready]
-The discharge test passes as soon as the charge is not below `MaxCharge`. At `0` that is true from the moment the vehicle appears, and it stays true after every pulse.
+With [`PipScale=Charge`](/keys/pipscale/), the pip bar shows how much of this value the charge has reached.
+
+:::caution[Keep `MaxCharge` above `0`]
+At `0` the vehicle may discharge from the moment it appears, and again right after every pulse.
 :::

@@ -12,10 +12,10 @@ when_omitted:
 BarrelExplode=MYBARRELBOOM ; an AnimType registered in [Animations]
 ```
 
-The animation is created at the coordinate handed to the blast, a point inside the cell the overlay stood in rather than its center, before the blast itself is applied. It is the same one for every exploding overlay: an overlay type cannot name its own. [`AmmoCrateDamage`](/keys/ammocratedamage/) covers the damage, the debris and the fires that follow it.
+Every [`Explodes=yes`](/keys/explodes/#scope-overlaytype) overlay plays this animation when it is set off. An overlay type cannot name its own. The animation plays where the triggering explosion landed, which need not be the center of the overlay's cell, and it is created before the blast deals its damage.
 
-The neighboring cells that catch light from the blast do not use this animation; the engine names that fire for itself.
+The fires that spread to neighboring explosive overlays use the `FIRE3` animation, not this one. [`AmmoCrateDamage`](/keys/ammocratedamage/) covers the damage.
 
-:::danger[An unset animation crashes the game at the first barrel]
-The explosion is created without first checking that an animation was named, so with the key unset the game crashes the first time anything sets off an [`Explodes=yes`](/keys/explodes/#scope-overlaytype) overlay.
+:::danger[Set an animation before any overlay explodes]
+If `BarrelExplode` names no animation, the game crashes the first time an [`Explodes=yes`](/keys/explodes/#scope-overlaytype) overlay is set off.
 :::

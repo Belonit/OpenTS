@@ -7,4 +7,6 @@ when_omitted:
   value: ".5"
 ---
 
-The count is the cost the structure's owner pays for it, multiplied by this fraction and divided by [`SurvivorDivisor`](/keys/survivordivisor/), then clamped to between 1 and 5. The clamp means this setting can only move a structure inside that band. The count is worked out on destruction and on a sale alike, and only for a [`Crewed=yes`](/keys/crewed/) type. [Survivors](/systems/capture/#survivors) covers the per-cell odds a destroyed structure rolls the count against, and what a capture and an armed demolition charge do to them.
+A structure's survivor count is its cost multiplied by `SurvivorRate` and divided by [`SurvivorDivisor`](/keys/survivordivisor/), rounded down and then limited to between 1 and 5. The cost is what the structure's current owner pays for its type. A higher rate gives more survivors, but only within that range of 1 to 5.
+
+Only a [`Crewed=yes`](/keys/crewed/) type produces survivors. A sold structure tries to place every survivor, unless its type sets [`UndeploysInto`](/keys/undeploysinto/). A survivor with no free spot to stand on is lost. A destroyed structure rolls for them cell by cell. [Survivors](/systems/capture/#survivors) covers those odds and how a capture or an armed demolition charge changes them.

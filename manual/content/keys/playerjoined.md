@@ -12,4 +12,8 @@ when_omitted:
 PlayerJoined=PLYRJOIN ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the LAN lobby and is played without a position; no other lobby plays it. Two announcements use it. A guest hears it when a new player is added to the player list, but only once the guest's own join has been confirmed. The host hears it when it accepts a join query and sends its confirmation back. Player entries seen while the guest is still browsing the game list are therefore added silently; confirmation clears the list and asks again, so the players already present are then announced in a burst. Both announcements mark a player entering the game rather than the chat room. A player who is only in the chat list makes no sound.
+Only the LAN lobby plays this sound, and it plays without a position on the map. It marks a player entering the game being set up. A player who appears only in the chat list makes no sound.
+
+The host hears it each time it accepts a player's request to join.
+
+A guest hears it each time a new player is added to the game's player list, but only after the host has confirmed the guest's join. Players listed while the guest is still browsing the game list are added without it. Confirmation then rebuilds the list, so the guest hears the sound once for each player already in the game.

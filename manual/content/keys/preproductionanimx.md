@@ -7,6 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-The horizontal half of the pre-production slot's offset. It moves the [`PreProductionAnim`](/keys/preproductionanim/) animation right across the screen from the point the structure is drawn at, and a negative figure moves it left of that point instead. The offset pins the animation to a point on the artwork rather than to a cell, so it holds wherever the structure stands.
+A positive value moves the [`PreProductionAnim`](/keys/preproductionanim/) animation right of the point the structure is drawn at, and a negative value moves it left. The offset is measured on the structure's artwork, not on the map grid, so the animation keeps its place on the artwork wherever the structure stands.
 
-[Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how the offset differs from the two draw-order biases, and [Where the settings are read](/keys/productionanim/#where-the-settings-are-read) covers which art entry the two figures come from.
+[Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how the offset differs from the two draw-order biases, and [Where the settings are read](/keys/productionanim/#where-the-settings-are-read) covers which art entry the X and Y offsets are read from.

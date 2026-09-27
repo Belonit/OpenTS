@@ -8,4 +8,4 @@ when_omitted:
   value: ".16"
 ---
 
-Nothing weighs a computer base by proportion. A barracks reaches the plan because the first `BuildBarracks` entry [the country the house acts as](/keys/actslike/) may own is [moved to the head of the candidate array](/systems/ai-base-building/#building-the-plan), and because other types name it as a prerequisite. No share of the base is reserved for it.
+No step of computer base planning reserves a share of the base for any structure type. A barracks only gets an earlier place in [the base plan](/systems/ai-base-building/#building-the-plan). If the first [`BuildBarracks`](/keys/buildbarracks/) entry the house's [acted country](/keys/actslike/) may own is a candidate for the plan, it is moved to the front of the candidate order. It still enters the plan only once its prerequisites are met, and it is queued first among the structures added in the pass that meets them.

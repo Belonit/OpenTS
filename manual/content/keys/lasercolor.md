@@ -7,7 +7,7 @@ when_omitted:
   value: "0,0,0"
 ---
 
-Three comma-separated channel values from `0` to `255`. The beam is drawn as a single line in this color, with none of the glow a weapon's own beam has, so this is the whole of its appearance. It is read only where [`Laser=yes`](/keys/laser/) is set on a `Railgun` [system](/keys/behaveslike/#scope-particlesystemtype); every other behavior ignores it.
+The value is three comma-separated channel values, red, green and blue, each from `0` to `255`. The beam is a single line in this color, so this color is its whole appearance. Only a `Railgun` [system](/keys/behaveslike/#scope-particlesystemtype) with [`Laser=yes`](/keys/laser/) reads it.
 
 ```ini title="rules.ini"
 [MyRailgunSys] ; a ParticleSystemType registered in [ParticleSystems]
@@ -17,8 +17,10 @@ Laser=yes
 LaserColor=255,128,0 ; orange
 ```
 
-Above the lowest detail setting a channel set to zero is not blended at all: the pixels the beam crosses keep their own value on that channel. `255,128,0` therefore tints what it crosses red and green and leaves the blue beneath it alone, and a color left at black draws no visible beam whatever [`Laser=yes`](/keys/laser/) asks for. The lowest setting drops the rule and paints the line flat in the color as given, so black draws a black beam there.
+Above the lowest detail setting, the beam blends the pixels it crosses toward this color, but only in the channels this color sets above `0`. In a channel set to `0`, those pixels keep their value. `255,128,0` therefore shifts the red and green of what the beam crosses and keeps its blue, and a color of `0,0,0` draws no visible beam.
 
-:::note[A partial triplet reads as the default]
-`LaserColor=255` names one channel where three are needed, so the beam keeps its default color and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule. A channel above `255` wraps around rather than being clamped.
+At the lowest detail setting, the beam is painted flat in this color as given, so `0,0,0` draws a black line there.
+
+:::note[A malformed color keeps the previous value]
+`LaserColor=255` gives one channel where three are needed, so the line is malformed and the beam keeps the color it had; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule. A channel above `255` wraps around instead of being clamped: `256` reads as `0`.
 :::

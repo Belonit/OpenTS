@@ -7,4 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-`0` marks the campaign as part of the base game and `1` as part of Firestorm. The mission list offers base game campaigns only while no expansion is running, and an expansion's campaigns only while that same expansion is running. The two sets never appear side by side. A campaign whose number names an expansion that is not the running one is left out of the list entirely.
+`0` marks a base-game campaign and `1` a Firestorm campaign. The mission list offers base-game campaigns only while no expansion is running, and Firestorm campaigns only while Firestorm is running, so the two sets never appear together.
+
+A number from `2` to `31` names no expansion, so that campaign is never offered. `-1` is offered whenever any expansion is running. Other numbers are not supported.

@@ -8,4 +8,4 @@ when_omitted:
   value: ".12"
 ---
 
-No code identifies an airstrip, so there is no group of them for a share to size, and no count for [`AirstripLimit`](/keys/airstriplimit/) to bound either. Aircraft are housed by [`Helipad=yes`](/keys/helipad/) buildings, whose place in a computer plan is settled while [the plan is assembled](/systems/ai-base-building/#building-the-plan).
+No computer base decision counts airstrips or sizes a base by proportion, so this share has no effect. [`AirstripLimit`](/keys/airstriplimit/) has no effect either. A computer plan gets its landing pads from [`Helipad=yes`](/keys/helipad/) types, which receive extra copies while [the plan is assembled](/systems/ai-base-building/#building-the-plan).

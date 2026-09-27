@@ -7,11 +7,15 @@ when_omitted:
   value: "0"
 ---
 
-The fuse is set on the target's position at the moment of launch, not on the predicted aim point, and it does not follow a target that moves afterward. The fuse trips when the projectile comes within 64 leptons of that point, height included, and again when it is within two cells of that point and has started to move away from it. While the arming count is still running the fuse reports nothing at all, so the projectile flies on. The count is in game frames (15 to the second, 900 to the game minute) and it starts when the projectile is launched.
+The delay starts at launch and is counted in game frames, 15 to the second. Until it runs out, the fuse cannot set the projectile off.
 
-Only a projectile steered by the homing flight model reads its fuse at all. A projectile whose [`ROT`](/keys/rot/#scope-bullettype) is zero never checks it, so the setting changes nothing on an unguided shot. The impact and pass-by paths in the caution below are what end an unguided shot instead, and none of them reads the fuse.
+Only a projectile with a [`ROT`](/keys/rot/#scope-bullettype) above zero has a fuse. On a projectile whose `ROT` is zero, this setting has no effect.
 
-A shot at an aircraft is armed with zero whatever the section says.
+A shot fired at an aircraft is armed at once, whatever `Arm` says.
+
+Once armed, the fuse trips when the projectile comes within 64 leptons of the fuse point, height included, or when it is within two cells of the fuse point and moving away from it.
+
+The fuse point is the target's position at the moment of launch, not the predicted aim point. It does not follow a target that moves afterward.
 
 ```ini title="rules.ini"
 [MYSEEKER] ; a BulletType, registered by a weapon naming it as its Projectile
@@ -20,17 +24,6 @@ ROT=5
 Arm=30 ; the fuse cannot trip for the first two seconds of flight
 ```
 
-:::caution[Arming does not hold off the other detonation paths]
-Only the fuse is held shut. A projectile still detonates while arming under **Any of:**
-
-- it reaches its target;
-- it drops to ground level;
-- it runs into a wall or another tall overlay;
-- it crosses a bridge deck;
-- it passes within half a cell of a unit that does not belong to the firer or to one of the firer's allies;
-- it has spent the flight distance a [`Ranged=yes`](/keys/ranged/) projectile is given;
-- **All of:** it is marked [`AA=yes`](/keys/aa/), and it comes within half a cell of the aircraft or airborne jumpjet it is chasing;
-- it stops gaining on its target.
-
-A very large figure therefore does not make a projectile fly forever; it only stops the proximity trip from ever being the reason it goes off.
+:::caution[Arming holds off only the fuse]
+While the fuse is shut, a steered projectile still goes off when it arrives at its target, reaches the ground, or stops gaining on its target. Every other path in [what ends a flight](/systems/projectile-flight/#what-ends-a-flight) applies too. A very large `Arm` therefore does not make a projectile fly forever. It only stops the fuse from ever setting it off.
 :::

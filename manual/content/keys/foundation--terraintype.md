@@ -7,16 +7,14 @@ when_omitted:
   value: "1x1"
 ---
 
-The value is one of the same 22 size names a structure uses, matched without regard to case, and anything else resolves to `1x1`. It picks the list of cells the terrain object stands on, and the engine marks those cells occupied. A vehicle's entry check refuses any cell the terrain object claims, unless the vehicle has a weapon that destroys wood; [Movement and terrain](/systems/movement-and-terrain/#why-a-cell-refuses-a-vehicle) owns that test.
+The value selects the block of cells a terrain object stands on. It is one of the [building foundation](/reference/enums/building-foundation/) names a structure uses, matched without regard to case, and any other value gives `1x1`.
 
-Terrain objects have their own table of footprints, and it is filled in only as far as the eighth name.
+The object occupies every cell of the block. A vehicle is refused those cells unless it can destroy the object; [Movement and terrain](/systems/movement-and-terrain/#why-a-cell-refuses-a-vehicle) owns that test. Infantry standing places are filled only in the object's top-left cell, as [`TemperateOccupationBits`](/keys/temperateoccupationbits/) describes.
 
-:::danger[A terrain object may not use a footprint past the eighth name]
-Only `1x1`, `2x1`, `1x2`, `2x2`, `2x3`, `3x2`, `3x3` and `3x5` have cell lists. Every larger name selects a row the table never fills in. Those rows hold nothing but zeros and no end marker.
-
-Placing such an object claims its top-left cell thirty-one times and nothing more. The placement routine copies the list into a capped buffer first, and the copy's last entry stands in for the missing end marker. The scans that walk the raw list have no bound. They read that same zero entry as many as a hundred and forty times, then continue past the end of the table. Past that point they test cells at offsets taken from whatever data the program stores there. A map lookup never faults, so the outcome is whatever follows the table rather than a clean refusal or a bounds error.
+:::danger[Use only the first eight names on a terrain object]
+Only `1x1`, `2x1`, `1x2`, `2x2`, `2x3`, `3x2`, `3x3` and `3x5` give a terrain object a block of cells. Any other name makes the game hang once something searches the object's top-left cell. Placing the object makes that cell's list of occupants loop back on the object, so a search of the cell for a structure, vehicle or infantry never finishes. The tests that check the object's cells, such as whether it may stand on them, also read past the end of the engine's footprint table, so their results depend on unrelated data.
 :::
 
-:::caution[On a terrain object 3x5 is a four-by-two block]
-The eighth row holds four cells by two rather than the three by five its name promises, so a TerrainType given `Foundation=3x5` stands on a block of that shape instead.
+:::caution[On a terrain object 3x5 is a 4x2 block]
+A TerrainType with `Foundation=3x5` stands on a block four cells by two, not three by five.
 :::

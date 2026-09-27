@@ -1,16 +1,20 @@
 ---
 key: Incoming
-summary: The projectile speed below which infantry fire sends the target cell's occupants running for cover.
+summary: The projectile speed below which infantry fire can make the target cell's occupants scatter.
 see_also: ["Speed", "Primary", "PlayerScatter", "Scatter"]
 when_omitted:
   kind: value
   value: "0"
 ---
 
-This figure is read in one place: infantry fire, on the frame its firing animation reaches the point where the shot leaves. Aircraft fire warns the target's cell too, without reading it. The speed compared is that of the weapon in the infantry type's first slot, [`Primary`](/keys/primary/), regardless of which weapon actually fired. Once the soldier is elite, the slot's [`Elite`](/keys/elite/) weapon takes its place in the comparison. The speed must be strictly below this figure: equal is not enough. The occupants of the target's cell are then told a threat is coming.
+When an infantryman's firing animation reaches its launch point, the target's cell is warned that a threat is coming if the infantryman's weapon is slow. The warning is raised even when the shot is called off at that point.
 
-Whether any of them actually moves is a separate question; [`PlayerScatter`](/keys/playerscatter/) covers what a warned cell does with its occupants.
+The weapon tested is always the infantry type's [`Primary`](/keys/primary/) weapon, or its [`Elite`](/keys/elite/) weapon once the infantryman is elite, whichever weapon it fires. It counts as slow when its speed is strictly below this value. The stock rules use `10`. At `0` no weapon is slow enough, so infantry fire never raises the warning.
 
-The figure is written on the same zero-to-a-hundred scale as a weapon's [`Speed`](/keys/speed/#scope-weapontype), and values outside that range are clamped into it. An unguided weapon, one whose projectile's [`ROT`](/keys/rot/#scope-bullettype) is `0`, does not keep the speed written on it. Its launch speed is worked out from its range and the world's gravity once the rules have been read. That derived figure is what this is compared against.
+Only infantry fire reads this setting. Aircraft fire also warns the target's cell, but does not check this value.
 
-With the key unwritten the figure is zero, no weapon is below it, and no shot ever raises the warning.
+This value uses the same 0 to 100 scale as a weapon's [`Speed`](/keys/speed/#scope-weapontype). Values outside that range are clamped into it.
+
+A weapon whose projectile has [`ROT=0`](/keys/rot/#scope-bullettype) does not use its written `Speed`. Its launch speed is worked out from its range and gravity once the rules are read, and that speed is the one compared.
+
+Occupants of a warned cell scatter under the conditions in [`PlayerScatter`](/keys/playerscatter/#when-a-threat-is-coming).

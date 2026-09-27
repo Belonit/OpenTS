@@ -8,4 +8,4 @@ when_omitted:
   value: ".16"
 ---
 
-No BuildingType is treated as a Tesla coil anywhere in the engine. What makes a structure behave like one is an electric primary weapon, not any flag on the building type; the charge-up looks for that weapon. Defensive structures are picked by [the defense planner](/systems/ai-base-building/#base-defenses) from the anti-air, anti-armor and anti-infantry values each type is given as the types load.
+The engine has no Tesla coil category of structure. A structure charges before it fires when its primary weapon sets [`Charges=yes`](/keys/charges/). [The defense planner](/systems/ai-base-building/#base-defenses) picks a computer house's defenses from each type's [defense values](/systems/ai-base-building/#defense-values).

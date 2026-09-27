@@ -1,16 +1,24 @@
 ---
 key: Fearless
-summary: Keeps the soldier's fear at zero.
+summary: Keeps the soldier's fear at zero, unless its type is also a Fraidycat.
 see_also: [Fraidycat, Doggie, "system:veterancy"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-Fear is a figure from `0` to `255` that a soldier accumulates as it is shot at. The ordinary paths that raise it are closed to a fearless soldier. A hit that arrives while its fear is still below `100` would jump it to that figure; a further hit would add up to `10`; and the [Panic](/mapping/missions/tmission-panic/) team mission drives a member straight to `255`. The `FEARLESS` [veteran ability](/systems/veterancy/#abilities) closes the same three.
+Fear is a figure from `0` to `255` that a soldier gains when it is shot at. A frightened soldier drops prone when it can, and a [`Fraidycat=yes`](/keys/fraidycat/) soldier also scatters. A fearless soldier's fear stays at zero, so neither happens, unless its type also sets `Fraidycat=yes`. That flag's panic ignores `Fearless`, as the caution below explains.
 
-With the figure held at zero, none of the behavior it drives ever starts. Such a soldier never drops prone because it is frightened, never scatters out of fear, and never has to work its nerve back.
+Three things normally raise fear, and none of them affects a fearless soldier:
 
-:::caution[The two ways back down are skipped as well]
-Fear is worked off at one point per logic frame, and the [Unpanic](/mapping/missions/tmission-unpanic/) team mission clears it outright. Both are skipped for a `Fearless=yes` type, and neither reads the veteran ability. That normally matters to nothing, because nothing raised the figure in the first place. The exception is the [`Fraidycat=yes`](/keys/fraidycat/) panic path, which ignores this flag when it sets fear. A type declaring both is frightened to `200` by the first hit it takes and has no way down again.
+- a hit from an attacker while its fear is below `100`, which raises it to `100`;
+- any other hit, which adds up to `10`;
+- the [Panic](/mapping/missions/tmission-panic/) team mission, which raises it to `255`.
+
+The `FEARLESS` [veteran ability](/systems/veterancy/#abilities) blocks the same three.
+
+:::caution[`Fearless=yes` with `Fraidycat=yes` leaves a soldier frightened for good]
+Two things normally lower fear: it falls by one point per logic frame, and the [Unpanic](/mapping/missions/tmission-unpanic/) team mission clears it. Neither happens for a `Fearless=yes` type. The veteran ability does not stop them.
+
+This matters only when something else raised the fear. [A type that sets both](/keys/fraidycat/) is frightened by the first hit an attacker lands, or by firing its last round of ammunition, and never calms down.
 :::

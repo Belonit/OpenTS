@@ -7,8 +7,12 @@ when_omitted:
   value: "0"
 ---
 
-The particle holds a fraction between the two [`ColorList`](/keys/colorlist/) entries it is currently mixing. Every frame this figure plus a fresh random amount below `0.05` is added to that fraction. When the fraction passes 1, the particle steps to the next pair of entries and starts again at 0. A rate of `0.13` therefore steps roughly every six or seven frames, and `0.01` roughly every thirty. The random part alone takes the particle through a step about every forty frames, which is what a type that names no rate gets.
+Larger values make a [`Spark` or `Railgun`](/keys/behaveslike/#scope-particletype) particle move through its [`ColorList`](/keys/colorlist/) faster. Other behaviors ignore the setting.
 
-Only the two pixel-drawn behaviors, [`Spark` and `Railgun`](/keys/behaveslike/#scope-particletype), advance the fraction. The random component is drawn per particle per frame, so no two particles of a burst reach the same color together even when they were created on the same frame.
+Each fade from one color to the next runs from 0 to 1. Every frame, the particle adds this value plus a random amount below `0.05` to its progress. When progress passes 1, the particle starts the fade to the following color from 0. On the fade to the last color, it stops there and keeps that color.
 
-A negative rate large enough to cancel the random part never reaches the step, and the fraction instead runs below zero without a floor. The mix is then extrapolated backwards past the first color of the pair rather than held at it, and the particle is drawn in colors that appear nowhere in its list.
+At `0.13` the particle reaches the next color about every seven frames, and at `0.01` about every thirty. With the key omitted, the random amount alone moves it on about every forty frames.
+
+The random amount is drawn for each particle every frame, so particles created together drift out of step in color.
+
+A negative value slows the fade. Below `-0.025`, progress falls on average and runs below 0, so the particle does not reach its next color and is drawn in colors outside its list.

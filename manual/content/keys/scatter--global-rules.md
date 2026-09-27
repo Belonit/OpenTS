@@ -8,10 +8,16 @@ when_omitted:
   value: "3"
 ---
 
-A cell that is warned a threat is coming asks each of its occupants whether it should get out of the way. One of the answers that says yes is the occupant's house holding an [`IQ`](/keys/iq/) at or above this level. The comparison is against the house, not the object, and it never asks whether that house is under computer control. A map that raises a player house's `IQ` this far has its vehicles stepping aside from incoming fire without being told to.
+When a threat heads for a cell, an occupant whose house has an [`IQ`](/keys/iq/) at or above this value is told to scatter out of the way. The test applies to a house a person controls as well. A map that raises a player house's `IQ` this far makes that player's vehicles dodge incoming fire without an order. A vehicle that is driving somewhere does not dodge.
 
-The threshold is only one of several ways past that decision, and the same warning reaches other objects through the others; [`PlayerScatter`](/keys/playerscatter/) covers the full test and the two further decisions that read it.
+The test applies to warnings raised by three threats:
 
-:::caution[A moving soldier of such a house scatters differently]
-A soldier that is already moving has the forced mark cleared, so the refusal that spares a person's infantry catches it whatever the warning says, and it keeps to its path. A standing soldier is moved like the vehicles when the warning is forced, and is spared when it is not.
+- an aircraft firing at a target in the cell;
+- an infantryman firing at a target in the cell, when its primary weapon is slower than [`Incoming`](/keys/incoming/);
+- a crushing vehicle driving onto a cell that holds infantry.
+
+This is one of several conditions that let a warned occupant scatter. [`PlayerScatter`](/keys/playerscatter/) lists the others.
+
+:::caution[A walking soldier keeps to its path]
+A soldier that is already walking scatters only if its type sets [`Fraidycat=yes`](/keys/fraidycat/), because walking turns the warning into an unforced one. Such a soldier still refuses when its mission sets [`Scatter=no`](/keys/scatter/#scope-mission-behavior). If a person controls its house, it also needs one of the conditions [`PlayerScatter`](/keys/playerscatter/) lists for infantry. A standing soldier scatters unless it is in the middle of an action that cannot be interrupted.
 :::

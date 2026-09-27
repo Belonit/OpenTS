@@ -8,6 +8,10 @@ when_omitted:
   note: A tenth of the type's queued cells.
 ---
 
-The queued cell count multiplied by this fraction, clamped to between 5 and 25, gives the pass its ceiling. The pass then draws a random figure from 1 up to that ceiling. Only a cell that finds a free neighbor counts against the ceiling, so a pass can walk far more of the queue than the figure suggests when most of the field is hemmed in.
+Each [spread pass](/systems/tiberium/#spread) seeds up to a random number of new cells from the type's queued cells, from 1 up to a limit. The limit is the queue length multiplied by this value, raised to 5 if lower and cut to 25 if higher.
 
-At `0.00001` or below the pass exits before touching the queue, and below that figure no individual cell of the type passes its spread test either.
+The queue covers every cell of the type on the map, so all of the type's fields share one limit, and no pass seeds more than 25 cells in total.
+
+Each new cell counts toward the limit. A queued cell with more than one free neighbor can seed several of them in the same pass. A queued cell with no free neighbor, or one that can no longer spread, leaves the queue without counting, so a pass can work through far more of the queue than the limit when most of a field is hemmed in.
+
+A value of `0.00001` or less stops the type spreading from its cells.

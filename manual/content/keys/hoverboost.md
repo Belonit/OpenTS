@@ -7,8 +7,8 @@ when_omitted:
   value: "1.3"
 ---
 
-A hover drive works a throttle up and down between nothing and full, and the ground the unit covers each frame is its own travel speed times that throttle. This value multiplies the ceiling the throttle is allowed to climb toward. It applies only while the next two steps of the unit's path face the same way, so a unit running down a straight line may open up further than one weaving between cells. It is a multiplier on that ceiling rather than a speed of its own; the unit's [`Speed=`](/keys/speed/) still fixes what full throttle is worth. The stock `150%` is read as `1.5`.
+A value above `1` never raises a hover unit's top speed; its [`Speed=`](/keys/speed/#scope-aircrafttype) still fixes what full throttle is worth. A hover unit's throttle is the fraction of that speed it is using, and the drive caps the throttle at a ceiling. This value multiplies the ceiling while the next two steps of the unit's path point the same way, and the result is capped at full throttle.
 
-:::caution[The boosted ceiling is clamped to full throttle]
-The multiplied ceiling is capped at full throttle before the drive compares it against the throttle the unit is holding. A value above `1` therefore cannot push a hovering unit past its own top speed; it can only bring a ceiling the drive has already lowered back up toward full. A value below `1` holds a straight run under full speed instead.
-:::
+On a straight run the ceiling is already full, so a value above `1` changes nothing there. Within a cell of the destination the ceiling is half of full, but the path has two more steps in the same direction there only if it doubles back. On ordinary moves a value above `1` therefore has no effect. While the unit turns, the ceiling is zero and no multiplier raises it. [`HoverBrake`](/keys/hoverbrake/) covers when the ceiling drops.
+
+A value below `1` lowers the ceiling on every straight run, so the unit crosses open ground below its top speed.

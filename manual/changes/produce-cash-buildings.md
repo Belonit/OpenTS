@@ -30,6 +30,8 @@ targets:
 credit: [ZivDero, CCHyper, Rampastring]
 ---
 
-Six BuildingType keys let a structure move money on its own. `ProduceCashAmount=` pays its owner that many credits every `ProduceCashDelay=` frames. A negative figure is taken from the owner instead. `ProduceCashBudget=` caps the total one structure will ever move, and `ProduceCashResetOnCapture=yes` hands each new owner a fresh cap. `ProduceCashStartup=` pays a bonus to whoever captures the structure off a house that takes no part in the contest, and `ProduceCashStartupOneTime=yes` limits that bonus to the first such capture.
+Six keys in a structure type's `rules.ini` section make the structure pay or charge its owner. `ProduceCashAmount=` gives the owner that many credits every `ProduceCashDelay=` frames, and a negative amount is taken from the owner instead. `ProduceCashBudget=` caps the total one structure pays or charges, and `ProduceCashResetOnCapture=yes` restores the full budget for each new owner. A structure whose owner's country has `MultiplayPassive=yes` pays and charges nothing.
 
-Together they cover the oil derrick, the tech structure worth a lump sum on capture, and a structure that costs its owner to hold. A `Powered=yes` one stops while it is switched off, stunned, or short of power, and resumes its interval where it stopped.
+`ProduceCashStartup=` pays a bonus to each house that captures the structure from a house whose country has `MultiplayPassive=yes`. `ProduceCashStartupOneTime=yes` pays that bonus only on the structure's first such capture.
+
+A `Powered=yes` structure pauses its interval while it is switched off, stunned by an EM pulse, or its owner is short of power, and resumes with the frames it had left.

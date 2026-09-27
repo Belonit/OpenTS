@@ -5,11 +5,13 @@ see_also: ["system:sidebar"]
 when_omitted:
   kind: value
   value: ""
-  note: The list stays empty and both positions are still indexed whenever the readout moves, dereferencing a pointer that was never given storage.
+  note: The list stays empty, and the game crashes the first time the credit readout counts.
 ---
 
-The readout never jumps to the house's money. It walks toward it a step at a time and plays one of these sounds at half volume on every step. A single transaction is heard as a run of ticks rather than one. [The credit readout](/systems/sidebar/#the-credit-readout) covers how far each step moves and how often one is taken.
+During play the credit readout counts toward the house's money in steps and plays one of these sounds at half volume on every step, so a single payment is heard as a run of ticks. The first sound plays while the figure rises and the second while it falls. [The credit readout](/systems/sidebar/#the-credit-readout) covers how large each step is and how often one is taken.
 
-:::danger[An empty list crashes the readout]
-Only the first two positions are read, and they are read without a length check. A list of one entry is indexed past its end, and an empty list holds no storage at all, so the read dereferences a null pointer the first time the player's money changes. Omitting the key leaves exactly that empty list, so every rules tree needs two entries here. This is one of the few settings with no safe absent state.
+A name that matches no registered sound is dropped from the list, and the names after it move up one position.
+
+:::danger[Give the list two valid sounds]
+Only the first two positions are read, and the list is not checked for length. With no entries, the game crashes the first time the player's money changes. With one entry, the falling sound is read from a position the list never filled, which can play the wrong sound or crash the game. Omitting the key leaves the list empty, so every rules tree needs two valid sound names here.
 :::

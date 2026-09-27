@@ -7,10 +7,12 @@ when_omitted:
   value: "30"
 ---
 
-The value is written in degrees and converted to radians as it is read. The fly locomotor banks the aircraft by the angle while its facing is rotating, one way for a clockwise turn and the other for a counter-clockwise one. It banks only while the aircraft is off the ground and its throttle is above [`PitchSpeed`](/keys/pitchspeed/). It levels out again the moment the turn finishes.
+`RollAngle` sets how far an aircraft banks while it turns. The value is in degrees. It affects only a type that flies with the aircraft (Flyer) [`Locomotor`](/keys/locomotor/).
 
-An [`IsDropship=yes`](/keys/isdropship/) type never banks, and neither does an aircraft that has been rocked by a nearby jolt, which is tilted sideways by the jolt instead.
+An aircraft banks while it is off the ground, its throttle is above [`PitchSpeed`](/keys/pitchspeed/), and the direction it faces is turning. A clockwise turn banks it one way and a counter-clockwise turn the other. It levels out as soon as the turn finishes.
+
+An [`IsDropship=yes`](/keys/isdropship/) type never banks. An aircraft destroyed in the air does not bank either; it tumbles sideways as it falls.
 
 :::caution[Writing `-1` is the same as leaving the key out]
-The read uses `-1` as its own marker for a missing key, so `RollAngle=-1` leaves the stored 30 degrees in place. Write `RollAngle=0` to make a type turn flat.
+`RollAngle=-1` leaves the previous value in place, which is 30 degrees unless an earlier rules file changed it. Write `RollAngle=0` to make a type turn flat.
 :::

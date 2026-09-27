@@ -13,4 +13,6 @@ when_omitted:
 AIBaseDefensesWithWalls=yes
 ```
 
-Whether a computer house playing for this side appends its extra base-defense placeholders even when it also builds a wall. A side that sets `no` gets them only when it will not wall itself in. A wall it does build can take defense pairs along it, but [`AIWallDefense`](/keys/aiwalldefense/) and [`AIWallTowers`](/keys/aiwalltowers/) govern those, not this key. The second side gets them either way, as the shipped rules always did for Nod.
+Whether a computer house playing for this side adds its [`AIBaseDefensePlaceholders`](/keys/aibasedefenseplaceholders/) block of extra base defenses even when it also plans a perimeter wall. With `no`, the house adds that block only when it plans no wall.
+
+This key does not control the tower and defense pairs placed along a wall. [`AIWallTowers`](/keys/aiwalltowers/), [`AIWallDefense`](/keys/aiwalldefense/) and [`AIWallDefenseCoefficient`](/keys/aiwalldefensecoefficient/) set those.

@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-A laser shot draws two things: the colored beam itself and a glow spanning the same line, which raises the red of whatever terrain and objects lie beneath it. This flag chooses between the two sizes of that glow. The wide one is 88 leptons across and the ordinary one 68, against a cell's 256 leptons. It is also drawn a little shorter, stopping 34 leptons short of each end of the beam against the ordinary one's 27.
+`IsBigLaser=yes` draws a wider glow along the beam of an [`IsLaser=yes`](/keys/islaser/) weapon. The glow brightens the red of the ground and objects along the beam's line. It is separate from the colored beam itself, and this flag does not change the beam's colors, damage or reach. The glow is drawn only at the high [detail level](/keys/detaillevel/#scope-client-settings).
 
 ```ini title="rules.ini"
 [MyObeliskRay] ; example WeaponType
@@ -15,4 +15,8 @@ IsLaser=yes
 IsBigLaser=yes
 ```
 
-The glow fades on its own schedule of about 22 frames and takes no notice of [`LaserDuration`](/keys/laserduration/), which governs only the colored beam. Nothing here changes the beam's colors, its damage or its reach. The flag is read only when [`IsLaser=yes`](/keys/islaser/) puts a beam on screen and, like the rest of the beam settings, comes from the weapon in the object's first slot rather than from the slot that fired.
+The wide glow is 88 leptons across, and the ordinary one 68; a cell is 256 leptons. The wide glow is also slightly shorter, ending 7 leptons further in from each end than the ordinary one.
+
+The glow fades out over about 22 frames, whatever [`LaserDuration`](/keys/laserduration/) says.
+
+Like the other beam settings, this flag is read from the weapon in the object's first weapon slot, whichever slot fired.

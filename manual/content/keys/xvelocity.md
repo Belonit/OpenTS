@@ -17,10 +17,14 @@ MinZVelocity=40
 ZVelocityRange=15
 ```
 
-Every spark in a burst is thrown at its own random speed along this axis. The draw can be anything below this figure, in either direction, and it is measured in leptons a frame. The three axis settings do two jobs at once: together they fix how fast the spark travels, and they fix which way it goes. The type is thrown by its holding system, the [particle system](/systems/particle-systems/) whose `HoldsWhat=` names this type. That system adds a direction to the draw vector, either its own spawn direction or one random direction shared by the whole burst. The sum is normalized and scaled back to the length of the spark's own draw, so the added direction steers the spark without changing how fast it moves. Widening the spread allows longer draws, so a burst is thrown both faster and looser.
+A spark system throws each particle at a random speed along this axis, in leptons a frame. The speed is anything below this value, in either direction. A negative value gives the same spread as its positive counterpart.
 
-Only a spark system, a particle system whose [`BehavesLike=Spark`](/keys/behaveslike/#scope-particlesystemtype), reads the three axis settings. It reads them from the type it holds whatever that type's own [`BehavesLike`](/keys/behaveslike/#scope-particletype), so a type of another behavior held by a spark system is thrown along the drawn direction too. A type held by any other kind of system ignores them. A negative figure behaves as its magnitude does, since the spread is symmetrical either way.
+This setting, [`YVelocity`](/keys/yvelocity/) and [`ZVelocityRange`](/keys/zvelocityrange/) together set how fast each spark travels and which way it starts. Larger values make the burst faster and more scattered.
 
-:::danger[Zero stops the game]
-The random speed is drawn by dividing by this figure, so `XVelocity=0` divides by zero and the game stops the moment a spark system holding the type fires its first burst. The same applies to [`YVelocity`](/keys/yvelocity/) and [`ZVelocityRange`](/keys/zvelocityrange/), each of which is divided by separately.
+The system then adds a vector to each spark's random speed and scales the sum back to that speed, so the vector changes only the spark's heading. Most systems add their [`SpawnDirection`](/keys/spawndirection/), which leaves the heading unchanged at its default of `0,0,0`. The firestorm explosions thrown by [`DefaultFirestormExplosionSystem`](/keys/defaultfirestormexplosionsystem/) add one random vector shared by the whole burst instead. `SpawnDirection` explains how far the vector turns the heading.
+
+Only a [particle system](/systems/particle-systems/) with [`BehavesLike=Spark`](/keys/behaveslike/#scope-particlesystemtype) reads these settings. It reads them from the type its `HoldsWhat=` names, whatever that type's own [`BehavesLike`](/keys/behaveslike/#scope-particletype). A type held by any other kind of system ignores them.
+
+:::danger[Keep XVelocity nonzero]
+`XVelocity=0` divides by zero and crashes the game when a spark system holding the type throws its first burst.
 :::

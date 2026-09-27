@@ -15,8 +15,10 @@ targets:
 credit: [ZivDero, FunkyFr3sh]
 ---
 
-Edge scrolling and right-button coasting now move the view by elapsed time. They used to move it once per drawn frame, so a machine drawing several hundred frames a second threw the view across the map as soon as the pointer reached an edge.
+Edge scrolling, and right-button coasting under the default coast method, now move the view by elapsed time. They moved it once per drawn frame, so on a machine drawing several hundred frames a second the view shot across the map as soon as the pointer reached an edge.
 
-A step from the scroll table lands sixty times a second, four times the original game's rate. The table is unchanged, and so are the speed the ramp climbs at and `ScrollMultiplier`. The scroll speed options therefore keep their order and their relative spacing. Coast methods `1` and `2` are unchanged, and move by the distance the hand covered since the last reading. A `ScrollMethod` outside `0` through `2` now scrolls nothing.
+The view now takes sixty steps a second, or fewer when the game checks the mouse fewer than fifteen times a second. The step lengths and the pace at which edge scrolling speeds up are unchanged, so the player's scroll speed and `ScrollMultiplier` keep their effect. The scroll speed is `ScrollRate` under `[Options]` in `sun.ini`, where a higher value scrolls more slowly. `ScrollMultiplier`, under `[AudioVisual]` in `rules.ini`, lengthens every edge-scroll step as it rises.
 
-FunkyFr3sh is credited for the ts-patches scroll rate limiter, which holds the same two paths against the same fault by a different means.
+`ScrollMethod`, under `[Options]` in `sun.ini`, selects how right-button coasting moves the view. Methods `1` and `2`, which move the view in proportion to how far the pointer is pulled and then return the pointer, are unchanged. A value outside `0` through `2` used to coast by an unpredictable distance, and now does not coast at all.
+
+FunkyFr3sh is credited for the ts-patches scroll rate limiter, which fixes the same fault a different way.

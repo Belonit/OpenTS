@@ -7,10 +7,10 @@ when_omitted:
   value: none
 ---
 
-Wall stitching is not a flag on a type. The [connection logic](/systems/walls-and-gates/#connection-frames) accepts the named type as a continuation of a brick or sandbag wall, and only from the east and the west. A wall run therefore reads through the gate along that axis, while one arriving from the north or south stops dead at it. `GAWALL` and `GASAND` are the stock overlays this covers.
+The named BuildingType connects to brick and sandbag walls (`GAWALL` and `GASAND` in the stock rules) along the east-west axis. A wall cell directly east or west of it joins it, so an east-west wall run passes through the structure. A wall cell directly north or south of it does not join it, and the wall ends there. [Connection frames](/systems/walls-and-gates/#connection-frames) compares this with the other gate keys and [`WallTower`](/keys/walltower/).
 
-The same name also lets the type be placed on a brick or sandbag wall the house already owns, whatever damage that wall has. An ordinary wall building is accepted over such a wall only once it is damaged.
+Naming the type also lets it be placed over brick and sandbag wall cells that the placing house owns, whatever their damage. An ordinary wall BuildingType can replace only a damaged segment.
 
-The two cells capping the gate's run are updated both when the type is placed and when it is taken off the map: one cell west of its origin and three cells east of it. Those offsets assume a three-cell footprint.
+When the type is placed or taken off the map, the wall cells at both ends of its run update their connections. These are the cell just west of its origin cell and the cell three cells east of it. The offsets assume a gate three cells long, so a type of any other length updates the wrong cells.
 
-None of that requires [`Gate=yes`](/keys/gate/). The flag supplies the door cycle and the clearing of walls under the footprint at placement; this key supplies the wall connection, and a type may set either without the other.
+This key and [`Gate=yes`](/keys/gate/) are independent. `Gate=yes` gives the type its opening door and can remove the house's walls from its footprint when it is placed, under the conditions in [Placing a gate](/systems/walls-and-gates/#placing-a-gate). This key gives it the wall connection. A type can have either without the other.

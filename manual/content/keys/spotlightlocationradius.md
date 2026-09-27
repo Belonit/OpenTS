@@ -7,15 +7,17 @@ when_omitted:
   value: "1000"
 ---
 
-A spotlight is aimed this far in front of the structure holding it, along the direction that structure faces. The beam rests there before it begins to move. Left alone, the figure is a little under four cells.
+A spotlight starts this far in front of its structure, along the direction the structure faces, and begins its sweep from there. The built-in value is a little under four cells. Only a structure whose type sets [`HasSpotlight=yes`](/keys/hasspotlight/) has a beam.
 
 ```ini title="rules.ini"
 [General]
-SpotlightLocationRadius=1536  ; the beam rests six cells in front of the structure
+SpotlightLocationRadius=1536  ; the beam starts six cells in front of the structure
 ```
 
-It is also the inner edge of the grading that widens the beam as it travels. While the beam is nearer its structure than this, it counts as being at rest. Only past this distance does it start picking up the sweep stages that enlarge its detection radius. A beam [set to follow a target](/mapping/actions/taction-change-spotlight-behavior/) also widens the pool of light it casts once it passes this distance. That pool takes one size step for every sweep stage the beam has reached, up to nine steps.
+Once a beam is farther than this from its structure, it gains one sweep stage for every further tenth of the gap between this key and [`SpotlightMovementRadius`](/keys/spotlightmovementradius/). Each stage enlarges the radius at which the beam detects intruders, as [`SpotlightRadius`](/keys/spotlightradius/) describes. A beam closer to its structure than this distance is at stage zero.
 
-:::danger[Closing the gap to `SpotlightMovementRadius` divides by zero]
-The sweep grading divides the distance traveled by a tenth of the span between this key and [`SpotlightMovementRadius`](/keys/spotlightmovementradius/). That tenth is computed in whole leptons, so any pair of values less than 10 leptons apart makes it zero. The division that follows runs on every beam that has left its resting point.
+A beam [set to follow a target](/mapping/actions/taction-change-spotlight-behavior/) also casts a larger pool of light once it is beyond this distance. The pool grows one size step for each sweep stage, up to nine steps.
+
+:::danger[Keep this key at least 10 leptons from `SpotlightMovementRadius`]
+A sweep stage is a tenth of the gap between the two keys, rounded down to whole leptons. A gap under 10 leptons makes the stage zero leptons wide. The game then crashes with a division by zero as soon as a beam this far from its structure is drawn or checks for intruders, which a sweeping beam soon is.
 :::

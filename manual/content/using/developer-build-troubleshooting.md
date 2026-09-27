@@ -15,11 +15,13 @@ related:
 
 ## Configuration fails before compilation
 
-A message that `thirdparty/bgfx.cmake` is empty means the clone did not fetch the vendored renderer. Run `git submodule update --init --recursive` and configure again.
+A message that a `thirdparty/` directory such as `thirdparty/bgfx.cmake` is empty means the clone did not fetch the submodules. Run `git submodule update --init --recursive` and configure again.
 
-Use the Visual Studio 2022 generator with `-A Win32` or `-A x64`. The build supports no other compilers, Visual Studio versions, or target architectures. Configuring a platform over a build directory that already holds the other one fails; give each its own directory.
+Use the Visual Studio 2022 generator with `-A Win32` or `-A x64`. Other compilers, Visual Studio versions, and target architectures are unsupported. Configuration stops for MSVC older than 19.30 and for compilers other than MSVC, apart from the experimental clang-cl cross-build that `docs/BUILDING.md` describes.
 
-For a Visual Studio installation that CMake cannot discover through the Visual Studio Installer, pass its installation path and product version as described in the repository's `docs/BUILDING.md`.
+A build directory holds one platform. Configuring the other platform over it fails, so give each platform its own directory.
+
+If CMake cannot find a Visual Studio installation through the Visual Studio Installer, set `CMAKE_GENERATOR_INSTANCE` to its directory and product version, as the repository's `docs/BUILDING.md` describes.
 
 ## The executable is not in the run directory
 
@@ -30,4 +32,6 @@ Builds write their runnable files to `build/bin/<configuration>/` and copy nothi
 
 ## The executable cannot initialize game data
 
-Name the game data directory with [`-DATADIR=<path>`](/using/command-line/data-directory/). The path is a legitimate Tiberian Sun installation or a copy of its data. The repository and CMake build directory do not supply proprietary game assets.
+Name the game data directory with [`-DATADIR=<path>`](/using/command-line/data-directory/). Point it at a legitimate Tiberian Sun installation or a copy of its data; the repository and the CMake build directory contain no game assets. A relative path is read from the directory that holds the executable.
+
+If the named path does not exist or is not a directory, the game shows a message that the data directory cannot be used, and exits.

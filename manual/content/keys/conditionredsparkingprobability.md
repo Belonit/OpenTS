@@ -7,8 +7,14 @@ when_omitted:
   value: ".02"
 ---
 
-The figure is a fraction from 0 to 1, drawn against once per frame, and it applies while the object's remaining strength is below [`ConditionRed`](/keys/conditionred/). Values above `1` are accepted and start a spark on every frame the draw is made; `0` never starts one. Between that fraction and [`ConditionYellow`](/keys/conditionyellow/) the draw uses [`ConditionYellowSparkingProbability`](/keys/conditionyellowsparkingprobability/) instead.
+While an object's strength is below [`ConditionRed`](/keys/conditionred/), this is the chance each frame that it starts throwing damage sparks. The value is a fraction: `0` never starts sparks, and `1` or more starts them on practically every frame the chance is drawn. Between `ConditionRed` and [`ConditionYellow`](/keys/conditionyellow/), [`ConditionYellowSparkingProbability`](/keys/conditionyellowsparkingprobability/) applies instead.
 
-The draw is only made while the object has no spark system running, so at most one is attached at a time and the figure sets how quickly a fresh one starts rather than how many there are. It also needs the type's [`DamageParticleSystems`](/keys/damageparticlesystems/) to name at least one ParticleSystemType declaring [`BehavesLike=Spark`](/keys/behaveslike/#scope-particlesystemtype); one of those entries is picked at random and placed at the type's [`DamageSmokeOffset`](/keys/damagesmokeoffset/). An object sitting 10 leptons or more below ground level is skipped.
+An object carries at most one spark system at a time, and no chance is drawn while one is running. The value therefore sets how soon a new spark system follows the last one, not how many sparks show at once.
 
-Infantry are eligible only when the type declares [`Cyborg=yes`](/keys/cyborg/). Vehicles, aircraft and structures always are, and no setting turns that off.
+Sparks can start only when **all of** these hold:
+
+- the type's [`DamageParticleSystems`](/keys/damageparticlesystems/) names at least one ParticleSystemType with [`BehavesLike=Spark`](/keys/behaveslike/#scope-particlesystemtype);
+- the object is less than 10 leptons below ground level;
+- the object is a vehicle, an aircraft or a structure, or infantry whose type sets [`Cyborg=yes`](/keys/cyborg/).
+
+The spark system is one of those `Spark` entries, picked at random, placed at the type's [`DamageSmokeOffset`](/keys/damagesmokeoffset/) from the object's center.

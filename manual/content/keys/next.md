@@ -7,15 +7,17 @@ when_omitted:
   value: "none"
 ---
 
-When the last pass finishes, the animation does not end: it adopts the named type in place and plays on. Nothing new is created and nothing is removed, so an explosion that settles into a column of smoke is one object from start to finish rather than two.
+When its last pass ends, the animation switches to the named type and keeps playing. It stays the same animation, at the same position and attached to the same object, so an explosion that settles into a column of smoke is one animation from start to finish.
 
-The named type's stage count, loop count, frame delay and rate range all take over at that moment. Its [`Report=`](/keys/report/#scope-animtype) sound is played as though the animation had just begun. The chain is followed one type at a time, each time the animation reaches an end. A pair of types naming each other therefore keeps one animation alive indefinitely rather than building anything up.
+From the switch on, the named type's [`End`](/keys/end/), [`LoopCount`](/keys/loopcount/), [`Rate`](/keys/rate/), [`RandomRate`](/keys/randomrate/) and [`Normalized`](/keys/normalized/#scope-animtype) settings apply. The named type's start effects run as though the animation had just begun, including its [`Report=`](/keys/report/#scope-animtype) sound.
 
-A name no `[Animations]` entry declares does not fail the read: an empty animation type is created under that name instead. An animation that chains into one of those holds no artwork and no stages, so it disappears on its next logic frame.
+The animation follows the chain one link each time it reaches an end. Two types that name each other keep one animation alive indefinitely.
+
+A name that `[Animations]` does not list still creates an animation type, and that type is read from its `art.ini` section like a listed one. If `art.ini` has no section for it either, the type has no stages, and an animation that switches to it ends at its next frame advance.
 
 ## What the change of type does not carry over
 
-- A stage is the animation's frame counter, and the frame drawn is the type's start frame plus it. Chaining puts the animation on its new type's [`Start`](/keys/start/) as a stage, so a chained-to type whose start frame is not zero opens on twice that frame.
-- The layer and the height are those the animation was created with, so the new type's [`Surface=`](/keys/surface/) is not read and the animation stays where the first type put it.
-- [`Reverse=yes`](/keys/reverse/) on the new type is not applied; the animation keeps stepping the way it already was.
-- Demand-loaded artwork is given back for the type the animation was holding when it was removed, and only where that type declares [`FreeAfterPlaying=yes`](/keys/freeafterplaying/). The earlier links in a chain therefore keep their artwork for the rest of the scenario however they are flagged.
+- The animation restarts at stage number `Start` of the new type, not at frame `Start`. Frames are drawn at `Start` plus the stage, so a new type whose [`Start`](/keys/start/) is not `0` opens on the frame numbered twice its `Start`.
+- The animation keeps the layer and height it was created with. The new type's [`Surface=`](/keys/surface/) is not applied.
+- The new type's [`Reverse=yes`](/keys/reverse/) does not change the direction, and the animation keeps stepping the way it already was. The new type's `Reverse` setting still decides where its passes end and restart, so chain only between types that both leave `Reverse` unset.
+- Demand-loaded artwork is released only for the type the animation has when it is removed, and only if that type sets [`FreeAfterPlaying=yes`](/keys/freeafterplaying/). Leaving a type through `Next` does not release its artwork.

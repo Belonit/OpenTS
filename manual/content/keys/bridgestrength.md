@@ -7,12 +7,20 @@ when_omitted:
   value: "1000"
 ---
 
-A blast that can destroy walls rolls once against this figure for each bridge span it reaches. A whole number is picked between one and the figure, and the span takes damage when that number lands below the blast's raw damage. A smaller figure therefore makes bridges easier to bring down, and a figure of `1` makes any blast of two points or more damage every span it touches. None of it happens at all unless [`DestroyableBridges`](/keys/destroyablebridges/) is on and the warhead sets [`Wall=yes`](/keys/wall/#scope-warheadtype).
+A lower `BridgeStrength` makes bridges easier to damage. The same value is also the damage of the charge an infantryman sets to demolish a bridge.
 
-A blast with [`IonCannonWarhead`](/keys/ioncannonwarhead/) skips the roll outright. At a tile bridge (the road and rail spans that carry traffic over water), it is also given up to four attempts at the span, retrying until one of them lands. Every other warhead gets one. The extra attempts stop there: at a low bridge the ion cannon skips the roll and then lands the same two hits every other warhead lands.
+A blast can damage a bridge span in its own cell only when all of these hold:
 
-The same figure is the raw damage of the charge an infantryman leaves when it demolishes a bridge from the deck. Three blasts of it go off at the sapper's feet, all with [`C4Warhead`](/keys/c4warhead/): the first is credited to the sapper, the other two to nobody. Raising the figure to make bridges harder to shell therefore also makes that charge deadlier to everything standing nearby.
+- bridge destruction is on: [`DestroyableBridges`](/keys/destroyablebridges/) in a campaign, or the [`BridgeDestruction`](/keys/bridgedestruction/) option in any other game;
+- the warhead sets [`Wall=yes`](/keys/wall/#scope-warheadtype);
+- at an elevated bridge, the blast goes off near deck height, so a blast on the ground beneath the span cannot damage it.
 
-:::caution[A low bridge is damaged twice for one roll]
-The overlay bridges that carry a road across a gully are damaged, then damaged again, on a single successful roll. Only the first result decides whether the span counts as destroyed, but both hits land.
+The blast then rolls a whole number from 1 to `BridgeStrength` and damages the span when the roll is below the blast's raw damage, before armor. A blast of 200 damage against `BridgeStrength=1000` succeeds 199 times in 1000. At `BridgeStrength=1`, any blast of 2 or more damage always succeeds.
+
+A blast with [`IonCannonWarhead`](/keys/ioncannonwarhead/) skips the roll. At an elevated road or rail bridge, it also gets up to four attempts at the span and stops at the first that succeeds. Every other warhead gets one attempt. At a low bridge, the ion cannon skips the roll but otherwise damages the span like any other warhead.
+
+When an infantryman demolishes a bridge from its deck, three blasts go off at its feet, each with `BridgeStrength` damage and [`C4Warhead`](/keys/c4warhead/). The first is credited to the infantryman and the other two to nobody. Raising the value to make bridges harder to shell therefore also makes this charge deadlier to everything standing nearby.
+
+:::caution[A low bridge takes two hits per roll]
+One successful roll damages a low bridge twice, so low bridges come down faster than the roll alone suggests.
 :::

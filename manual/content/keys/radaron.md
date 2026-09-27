@@ -7,4 +7,4 @@ when_omitted:
   value: none
 ---
 
-The sound plays without a position, at the moment the pane is put into its opening state. The branch that plays it is skipped when the pane is already open or already opening. It does not repeat over the forty frames the opening animation runs for. [Power output and drain](/systems/power/#radar) covers what raises the pane in the first place.
+The sound plays once, when the radar pane starts to open. It does not play if the pane is already open or already opening. It is not placed on the map, so it sounds the same wherever the view is. [Power output and drain](/systems/power/#radar) covers what brings the radar up.

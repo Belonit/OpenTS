@@ -13,10 +13,17 @@ when_omitted:
 Size=3
 ```
 
-The figure is what this object costs a transport that carries it. A transport accepts it only if the figure is within the transport's [`SizeLimit`](/keys/sizelimit/), and only if adding it to what is already aboard stays within the transport's [`Passengers`](/keys/passengers/). So a `Size=3` passenger fills three of a five-slot hold and leaves room for two more at the default size.
+`Size` is how much of a transport's hold this object takes up. A transport accepts it only if both tests pass:
 
-The default of one makes the hold a plain head count, which is what a ruleset that never mentions sizes gets: five passengers are five objects whatever they are.
+- its `Size` is no larger than the transport's [`SizeLimit`](/keys/sizelimit/);
+- its `Size`, added to the `Size` of every passenger already aboard, is no larger than the transport's [`Passengers`](/keys/passengers/).
 
-The figure also drives the hold's pip row: a passenger claims as many pips as it claims space, so the `Size=3` passenger above shows three. [`PipScale`](/keys/pipscale/) covers the row itself.
+A carryall lifting a vehicle, and a reinforcement group created with its passengers already aboard, skip both tests; [Transports](/systems/transports/) covers both.
 
-Size is read on anything built from a TechnoType, but it only ever means anything for an object that can become a passenger. Nothing can order an aircraft into a transport, and a building is never a passenger, so on those two the key is inert.
+A `Size=3` passenger in a transport with `Passengers=5` and `SizeLimit=3` leaves room for two passengers of the default size.
+
+At the default of `1`, `Passengers` works as a plain head count. A ruleset that never sets `Size` fits five objects into a five-space hold, whatever they are. A passenger with `Size=0` takes up no room, so a transport accepts any number of them.
+
+A passenger fills one pip of the transport's pip row for each unit of `Size`, so the `Size=3` passenger above shows three pips. A passenger with `Size=0` still shows one pip. [`PipScale`](/keys/pipscale/) and [`MaxPips`](/keys/maxpips/) set the row itself.
+
+Only infantry and vehicles board transports, so the key has no effect on an aircraft or structure type.

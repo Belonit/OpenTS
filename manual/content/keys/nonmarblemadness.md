@@ -5,12 +5,12 @@ see_also: [MarbleMadness, FileName]
 when_omitted:
   kind: value
   value: "65535"
-  note: A non-zero figure, so the alternate extension is tried.
+  note: A non-zero value, which leaves the fallback on.
 ---
 
-Two different things happen to the value, and only one of them matters.
+`NonMarbleMadness=0` stops the set's tiles from falling back to the marble madness artwork. Any other value, including the default, leaves the fallback on. Only whether the value is zero matters.
 
-The figure is tested for being non-zero while the set's tiles are looked for on disk. When a tile's theater file is missing and the figure is non-zero, the same name is tried again with the alternate terrain extension (`.MMT` in the temperate theater, `.MMS` in snow). The tile takes that artwork if it is there. Setting the key to `0` suppresses that second attempt, and the tile is left with no artwork of its own. Nothing about the *number* is used here; only whether it is zero.
+When a tile's file with the theater's extension is missing, the loader tries the same name with the theater's [`MMSuffix`](/keys/mmsuffix/), if the theater has one (`.MMT` in temperate and `.MMS` in snow). The tile uses that artwork if the file exists. With `NonMarbleMadness=0`, the second attempt is skipped and the tile has no artwork.
 
 ```ini title="TEMPERAT.INI"
 [TileSet0631]         ; example set that has no alternate artwork
@@ -20,4 +20,4 @@ TilesInSet=8
 NonMarbleMadness=0    ; do not look for RVCLIF01.MMT and its fellows
 ```
 
-The figure is also treated as a tile-set number and resolved, once the file has been read, into a tile index in the named set. That result is never read by anything, and [`MarbleMadness`](/keys/marblemadness/), which is resolved the same way, describes what the resolution pass does with a number the theater has no set for.
+The value is also read as a tile-set number, like [`MarbleMadness`](/keys/marblemadness/), and matched to a tile in the named set. Nothing uses that match.

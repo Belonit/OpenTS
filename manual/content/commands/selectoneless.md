@@ -2,4 +2,6 @@
 command_id: SelectOneLess
 ---
 
-Deselects one object from the selection and leaves the rest selected. Selection order stacks an object whose type has a nonzero [`Damage`](/keys/damage/#scope-weapontype) on its primary weapon at the front, newest first, and every other object at the back, oldest first. The command removes the last object in that order, so an unarmed object such as a harvester leaves before the armed objects in the same selection. Deselecting the object the view is following ends follow mode.
+Deselects one object and leaves the rest selected. It removes the most recently selected object that is not kept at the front of the selection order. When every selected object is kept at the front, it removes the one that was selected first. If the view is following the removed object, it stops following.
+
+An object is kept at the front when its type's primary weapon has a positive [`Damage`](/keys/damage/#scope-weapontype), but only if the type's section appears again in a rules file read after the selected `RULE*.INI`. [Multiplayer rules](/formats/multiplayer-rules/#when-they-are-read) lists the order the files are read in. The `Damage` that counts is the value set before that later file is read. A type whose section appears only in `RULE*.INI` is never kept at the front, whatever its weapon.

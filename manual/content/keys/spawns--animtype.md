@@ -8,12 +8,12 @@ when_omitted:
   value: none
 ---
 
-The animation type a thrown animation breaks into where it comes down. The children are all created at once, at the point of impact, with no creation delay. [`SpawnCount`](/keys/spawncount/#scope-animtype) fixes how many appear, and nothing appears without it.
+`Spawns` names the animation type that a thrown animation breaks into when it lands. A thrown animation is one with [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype); the setting does nothing on any other animation.
 
-Every thrown animation reaches the branch, whether it is a meteor or an ordinary [`Bouncer=yes`](/keys/bouncer/) one. An animation that is neither never reaches it, and neither does one that ends low over water.
+All the new animations appear at once, at the point of impact. [`SpawnCount`](/keys/spawncount/#scope-animtype) sets how many, and with it at `0` none appear. A thrown animation that lands in water creates none, unless it lands on a bridge.
 
-A value naming no registered animation is not refused. A type of that name is created on the spot, holding no artwork and every setting at its built-in value, and the impact spawns copies of it.
+The named type does not need an entry in `[Animations]`. An unlisted name still creates an animation type of that name, which reads the `art.ini` section of that name if one exists. If it has no section and no artwork, the spawned animations show nothing and disappear almost at once.
 
-:::caution[A type that spawns itself never runs out]
-An animation naming its own type here, or any cycle of thrown types that leads back to it, replaces itself at every impact. At a count of `1` each impact replaces the animation on average; at `2` or more the population grows with every generation.
+:::caution[A type that spawns itself can multiply without limit]
+If an animation names its own type here, or a chain of thrown types leads back to it, each impact creates new copies of it. With `SpawnCount=1`, each impact replaces the animation with one copy on average. With `2` or more, the number of copies grows with every impact.
 :::

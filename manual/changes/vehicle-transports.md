@@ -25,8 +25,10 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-`IsVehicleTransport=yes` in a transport's own `rules.ini` section lets the transport carry vehicles as well as infantry, as Red Alert's could.
+`IsVehicleTransport=yes` in a transport's section of `rules.ini` lets the transport carry vehicles as well as infantry.
 
-`Passengers=` is now a budget of space rather than a head count, spent by each passenger's `Size=`. A transport also refuses any single passenger larger than its `SizeLimit=`. `Size=` and `SizeLimit=` both default to one, so a ruleset that sets neither keeps the head count it had.
+A transport's `Passengers=` is now its total room, and each passenger takes up as much of it as its own `Size=`. A transport also refuses any passenger whose `Size=` is larger than the transport's `SizeLimit=`. A ruleset that sets neither key keeps the passenger counts it had.
 
-A vehicle put out of a transport now lands at the center of its cell instead of an infantry sub-cell spot, where it drew in the wrong place and could not dock a repair bay. Any passenger, not only infantry, can now survive a destroyed transport if it could have entered the cell the transport stood on.
+A vehicle unloaded from a transport now stops at the center of its cell. It used to stop on one of the infantry positions within the cell, where it was drawn in the wrong place and could not dock at a repair bay.
+
+When a transport vehicle is destroyed, a vehicle passenger can now escape as infantry can, if it can enter the cell the transport stood on. Only infantry could escape before.

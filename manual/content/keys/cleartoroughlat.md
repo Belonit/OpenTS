@@ -8,14 +8,16 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-A LAT set is the strip of blend art that keeps one ground type from meeting another along a hard square edge. The [theater control file](/formats/theater-control/) names it by tile-set number, counted from 0 for the file's first `TileSet` section, and that number resolves to the index of the set's first tile.
+A LAT set is sixteen tiles of blend art that keep one kind of ground from meeting another along a hard square edge. Rough, sand, green, pavement, crystal, swamp and blue mold ground each pair one plain ground tile with one LAT set. This page describes the blending rule that all seven share. [Theater control files](/formats/theater-control/) explains how a `[General]` role is resolved to a tile.
 
-Blending is a per-cell decision taken whenever a cell's attributes are recalculated. A cell takes part when it has either its family's plain ground tile or one of the sixteen tiles of the family's LAT set. Its four orthogonal neighbors are then examined in the order north, east, south, west. Every neighbor belonging to neither of those two groups contributes a bit: 1 for north, 2 for east, 4 for south, 8 for west. The total selects the tile at that offset into the LAT set, so a rough cell whose east and south neighbors are something other than rough takes the piece at offset 6. A cell whose four neighbors all match reverts to the plain ground tile. That case is handled by the plain tile rather than by offset 0, so the first tile of a LAT set is never chosen here and the blend art occupies offsets 1 through 15.
+A cell blends when it holds its family's plain ground tile or one of the family's sixteen LAT tiles. The engine repeats the check whenever it recalculates the cell's terrain.
 
-The families are evaluated one after another in a single pass: rough, sand, green, pavement, crystal, swamp, blue mold. Each one re-reads the tile the previous family left behind.
+The piece a cell gets depends on which of its four edge neighbors are foreign, meaning they hold neither the plain ground tile nor one of the LAT tiles. Each foreign neighbor adds a value: 1 for north, 2 for east, 4 for south and 8 for west. The total is the piece's position in the LAT set, counted from 0. For example, a rough cell whose east and south neighbors are not rough takes the piece at position 6. A cell with no foreign neighbor gets the plain ground tile back, so position 0 is never chosen and the blend art occupies positions 1 through 15.
 
-For this family the two groups are the single plain [`RoughTile`](/keys/roughtile/) ground tile and the sixteen tiles here. Nothing else counts as rough, so rough ground blends against pavement, water, and cliffs alike.
+The families blend one after another on each cell, in the order rough, sand, green, pavement, crystal, swamp, blue mold. Each family sees the tile that the families before it chose.
 
-:::caution[Four of the seven families still run when their set is unresolved]
-Sand, green, and pavement are skipped outright when their own LAT set is unresolved. Rough, crystal, swamp, and blue mold are not: a cell with the family's plain ground tile still computes an offset. The tile written is the one at heap index `offset - 1`, because the unresolved role is `-1` itself. That is one of the first fifteen tiles the theater loaded instead of blend art.
+For rough ground, the only tiles that count as rough are the plain [`RoughTile`](/keys/roughtile/) tile and the sixteen tiles here. Rough ground therefore blends against pavement, water and cliffs alike.
+
+:::caution[Resolve the LAT set whenever its plain ground tile resolves]
+Sand, green and pavement are not blended when their LAT set is unresolved. Rough, crystal, swamp and blue mold still blend a cell that holds their plain ground tile. Such a cell gets the theater's tile at the total minus one, counting every tile the theater loaded from 0. That is one of the theater's first fifteen tiles, not blend art.
 :::

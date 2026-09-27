@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-Tile artwork is trimmed after the map has been read. The loader counts how many cells use each tile type and throws away the image of every type the count leaves at zero, so only the part of a theater a scenario actually needs stays resident. On a generated map that count is misleading, because the generator goes on placing tiles after the trim. A set with this flag is exempt from the trim on a generated map, and its artwork is loaded instead of discarded.
+On a [generated map](/systems/map-generation/#what-the-theater-must-supply), the artwork of a set with `RequiredForRMG=yes` is loaded when the map is read, even if no cell uses the set yet. On any other map the flag has no effect.
 
 ```ini title="TEMPERAT.INI"
 [TileSet0042]        ; example set the generator lays down as it works
@@ -17,4 +17,4 @@ TilesInSet=12
 RequiredForRMG=yes
 ```
 
-The exemption applies only on a generated map. On an ordinary scenario the trim runs as though the flag were not there, and a set nothing uses loses its artwork whatever it says. Reaching a draw reloads it, so the flag governs when the read happens rather than whether the artwork can be had at all.
+After a map is read, the engine loads the artwork of every tile the map uses and discards the rest. A generated map places most of its tiles after that point. A discarded tile's artwork is read back from disk the first time the game needs it, so the flag only moves that read forward to map load. A set without the flag still appears correctly on a generated map.

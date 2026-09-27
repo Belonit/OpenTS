@@ -8,4 +8,4 @@ when_omitted:
   value: none
 ---
 
-A missile silo launches one projectile, taken from the firing superweapon's [`WeaponType=`](/keys/weapontype/), and nothing separate is created for its descent.
+A missile launch creates one projectile and nothing separate for its descent. That projectile comes from a WeaponType, as [Multi missile and chem missile](/systems/superweapons/#multi-missile-and-chem-missile) describes.

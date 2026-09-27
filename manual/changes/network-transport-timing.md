@@ -10,11 +10,6 @@ credit:
 - ZivDero
 ---
 
-Each private connection estimates its own round trip and doubles the wait
-between repeated transmissions. Its retry timeout doubles with them, so a link
-whose latency climbs above that timeout can still be measured. A packet that
-reaches the connection timeout keeps retrying while the receive queue keeps
-freeing space, so a recovered link drains its backlog. The global channel,
-which carries lobby messages, in-game chat and other messages outside the frame
-traffic, keeps its fixed retry cadence. Packet layouts, event IDs, and
-configuration are unchanged.
+Each player's private connection to another player used to resend an unacknowledged packet at a fixed interval. It now measures that link's round trip and sets the link's retry timeout and connection timeout from the measurement. Each further resend of one packet waits twice as long as the last. When the link's latency climbs past its retry timeout, the retry timeout itself doubles, so the link can still be measured.
+
+The global channel, which carries lobby messages, in-game chat and other messages outside the frame traffic, keeps its fixed retry interval.

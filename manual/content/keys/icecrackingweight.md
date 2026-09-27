@@ -7,8 +7,12 @@ when_omitted:
   value: "2"
 ---
 
-The figure is compared against the crossing type's [`Weight`](/keys/weight/), a bare number set by the type definition with no unit attached. The comparison is at-or-above. The [`IceBreakingWeight`](/keys/icebreakingweight/) test is tried first, so the band that cracks ice runs from this value up to, but not including, the breaking weight. Setting this value above the breaking weight leaves the band empty, and no vehicle then cracks ice at all. Only a vehicle runs the test, only in a theater whose [`IsIceGrowthEnabled`](/keys/isicegrowthenabled/) is `yes`, only as it finishes arriving in a cell, and never while it is on a bridge over the ice.
+A vehicle whose [`Weight`](/keys/weight/) is at or above this value, but below [`IceBreakingWeight`](/keys/icebreakingweight/), cracks the ice it drives onto. The breaking test comes first, so if this value is at or above the breaking weight, no vehicle cracks ice.
 
-Cracking replaces the cell's tile with the cracked tile of one of the three ice sets, picked at random. It then re-dresses the ice around it, plays one of [`IceCrackSounds`](/keys/icecracksounds/), and schedules the cell to refreeze [`IceSolidifyFrameTime`](/keys/icesolidifyframetime/) frames later. The vehicle drives on unharmed. A cell that is not ice at all is left alone.
+The test runs each time a vehicle finishes entering a cell, and only in a theater whose [`IsIceGrowthEnabled`](/keys/isicegrowthenabled/) is `yes`. Infantry and aircraft never crack ice. A vehicle on a bridge over the ice is exempt.
 
-Crossing a cell whose ice is already cracked does not crack it again. That case falls through to breaking, so a vehicle in this weight band that recrosses a cell before it has refrozen takes the breaking path instead. Weapon fire cracks ice on its own account as well, with no reference to weight. Any warhead that destroys walls or sets fires cracks the ice at the cell it lands on.
+Only full ice cracks. Ice-edge pieces along open water, and cells without ice, are left alone. A cracked cell gets the cracked tile of a randomly chosen ice set, and the ice around it is redrawn to match. Cracking plays one of [`IceCrackSounds`](/keys/icecracksounds/), and the cell is due to refreeze [`IceSolidifyFrameTime`](/keys/icesolidifyframetime/) frames later. The vehicle drives on unharmed.
+
+A vehicle in this weight band that enters an already cracked cell breaks the ice and sinks, provided the whole block can break, as [`IceBreakingWeight`](/keys/icebreakingweight/) describes.
+
+An explosion from a warhead with [`Wall=yes`](/keys/wall/#scope-warheadtype) or [`Fire=yes`](/keys/fire/) cracks the ice in its cell, unless it explodes on a bridge. If that cell is already cracked, the explosion breaks it open.

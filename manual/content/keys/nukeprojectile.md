@@ -8,4 +8,4 @@ when_omitted:
   value: none
 ---
 
-A missile silo takes its projectile from the firing superweapon's [`WeaponType=`](/keys/weapontype/) instead.
+A missile launch takes its projectile from a WeaponType instead, as [Multi missile and chem missile](/systems/superweapons/#multi-missile-and-chem-missile) describes.

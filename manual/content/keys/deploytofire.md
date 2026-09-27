@@ -1,21 +1,13 @@
 ---
 key: DeployToFire
-summary: Restricts a vehicle's fire to ground it could deploy on, and stops a player's copy picking targets for itself.
+summary: Makes a vehicle attack by deploying into its DeploysInto structure on buildable ground, and stops a human player's vehicle from searching for targets.
 see_also: ["DeploysInto", "NoMovingFire", "Buildable"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The flag ties firing to ground the vehicle could deploy on. A cell qualifies under **All of:**
-
-- it has no ramp;
-- it holds no building;
-- its land type has the [`Buildable`](/keys/buildable/) entry set.
-
-From any other cell, the vehicle refuses to fire.
-
-Standing somewhere it cannot deploy, the vehicle holds the shot back whether the weapon was clear to fire or merely needed to turn. It moves toward the target until it stands on ground it can fire from. The game adds no cue of its own: no special cursor marks the order, and the vehicle driving toward the target instead of firing is the only feedback.
+A vehicle with the flag never fires its own weapon. Once its target is in range and it is ready to fire or needs only to turn, it deploys into its [`DeploysInto`](/keys/deploysinto/) structure instead, and the structure takes over the target. The deploy follows the same rules as a deploy order, so it fails if the structure cannot be placed there.
 
 ```ini title="rules.ini"
 [MYSIEGETANK] ; a UnitType registered in [VehicleTypes]
@@ -23,6 +15,18 @@ DeployToFire=yes
 DeploysInto=MYSIEGEGUN ; a BuildingType registered in [BuildingTypes]
 ```
 
-A vehicle looking for somewhere to shoot from restricts its search to deployable ground whenever the cell it currently stands on is not deployable. The range it will search is narrowed to two cells beyond its distance from the target, so it settles close instead of wandering to the edge of its reach.
+Give the vehicle a `DeploysInto` structure, no passenger capacity and no harvesting role. The flag starts the vehicle's ordinary deploy action, so:
 
-Under a human player the flag also switches off target acquisition entirely: such a vehicle never chooses a target of its own and only ever shoots what it is ordered to. A computer-controlled one keeps its ordinary target search. That restriction belongs to the flag alone. A vehicle that deploys before firing only because its [`DeploysInto`](/keys/deploysinto/) structure is a [`TickTank=yes`](/keys/ticktank/) one still picks its own targets.
+- a vehicle with [`Passengers`](/keys/passengers/) above `0` unloads its passengers instead of deploying;
+- a [`Harvester=yes`](/keys/harvester/#scope-unittype) or [`Weeder=yes`](/keys/weeder/#scope-unittype) vehicle runs its unload action instead;
+- a vehicle with no `DeploysInto` structure never attacks, except that an [`IsMobileEMP=yes`](/keys/ismobileemp/) one releases its pulse once fully charged.
+
+The vehicle deploys only from a cell that meets **All of:**
+
+- it has no ramp;
+- it holds no structure;
+- its land type sets [`Buildable=yes`](/keys/buildable/).
+
+From any other cell, the vehicle drives to a qualifying cell before it deploys. It picks one within its weapon range of the target and no more than two cells farther from the target than it already is. If it finds no such cell it can reach, it gives up the target and moves to a cell near it.
+
+A vehicle owned by a human player never searches for targets. It attacks what it is ordered to, and it can still [strike back](/systems/target-selection/#retaliation) at an enemy that damages it, unless its `DeploysInto` structure sets [`Artillary=yes`](/keys/artillary/). A computer-controlled vehicle keeps its ordinary target search.

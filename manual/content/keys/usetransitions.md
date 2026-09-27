@@ -1,14 +1,21 @@
 ---
 key: UseTransitions
-summary: Lets a generated map's lighting move with the hour instead of holding the hour it was built at.
+summary: Loads the hour file for a generated map's hour, whose triggers can change the map's lighting during play.
 see_also: [Time, UseIonStorms, Biome]
 when_omitted:
   kind: value
   value: "no"
-  note: The fallback of `no` holds the map's lighting at the hour it was built at and rings each start point with the hour's own floodlight count.
+  note: No hour file is loaded, and each start point gets the number of floodlights its hour gives.
 ---
 
-With the flag set, generation loads the settings file belonging to the hour named by [`Time`](/keys/time/): `MORNING.INI`, `DAY.INI`, `DUSK.INI` or `NIGHT.INI`. It takes three things from that file. The local scenario settings are read over the map's own, and its trigger types and tag types are registered with the map. Those triggers are what take the lighting from one hour to the next; the flag by itself schedules nothing.
+With `UseTransitions=yes`, the generator loads the hour file for the hour [`Time`](/keys/time/) names. The flag does not change the map's ambient lighting; the triggers in that file do. [Map seed files](/formats/map-seed/) covers the section it is written in.
+
+| `Time` | Hour file |
+| --- | --- |
+| `0` morning | `MORNING.INI` |
+| `1` afternoon | `DAY.INI` |
+| `2` dusk | `DUSK.INI` |
+| `3` night | `NIGHT.INI` |
 
 ```ini title="map seed file"
 [RandomMap]
@@ -16,6 +23,11 @@ Time=1
 UseTransitions=yes
 ```
 
-The flag also changes the floodlights at the start points. Instead of the count the hour would give (none in the morning or afternoon, two at dusk, four at night), every start point is ringed with four. Each light is attached to the tag named `Light On/Off`, so the same triggers can switch them off by day and on again at night.
+The map takes two things from the hour file:
 
-The generator asks no questions about the Firestorm addon here, so a seed file may set the flag whether or not that addon is present. The map generator dialog offers the flag as a check box and clears it outright when Firestorm is absent. Its randomize button sets it on about half the seeds it produces, and only under that addon.
+- its trigger types and tag types, which are added to the map;
+- its local variables from `[VariableNames]`, which replace any the map already had.
+
+The flag also sets every start point's floodlight ring to four lights, whatever the hour; [Floodlights](/systems/map-generation/#floodlights) gives the placement conditions. Each light is attached to the tag type named `Light On/Off`, so the hour file's triggers can switch the lights. Define a tag type named `Light On/Off` in each hour file. Without it, each light gets a tag with no type, and the game can crash.
+
+Without the Firestorm addon, the flag is turned off before any map is built, whether it comes from a seed file or the dialog. The dialog shows its check box only with Firestorm, and its randomize button checks the box about half the time.

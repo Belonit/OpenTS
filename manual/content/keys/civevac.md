@@ -7,6 +7,4 @@ when_omitted:
   value: "no"
 ---
 
-The assignment is read from the scenario's `[Basic]` section and the result is discarded on the spot: it is stored nowhere, and the scenario has no member for it to be stored in.
-
-No gameplay path reads it.
+Civilian evacuation is tracked the same way whatever this key says. [`Civilian`](/keys/civilian/) covers which passengers count as evacuated civilians.

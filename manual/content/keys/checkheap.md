@@ -8,4 +8,4 @@ when_omitted:
   value: "0"
 ---
 
-Despite its name, no heap consistency check runs alongside the game. The engine reads the value from the `[MultiPlayer]` section of `sun.ini` as the multiplayer menu is entered. A non-zero value sets a global flag at the top of every game frame, and nothing reads that flag back.
+No heap check runs, whatever the value. The engine reads it when the player picks multiplayer play from the main menu, in either build configuration and with or without [`-XY`](/using/command-line/playback/).

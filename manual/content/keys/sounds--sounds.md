@@ -8,12 +8,17 @@ when_omitted:
   note: The one sample named like the section.
 ---
 
-The samples the sound plays, named without an extension and separated by spaces or commas, up to thirty-two of them. The first [`Attack=`](/keys/attack/) names are attack samples and the last [`Decay=`](/keys/decay/) names are decay samples; the rest are the body, which [`Control=`](/keys/control/) says how to play. Without the key the sound plays the one sample named like its section.
+The samples the sound plays, named without an extension and separated by spaces or commas. The engine reads the first 32 names and ignores the rest. The first [`Attack=`](/keys/attack/) names are attack samples and the last [`Decay=`](/keys/decay/) names are decay samples. The rest are the body, and [`Control=`](/keys/control/) decides how the body plays.
 
 ```ini title="sound01.ini"
 [MYLOOP]
 Sounds=LOOPIN LOOPBODY1 LOOPBODY2 LOOPOUT
 Control=LOOP RANDOM ATTACK DECAY
+Loop=4
 ```
 
-Each name is looked up when the sound first plays: `.WAV`, `.OGG`, `.FLAC`, `.MP3`, then `.AUD`. The lookup goes through the file layer that sees loose files and every mounted archive. A name that resolves to nothing is left out of that play, and the next body sample stands in for a missing one. The sound still plays as long as one sample is found.
+Here `LOOPIN` is the attack sample, `LOOPOUT` the decay sample, and `LOOPBODY1` and `LOOPBODY2` the body.
+
+Each name is looked up the first time a play needs it, as a loose file or in any mounted archive. The extensions are tried in the order `.WAV`, `.OGG`, `.FLAC`, `.MP3` and `.AUD`. [Sound effects](/systems/sound-effects/#samples) covers the sample formats and sizes the engine accepts.
+
+A sample that cannot be found is left out of the play. When the body is one chosen sample, the next body sample in the list stands in for a missing one. A play that finds none of the samples it needs does not play.

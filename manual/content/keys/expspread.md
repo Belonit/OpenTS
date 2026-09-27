@@ -7,19 +7,35 @@ when_omitted:
   value: ".5"
 ---
 
-The blast belongs to an object with [`Explodes=yes`](/keys/explodes/#scope-aircrafttype), or one that has earned the explodes ability. It goes off at the object's center as the object dies. Its strength is the object's full [`Strength`](/keys/strength/#scope-aircrafttype) multiplied by its [`CollateralDamageCoefficient`](/keys/collateraldamagecoefficient/). The object's damaged state does not enter into it. A building adds its stored tiberium on top: the amount held of each type multiplied by that type's [`Power`](/keys/power/#scope-tiberium). The figure `Strength` alone yields is therefore only a floor for a building, and a full refinery blows up far harder than an empty one.
+`ExpSpread` sets how wide the death blast of an exploding object reaches. A larger value makes a smaller blast.
 
-The blast uses the warhead of the object's primary weapon: the one [`Primary`](/keys/primary/) names, or the one [`Elite`](/keys/elite/) names once the object is elite. An object with that slot empty has no warhead to use. The blast is skipped entirely: no cell is damaged, and no explosion animation or flash is produced either.
+An object explodes as it dies if its type sets [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) or it has earned the [explodes ability](/systems/veterancy/#abilities). The blast is centered on the object. An object that falls from the air and dies on water does not explode.
 
-The radius is that strength divided by a hundred, divided again by this figure, and read as cells. A larger figure therefore makes a smaller blast. The division by a hundred is a whole-number one. An object whose collateral strength falls short of a hundred is left with no radius at all and takes the floor of the clamp described next.
+The blast's strength is the object's collateral damage: its full [`Strength`](/keys/strength/#scope-aircrafttype) multiplied by its [`CollateralDamageCoefficient`](/keys/collateraldamagecoefficient/). Damage the object had already taken does not reduce it. A structure adds the Tiberium it stores: the amount of each Tiberium type multiplied by that type's [`Power`](/keys/power/#scope-tiberium). A full refinery therefore explodes harder than an empty one.
+
+The blast uses the warhead of the object's primary weapon: [`Primary`](/keys/primary/), or [`Elite`](/keys/elite/) once the object is elite and `Elite` is set. A weapon that an [upgrade](/keys/upgrades/) supplies in that slot takes priority on a structure. An object with no weapon in that slot has no blast: no cell is damaged, and no explosion animation or flash appears.
+
+## Radius
+
+The radius in cells is the collateral damage divided by 100, rounded down, then divided by `ExpSpread`. The result is held between one [lepton](/glossary/#lepton) and three cells. Collateral damage below 100 therefore gives the smallest blast.
+
+Set `ExpSpread` above `0`. A negative value gives the smallest blast, and `0` gives an undefined radius.
+
+## Area and damage
+
+The blast damages a square of cells centered on the object's cell. The square reaches the radius, rounded up to whole cells, in each direction: 3×3 cells at the smallest and 7×7 at the largest.
+
+The blast's damage is the collateral damage multiplied by the radius rounded down to whole cells, and never less than the collateral damage itself. A radius between whole cells therefore reaches the next ring of cells but deals the damage of the smaller whole radius, as the example below shows.
 
 ```ini title="rules.ini"
 [CombatDamage]
-ExpSpread=1
+ExpSpread=.7
 ```
 
-The radius is then held between one [lepton](/glossary/#lepton) and three cells. The blast covers every cell within it once the radius is rounded up to whole cells: one ring of cells at the small end and three at the large. The damage delivered is the collateral strength multiplied by the radius in whole cells rounded **down**, held at a minimum of one. The area covered rounds the same radius **up**. The two agree only where the radius lands on an exact cell boundary; between boundaries the blast covers a ring more than it multiplies for.
+With this value, an object with 150 collateral damage has a radius of about 1.4 cells. Its blast covers 5×5 cells with a damage of 150. At `ExpSpread=.5`, the radius is exactly 2 cells: the blast covers the same 5×5 cells with a damage of 300.
 
-:::caution[A wide blast is weakest just off its center]
-Each cell's share of the damage is the blast figure scaled by how far the cell lies from the middle: its distance in cells, divided by the blast radius in cells. At a radius of two cells, a cell one step out takes half the figure and a cell on the rim takes all of it. The scale rises with distance instead of falling away with it, and a cell on the diagonal of the blast square lies farther out than its straight-line neighbors, so the corners take more than the full figure. The center cell is exempt and takes the full figure. A blast one ring of cells across is unaffected, since every cell in it counts as being at the rim.
+:::caution[Damage grows toward the edge of a wide blast]
+Each cell of the square sets off a separate explosion. The center cell's explosion carries the full blast damage. Every other cell's explosion carries a share of it: the cell's distance from the center, in whole cells rounded down, divided by the radius in cells rounded up. At a 2-cell radius, the cells one step out carry half the damage, and the cells two steps out carry all of it. At a 3-cell radius, the four corner cells are more than three steps out and carry a third more than the full damage. In a 3×3 blast, every cell carries the full damage.
+
+Each of these explosions also reaches objects in the [eight cells around it](/systems/warheads/#the-nine-cells), reduced by armor and by [distance](/systems/warheads/#how-distance-thins-the-damage). An object inside the blast is therefore hit by its cell's explosion and by those of the neighboring blast cells, and takes more than its cell's share.
 :::

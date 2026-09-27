@@ -8,4 +8,4 @@ when_omitted:
   value: ""
 ---
 
-Anti-aircraft defenses are not named to a computer house. A type qualifies for an anti-air node by having an anti-air value above zero. Every [`IsBaseDefense=yes`](/keys/isbasedefense/#scope-buildingtype) type is given that value from its primary weapon, projectile and warhead as the types load, and [the defense planner](/systems/ai-base-building/#base-defenses) then reads it.
+Computer houses do not take their anti-aircraft defenses from a list. Any structure type with an anti-air rating above zero is a candidate. When the rules load, each [`IsBaseDefense=yes`](/keys/isbasedefense/#scope-buildingtype) type whose primary weapon can hit aircraft gets a rating from that weapon's damage, firing rate and warhead. [The defense planner](/systems/ai-base-building/#base-defenses) then chooses among the candidates.

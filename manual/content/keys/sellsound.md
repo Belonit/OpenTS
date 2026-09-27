@@ -12,10 +12,15 @@ when_omitted:
 SellSound=SELL1 ; a sound ID registered in SOUND.INI
 ```
 
-Three sales play it.
+The sound plays when the local player sells a structure, a vehicle or aircraft, or a wall section. Sales by other houses play nothing.
 
-A structure beginning its build-down plays it from its own position, so it fades with distance from the view, and only for a player-controlled house. A structure that undeploys into a vehicle is torn down without it; a construction yard, which undeploys but is not treated as a vehicle, still plays it.
+A structure plays it from its position as its build-down begins, so it fades with distance from the view. It does not play in two cases:
 
-A vehicle or aircraft sold back while it stands on a building plays it at full volume rather than from a place on the map. It again plays only for a player-controlled house, alongside the spoken "unit sold" line. A vehicle or aircraft standing in the open cannot be sold at all, and infantry are never sold; the sell click does nothing to them. Selling a repair bay also sells the unit docked on it, which gets the same sound and spoken line.
+- Removing an upgrade. Selling an upgraded structure removes one upgrade per sale before the structure itself is sold.
+- Selling or undeploying a structure whose type sets [`UndeploysInto`](/keys/undeploysinto/), other than a construction yard.
 
-A wall section sold back plays it at full volume, and only when the selling house is the local player's own. Wall removal has a silent form as well, and that is the default. A section cleared to make room for a structure being placed over it takes the silent form, and so do the walls of a defeated house being swept up. The wall sale the player orders takes the loud one. The money-raising sell-off the AI runs against its own base takes the loud form too, but the sound still requires the selling house to be the local player's own, so the player never hears it.
+A vehicle or aircraft sale plays the sound at full volume, not from a map position, together with the spoken "unit sold" line.
+
+A vehicle or aircraft can be sold only while it stands on a [`UnitRepair=yes`](/keys/unitrepair/) structure such as a service depot. Selling that structure while a vehicle or aircraft is docked on it sells the docked unit instead of the structure. Infantry cannot be sold.
+
+A wall section the player sells plays the sound at full volume. A section removed to make room for a structure placed over it is removed without the sound. [Walls and gates](/systems/walls-and-gates/#crushing-clearing-and-selling) covers which sections can be sold.

@@ -7,15 +7,19 @@ when_omitted:
   value: "2000"
 ---
 
-The point a sweeping beam turns about sits this far behind its structure. It lies along the direction the structure faces, opposite the aim point placed by [`SpotlightLocationRadius`](/keys/spotlightlocationradius/). The beam therefore swings on an arc whose radius is the two figures added together, a little under twelve cells with both keys left at their defaults. A structure casts a beam only where its type sets [`HasSpotlight=yes`](/keys/hasspotlight/).
+`SpotlightMovementRadius` places the pivot of a sweeping spotlight and sets how far a following spotlight will chase a target. Only a structure whose type sets [`HasSpotlight=yes`](/keys/hasspotlight/) has a beam.
 
 ```ini title="rules.ini"
 [General]
 SpotlightMovementRadius=2560  ; the sweep pivots ten cells behind the structure
 ```
 
-The span between the two radii is graded in tenths, and every tenth the beam has traveled out from its structure widens what it can see. [`SpotlightRadius`](/keys/spotlightradius/) covers that widening. Raising this figure therefore does three things at once: it widens the swing, stretches each tenth of the grading, and holds a followed target further out. No other key sets the follow range on its own.
+A sweeping beam turns about a point this far behind its structure, on the side opposite the starting point that [`SpotlightLocationRadius`](/keys/spotlightlocationradius/) places in front. The beam therefore swings on an arc whose radius is the two keys added together. With both at their built-in values, that radius is a little under twelve cells. A larger value moves the beam farther sideways for the same [`SpotlightAngle`](/keys/spotlightangle/).
 
-A beam [set to follow a target](/mapping/actions/taction-change-spotlight-behavior/) holds onto it only while the target is nearer to the structure than this figure.
+The gap between this key and `SpotlightLocationRadius` sets the width of a sweep stage. A beam farther from its structure than `SpotlightLocationRadius` gains one stage for every further tenth of that gap, and each stage widens its detection radius, as [`SpotlightRadius`](/keys/spotlightradius/) describes. Raising this key makes each stage longer, so the beam widens more slowly. Stages keep counting past this distance. With every key at its built-in value, the beam swings all the way around its pivot and reaches stage 40, 5000 leptons from the structure.
 
-A following beam reverts to sweeping the moment it has no target: none was found when the behavior was taken up, the target was destroyed, or the target passed this distance. Its sweep restarts from the middle of the arc rather than from where the target had led it. The intruder scan resumes on that same frame, while the beam still stands where it left off.
+If this key is smaller than `SpotlightLocationRadius`, the stages count backward and the detection radius shrinks as the beam moves out. Keep the two keys at least 10 leptons apart, as `SpotlightLocationRadius` explains.
+
+A beam [set to follow a target](/mapping/actions/taction-change-spotlight-behavior/) keeps its target only while the target is closer to the structure than this distance. No other key sets the follow range.
+
+A following beam goes back to sweeping as soon as it has no living target in range. That happens when the target is destroyed or moves beyond this distance. It also happens when no enemy was near the beam when the behavior was set, unless the beam followed a target earlier. If that earlier target still exists and is within this distance, the beam follows it again. The sweep restarts from the middle of the arc, not from where the target led the beam. On the frame it switches, the beam still stands where it left off and already checks for intruders there.

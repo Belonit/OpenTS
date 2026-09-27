@@ -1,6 +1,6 @@
 ---
 key: MultiplayPassive
-summary: Takes the country's houses out of the contest, so they are neither fought nor counted.
+summary: Keeps the country's computer houses from building or choosing attacks and, in skirmish and multiplayer games, takes its houses out of the contest.
 see_also: [Multiplay, WallOwner, Allies]
 when_omitted:
   kind: value
@@ -12,17 +12,25 @@ when_omitted:
 MultiplayPassive=true
 ```
 
-A passive country's houses run no computer AI at all, in any kind of game. Neither the expert-system pass that chooses attacks and teams nor the production passes that queue buildings, units, infantry and aircraft is entered for one, so such a house only ever owns what the map gave it.
+In any kind of game, a computer-controlled house of a passive country never chooses attacks and never queues buildings, vehicles, infantry or aircraft. It raises teams from AI triggers only after [its AI-trigger switch](/systems/ai-team-production/#when-the-pass-runs) is turned on, for example by a map trigger action.
 
-Everything else the flag does is confined to skirmish and multiplayer games, where a passive house is treated as scenery rather than as an opponent.
+The structures of a passive country's houses never pay [`ProduceCashAmount`](/keys/producecashamount/) income, whoever controls the house.
 
-- It is exempt from the defeat check that removes a player who has run out of objects, and its defeat is not announced.
-- It is not counted among the players still alive. The test for whether everyone left is allied skips it too, except in a skirmish game, where it is counted.
-- A computer house never picks it as an enemy, and it never picks one of its own.
-- Automatic target scans reject its objects unless the [launch file](/formats/spawn-ini/) sets `AttackNeutralUnits=`, and they never open a crate they drive over.
-- Its objects do not reveal the map, and its buildings are never marked for automatic repair.
-- It is skipped by the score screen and by the starting-unit generator.
+In skirmish and multiplayer games, a passive house is treated as scenery, not as an opponent:
 
-An [observer's](/systems/observers/) house is left out of the same counts, lists and scores without being passive: it simply starts defeated.
+- It is exempt from the defeat check that removes a player who has run out of objects, and its defeat is never announced.
+- It is not counted among the players still alive. The test for whether every remaining player is allied also skips it, except in a skirmish game.
+- A computer house never picks it as the nearest enemy, but damage from its objects can still make it that house's enemy.
+- No house can break an alliance with it or declare war on it.
+- Automatic target scans reject its objects unless the [launch file](/formats/spawn-ini/) sets `AttackNeutralUnits=`.
+- Its objects never collect crates and do not reveal the map.
+- Its structures are never marked for automatic repair.
+- The score screen and the starting-unit generator skip it.
 
-Setup also forces [`WallOwner`](/keys/wallowner/) off on every passive country and on for every other one, but only after the map's walls already have their owners, so no wall changes hands. Setup then allies every house in the game to the house of the country named `Special`, a passive country the shipped rules contain. That lookup is by name and never checked, so a rules file without a country named `Special` stops the match during setup.
+An [observer's](/systems/observers/) house is also left out of these counts, lists and scores, whatever its country.
+
+Skirmish and multiplayer setup also sets [`WallOwner=no`](/keys/wallowner/) on the country of every passive house in the game and `WallOwner=yes` on every other house's country. Map walls already have their owners by then, so this changes no wall's owner. Setup then allies every house in the game with the house of the country named `Special`.
+
+:::caution[Keep the `Neutral` and `Special` countries]
+Skirmish and multiplayer setup creates a house for the countries named `Neutral` and `Special` by name and does not check that either country exists. Keep both countries in the rules for skirmish and multiplayer games.
+:::

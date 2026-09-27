@@ -12,6 +12,8 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-The `HarvesterImmune` truce, a `[SpecialFlags]` entry in the map file, now discounts every `HarvesterUnit` entry. `HarvesterUnit` is the `[General]` list in `rules.ini`. The defeat test used to discount entry 0 alone. A vehicle thief ordered onto a harvester the truce protects now selects it instead of capturing it. The old thief test compared the running vehicle against a list of types, which could never match, so a thief could take what nothing else was allowed to touch.
+Under the harvester truce, outside a short game, a multiplayer house that has lost its structures, infantry and aircraft is now defeated when its only remaining vehicles are harvesters. Every type in the `HarvesterUnit` list, under `[General]` in `rules.ini`, counts as a harvester here. Only the first entry used to count, so a house left with harvesters of a later type stayed in the game. In such a game the truce is the harvester truce option: `HarvesterTruce` in the `[Settings]` section of the client launch file, `SPAWN.INI`, or the truce check box in the network lobby. It protects harvesters of those types from attack.
+
+Under the truce, a vehicle thief ordered onto a protected harvester now selects it. It used to capture it. This also holds in a mission that sets `HarvesterImmune=yes` under `[SpecialFlags]` in the map file.
 
 AlexB is credited for the ts-patches bundle that first read this list whole.

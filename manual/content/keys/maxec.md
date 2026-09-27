@@ -7,14 +7,14 @@ when_omitted:
   value: "1"
 ---
 
-A particle is created with this many frames to live plus a random extra, and is removed when the count reaches zero. For a [`Railgun`](/keys/behaveslike/#scope-particletype) particle the extra is a fixed 0 to 9 frames. For every other behavior it is a random amount smaller than this value itself. A cloud created in one burst therefore thins out over a spread of frames roughly as wide as the lifetime rather than vanishing all at once. Frames run fifteen to the second, so `900` in `MaxEC` gives a particle a minute to live.
+A particle lives for `MaxEC` frames plus a random extra, and is removed when that time runs out. For most behaviors the extra is from 0 to one frame less than `MaxEC`, so a particle lives between `MaxEC` and nearly twice `MaxEC` frames. For a [`Railgun`](/keys/behaveslike/#scope-particletype) particle the extra is 0 to 9 frames. At fifteen frames a second, `MaxEC=900` gives most particles one to two minutes. Because the extra varies, a cloud created in one burst thins out gradually.
 
-Expiring is not the only trigger for a [`NextParticle`](/keys/nextparticle/) successor: any death does it, so a particle killed early by [`DeleteOnStateLimit`](/keys/deleteonstatelimit/) or by drifting up into a bridge deck spawns its successor just the same.
+A particle can end before its lifetime runs out, for example through [`DeleteOnStateLimit`](/keys/deleteonstatelimit/) or by rising into a bridge deck. In gas, weak gas, web and smoke [particle systems](/systems/particle-systems/), a particle is replaced by its [`NextParticle`](/keys/nextparticle/) successors however it ends. Particles removed along with their system get none.
 
-:::danger[A lifetime of zero stops the game]
-The random extra is drawn by dividing by this value, so `MaxEC=0` divides by zero and the game stops the moment the first particle of the type is created. Only `Railgun` particles escape it, because their extra is drawn against a fixed figure instead.
+:::danger[Never set MaxEC to 0]
+Except for `Railgun` particles, `MaxEC=0` crashes the game as soon as the first particle of the type is created.
 :::
 
-:::caution[The countdown holds sixteen unsigned bits]
-A negative lifetime, or a lifetime and extra that together exceed 65,535, wraps rather than clamping. The usual result of a negative figure is a particle that lives out almost the full 65,535 frames (over an hour of game time) instead of dying at once. A system that waits for its last particle to die waits that long with it.
+:::caution[Keep MaxEC between 1 and 32,768]
+The lifetime counter holds 0 to 65,535 frames. A negative `MaxEC`, a total lifetime of exactly 0, or a total above 65,535 wraps around instead of being capped. A negative value usually gives a particle nearly 65,535 frames, over an hour of game time, instead of ending it at once. With `MaxEC=0`, about one `Railgun` particle in ten lives that long. A system that waits for its last particle to expire stays on the map for the same time.
 :::

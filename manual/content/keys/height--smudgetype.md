@@ -8,7 +8,7 @@ when_omitted:
   value: "1"
 ---
 
-The figure is how many rows of cells the smudge covers.
+`Height` is the number of cell rows the smudge covers, and [`Width`](/keys/width/#scope-smudgetype) is the number of columns. The block's top corner is its origin, and the origin sits on the cell where the scorch or crater is requested. Columns run down and to the right from the origin, and rows run down and to the left.
 
 ```ini title="rules.ini"
 [MYCRATER]     ; example two-by-two crater
@@ -17,15 +17,24 @@ Width=2
 Height=2
 ```
 
-A smudge is placed only if every cell of the block it would cover passes the fit test. The test rejects a spot with a covered cell under **None of:**
+The game draws only the first frame of the smudge's artwork, positioned from the origin cell. A multiple-cell smudge therefore needs one image that covers the whole block.
 
-- a ramp tile;
-- a smudge already;
-- an overlay;
-- a building, unless the request draws from the multiple-cell group, which ignores buildings.
+A smudge type fits a spot only if the origin cell is inside the [playfield](/keys/size/#scope-scenarios). The rest of the block may extend past it. Every cell of the block must also meet **none of** these conditions:
 
-The covered cell must also be a [`Morphable=yes`](/keys/morphable/) tile. Only the origin cell is checked against the [playfield](/keys/size/) that `Size=` declares, so the rest of the block may reach past it.
+- the cell is a ramp;
+- the cell already has a smudge;
+- the cell holds an overlay, such as Tiberium;
+- a structure stands on the cell, except when the request is a destroyed structure's central mark;
+- the cell's tile is [`Morphable=no`](/keys/morphable/).
 
-The block is then stamped one cell at a time. Every cell draws the same first frame of the artwork, shifted back to the block's origin, so one image covers the block rather than a frame per cell.
+Among the types that fit, the request prefers some sizes over others:
 
-The figure also sorts craters and scorches into two groups. Only a smudge whose columns and rows are both above one counts as a large one. A large blast draws from that group, a small blast from the one-by-one smudges. Once a small blast measures more than 48 pixels wide and more than 40 pixels tall the size test stops applying, so every smudge that can be placed at the spot is eligible. When nothing in the group a blast draws from fits there, the blast falls back on every smudge that does.
+- A destroyed structure's central mark prefers multiple-cell smudges, those with both `Width` and `Height` above `1`.
+- An animation prefers one-by-one smudges. If its largest frame is more than 48 pixels wide and more than 40 pixels tall, it has no preference.
+- The marks a destroyed structure lays across its footprint have no preference.
+
+If no type of the preferred size fits, the pick is made from every type that fits. A type with only one side above `1`, such as two by one, is never preferred. It is picked only by a request with no preference or when no preferred type fits.
+
+:::caution[Keep both sizes at 1 or more]
+A smudge type with `Width` or `Height` at `0` or below fits every spot and stays in the pool, but covers no cells. A request that picks it leaves no mark.
+:::

@@ -1,32 +1,47 @@
 ---
 key: IsFlamingGuy
-summary: Runs the animation toward the nearest water and then plays it out where it stops.
+summary: Runs the animation up to eight cells, toward water when some is near, and then plays it out where it stops.
 see_also: ["RunningFrames", "FlamingInfantry", "SplashList"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The animation is driven by a routine of its own instead of by the ordinary frame timing. It is put through the object logic as well, so a burning man that walks off a bridge deck falls like anything else that has height.
+The animation plays a burning infantryman: it runs up to eight cells, toward water when there is some nearby, then plays a death sequence where it stops. Its movement sets which frame it shows, so [`Rate=`](/keys/rate/#scope-animtype) has no effect on it. A burning man that runs off a bridge deck falls to the ground below.
 
 ## Running
 
-Each step, the animation looks over a ten by ten block of cells around itself for the nearest water inside the playable area, and heads for it. It moves 18 leptons a frame. Where no water is in reach it takes any neighboring cell it can still enter, chosen from a random starting direction. A burning man boxed in by rock, walls, tunnels, buildings or vehicles has nowhere left to go. The run ends after seven cells, on arriving at water, or on running out of anywhere to go.
+Each time the animation reaches a cell, it picks the next one:
 
-The frame shown while running is picked from the eight facings by the direction of travel, [`RunningFrames`](/keys/runningframes/) frames to each facing, cycling one frame every three of the game clock.
+1. It looks for water in a ten-by-ten block of cells around itself, inside the playable area. A water cell does not count if it, or its neighbor to the west or north, lies under a bridge. Water toward higher X or Y cell coordinates counts as three cells nearer than it is.
+2. If it finds water, it steps one cell toward it: diagonally if it can, otherwise along the X axis, otherwise along the Y axis.
+3. If it finds no water, or cannot enter any of those cells, it takes the first neighboring cell it can enter, checking the eight directions from a random start.
+
+It cannot enter rock, tunnel or wall terrain, a cell with a wall, a cell occupied by a structure or vehicle, or a cell more than two height levels above it. On a bridge deck, only a structure or vehicle on the deck blocks it. It moves 18 leptons per game frame.
+
+The run ends when any of these happens:
+
+- it arrives at its eighth cell;
+- it arrives at a water cell while no more than one height level above the ground;
+- it has no cell it can enter;
+- it lands from a fall.
+
+While running, the animation shows the run cycle for its direction of travel, one of eight. Each cycle holds [`RunningFrames`](/keys/runningframes/) frames, and the animation advances one frame every three game frames.
 
 ## Ending
 
-The animation jumps to the stage `RunningFrames` times eight plus one and plays forward from there at one frame per game frame. Stages count from zero, so the first stage after the run cycles is never shown. It removes itself when it reaches the last stage of the file's first half. The artwork is two equal halves, so the cutoff is one stage short of the halfway point. Landing from a fall ends the run on the spot, and a fall that ends in water adds the first splash of the rules' [`SplashList`](/keys/splashlist/).
+When the run ends, the animation skips to its death sequence and plays it at one frame per game frame. The death sequence starts two frames after the last run-cycle frame, so the frame between them is never shown. The last frame of the shape's first half is the last frame shown before the animation removes itself.
+
+A burning man that lands from a fall stops where he lands. If he lands in water, the first animation in the rules' [`SplashList`](/keys/splashlist/) plays there too.
 
 ## Artwork
 
-The shape file is two parallel halves. The first holds the eight run cycles followed by the death sequence; the second holds the matching shadow frames, drawn darkened on the ground beneath whichever frame of the first half is showing. The shadow is omitted while the animation is falling.
+The shape file has two halves of equal length. The first half holds the eight run cycles, the unused frame, and the death sequence. The second half holds a matching shadow for every frame of the first, drawn darkened on the ground under the frame that is showing. No shadow is drawn while the animation falls.
 
-:::danger[A burning man that can move stops the game]
-The frame to show is worked out with a division by [`RunningFrames`](/keys/runningframes/), which is `0` unless the section sets it. An animation with this flag without running frames faults as soon as it takes its first step, so the game stops the moment one is created anywhere it can move.
+:::danger[Set RunningFrames on every IsFlamingGuy animation]
+An `IsFlamingGuy=yes` animation without [`RunningFrames=`](/keys/runningframes/) crashes the game on its first logic pass, as long as it has a cell to run to.
 :::
 
-:::caution[The colors are the local player's, not the victim's]
-The animation the rules name as [`FlamingInfantry`](/keys/flaminginfantry/) is drawn through the local player's color scheme rather than through the house of the man who was burned, so the same casualty looks different on every machine in a multiplayer game. Restoring a saved game applies that scheme to every animation with this flag, whichever way it was created.
+:::caution[Burning infantry use the local player's colors]
+The rules' [`FlamingInfantry`](/keys/flaminginfantry/) animation is drawn in the local player's color scheme, not in the colors of the infantry's owner, so each player in a multiplayer game sees it in their own color. After a saved game is loaded, every `IsFlamingGuy=yes` animation uses the local player's color scheme, however it was created.
 :::

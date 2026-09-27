@@ -7,10 +7,16 @@ when_omitted:
   value: none
 ---
 
-One particle system of the named type is created as the piece is created and disposed of as the piece is removed. It is placed at the coordinate the piece was asked for (for a meteor, the coordinate it is aiming at rather than the point it starts from) and records the piece as its source.
+Each piece of the voxel animation gets one particle system of the named type, created with the piece. The system is removed when the piece is removed, or sooner if it ends by itself, as [Ending a system](/systems/particle-systems/#ending-a-system) describes. The system starts at the coordinate the piece was created for. For a meteor, that is the target it flies toward, not the point where it first appears.
 
-Only a system declaring [`BehavesLike=Smoke`](/keys/behaveslike/) acts on that record: it re-centers itself on the piece every frame, so the plume travels with the debris. Every other behavior stays at the coordinate it was created at, however far the piece flies. A system declaring `BehavesLike=Fire` goes further and deletes itself on its first frame of logic. That behavior needs a source that can fire a weapon, and a piece of debris is not one.
+The system's [`BehavesLike`](/keys/behaveslike/#scope-particlesystemtype) setting decides whether it follows the piece:
 
-A value naming no registered particle system is not refused: a system type of that name is created on the spot, with every setting at its built-in value.
+- `Smoke` moves with the piece every frame and keeps the offset it started at. Ordinary debris starts on top of its system, so the plume travels with it.
+- `Fire` removes itself on its first frame, because a piece of debris cannot fire a weapon.
+- Every other behavior stays where it was created, however far the piece flies.
 
-A trail built from animations rather than particles is [`TrailerAnim`](/keys/traileranim/#scope-voxelanimtype) instead.
+A meteor's `Smoke` plume starts at the meteor's target and moves in parallel with the meteor. It stays as far from the meteor as the meteor's starting point was from the target.
+
+A name that matches no registered particle system still creates one. It uses a new particle system type of that name, and the type's section in `rules.ini` is not read. The type keeps its built-in values unless a later rules file or the map has a section of that name.
+
+For a trail made of animations, use [`TrailerAnim`](/keys/traileranim/#scope-voxelanimtype).

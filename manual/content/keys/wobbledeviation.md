@@ -7,13 +7,13 @@ when_omitted:
   value: "40"
 ---
 
-The figure is the amplitude of the drift, in leptons, with 256 to a cell. The height a jumpjet aims for each frame is its flight level plus this figure scaled by a sine wave. The unit rides between one deviation above the level and one below it. [`WobblesPerSecond`](/keys/wobblespersecond/) sets how quickly it works through that wave, and [`Climb`](/keys/climb/) caps how fast it can actually follow it.
-
-Only a hovering or cruising jumpjet wobbles. Climbing out, coming down and sitting on the ground all reset the wave to its start. The drift appears the moment the unit levels off and stops the moment it begins its descent.
+`WobbleDeviation` sets how far a flying jumpjet bobs above and below its flight height, which is normally [`CruiseHeight`](/keys/cruiseheight/). The value is in leptons, 256 to a cell. The height it aims for rises to its flight height plus this value and falls to its flight height minus this value, following a smooth wave. [`WobblesPerSecond`](/keys/wobblespersecond/) sets how fast the wave cycles. The jumpjet chases that target at [`Climb`](/keys/climb/) leptons a frame, so a wave that moves faster than `Climb` is followed only partway.
 
 ```ini title="rules.ini"
 [JumpjetControls]
 WobbleDeviation=40
 ```
 
-The drift is not purely cosmetic. While a jumpjet is still short of the cell it is heading for, the locomotor throttles it back by a tenth whenever it is flying below half the height it wants. Below a quarter of that height it throttles back by a further tenth. Both thresholds are fractions of the wobbling target rather than of the flight level. A large deviation therefore makes a cruising jumpjet lose and regain a little ground speed in time with its bobbing.
+Only a jumpjet that is hovering or cruising bobs. The bobbing starts when the jumpjet reaches its flight height after taking off, and stops when it begins to descend.
+
+The bobbing can also cost ground speed. While a jumpjet is short of the cell it is heading for, its speed drops by a tenth each frame it flies below half its target height, and by another tenth below a quarter. The target includes the bob. With a deviation that is large next to the flight height, the target can rise faster than the jumpjet climbs, leaving it below half the target and slowing it.

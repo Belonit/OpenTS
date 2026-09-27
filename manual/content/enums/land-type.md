@@ -12,7 +12,7 @@ values:
   - { constant: LAND_CLEAR, value: 0, input: "Clear", meaning: "Clear ground." }
   - { constant: LAND_ROAD, value: 1, input: "Road", meaning: "Road surface." }
   - { constant: LAND_WATER, value: 2, input: "Water", meaning: "Open water." }
-  - { constant: LAND_ROCK, value: 3, input: "Rock", meaning: "Impassable rock." }
+  - { constant: LAND_ROCK, value: 3, input: "Rock", meaning: "Rock, including cells that `CliffBackImpassability` converts." }
   - { constant: LAND_WALL, value: 4, input: "Wall", meaning: "Wall terrain." }
   - { constant: LAND_TIBERIUM, value: 5, input: "Tiberium", meaning: "Tiberium field." }
   - { constant: LAND_BEACH, value: 6, input: "Beach", meaning: "Beach terrain." }
@@ -23,6 +23,8 @@ values:
   - { constant: LAND_WEEDS, value: 11, input: "Weeds", meaning: "Vein weed terrain." }
 ---
 
-A cell's land type is derived rather than authored: it comes from the tile drawn beneath the cell, and a tile can only produce nine of these twelve. `Wall`, `Tiberium` and `Weeds` reach a cell through an overlay standing on it, which [`Land`](/keys/land/) covers. [`CliffBackImpassability`](/keys/cliffbackimpassability/) can override both. At `2`, a cell standing a full cliff step below any of the six neighbors that setting examines is rewritten to `Rock` at the end of the same pass. Only four of the twelve are open to that rewrite on the ordinary path: `Clear`, `Water`, `Beach` and `Ice`. A cell whose tile already reports `Road`, `Rough` or `Railroad` therefore survives the cliff rewrite unchanged.
+A cell's land type comes from the tile beneath it, unless an overlay on the cell sets one. [`Land`](/keys/land/) covers which of the two the cell reports. Tiles produce nine of the twelve land types; `Wall`, `Tiberium` and `Weeds` come only from overlays.
 
-Each token also names the rules section that holds that terrain's movement costs. Those sections are `[Clear]`, `[Road]`, `[Water]` and the rest, and the twelve classes are what [speed type](/reference/enums/speed-type/) is costed against. The set is fixed by the engine: a mod can retune a section but cannot add a thirteenth terrain class or a section for one.
+[`CliffBackImpassability=2`](/keys/cliffbackimpassability/) can then change a cell that lies a cliff step or more below a nearby cell to `Rock`. A cell whose overlay has `Land=Wall`, `Land=Railroad` or [`NoUseTileLandType=yes`](/keys/nousetilelandtype/) becomes `Rock` whatever its land type is. Any other cell becomes `Rock` only if its land type is `Clear`, `Water`, `Beach` or `Ice`, so a `Road`, `Rough` or `Railroad` tile keeps its land type, and so does a `Tiberium` cell.
+
+Each land type has a `rules.ini` section of the same name, such as `[Clear]` or `[Railroad]`. The section holds the movement cost for each [speed type](/reference/enums/speed-type/) and the [`Buildable`](/keys/buildable/) flag, as [the terrain table](/systems/movement-and-terrain/#the-terrain-table) describes. The twelve land types are fixed by the engine. A mod can change the values in a section but cannot add a land type.

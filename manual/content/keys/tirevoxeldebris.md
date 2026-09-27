@@ -8,4 +8,4 @@ when_omitted:
   value: none
 ---
 
-The name marks it as the wheel a destroyed vehicle sheds. Nothing reads the stored type. A type's destruction debris comes from its own [`DebrisTypes`](/keys/debristypes/) list, as [`ExplosiveVoxelDebris`](/keys/explosivevoxeldebris/) describes.
+The name suggests the tire a destroyed vehicle throws. A destroyed object's debris is set by its type through [`DebrisTypes`](/keys/debristypes/) and related keys, as [`ExplosiveVoxelDebris`](/keys/explosivevoxeldebris/) describes.

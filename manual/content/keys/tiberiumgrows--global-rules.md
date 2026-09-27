@@ -9,4 +9,4 @@ when_omitted:
   value: "yes"
 ---
 
-The value is stored with the other multiplayer defaults and never read. The spelling that shortens the growth delay is the [scenario `[SpecialFlags]` entry](/keys/tiberiumgrows/#scope-scenarios).
+A game against other machines always uses fast Tiberium growth. A single-player mission sets it with the [`TiberiumGrows` entry in `[SpecialFlags]`](/keys/tiberiumgrows/#scope-scenarios), which also describes the skirmish case.

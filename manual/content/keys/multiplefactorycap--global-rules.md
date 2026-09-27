@@ -1,12 +1,12 @@
 ---
 key: MultipleFactoryCap
 scope: global-rules
-label: Limit the multiple-factory discount
-summary: The most factories of one category that count toward the MultipleFactory build-time discount.
+label: Limit the multiple-factory adjustment
+summary: The most factories of one category that count toward the MultipleFactory build-time adjustment.
 see_also: [MultipleFactory, "system:production"]
 when_omitted:
   kind: value
   value: "0"
 ---
 
-Factories of one category past this number no longer shorten its build times. At `MultipleFactoryCap=3`, [`MultipleFactory`](/keys/multiplefactory/) applies for the second and third factory and not for a fourth. A value of `1` turns the discount off, and `0` or below counts every factory.
+`MultipleFactoryCap` sets how many factories of one category count toward [`MultipleFactory`](/keys/multiplefactory/). Factories past that number do not change build times. At `MultipleFactoryCap=3`, the second and third factory each apply `MultipleFactory`, and a fourth has no effect. A value of `1` turns the adjustment off, and `0` or below lets every factory count.

@@ -7,7 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-The distance is in leptons, 256 to a cell. It is applied after the barrel has been pitched, so the muzzle swings up and down with the gun while the mounting point stays put.
+The muzzle sits this many leptons, 256 to a cell, along the barrel from the mounting point that [`PrimaryFireFLH`](/keys/primaryfireflh/) sets. The distance follows the barrel's pitch, so the muzzle rises and falls as the barrel elevates while the mounting point stays put.
 
 ```ini title="art.ini"
 [MYTANK] ; the Image ID of a UnitType
@@ -15,6 +15,8 @@ PrimaryFireFLH=100,0,60
 PBarrelLength=80 ; the muzzle sits 80 leptons further out along the barrel
 ```
 
-Only the muzzle position moves: the fire animation, laser beam, sonic wave, and attached particle systems. The projectile itself is created at the mounting point that [`PrimaryFireFLH`](/keys/primaryfireflh/) and [`TurretOffset`](/keys/turretoffset/) fix. An AircraftType, BuildingType or UnitType creates its projectile at the mounting point, which the barrel does not move; an InfantryType creates it at the muzzle instead.
+The weapon's fire animation, laser beam, sonic wave and attached particle systems start at the muzzle. A structure that sets [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/) or [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) takes its firing point from that setting instead, and ignores this one. The projectile starts at the muzzle only for infantry. An aircraft, structure or vehicle creates it at the mounting point that `PrimaryFireFLH` and [`TurretOffset`](/keys/turretoffset/) set.
 
-The elite weapon slot is filled from this same setting, so an [`Elite`](/keys/elite/) weapon fires from the end of the same barrel as the weapon it replaces.
+A value above `0` also advances the weapon's projectile up to two steps along its flight as soon as it is fired. The second step is skipped if the first ends the projectile. Laser weapons and [`Inviso=yes`](/keys/inviso/) projectiles are not advanced.
+
+The [`Elite`](/keys/elite/) weapon slot uses this same setting, so an elite weapon fires from the end of the same barrel as the weapon it replaces.

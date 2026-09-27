@@ -9,8 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-A Debug build with the debug keys armed shows a frame benchmark window on F6, drawn over the game and its menus. The window reports the logic frames and presents of the last second, and the frame benchmarks the events page shows.
-
-The window takes the mouse only while the pointer is over it, and the keyboard only while one of its fields has focus. Everything else reaches the game.
-
-A Release build has no overlay.
+A Debug build with the debug keys armed shows a frame benchmark window on F6, drawn over the game and its menus. The window reports the logic frames and presents of the last second, how long each timed step of a frame takes, and the rules and scenario load times. It takes the mouse while the pointer is over it or a button pressed over it is held, and the keyboard only while one of its controls is in use. All other input reaches the game or menu as usual.

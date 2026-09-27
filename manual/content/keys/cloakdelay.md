@@ -12,8 +12,10 @@ when_omitted:
 CloakDelay=.02
 ```
 
-The countdown is loaded onto the object every time an uncloak is applied to it, and loaded once more when [the fade back in](/systems/cloaking/#the-four-states) completes. After an actual reveal, the wait runs from the moment the object is fully visible. While it is running the object is refused the start of a new cloak. At the engine default it expires on the frame it is loaded, so an object begins hiding again as soon as whatever revealed it stops applying.
+`CloakDelay` sets how long an object must wait after being uncloaked before it can start hiding again. A game minute is 900 frames, so the shipped `rules.ini` value of `.02` is 18 frames. At the engine default of `0` there is no wait. An object starts hiding again once its fade back into view has finished and nothing is revealing it.
 
-:::caution[Damage restarts the wait on objects that were never hidden]
-Damage that does not destroy an object runs the uncloak path whatever state the object was in, and that path loads the countdown before it looks at the state. Anything under fire therefore has a running lockout, so a non-zero delay is measured from the last hit rather than from the moment the object was revealed.
+The wait restarts each time anything uncloaks the object. For a vehicle, infantryman or aircraft it restarts once more when [the fade back into view](/systems/cloaking/#the-four-states) finishes, so after it is revealed the wait runs from the moment it is fully visible. A structure's wait runs from the moment it is uncloaked and overlaps its fade.
+
+:::caution[Every hit restarts the wait]
+Any hit that does not destroy an object restarts the wait, even when the object is not hidden at the time. This includes hits that deal no damage and heals. With a non-zero delay, an object under fire cannot start hiding until the delay has passed since the last hit.
 :::

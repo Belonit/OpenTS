@@ -7,8 +7,6 @@ when_omitted:
   value: none
 ---
 
-The value is matched against the [object categories](/reference/enums/object-category/), which accept either the short token or the longer editor description and ignore case. A value matching neither spelling discards the stored category and leaves the type uncategorized.
+The value names one of the [object categories](/reference/enums/object-category/), in either its short or long spelling and in any case. A value that matches neither spelling leaves the type with no category, discarding any category set earlier.
 
-An InfantryType categorized `Civilian` is left out of the cameo list on the dropship loadout screen. That screen opens when the scenario's `[Basic] StartingDropships` is above zero, and the civilian is left out only on the fallback list it builds when the scenario declares no [`AllowableUnits`](/keys/allowableunits/) of its own.
-
-Nothing else reads the category.
+The category has one effect. An InfantryType with `Category=Civilian` is left off the list of types a player can buy on the dropship loadout screen. That screen opens at the start of a scenario whose `[Basic] StartingDropships` is above zero. The civilian is left off only when the scenario lists no [`AllowableUnits`](/keys/allowableunits/); a scenario that lists types can offer a listed civilian like any other listed type.

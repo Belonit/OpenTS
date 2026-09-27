@@ -7,10 +7,11 @@ when_omitted:
   value: "0"
 ---
 
-The pathfinder multiplies [the threat figure](/systems/base-attacked/#what-reads-the-map) of the region a cell falls in by this value. A diagonal shortcut is refused once the product reaches `1`. On a two-leg straight line, each cell whose product reaches `0.01` counts as threatened; the line is abandoned once more than three have accumulated, or at the first one for an object that is not fearless. The hierarchical route planner prices each subzone step by the same product. Every one of those tests runs inside the route search, so the figure is read when a route is planned, never while the object follows the route it chose. It plays no part in target scoring or in the base defense response, which read [`ThreatPosed`](/keys/threatposed/) instead.
+Higher values make an object of this type route further around danger, and a value of `0` or below makes the pathfinder ignore threat. When a route is planned for the object, the pathfinder multiplies [the threat figure](/systems/base-attacked/#the-threat-map) of each region on the way by this value:
 
-The figure is copied from the type onto each instance as it is placed on the map. A team's [`AvoidThreats=yes`](/keys/avoidthreats/) overrides that copy with `1` for as long as the object is on the team.
+- The [block stage of route search](/systems/route-search/#planning-in-blocks) adds the product, rounded down to a whole number, to the price of each step at the 8-by-8 and 4-by-4 sizes. A product below 1 adds nothing.
+- The shortcuts that straighten a planned route refuse cells where the product is high. [What reads the map](/systems/base-attacked/#what-reads-the-map) gives the thresholds.
 
-:::caution[At zero the pathfinder's threat tests can never fire]
-The product is zero for every cell while the coefficient is zero, however high the region figures climb, so no shortcut is refused and no cell is counted as threatened. Every type starts at zero, which leaves `AvoidThreats=yes` the only way threat avoidance reaches the pathfinder until a coefficient is written.
-:::
+The value is read only when a route is planned; a route the object is already following is not priced again. The threat figures themselves come from [`ThreatPosed`](/keys/threatposed/).
+
+Only infantry and vehicles whose locomotor plans routes on the ground use the value: the drive, hover, levitate, mech and walk locomotors. Each object copies the value from its type when it is placed on the map. While it belongs to a team with [`AvoidThreats=yes`](/keys/avoidthreats/), it uses `1` in place of its own value. Structures and ordinary aircraft do not plan routes, so the key has no effect on them.

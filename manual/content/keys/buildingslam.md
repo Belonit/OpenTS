@@ -1,6 +1,6 @@
 ---
 key: BuildingSlam
-summary: The sound played as a structure the local player has placed settles onto the map.
+summary: The sound played when the local player places a finished structure on the map.
 see_also: [BuildingDrop, CrumbleSound, "system:production"]
 when_omitted:
   kind: value
@@ -12,6 +12,6 @@ when_omitted:
 BuildingSlam=PLACE2 ; a sound ID registered in SOUND.INI
 ```
 
-The sound is played once a finished structure has been placed and its factory closed out, and only when the placing house is the local player's. Another player putting a structure down is silent on this side of the connection. Walls and firestorm wall segments run the same branch, so laying a wall makes the same sound as raising a building.
+The sound plays once when the local player places a finished structure from the sidebar, a wall or firestorm wall section included. Structures placed by other players or by computer houses make no sound on this machine.
 
-It is played without a position, so it comes through at full volume wherever the view happens to be sitting.
+The sound has no map position, so it plays at the same volume wherever the view is.

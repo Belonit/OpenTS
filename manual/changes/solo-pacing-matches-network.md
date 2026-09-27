@@ -21,6 +21,6 @@ A single-player mission or a skirmish is now held to 60 frames a second at Faste
 
 Every game now holds its rate exactly. Each frame's wait used to be rounded down to whole milliseconds, so a network game at 60 ran at 62.5.
 
-A network game, or a solo game kept running with `SimulateWhileUnfocused=yes`, now keeps its full rate in the background, minimized or not, without keeping a processor core busy. It used to wait an extra 10 milliseconds each frame, so a game at 45 frames a second fell to about 31.
+A network game now keeps its full rate in the background, minimized or not, without keeping a processor core busy. It used to wait an extra 10 milliseconds each frame, so a game at 45 frames a second fell to about 31. A solo game kept running by `SimulateWhileUnfocused=yes` under `[Options]` in `sun.ini` keeps the same full rate.
 
 Rampastring is credited for the ts-patches change whose single-player speed table this uses.

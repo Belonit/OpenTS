@@ -8,9 +8,7 @@ when_omitted:
   note: No door shape is loaded and none is drawn.
 ---
 
-The value is a filename without its extension, and only a non-empty value is taken. The named `<value>.SHP` is loaded with the rules, after the name has been rewritten for the scenario theater on the structure-art convention. The rewrite compares the name's second letter with the letter of every theater the game lists, without regard to case. A name whose second letter matches any listed theater's letter has that letter replaced with the current theater's letter: `T` in temperate and `A` in snow. A name whose second letter matches no listed theater's letter is loaded as written. A theater declared without a letter leaves names as written. It is fetched again, under the theater then in force, when a saved game is restored, and on a [`NewTheater=yes`](/keys/newtheater/) type as each theater is set up.
-
-The shape is drawn only while the structure is unloading: the sequence a [`WeaponsFactory=yes`](/keys/weaponsfactory/) structure runs while a finished vehicle leaves. It is drawn in the pass that draws over the structure, so it covers both the structure and the vehicle standing in the doorway. [`DoorStages`](/keys/doorstages/) covers which frame the door's progress selects.
+The door animation is drawn on a [`WeaponsFactory=yes`](/keys/weaponsfactory/) structure only while a finished vehicle leaves it. Its frames show the factory door opening and closing, and they are drawn over the structure and over the vehicle in the doorway. [`DoorStages`](/keys/doorstages/) sets which frame each point of the door's travel shows.
 
 ```ini title="art.ini"
 [MYWEAP] ; example war factory, drawn from its own Image ID
@@ -19,4 +17,6 @@ DoorStages=9
 UnderDoorAnim=GAWEAP_1
 ```
 
-Its depth bias is a fixed five pixels toward the viewer, and it is drawn at the cell's own lighting level, so [`ExtraLight`](/keys/extralight/) does not reach it.
+Write the filename without its extension; the engine loads `<value>.SHP`. Before loading, the second letter of the name is rewritten for the scenario's theater, as it is for [`NewTheater=yes`](/keys/newtheater/) artwork, whether or not the structure sets `NewTheater`. The letter changes only when it already matches the [`ImageLetter`](/keys/imageletter/) of some theater, so `GAWEAP_D` loads as `GTWEAP_D.SHP` in temperate and as `GAWEAP_D.SHP` in snow.
+
+The door frames are drawn at the lighting level of the structure's cell, so [`ExtraLight`](/keys/extralight/) does not change them.

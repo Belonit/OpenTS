@@ -12,6 +12,6 @@ targets:
 credit: [ZivDero, dkeeton]
 ---
 
-In waypoint mode a plain click on an earlier waypoint of the path being plotted now closes the loop there; Shift is no longer needed. Shift with the click picks the waypoint up to move it instead, which a plain click did before. The last waypoint of the path and the waypoints of other paths still pick up on a plain click.
+In waypoint mode, a plain click on an earlier waypoint of the selected path now closes the loop there, as long as the path is not already a loop and is below its waypoint limit. Closing a loop used to need Shift, and a plain click picked the waypoint up to move it; Shift-click now picks it up. A plain click still picks up the path's last waypoint, any waypoint of another path, and any waypoint of a path that is already a loop or at its limit.
 
 dkeeton is credited for the ts-patches change this follows.

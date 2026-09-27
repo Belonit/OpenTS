@@ -16,15 +16,8 @@ credit:
 - ZivDero
 ---
 
-Every game that is not a campaign, skirmish included, now reads
-[`MPLAYER.INI`](/formats/multiplayer-rules/) over the rest of the rules, and
-`MPLAYERFS.INI` as well while Firestorm is enabled. Both files are optional and
-accept everything `RULES.INI` accepts.
+Every game that is not a campaign, skirmish included, now reads [`MPLAYER.INI`](/formats/multiplayer-rules/) on top of the rest of the rules, and `MPLAYERFS.INI` as well while Firestorm is enabled. Both files are optional and accept everything `RULES.INI` accepts. They apply after the Firestorm and translated rules and before the scenario, so a map still overrides them.
 
-They are layered after the expansion and translated rules and before the
-scenario, so a map still overrides them. [`OPENTS.INI`](/formats/opents-ini/)
-names them with `MultiplayerRules=` and `MultiplayerRulesExpansion=`.
+[`OPENTS.INI`](/formats/opents-ini/) can rename the two files with `MultiplayerRules=` and `MultiplayerRulesExpansion=` under `[Files]`.
 
-Both count toward the rules checksum a host compares against a joining player,
-so every machine in a game needs the same copy. A deployment that ships neither
-file produces the same checksum it did before.
+Both files count toward the rules checksum that a host compares with each joining player's, so every machine in a game needs the same copies. A deployment that ships neither file keeps the checksum it had before.

@@ -17,6 +17,14 @@ values:
   - { constant: RADAREVENT_ENEMY_SENSED, value: 5, input: "5", meaning: "Enemy-detected event." }
 ---
 
-A radar event is a rotating box that closes in on one cell of the radar map to draw the player's eye there. The engine raises one when a base is attacked, when a harvester is attacked, and when an enemy is sensed. A map author raises any of the six through the [Create Radar Event](/mapping/actions/taction-radar-event/) trigger action. The kinds differ in the color they pulse. Combat and the two attack events cycle orange to dark red. Non-combat and drop-zone events cycle green, and an enemy-sensed event cycles yellow.
+A radar event is a spinning box on the radar map that closes in on one cell to draw the player's eye there. The game raises three kinds by itself:
 
-The `[General]` section of `rules.ini` holds three comma-separated lists: [`RadarEventDurations`](/keys/radareventdurations/), [`RadarEventVisibilityDurations`](/keys/radareventvisibilitydurations/), and [`RadarEventSuppressionDistances`](/keys/radareventsuppressiondistances/). Each is indexed by these values positionally, one entry per row below, in the order shown. The lookup applies no bounds check, so a list shorter than six entries reads past its end for the later kinds. Only combat, harvester-attacked, and enemy-sensed events read a suppression distance; the other three parse one and never read it.
+- base attacked, when one of the player's structures is damaged and EVA announces that the base is under attack, at most once per [`SpeakDelay`](/keys/speakdelay/) wait;
+- harvester attacked, when one of the player's harvesters takes damage and survives;
+- enemy sensed, when a cloaked or underground enemy is detected.
+
+A map can raise any of the six kinds with the [Create Radar Event](/mapping/actions/taction-radar-event/) trigger action.
+
+The kind sets the box's colors. Combat, base-attacked and harvester-attacked events pulse between orange and dark red. Non-combat and drop-zone events pulse between two greens, and enemy-sensed events pulse yellow.
+
+Three comma-separated lists under `[General]` in `rules.ini` set timings and spacing per kind: [`RadarEventDurations`](/keys/radareventdurations/), [`RadarEventVisibilityDurations`](/keys/radareventvisibilitydurations/) and [`RadarEventSuppressionDistances`](/keys/radareventsuppressiondistances/). Each list takes one entry per kind, in the order of the table below. Give every list all six entries; each key page describes what a shorter list does.

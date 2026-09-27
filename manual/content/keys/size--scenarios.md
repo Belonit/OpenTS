@@ -8,12 +8,14 @@ when_omitted:
   value: "1,1,50,50"
 ---
 
-The rectangle is read as four numbers; only its width and height are kept, since the origin is forced to zero. Those two figures define the playfield that every reveal, every path and every radar query is bounded by. Reading them rebuilds every cell from scratch, which is why a scenario always opens with its whole map shrouded and fogged.
+The width and height set the playfield, which is every cell the map has. Nothing can stand, move or be revealed outside it. The first two numbers are ignored, and the playfield always starts at `0,0`.
 
-The `[Map]` section is not layered like the rules files: this key is read from the scenario alone, with the literal fallback above when it is absent.
+Loading a map rebuilds every cell, whether or not `Size` is set, so no cell keeps anything from a previously loaded map. Every cell starts [shrouded and fogged](/systems/map-visibility/#cell-state).
 
 ```ini title="map file"
 [Map]
 Size=0,0,120,120
 LocalSize=2,2,116,112
 ```
+
+This [`LocalSize`](/keys/localsize/) is the largest playable area a 120 by 120 playfield allows.

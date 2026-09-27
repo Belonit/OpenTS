@@ -6,4 +6,4 @@ when_omitted:
   value: ".5"
 ---
 
-A BuildingType marked [`Wall=yes`](/keys/wall/#scope-buildingtype) has its build time multiplied by this value, applied last of everything that shapes production, so at the default a wall is built in half the time its cost would otherwise buy. No other object type reads it.
+A BuildingType marked [`Wall=yes`](/keys/wall/#scope-buildingtype) takes this fraction of its normal build time. The default halves it, and a value above `1` makes walls slower to build. The multiplier applies last, after the house's build-speed multiplier and the effects of low power and multiple factories. No other object type reads it.

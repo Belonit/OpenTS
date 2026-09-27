@@ -9,25 +9,16 @@ bindings:
   scripting_parameter_types: [target-property]
 source_files: [code/target.hh, code/team.cpp, code/map.cpp]
 values:
-  - { constant: TPROPERTY_LEAST_THREAT, value: 0, input: "0", meaning: "Pick the candidate standing in the map region the team's house rates as least threatened." }
-  - { constant: TPROPERTY_GREATEST_THREAT, value: 1, input: "1", meaning: "Pick the candidate standing in the map region the team's house rates as most threatened." }
-  - { constant: TPROPERTY_NEAREST, value: 2, input: "2", meaning: "Pick the candidate nearest the team's first member." }
-  - { constant: TPROPERTY_FARTHEST, value: 3, input: "3", meaning: "Pick the candidate farthest from the team's first member." }
+  - { constant: TPROPERTY_LEAST_THREAT, value: 0, input: "0", meaning: "Pick the candidate in the region with the lowest figure on the threat map of the team's house." }
+  - { constant: TPROPERTY_GREATEST_THREAT, value: 1, input: "1", meaning: "Pick the candidate in the region with the highest figure on the threat map of the team's house." }
+  - { constant: TPROPERTY_NEAREST, value: 2, input: "2", meaning: "Pick the candidate nearest the team member that joined the team most recently." }
+  - { constant: TPROPERTY_FARTHEST, value: 3, input: "3", meaning: "Pick the candidate farthest from the team member that joined the team most recently." }
 ---
 
-Neither threat property weighs the building itself. Each house keeps its [threat map](/systems/base-attacked/) as one figure per **map region**, and a region is a block of four by four cells. Both properties read the figure the team member's own house keeps for the region a candidate stands in. `Least threat` heads for the quietest part of the map holding a building of that type, and `Greatest threat` for the busiest.
+The declared enemy of the team's house comes first. The mission picks that house's best-rated structure, however the property rates structures of other houses. Another house's structure is picked only when the declared enemy has none of the named type. [Attack enemy building](/mapping/missions/tmission-attack-building-with-property/) covers which houses qualify.
 
-That figure is neither confined to the region it is filed under nor a measure of hostile force alone. An object raising it writes across a three-by-three block of regions. Its full **risk**, which is its type's [`ThreatPosed`](/keys/threatposed/), goes into the region it stands in. Half of that goes into the four regions beside it, and a quarter into the four corners, so every reading is smeared across a neighborhood.
+Values `0` and `1` rank candidates by the [threat map](/systems/base-attacked/#the-threat-map) of the team's house. That map holds one figure for each **region**, a block of 4 by 4 cells, and each candidate is rated by the figure for the region that holds its center cell. The candidate's own [`ThreatPosed`](/keys/threatposed/) is one contribution to that figure; its strength and cost play no part.
 
-One test settles which houses receive an object's figures. It runs as the object is placed, as it crosses from one region into another, as its owner changes and as it is taken off the map. The table gives the four positions a house can hold toward the object's owner. Only one kind of ally is spared: an alliance protects a human house from its ally's risk and does nothing for a computer one.
+A region's figure also counts objects outside it, because each object's `ThreatPosed` raises the regions around its own as well. Ownership, alliances and map rebuilds decide which objects count at all. [The threat map](/systems/base-attacked/#the-threat-map) describes both.
 
-| The house keeping the figure | Is the object's risk added to it? |
-| --- | --- |
-| The object's own owner | No |
-| A human house allied to the owner | No |
-| A computer house allied to the owner | Yes |
-| Any house not allied to the owner | Yes |
-
-When a house makes or breaks an alliance it rebuilds its threat map. That rebuild applies the test to infantry, vehicles and aircraft alone. Every other object, structures included, is added with no ownership or alliance test at all, so from that point on a house's own structures raise its own figures.
-
-A value outside the four scores every candidate identically, so none is selected. Whenever the search leaves the team with no target, it moves on to the next line of its script.
+A value outside `0` to `3` gives every candidate the same rating, so the mission picks no structure.

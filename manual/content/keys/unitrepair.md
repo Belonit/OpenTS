@@ -7,10 +7,16 @@ when_omitted:
   value: "no"
 ---
 
-The flag makes a building answer a docking request from a vehicle or an aircraft, and offers a selected player-controlled vehicle or aircraft the enter cursor onto its pad. It then runs [the repair cycle](/systems/repair/#one-step-at-a-time). A helipad also offers that cursor to an aircraft without this flag. `UnitRepair` is what a computer house's damaged vehicles look for when they go to be repaired, and what makes a docked object sellable where it stands.
+`UnitRepair=yes` makes a building a service depot. It takes in one vehicle or aircraft at a time and repairs it step by step, charging credits for each step. [The repair cycle](/systems/repair/#one-step-at-a-time) covers the steps and their cost.
 
-It is read independently of [`RepairBay`](/keys/repairbay/), which names the one type a repair order steers toward. A building with this flag that `RepairBay` does not name still serves whatever reaches it; a `RepairBay` type without this flag refuses every docking request it receives.
+The flag also has these effects:
 
-:::caution[A building runs only its first service branch]
-The servicing mission tests construction yard, then [`Hospital`](/keys/hospital/), then [`Armory`](/keys/armory/), then this flag, then [`UnitReload`](/keys/unitreload/), and stops at the first one the type sets. The docking answer runs in a different order and tests this flag before the two infantry flags, `Hospital=` and `Armory=`. A type that is both a depot and a hospital therefore turns infantry away at the door.
+- The player's selected vehicles and aircraft get the enter cursor over the depot. A helipad offers that cursor to aircraft without this flag.
+- A computer house sends its damaged vehicles to its nearest `UnitRepair` building, under the conditions in [Reaching the pad](/systems/repair/#reaching-the-pad).
+- A vehicle or aircraft parked on the depot can be sold where it stands.
+
+The flag is independent of [`RepairBay`](/keys/repairbay/), which names the one building type that repair orders look for. A depot that `RepairBay` does not name still serves whatever reaches it. A `RepairBay` type without this flag refuses the vehicles sent to it.
+
+:::caution[Combine this flag with no other service flag]
+A type with this flag and [`UnitReload=yes`](/keys/unitreload/) repairs and never gives the one-point rearming. It still [refills a `ManualReload=yes` object for free](/systems/repair/#what-a-depot-does-for-free). A type with this flag and [`Hospital=yes`](/keys/hospital/) or [`Armory=yes`](/keys/armory/) refuses infantry at the door. [The service order](/systems/repair/#unitreload-is-a-different-service) lists which flag wins.
 :::

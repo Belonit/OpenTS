@@ -20,8 +20,10 @@ credit:
 - Rampastring
 ---
 
-A player who leaves a client-launched match now has their base destroyed. That is what `AutoSurrender`, in the launch file's `[Settings]` section, asks for, and what the file says unless it writes `No`. A match arranged from the game's own menu still hands the base over. Where the computer takes a seat over it keeps the player's name rather than renaming the house to itself. The radar list, chat and the score screen still say who held it.
+A player who leaves a client-launched match now has their base destroyed, unless the launch file writes `AutoSurrender=No` in `[Settings]` of `SPAWN.INI`, which hands the base to the computer instead. A player who leaves a match started from the game's own menu still has their base handed to the computer. A seat the computer takes over now keeps the player's name, so the radar list, chat and the score screen still show who held it.
 
-`ConnTimeout` and `ReconnectTimeout` in the launch file's `[Settings]` section are read at last. They set how long this machine waits on another stalled on the loading screen, and on one gone quiet during play, in ticks of 16 milliseconds, 62.5 to the second. They default to the waits the game already kept, and each machine keeps its own.
+`ConnTimeout` and `ReconnectTimeout` in the same section set how long this machine waits before dropping another machine. `ConnTimeout` applies to one that stops making progress on the loading screen, and `ReconnectTimeout` to one that goes quiet during play. A larger value waits longer, and each machine applies its own values.
 
-Closing the window during a match, or pressing Alt and F4, resigns the way the options menu's abort does rather than being ignored. `ContinueWithoutHumans` is no longer read, so a line an existing launch file has does nothing. A match ends when the last person playing leaves, unless it is seated entirely by observers.
+Closing the window or pressing Alt+F4 during a match now resigns, as Abort in the options menu does; it used to be ignored.
+
+The launch file's `ContinueWithoutHumans` is not read. A match ends once no person is left playing it. A match seated only by observers continues until one side remains.

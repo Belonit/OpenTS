@@ -7,10 +7,10 @@ when_omitted:
   value: none
 ---
 
-Wall stitching is not a flag on a type. The [connection logic](/systems/walls-and-gates/#connection-frames) accepts the named type as a continuation of a brick or sandbag wall, and only from the north and the south. A wall run therefore reads through the gate along that axis, while one arriving from the east or west stops dead at it. `GAWALL` and `GASAND` are the stock overlays this covers.
+The named BuildingType connects brick and sandbag walls (`GAWALL` and `GASAND` in stock rules) that run north to south through it. While the structure is standing, the [connection logic](/systems/walls-and-gates/#connection-frames) treats it as a wall segment for its northern and southern neighbors only. A wall that meets it from the east or west ends at it.
 
-The same name also lets the type be placed on a brick or sandbag wall the house already owns, whatever damage that wall has. An ordinary wall building is accepted over such a wall only once it is damaged.
+The named type can also be placed on a brick or sandbag wall segment that the same house owns, whatever the segment's damage.
 
-The two cells capping the gate's run are updated both when the type is placed and when it is taken off the map: one cell north of its origin and three cells south of it. Those offsets assume a three-cell footprint.
+Placing the structure, and taking it off the map, refreshes the wall frames around two cells: one cell north of its origin and three cells south of it. That reaches the wall just past each end of a gate two to four cells long. Past the southern end of a longer gate, or of a one-cell gate, the wall keeps its old frame.
 
-None of that requires [`Gate=yes`](/keys/gate/). The flag supplies the door cycle and the clearing of walls under the footprint at placement; this key supplies the wall connection, and a type may set either without the other.
+The key does not need [`Gate=yes`](/keys/gate/), and `Gate=yes` does not need the key. `Gate=yes` supplies the opening and closing, and removes walls under the footprint at placement under the conditions in [Placing a gate](/systems/walls-and-gates/#placing-a-gate). This key supplies only the wall connection.

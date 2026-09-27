@@ -7,4 +7,13 @@ when_omitted:
   value: none
 ---
 
-An object caught in a raised wall section's own cell is dealt damage equal to its whole remaining strength through this warhead. The damage is forced and has no source, so armor and immunity do not save it and nothing is credited with the kill. The [approach sweep](/systems/laser-fences/#what-a-raised-section-destroys) beside it uses [`C4Warhead`](/keys/c4warhead/) instead, so the two paths do not share their impact effects.
+`FirestormWarhead` is the warhead a raised firestorm wall kills with. It applies to:
+
+- an object in a raised section's cell, when the section [sweeps its cell](/systems/laser-fences/#what-a-raised-section-destroys);
+- an object with the flying or jumpjet locomotor moving over a raised section.
+
+The victim takes damage equal to its remaining strength. The damage is forced, so armor and [`Immune=yes`](/keys/immune/) do not reduce it. No attacker is credited with the kill, and no crew escapes, although [a hijacker](/systems/capture/#stealing-a-vehicle) who took the vehicle still steps out.
+
+The warhead decides how the victim dies. An infantryman dies as the warhead's [`InfDeath`](/keys/infdeath/) selects, except jumpjet infantry and crawling cyborgs, which explode. A standing cyborg is removed at once, so only an `InfDeath` that leaves an animation (`3`, `4` or `5`) shows anything. A vehicle or aircraft killed by this warhead throws [`DefaultFirestormExplosionSystem`](/keys/defaultfirestormexplosionsystem/) sparks instead of its usual explosion, with the exceptions given in [What a raised section destroys](/systems/laser-fences/#what-a-raised-section-destroys).
+
+The [approach sweep](/systems/laser-fences/#what-a-raised-section-destroys), which destroys objects moving into a raised section's cell, uses [`C4Warhead`](/keys/c4warhead/) instead, so its victims die with that warhead's effects.

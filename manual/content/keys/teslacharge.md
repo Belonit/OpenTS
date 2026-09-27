@@ -12,16 +12,19 @@ when_omitted:
 TeslaCharge=TESLCHG ; a sound ID registered in SOUND.INI
 ```
 
-The sound is played from the structure's own position on the pass that starts the charge, and one charge covers one shot. The charge starts only when all of the following hold:
+The sound plays at a structure's position each time the structure starts charging. A structure starts a charge when all of the following hold:
 
-- the structure has a primary weapon marked [`Charges=yes`](/keys/charges/);
-- its build-up is finished;
+- its primary weapon sets [`Charges=yes`](/keys/charges/);
+- it is not building itself up or being sold;
 - it has a target;
-- its house is at full power;
+- its house has full power;
 - it is switched on;
-- its reload delay has passed; and
-- the type's `Primary=` or `Secondary=` weapon holds a legal firing solution on that target.
+- it is not already charging or charged;
+- it has finished reloading;
+- one of its two weapons could fire at the target once turned toward it, which includes having the target in range.
 
-Nothing about the sound is tied to the player: an enemy structure charging within earshot is heard.
+A structure whose [`Ammo`](/keys/ammo/) has run out still starts a charge and plays the sound when the rest holds.
 
-Losing power, being switched off or losing the target discharges the turret in silence, and a structure that is already charged does not sound again until it has fired and started over.
+Every charging structure plays the sound, whoever owns it. Its volume depends on its distance from the view, like any sound placed on the map.
+
+A structure that loses power, is switched off or loses its target drops its charge without a sound. The next charge plays the sound again. [`Charges`](/keys/charges/) covers when firing spends the charge.

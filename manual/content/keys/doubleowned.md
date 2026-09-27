@@ -1,12 +1,18 @@
 ---
 key: DoubleOwned
-summary: Opens the type to every country, outside campaign games only.
+summary: Opens the type's production to every country, outside campaign games only.
 see_also: ["system:production"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-Every question about who owns the type is answered with all countries at once instead of with its [`Owner=`](/keys/owner/) list, but only while the session is not a campaign game. A campaign ignores the flag, and the list stands. Because the answer then names every country, the house can build the type from [any construction yard able to produce at all](/systems/production/#what-a-house-may-build), whatever country that yard acts as. The factory search likewise stops caring which country the factory belongs to.
+Outside campaign games, the production checks treat the type as owned by every country. Its [`Owner=`](/keys/owner/) list then stops limiting who can produce it:
 
-The `Owner=` line itself is left untouched, so one section can restrict a type in a campaign and open it to everyone in skirmish and multiplayer games.
+- A structure passes the [ownership gate](/systems/production/#ownership) from any construction yard the house owns, whatever country that yard acts as.
+- The factory search accepts any factory of the house, whatever country its type lists.
+- A factory type with the flag can produce objects of any country.
+
+In a campaign game the flag does nothing and `Owner=` applies as written. One section can therefore restrict a type in a campaign and open it to every country in skirmish and multiplayer games.
+
+Other rules that read `Owner=` ignore the flag. These include a computer house planning its base, the units a player starts a multiplayer game with, and the vehicle a crate gives.

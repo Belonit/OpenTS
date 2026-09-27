@@ -12,10 +12,22 @@ source_files:
   - code/builtype.cpp
 ---
 
-An SHP file opens with a short header with the frame count and the logical width and height every frame is placed within. One record per frame follows, then the frame data itself. Each record holds that frame's offset inside the logical box, its own width and height, and the position of its pixels in the file. It also holds one color standing in for the whole frame, so the radar can draw a cell without examining it. Two flags record whether the frame has transparent pixels and whether its pixels are run length encoded.
+An SHP file holds a set of image frames drawn within one shared box, its logical width and height. The file starts with an 8-byte header, followed by a 24-byte record for each frame and then the frames' pixel data. Numbers are stored low byte first.
 
-Non-voxel object art, animations, cursors and interface graphics all use SHP data. Cursors and interface graphics are asked for by fixed names written into the engine. Object art is named from the type's [Image ID](/keys/image/) plus `.SHP`, and two art settings change that name before the file is looked up. [`Theater=yes`](/keys/theater/) replaces the extension with the theater's own, `.TEM` in temperate and `.SNO` in snow, and leaves the rest of the name alone. Failing that, [`NewTheater=yes`](/keys/newtheater/) keeps the `.SHP` extension and rewrites the second letter of the name instead, to the theater's [`ImageLetter`](/keys/imageletter/): `T` in temperate and `A` in snow. A name is rewritten only where that second letter is already the image letter of some declared theater, compared without regard to case. Every other name is left as written even with the setting on, and a type with both settings takes the first.
+The header holds the logical width at byte 2, the logical height at byte 4 and the frame count at byte 6, each in 2 bytes. Each frame record holds:
 
-Whichever name is arrived at is fetched from a cached archive rather than opened as a file, so object art has to be a member of an archive that startup cached. [MIX archives](/formats/mix/) covers which those are. A type whose artwork is not found is left with no image rather than with a placeholder.
+| Offset | Bytes | Holds |
+| --- | --- | --- |
+| 0 | 2 | The frame's horizontal offset inside the logical box |
+| 2 | 2 | The frame's vertical offset inside the logical box |
+| 4 | 2 | The frame's width |
+| 6 | 2 | The frame's height |
+| 8 | 2 | Flags: `1` if the frame has transparent pixels, `2` if its pixels are run-length encoded |
+| 12 | 3 | One color for the whole frame, as red, green and blue bytes |
+| 20 | 4 | Where the frame's pixel data starts, counted from the start of the file, or `0` for a frame with no pixels |
 
-For a BuildingType, `Image=` in `art.ini [<Image ID>]` selects the basename of the main SHP. It does not change the building's Image ID or the section used by other building art keys.
+The radar map colors overlays, Tiberium and terrain objects such as trees with these stored colors. For the overlays at `[OverlayTypes]` positions 127 to 138 and 147 to 158, counting from 0, the radar swaps the green and blue bytes. The shipped rules put `TIB2_01` to `TIB2_12` and `TIB3_01` to `TIB3_12` at those positions.
+
+Cursors, interface graphics, animations and object art that is not a voxel model are SHP files. Cursors and interface graphics load under fixed file names. Most object art loads from `<Image ID>.SHP`, using the type's [Image ID](/keys/image/). A structure's main shape can take a different file name from `Image=` in [its art section](/keys/image/#scope-buildingtype). The art settings [`Theater`](/keys/theater/) and [`NewTheater`](/keys/newtheater/) change the file name to one for the scenario's theater, and their pages say which types each one applies to.
+
+Object art that is not [demand-loaded](/keys/demandload/) is read only from cached archives. [Caching](/formats/mix/#caching) lists which archives are cached and how to replace a file in one. A type whose art file is not found has no image.

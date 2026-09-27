@@ -16,8 +16,10 @@ values:
   - { constant: ARMOR_CONCRETE, value: 4, input: "concrete", meaning: "Concrete building armor." }
 ---
 
-Armor names are matched without regard to case, and the five classes are fixed by the engine. What each class does with incoming damage is decided by the firing warhead's [`Verses`](/keys/verses/) list.
+Armor names are matched without regard to case. A mod cannot add a sixth class. How much damage a warhead deals to each class is set by that warhead's [`Verses`](/keys/verses/) list, which has one entry per class in the order shown above.
 
-:::caution[An unrecognized name resolves to `none`]
-`none` is an ordinary class with a column of its own rather than an error value. A misspelled armor name therefore does not fail; it quietly moves the type onto the first entry of every warhead's list.
+The `wood` class is also tested outside `Verses`. A [`Wood=yes`](/keys/wood/) warhead can reduce a wall overlay whose class is `wood`, and only a terrain object whose class is `wood` can catch fire. [`Armor`](/keys/armor/#scope-aircrafttype) covers both.
+
+:::caution[Check the spelling of armor names]
+A misspelled armor name is not rejected. It reads as `none`, an ordinary class, so every warhead scales its damage to the type by the first entry of that warhead's `Verses` list.
 :::

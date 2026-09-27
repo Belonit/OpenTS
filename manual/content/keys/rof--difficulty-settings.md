@@ -6,20 +6,16 @@ see_also: ["system:difficulty"]
 when_omitted:
   kind: value
   value: "1"
-  note: The difficulty block is re-read from fixed defaults whenever its section is present, so a later file that contains the section without this key restores 1 rather than keeping the earlier value.
+  note: Every file that contains the difficulty section resets the settings it leaves out, so a later file with the section but without this key restores 1.
 ---
 
-`[Easy]`, `[Normal]` and `[Difficult]` each set their own multiplier, and a house takes the one for [the difficulty slot it is assigned](/systems/difficulty/#from-the-setting-to-a-slot). The delay an object of that house waits before its next shot is the weapon's own [`ROF`](/keys/rof/#scope-weapontype) multiplied by this value, plus a random 0 to 2 frames. It multiplies the delay rather than the rate, so a figure above 1 fires more slowly.
+`[Easy]`, `[Normal]` and `[Difficult]` each set their own multiplier. A house uses the one for [the difficulty slot it is assigned](/systems/difficulty/#from-the-setting-to-a-slot).
 
-Three paths never reach it:
-
-- a building holding more than one round of ammunition waits a flat frame instead;
-- a shot within a weapon's burst uses that burst's own delay;
-- a sonic weapon, or one driven by spark, fire or railgun particles that already has its particle system attached, returns the weapon's `ROF` unmodified.
-
-The product is worked out once, when the house is given its slot, alongside the [country's own multiplier](/keys/rof/#scope-housetype) outside campaign games. In a campaign game the country's figure is dropped and this one stands alone.
+The multiplier scales the delay between an object's shots, so a value above 1 fires more slowly. With the example below, objects of a house that takes its handicap from `[Difficult]` wait about 20% longer after each shot. The multiplier does not reach a shot inside a burst, a beam or particle weapon's delay, or a structure still holding more than one round. [The weapon's `ROF` page](/keys/rof/#scope-weapontype) describes each case.
 
 ```ini title="rules.ini"
 [Difficult]
 ROF=1.2
 ```
+
+In a campaign game this multiplier applies alone. In skirmish and multiplayer it is multiplied by the [country's multiplier](/keys/rof/#scope-housetype), as [the difficulty page](/systems/difficulty/#how-the-figures-are-combined) describes.

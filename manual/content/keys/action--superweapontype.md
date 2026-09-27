@@ -8,16 +8,23 @@ when_omitted:
   value: "None"
 ---
 
-Any value but `None` makes clicking the charged cameo arm targeting mode. The cursor over the map then reports this action in place of the ordinary one, and releasing the button fires the weapon at the cell under it. `None` skips targeting altogether and [discharges the weapon straight from the cameo click](/systems/superweapons/#aiming-and-the-click) at cell 0,0, which is how the firestorm defense and the hunter seeker are fired.
+`Action=` decides what clicking the weapon's charged cameo does, and which click on the map fires the weapon.
 
-This key and [`Type=`](/keys/type/#scope-superweapontype) are read independently. `Action=` only chooses the cursor and which click fires the weapon; `Type=` alone decides what the weapon does when it fires, so a section whose two disagree works as each key says.
+- With `None`, clicking the charged cameo fires the weapon at once at cell 0,0, with no targeting step. The stock firestorm defense and hunter seeker are fired this way.
+- Any other value arms targeting mode. The cursor over the map shows this action in place of the usual one, and releasing the left button fires the weapon at the cell under the pointer.
 
-The values that give a superweapon cursor are `Nuke`, `IonCannon`, `DropPod`, `ChemBomb`, `EMPulse` and `EMPulseRange`. The last two are the in-range and out-of-range forms, and the [EM pulse](/systems/emp-pulse/#em-pulse-cannon-superweapon) picks between them for itself.
+[Aiming and the click](/systems/superweapons/#aiming-and-the-click) covers targeting mode in full.
+
+`Nuke`, `IonCannon`, `DropPod`, `ChemBomb`, `EMPulse` and `EMPulseRange` are the actions with superweapon cursors. `EMPulse` and `EMPulseRange` are the EM pulse's in-range and out-of-range cursors.
+
+[`Type=`](/keys/type/#scope-superweapontype) alone decides what the weapon does when it fires; `Action=` changes only the cursor and the click. A `Type=EMPulse` weapon is the exception. Once its targeting mode is armed, its cursor is always one of the [EM pulse](/systems/emp-pulse/#em-pulse-cannon-superweapon) cursors, and an in-range click fires the first section with `Action=EMPulse`. Give a `Type=EMPulse` section `Action=EMPulse`.
+
+The [missile crate](/systems/superweapons/#one-shot-at-a-time) also picks its weapon by this key. When some section has `Type=MultiMissile`, the crate grants the first section with `Action=Nuke`.
 
 :::caution[An unrecognized value reads as `None`]
-A misspelling is not rejected. It resolves to `None`, and the weapon then fires from the cameo click at cell 0,0 with no targeting step and no choice of where the effect lands.
+A misspelled value is not rejected. It becomes `None`, so clicking the charged cameo fires the weapon at cell 0,0 with no way to choose where the effect lands.
 :::
 
-:::caution[The map click finds the weapon by this value alone]
-Every left click that resolves to an action searches the declared superweapons in `[SuperWeaponTypes]` order for the first one with that `Action=`, whether or not targeting mode was armed. Two sections sharing a value therefore always fire the earlier of the two. A value that ordinary orders also produce (an attack, a move) discharges a charged weapon on the next such order.
+:::caution[Give each section a distinct value]
+Use a value that no other section and no ordinary order uses. Two sections that share a value always fire the earlier one, and a charged weapon whose value is an order such as `Attack` or `Move` fires on the player's next such order. [Aiming and the click](/systems/superweapons/#aiming-and-the-click) explains how a map click picks the weapon.
 :::

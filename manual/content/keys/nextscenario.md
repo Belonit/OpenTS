@@ -4,7 +4,7 @@ summary: The mission the campaign advances to when this one skips the map select
 see_also: [AltNextScenario, SkipMapSelect, OneTimeOnly]
 when_omitted:
   kind: context-dependent
-  note: The read falls back to the stored name itself. The scenario object empties the name once when the session starts, so the session's first mission falls back to an empty name and any later mission to the name the previous mission's file wrote.
+  note: The name the game already holds, which carries over from mission to mission. It comes from the most recent mission that set this key, or from a loaded save, and is empty until one of those sets it.
 ---
 
 ```ini title="map file"
@@ -13,10 +13,10 @@ SkipMapSelect=yes
 NextScenario=Maps/Missions/GDI2A.MAP
 ```
 
-The name is used only when [`SkipMapSelect`](/keys/skipmapselect/) is set and global variable 1 is clear; with that variable set, [`AltNextScenario`](/keys/altnextscenario/) is taken instead. Nothing else reads it, so a mission that leaves the map selection screen in place can set any value here without effect.
+The name is used only when the won mission sets [`SkipMapSelect=yes`](/keys/skipmapselect/) and global variable `1` is clear. When that variable is set, [`AltNextScenario`](/keys/altnextscenario/) is used instead.
 
-The advance runs through the campaign's map selection data rather than loading the file directly. The name is compared, ignoring case, against the scenario of each stage the mission's current stage offers as a next step. A match moves the campaign to that stage. The path written therefore has to be the same path the progression data records, and [campaign progression](/systems/campaign-progression/#campaigns-and-stages) covers where that data lives.
+The game does not load the named file directly. It compares the name, ignoring case, with the scenario of each stage the current stage leads to, and advances the campaign to the first match. Write the same path the progression data records for that stage. [Campaign progression](/systems/campaign-progression/#campaigns-and-stages) covers where that data lives.
 
-:::caution[An unreachable name sends the player back to the start of the campaign]
-A name matching no offered stage shows an error box and drops the player at the campaign's own first mission rather than at the map selection screen. [Choosing the next mission](/systems/campaign-progression/#choosing-the-next-mission) covers why, and which nearby failures reload the mission just won instead.
+:::caution[Name a stage the current stage leads to]
+A name that matches none of those stages shows an error box, and the campaign continues with its first mission instead of the map selection screen. [When the choice fails](/systems/campaign-progression/#when-the-choice-fails) covers this case and the related failures that reload the mission just won.
 :::

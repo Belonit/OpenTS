@@ -12,10 +12,15 @@ when_omitted:
 ShakeScreen=400
 ```
 
-A destroyed object divides a figure of its own by this value to get a number of shakes. A structure being torn down divides its house-adjusted [`Cost`](/keys/cost/) by it and shakes that many times if the result is at least one. A vehicle whose type names at least one explosion animation and whose [`Strength`](/keys/strength/) is above this value divides that strength by half of it, adds three, and caps the result at six. A larger value therefore means fewer objects are worth a shake.
+No value of this setting shakes the view. The game computes a number of shakes from it when an object is destroyed, but the shake itself does nothing. The value still matters because three values crash the game.
 
-Neither count reaches anything. The routine both hand their result to has an empty body, so no value of this setting moves the view. The only screen displacement the game still performs is the fixed ten-pixel jolt an ion cannon blast applies on the frame it lands, and that does not read this setting.
+Two kinds of object compute a shake count:
 
-:::danger[Three values crash the game as an object is destroyed]
-The divisions are integer and unguarded. At `0` a structure being destroyed divides by zero. At `0`, `1` or `-1` the vehicle path halves the value to zero and a destroyed vehicle divides by zero. Either one takes the process down at the moment the object dies, so a value in that range is a crash waiting on the first casualty rather than a setting that does nothing.
+- A destroyed structure divides its [`Cost`](/keys/cost/), adjusted for its owner, by this value.
+- A destroyed vehicle whose type names an explosion animation and whose [`Strength`](/keys/strength/) is above this value divides that strength by half of this value, adds three, and caps the result at six.
+
+The only jolt the view still receives is a fixed ten-pixel one when an ion cannon blast lands on screen, and that does not read this setting.
+
+:::danger[Keep ShakeScreen at 2 or above]
+The divisions have no guard against zero. At `0`, the first structure destroyed crashes the game. At `0`, `1` or `-1`, half the value rounds to zero, so the first vehicle destroyed that names an explosion animation crashes the game.
 :::

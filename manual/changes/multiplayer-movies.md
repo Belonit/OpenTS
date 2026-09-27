@@ -27,6 +27,8 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-A launch file that writes `PlayMoviesInMultiplayer=yes` now plays the scenario's movies in the skirmish or the game against other machines it starts. They are the opening movies, the movies triggers and scripts ask for, radar movies, and the `Win` or `Lose` movie after the score screen. In a game against other machines a full-screen movie ends only once every player has pressed Escape. The machines keep exchanging packets while it plays, so a new packet joins the ones a match accepts. The key was read before and changed nothing.
+A launch file with `PlayMoviesInMultiplayer=yes` under `[Settings]` now plays the scenario's movies in the skirmish or network game it starts: the opening movies, the movies that triggers and scripts play, radar movies, and the `Win` or `Lose` movie after the score screen. The key used to be read but had no effect.
+
+In a network game, pressing Escape during a full-screen movie casts a vote to skip it, and the movie ends early only once every player has voted. The `Win` and `Lose` movies after the score screen are the exception: Escape ends them on that machine alone.
 
 Rampastring is credited for the Vinifera feature this one follows.

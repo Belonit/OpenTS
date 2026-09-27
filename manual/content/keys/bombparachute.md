@@ -8,6 +8,6 @@ when_omitted:
   value: none
 ---
 
-The paradrop routine chooses between two canopies by what is falling: a projectile takes this one and everything else takes [`Parachute`](/keys/parachute/).
+The value has no effect however it is set. It is the parachute for a paradropped projectile, and nothing in the game paradrops a projectile.
 
-Only one path reaches that routine. An aircraft carrying passengers drops them instead of firing its weapon, and what it hands over is a passenger detached from its cargo hold: always a vehicle, an infantryman or another aircraft, never a projectile. Nothing else in the game paradrops anything, so the branch this animation sits behind is never taken and the value is inert however it is set.
+The only paradrop in the game is an aircraft carrying passengers, which drops them when it would otherwise fire its weapon. A passenger is always a vehicle, an infantryman or an aircraft, so it falls under [`Parachute`](/keys/parachute/).

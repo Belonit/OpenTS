@@ -9,4 +9,4 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The resolved set reaches exactly one test, which asks whether a cell has a dirt road. Nothing calls it. The straight runs are still laid and still connect, but they are found inside the 101-tile run counted from [`DirtRoadCurve`](/keys/dirtroadcurve/) rather than from this role.
+The engine resolves the set number but never uses the result. The [random map generator](/systems/map-generation/) still lays straight dirt road pieces, but it finds them at offsets 35 to 100 of the run counted from [`DirtRoadCurve`](/keys/dirtroadcurve/), not through this role.

@@ -12,10 +12,8 @@ when_omitted:
 SkipScore=yes
 ```
 
-The score screen is the presentation that follows a won mission, with its own score track and hall of fame. Setting the key removes that screen and nothing else: [`PostScore`](/keys/postscore/) and [`PreMapSelect`](/keys/premapselect/) still play, and the campaign still advances as it would have. The win movie has already been shown by the time the setting is read.
+`SkipScore=yes` removes the score screen that follows a won campaign mission, together with its music track and hall of fame. Nothing else changes. The [`Win`](/keys/win/) movie still plays first, [`PostScore`](/keys/postscore/) and [`PreMapSelect`](/keys/premapselect/) still follow, and the campaign advances as it would have.
 
-A recorded game being played back skips the score screen regardless.
+Playing back a recorded game skips the score screen whatever this key says.
 
-The key belongs to a campaign mission. A skirmish or network match shows its own
-[score screen](/systems/multiplayer-score-screen/), which this key does not reach; a client
-suppresses that one with [`SkipScoreScreen`](/formats/spawn-ini/#what-a-player-is-shown).
+The key applies only to a campaign mission. A skirmish or network match shows its own [score screen](/systems/multiplayer-score-screen/), which this key does not affect. A client suppresses that one with [`SkipScoreScreen`](/formats/spawn-ini/#what-a-player-is-shown).

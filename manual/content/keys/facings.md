@@ -7,11 +7,13 @@ when_omitted:
   note: 8, or 1 for a vehicle that declares no firing frames and no turret.
 ---
 
-Only a vehicle drawn from shape artwork reads this figure; a [`Voxel=yes`](/keys/voxel/) vehicle is turned rather than picked out of a set of frames.
+Only a vehicle drawn from shape artwork is drawn in these facings. A [`Voxel=yes`](/keys/voxel/) vehicle is drawn by rotating its model, but the figure can still change how long its wreck stays on the map, as described below.
 
-The setting does two separate jobs. It is the number of facings the vehicle is drawn from, and it is the multiplier the engine uses when it works out where the standing, firing and death blocks begin.
+The figure does two separate jobs: it sets how many facings the vehicle is drawn in, and it multiplies the default start frames of the standing, firing and death blocks.
 
-Per-facing drawing happens at `8`, `16`, `32` and `64`. The facing drawn is the vehicle's own heading rounded to that many compass points and then advanced by an eighth of a turn, wrapping around, so northwest is facing 0 at every count. At `8` a vehicle pointing northwest is drawn at facing 0, one pointing north at facing 1, and so on round to west at facing 7. At any other value the facing is fixed at 0, so every instance is drawn the same way whichever way it points.
+Use `8`, `16`, `32` or `64`. The vehicle is drawn at the nearest of that many compass directions to its heading. Facing 0 is northwest at every count, and the facings run clockwise from there. At `8`, northwest is facing 0, north is facing 1, and so on round to west at facing 7.
+
+Any other value draws every instance at facing 0, whichever way it points.
 
 ```ini title="art.ini"
 [JUGGER] ; the Image ID of the stock Juggernaut
@@ -21,8 +23,10 @@ StandingFrames=0
 Facings=8
 ```
 
-The same figure is the stride in every frame number the engine derives rather than reads: [`StartStandFrame`](/keys/startstandframe/), [`StartFiringFrame`](/keys/startfiringframe/) and [`StartDeathFrame`](/keys/startdeathframe/) each multiply a per-facing frame count by it. Raising it therefore pushes those defaults further up the file even though it adds no facings to the drawing, and lowering it to `1` collapses them onto the walk block.
+The default [`StartStandFrame`](/keys/startstandframe/), [`StartFiringFrame`](/keys/startfiringframe/) and [`StartDeathFrame`](/keys/startdeathframe/) each multiply a per-facing frame count by this figure. A higher value moves those blocks further into the file, even when the value is not one of the four drawn counts. At `1` the blocks are laid out for a single facing.
+
+The default [`MaxDeathCounter`](/keys/maxdeathcounter/) is built from the default `StartDeathFrame`, so for a vehicle with [`DeathFrames`](/keys/deathframes/) above `0` this figure also changes how long the wreck stays on the map. This holds for `Voxel=yes` vehicles too.
 
 :::caution[The turret strip does not move with this figure]
-A [`Turret=yes`](/keys/turret/) vehicle takes its turret strip from `8 × WalkFrames` whatever this figure holds. Artwork cut into more facings than that has to start its walk block after the strip, or name [`StartTurretFrame`](/keys/startturretframe/).
+A [`Turret=yes`](/keys/turret/) vehicle takes its turret frames from frame `8 × WalkFrames` whatever this figure holds. Artwork cut into more facings than 8 must start its walk block after the turret frames, or name [`StartTurretFrame`](/keys/startturretframe/).
 :::

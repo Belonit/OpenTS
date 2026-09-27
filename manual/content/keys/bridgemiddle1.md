@@ -5,11 +5,30 @@ see_also: [BridgeSet, TrainBridgeSet, BridgeMiddle2, BridgeStrength]
 when_omitted:
   kind: value
   value: "-1"
-  note: The position lands two tiles before the set's first piece rather than on a piece of it.
+  note: The position lands two tiles before the set's first piece, outside the set.
 ---
 
-A position is counted from one, so the piece at position `p` is the tile `p - 1` past the set's first. Every test runs that arithmetic in reverse: a cell's position is its tile index minus the set's first tile plus one. The ten `Bridge` position keys serve both bridge tile sets: a road span is measured from [`BridgeSet`](/keys/bridgeset/), and a railway span from [`TrainBridgeSet`](/keys/trainbridgeset/). The same ten positions describe the pieces of either.
+`BridgeMiddle1` is the position of the first of five pieces that draw the middle sections of an east-west span, the kind that runs from a [top-left end](/keys/bridgetopleft1/) to a [bottom-right end](/keys/bridgebottomright1/). The five pieces sit at this position and the four after it.
 
-This position and the four that follow it are the condition ladder for the middle sections of an east-west span: whole, connected one way, connected the other, connected both ways, then destroyed. A hit sets the struck section to the third position outright, whatever it showed before. The section toward the top-left or top-right end moves a place along the ladder. The section toward the opposite end keeps the piece it had. An engineer's [repair](/systems/capture/#repairing-a-bridge) puts the whole run back at the first position. A middle section spans several cells drawn from one piece, and changing the piece copies the change to every neighboring cell that still shows the old one.
+Positions count from `1` within the bridge tile set: position `1` is the set's first tile, and position `p` is the tile `p - 1` places after it. The ten `Bridge` position keys apply to both kinds of span: road spans draw their pieces from [`BridgeSet`](/keys/bridgeset/), and railway spans from [`TrainBridgeSet`](/keys/trainbridgeset/).
 
-The first four positions of the five also decide whether a struck cell is treated as a high bridge at all. A cell at one of them, or at one of the first four of [`BridgeMiddle2`](/keys/bridgemiddle2/), or one whose bridge deck has a high bridge overlay, goes to the high bridge handler. The destroyed position is not among them. Bridge destruction must be switched on for the scenario and the warhead must be a [wall destroyer](/keys/wall/#scope-warheadtype), after which [`BridgeStrength`](/keys/bridgestrength/) is what the damage is weighed against.
+Each piece shows one condition of a middle section:
+
+| Piece | Condition of the section |
+| --- | --- |
+| `BridgeMiddle1` | whole |
+| `BridgeMiddle1` + 1 | broken on the side toward the top-left end |
+| `BridgeMiddle1` + 2 | broken on the side toward the bottom-right end |
+| `BridgeMiddle1` + 3 | broken on both sides |
+| `BridgeMiddle1` + 4 | collapsed |
+
+A section spans several cells drawn from one piece, and they all switch pieces together. Combat damage moves a section down the table, never back up, and a collapse switches every section that falls to the last piece. An engineer's [repair](/systems/capture/#repairing-a-bridge) returns every middle section it passes to the first piece.
+
+A hit can damage a road or rail span only under **All of:**
+
+- bridge destruction is on: [`DestroyableBridges`](/keys/destroyablebridges/) in a campaign, or the [`BridgeDestruction`](/keys/bridgedestruction/) option in any other game;
+- the warhead is a [wall destroyer](/keys/wall/#scope-warheadtype);
+- the struck cell shows one of the first four middle pieces of either direction, counted from this key or from [`BridgeMiddle2`](/keys/bridgemiddle2/), or lies under the span's deck;
+- if the struck cell lies under a deck, the blast goes off near deck height, not on the ground below.
+
+A collapsed section with no deck over it takes no further bridge damage. [`BridgeStrength`](/keys/bridgestrength/) decides how likely each hit is to count.

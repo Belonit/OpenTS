@@ -7,9 +7,24 @@ when_omitted:
   value: ""
 ---
 
-Unless [`TurretAnimIsVoxel=yes`](/keys/turretanimisvoxel/) is set, the value is an AnimType ID, and that animation is attached to the building's turret slot once the structure is finished, placed at the offset [`TurretAnimX`](/keys/turretanimx/) and [`TurretAnimY`](/keys/turretanimy/) give. Its frame is chosen again every game frame: a turret-equipped building shows the frame matching the direction its turret points, one of 32, while a [`ChargeAnim=yes`](/keys/chargeanim/) building shows the frame its charge sequence has reached instead.
+Unless [`TurretAnimIsVoxel=yes`](/keys/turretanimisvoxel/) is set, the value is an AnimType ID. The animation is drawn at the offset [`TurretAnimX`](/keys/turretanimx/) and [`TurretAnimY`](/keys/turretanimy/) give.
 
-With `TurretAnimIsVoxel=yes` nothing is attached to the turret slot and the value is a voxel base name instead. With [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) alone the value stays an AnimType ID and the animation is still attached: the building simply draws it itself rather than leaving it to the layer. The voxel name is derived under either flag, `<name>.VXL` with the `<name>.HVA` beside it. It is loaded as the turret model only when `TUR` appears in it at the fifth character or later. The scan never looks at the first four characters, so a name that begins with `TUR` counts as having none. The barrel model's name is then that same name with the `TUR` and everything after it replaced by `BARL`, and [`VoxelBarrelFile`](/keys/voxelbarrelfile/) is not read. Without that `TUR` no turret model is loaded at all, and a `TurretAnimIsVoxel=yes` building draws the named model as its barrel, as one piece that both turns and elevates.
+A [`Turret=yes`](/keys/turret/) or [`ChargeAnim=yes`](/keys/chargeanim/) building starts the animation when its construction finishes. [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) holds it back until the weapon charges. Every game frame, the building then picks the animation's frame:
+
+- A `Turret=yes` building shows the frame for the direction its turret points, one of 32.
+- A `ChargeAnim=yes` building shows the frame its charge has reached instead.
+
+A building whose primary weapon is [`Charges=yes`](/keys/charges/) also starts the animation each time it begins to charge.
+
+## Voxel turrets and barrels
+
+With `TurretAnimIsVoxel=yes`, the value is a voxel base name and no animation is started. With [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) alone, the value stays an AnimType ID and the animation still runs; the building draws it in front of or behind its voxel barrel.
+
+Under either flag, the engine loads models named after the value. Each model is a `.VXL` file with the `.HVA` file of the same name beside it.
+
+1. The engine looks for `TUR` in the value, starting at the fifth character. A `TUR` in the first four characters does not count.
+2. If it finds one, it loads `<name>.VXL` as the turret model. The barrel model's name is the value with that `TUR` and everything after it replaced by `BARL`, and [`VoxelBarrelFile`](/keys/voxelbarrelfile/) is not read.
+3. If it finds none, it loads no turret model. A `BarrelAnimIsVoxel=yes` building takes its barrel model from `VoxelBarrelFile`. Otherwise the barrel model is `<name>.VXL`, which a `TurretAnimIsVoxel=yes` building draws as one piece that both turns and elevates.
 
 ```ini title="rules.ini"
 [MYTOWER] ; a BuildingType registered in [BuildingTypes]
@@ -18,8 +33,14 @@ TurretAnimIsVoxel=yes
 TurretAnim=MYTWRTUR ; drawn from MYTWRTUR.VXL, its barrel from MYTWRBARL.VXL
 ```
 
-The building named by [`WallTower`](/keys/walltower/) starts from this setting like any other, but its first upgrade takes over. From then on its turret animation is its own Image ID with `_B`, `_C` or `_D` appended. The letter advances by one each time an upgrade is plugged in and wraps back to `_B` after the third.
+## Wall towers
+
+The building named by [`WallTower`](/keys/walltower/) starts with this animation like any other. Fitting a plug replaces it with a lettered animation: the tower's Image ID with `_B`, `_C` or `_D` appended. The letter follows the number of upgrade levels the tower's plugs have filled, which [`PowersUpToLevel`](/keys/powersuptolevel/) sets. One level gives `_B`, two give `_C` and three give `_D`.
+
+When the tower's health falls to [`ConditionYellow`](/keys/conditionyellow/) or below, [`TurretAnimDamaged`](/keys/turretanimdamaged/) replaces the animation showing. When repairs lift it back above, `TurretAnim` replaces it. Each replacement happens only when that key names a registered AnimType; otherwise the lettered animation stays.
+
+Once replaced, the lettered animation comes back only when another plug is fitted. Removing a `Turret=yes` plug leaves the tower with no turret animation until another plug is fitted.
 
 :::danger[A charging weapon crashes without this animation]
-A building whose primary weapon is [`Charges=yes`](/keys/charges/) reaches into its turret animation the moment it begins to charge, without checking that it has one. If this key is unset, or names an animation that is not registered, the game crashes as that building starts charging at its first target.
+Give a building whose primary weapon is [`Charges=yes`](/keys/charges/) a `TurretAnim` that names a registered AnimType. If the key is unset or names no registered AnimType, the game crashes when that building starts charging at its first target. A voxel base name under `TurretAnimIsVoxel=yes` counts as no AnimType. A damaged building charges with [`TurretAnimDamaged`](/keys/turretanimdamaged/) instead, so that name must resolve as well.
 :::

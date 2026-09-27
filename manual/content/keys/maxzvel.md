@@ -7,10 +7,12 @@ when_omitted:
   value: "5"
 ---
 
-Leptons per frame: 256 leptons to a cell, 15 frames to the second. The vertical launch speed is [`MinZVel`](/keys/minzvel/#scope-voxelanimtype) plus a whole number of leptons drawn from the truncated span between the two settings. The speeds available are the minimum and whole steps above it, and this figure is itself reached only where it stands a whole number of leptons above the minimum. A minimum of `3.5` against a maximum of `5` truncates to a span of two and offers exactly `3.5` and `4.5`.
+The speed is in leptons per frame (256 leptons to a cell, 15 frames to the second). Ordinary debris is thrown upward at [`MinZVel`](/keys/minzvel/#scope-voxelanimtype) plus a random whole number of leptons per frame. The largest addition is the whole-number part of the gap between the two settings, so this maximum is reached only when the gap is a whole number. A minimum of `3.5` and a maximum of `5`, for example, give launch speeds of `3.5` and `4.5` only.
 
-A meteor ignores the setting entirely: its vertical speed is the minimum, exactly.
+A meteor ignores this setting. Its vertical speed is exactly the minimum.
 
-:::danger[A maximum just below the minimum divides by zero]
-The divisor the pick uses is the truncated span plus one. A maximum below the minimum by less than two makes that divisor zero, the division faults, and the game stops the moment a piece of the type is created. A meteor never makes this pick and is unaffected. A maximum lower still is accepted: the pick runs against a negative divisor and still returns a non-negative offset, so the speeds run upward from the minimum, over a narrower band than the same gap upward would give.
+:::danger[A maximum just below the minimum crashes the game]
+Keep this setting at or above the minimum. A maximum less than 2 leptons per frame below it makes the random pick divide by zero, and the game crashes as soon as a piece of ordinary debris of this type is created. A meteor makes no pick and is unaffected.
+
+A maximum 2 or more below the minimum does not crash. The speeds still start at the minimum and step upward, with two fewer steps than the same gap above the minimum would give.
 :::

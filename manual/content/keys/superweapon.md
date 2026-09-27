@@ -7,9 +7,11 @@ when_omitted:
   value: none
 ---
 
-The value names a section listed in `[SuperWeaponTypes]`, not a behavior, so two structures may grant two sections that deliver the same effect. The key holds a single superweapon. A second grant goes through the separate [`SuperWeapon2=`](/keys/superweapon2/) key. A house is [granted the weapon](/systems/superweapons/#from-a-structure-or-a-plug) while it owns at least one active, unlimboed structure of this type, and loses it again when the last one goes. Switching the structure off suspends the weapon rather than removing it. A name the engine cannot resolve to a declared section leaves the type granting nothing.
+A house [holds the named superweapon](/systems/superweapons/#from-a-structure-or-a-plug) while it owns at least one structure of this type standing on the map, and loses it when the last one is gone, unless a trigger has [granted it outright](/systems/superweapons/#granted-outright). Switching the structure off, or a power shortfall, can suspend the weapon without removing it; [Power output and drain](/systems/power/#superweapons) covers when.
 
-The key is read on the type, so it works both on a structure a house builds and on a plug installed into one. A plug's grant skips the [`AuxBuilding=`](/keys/auxbuilding/) test the structure's own grant goes through.
+The value names a section listed in `[SuperWeaponTypes]`. A name that matches no listed section grants nothing. The key holds one superweapon; [`SuperWeapon2=`](/keys/superweapon2/) grants a second.
+
+The key also works on a plug: a structure fitted with this type as a plug grants the plug's superweapon too. A plug's grant skips the [`AuxBuilding=`](/keys/auxbuilding/) test that a structure's own grant must pass.
 
 ```ini title="rules.ini"
 [GAPLUG3]       ; Ion Cannon Uplink, a plug for the GDI Upgrade Center
@@ -17,4 +19,4 @@ PowersUpBuilding=GAPLUG
 SuperWeapon=IonCannonSpecial
 ```
 
-The same value is what a [`NukeSilo=yes`](/keys/nukesilo/) type is matched against when a missile weapon looks for somewhere to launch from.
+A repeating missile superweapon needs a launch site; [`NukeSilo`](/keys/nukesilo/) covers which structure launches it.

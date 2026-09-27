@@ -7,6 +7,6 @@ when_omitted:
   value: "4"
 ---
 
-The threshold is read only in a campaign game, where a computer house takes its [`IQ`](/keys/iq/) from its own scenario section and starts at 0. Outside a campaign the check is bypassed entirely, so every computer house fires its superweapons whatever its intelligence level says.
+In a campaign, a computer house fires its ready superweapons only while its [`IQ`](/keys/iq/) is at least this value. A campaign house takes `IQ=` from its section in the scenario. It has 0 when the section sets none, and 1 when the value is above [`MaxIQLevels`](/keys/maxiqlevels/). Outside a campaign, the check is skipped, and every computer house fires its superweapons whatever its `IQ`.
 
-The gate covers the whole [superweapon step of the computer's decision pass](/systems/superweapons/#the-computers-use), so raising it above the intelligence a campaign grants leaves the house charging weapons it never fires.
+The threshold does not affect charging. A campaign house whose `IQ` is below it still charges its superweapons but never fires them. [The computer's use](/systems/superweapons/#the-computers-use) covers when and where a computer house fires each one.

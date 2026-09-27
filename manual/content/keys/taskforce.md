@@ -7,7 +7,9 @@ when_omitted:
   value: none
 ---
 
-The named TaskForce is the team's roster. Its member lines are the roster slots [recruitment](/systems/ai-team-production/#recruitment) fills one at a time and the unfilled places a computer house builds toward; the total of their quantities is the strength the team counts as full at. A reinforcement group creates exactly those members instead of recruiting them. The TaskForce also supplies the team's recruitment [`Group`](/keys/group/#scope-taskforce) whenever the TeamType leaves its own unset.
+The named TaskForce is the team's roster. Each of its member lines names an object type and a quantity. A team [recruits](/systems/ai-team-production/#recruitment) toward those quantities, and a computer house builds the members still missing. The team is at full strength when it holds the sum of the quantities. The [Reinforcement (team)](/mapping/actions/taction-reinforcements/) and [Reinforcement (team) at waypoint](/mapping/actions/taction-reinforcements-special/) actions create exactly those members instead of recruiting them. A TaskForce of a single `DSHP` line is the exception, because it can [deliver a dropship loadout](/keys/startingdropships/) instead.
+
+When the TeamType leaves its own [`Group`](/keys/group/#scope-teamtype) unset, the team recruits with the TaskForce's [`Group`](/keys/group/#scope-taskforce).
 
 ```ini title="ai.ini or map file"
 [MyRaidTeam] ; example TeamType
@@ -17,8 +19,18 @@ TaskForce=MyRaidForce ; defined under [TaskForces]
 Script=MyRaidScript   ; defined under [ScriptTypes]
 ```
 
-The value is matched against the registered TaskForce IDs. `<none>` and `none` clear the reference, and a name that no `[TaskForces]` entry registers is not rejected: a fresh, empty TaskForce is created under that name. A team built on an empty one wants nobody, so it never reaches full strength and never starts its script. Outside a campaign the unfilled-team rules dissolve it after a delay; in a campaign it sits there for the rest of the mission.
+The value is matched against the IDs registered under `[TaskForces]`. A name that is not registered there is not an error: the game creates a new, empty TaskForce under that name. What happens next depends on how the team is created:
 
-:::danger[A TeamType with no TaskForce at all is a different matter]
-Omitting the key, or clearing it with `<none>`, leaves the reference empty, and the first thing a team's logic does on its first pass is total up the roster without checking that there is one. [AI trigger selection](/systems/ai-team-production/#which-triggers-are-eligible) rejects such a TeamType before it can raise a team, but the [Create Team](/mapping/actions/taction-create-team/) and [Reinforcement (team)](/mapping/actions/taction-reinforcements/) trigger actions do not. A reinforcement never gets that far: the delivery routine totals the roster before the team is built. And an `[AITriggerTypes]` entry naming such a TeamType is worse still: the trigger reads the roster's technology requirement as the scenario loads, before any of this, and faults there.
+- Either reinforcement action creates nothing.
+- Any other team wants no members, so it never reaches full strength and never starts its Script. Outside a campaign it is deleted once [`DissolveUnfilledTeamDelay`](/keys/dissolveunfilledteamdelay/) frames have passed since it was created. In a campaign it stays for the rest of the mission.
+
+In a Debug build, a team with an empty TaskForce stops the game on a failed assertion the first time its logic runs.
+
+:::danger[Give every TeamType a TaskForce]
+`<none>`, `none` or a missing `TaskForce=` leaves the TeamType with no TaskForce at all, and the game crashes:
+
+- An `[AITriggerTypes]` entry that names such a TeamType crashes the game while the scenario loads.
+- Either reinforcement action crashes before it creates anything.
+- A [Change team...](/mapping/missions/tmission-teamchange/) mission that names such a TeamType crashes as soon as it runs.
+- A team created by a [Create Team](/mapping/actions/taction-create-team/) action crashes on its first logic turn.
 :::

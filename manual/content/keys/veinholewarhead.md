@@ -15,8 +15,8 @@ VeinholeWarhead=VeinholeWH
 Veinhole=yes
 ```
 
-The warhead decides what [`VeinDamage`](/keys/veindamage/) costs each armor class, and [`Veinhole=yes`](/keys/veinhole/) on it is what lets a hurt object shoot back at the monster that grew the veins.
+Vein attacks deal [`VeinDamage`](/keys/veindamage/) with this warhead, so its modifiers decide how much each armor type takes. If the warhead sets [`Veinhole=yes`](/keys/veinhole/), an object hurt by veins can fight back against the monster that owns them. [Standing in veins](/systems/veins/#standing-in-veins) gives the conditions.
 
-:::caution[Veins with no warhead are harmless]
-This setting has no built-in value. Damage with no warhead is reduced to zero and dropped before any object's strength changes. A field with the setting unresolved therefore plays its attack over every cell it covers and takes nothing off anything standing there.
+:::caution[Set a vein warhead]
+If `VeinholeWarhead` is not set, vein attacks still play over every vulnerable object in a field but deal no damage.
 :::

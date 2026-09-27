@@ -1,14 +1,19 @@
 ---
 key: Max
-summary: The number of teams of this TeamType a house may hold at once.
+summary: How many teams of this TeamType can exist before AI triggers stop raising more.
 see_also: ["system:ai-team-production"]
 when_omitted:
   kind: value
   value: "0"
 ---
 
-A negative value removes the limit entirely. Any other value is compared against a count of live teams, and the comparison is not the same on both sides of team creation. An [AI trigger is rejected](/systems/ai-team-production/#which-triggers-are-eligible) when the house already owns this many teams of the type. The creation that follows compares campaign play against the teams of this type alive anywhere in the scenario, however they were raised, and every other session type against the house's own.
+A negative value removes the limit. Any other value stops an AI trigger from raising another team of this type once that many exist. The trigger checks the count twice:
 
-:::caution[A TeamType with no `Max` can never be raised]
-The stored `0` is not a missing limit. It rejects the trigger on the first pass and refuses the creation as well, so a TeamType that never sets this key is unreachable through AI triggers. The value is ignored entirely by reinforcement groups, by the team a [Change team...](/mapping/missions/tmission-teamchange/) mission creates, by the attack teams an alerted house raises, and by every team a [Create Team](/mapping/actions/taction-create-team/) action raises. A TeamType raised only that way is unaffected.
+1. The trigger [is rejected](/systems/ai-team-production/#which-triggers-are-eligible) when the house already owns this many teams of the type.
+2. The creation that follows [checks again](/systems/ai-team-production/#from-suggestion-to-team). Outside a campaign it counts the house's teams of the type, as the first check did. In a campaign it counts every team of the type in the scenario, whichever house owns it and however it was created.
+
+Other ways of creating a team ignore `Max`. These are the [Create Team](/mapping/actions/taction-create-team/), [Reinforcement (team)](/mapping/actions/taction-reinforcements/) and [Reinforcement (team) at waypoint](/mapping/actions/taction-reinforcements-special/) trigger actions and the [Change team...](/mapping/missions/tmission-teamchange/) mission.
+
+:::caution[Set `Max` on every TeamType an AI trigger names]
+The default of `0` is a limit of zero teams, not a missing limit. An AI trigger naming a TeamType that never sets `Max` is rejected every time, so that TeamType can be raised only by the trigger actions and mission listed above.
 :::

@@ -8,4 +8,4 @@ when_omitted:
   value: "2"
 ---
 
-Nothing measures a computer house's infantry against the size of its base. Which soldier it orders next comes from [the demand its own teams leave unfilled](/systems/ai-team-production/#production-demand), counted per InfantryType and offset by the recruitable soldiers it already owns.
+No computer house compares its infantry with the size of its base. The infantry it builds is set by [production demand](/systems/ai-team-production/#production-demand): the places its teams still need filled, counted per InfantryType, less the soldiers it already has free to recruit.

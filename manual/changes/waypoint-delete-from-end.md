@@ -9,6 +9,8 @@ targets:
 credit: [ZivDero, dkeeton]
 ---
 
-Delete Waypoint with no waypoint picked up now removes the last waypoint of the selected path, so pressing it repeatedly takes the path apart from the end; before, it did nothing unless a waypoint was held. A path's loop now survives a deletion, where before any removal opened it. The waypoint the path returns to keeps its place when an earlier waypoint is removed, and the loop moves on to the next when the return waypoint itself is removed. Removing the path's last waypoint still opens the loop.
+Delete Waypoint with no waypoint picked up now removes the last waypoint of the selected path, so repeated presses take the path apart from the end. It used to do nothing unless a waypoint was picked up.
+
+A looping path now stays a loop when a waypoint other than its last is deleted; any deletion used to open the loop. The loop keeps returning to the same waypoint when an earlier one is removed, and returns to the next waypoint when the one it returned to is removed. Removing the path's last waypoint still opens the loop.
 
 dkeeton is credited for the ts-patches change the first part follows.

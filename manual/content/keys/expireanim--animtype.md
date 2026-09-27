@@ -8,12 +8,14 @@ when_omitted:
   value: none
 ---
 
-An animation of the named type is created where a thrown animation ends its life, provided that end does not come low over water. An end counts as low over water when the contact cell's terrain is water and the contact sits less than 416 leptons above the ground height at that cell. That figure is the height of a bridge deck, about a cell and a half. Solid ground, a bridge deck, and anything at or above that height all take the impact path. An animation that ends low over water makes a wake and a small splash instead. A meteor plays the last animation of the rules' [`SplashList`](/keys/splashlist/) in place of both. This setting is not read on a water landing.
+The animation that plays where a thrown animation ends, unless it ends low over water. A thrown animation is one with [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype).
 
-The end comes on the first contact of the flight, so the impact effects and the [`BounceAnim`](/keys/bounceanim/#scope-animtype) effects can both appear on the same frame at the same place.
+An end is low over water when the cell is water and the thrown animation is less than 416 leptons above the ground there, the height of a bridge deck. Such an end makes a wake and a small splash instead, and this setting is not used. A meteor makes the last splash in the rules' [`SplashList`](/keys/splashlist/) in place of both. An end on solid ground, on a bridge deck, or higher up plays this animation.
 
-:::caution[The impact blast sits inside the same branch]
-[`Damage`](/keys/damage/#scope-animtype) and the flash of light that goes with a bright warhead are applied in the same block as the animation. An animation with nothing named here therefore deals no blast damage whatever its damage figure and [`Warhead`](/keys/warhead/#scope-animtype) say. The damage dealt on a strike is a separate path and still applies.
+A thrown animation ends at its first contact with a surface, as [`Elasticity`](/keys/elasticity/#scope-animtype) describes. When that contact counts as a strike, this animation and the [`BounceAnim`](/keys/bounceanim/#scope-animtype) appear on the same frame. This animation appears at the contact point, and the `BounceAnim` appears where the thrown animation was one frame before the contact.
+
+:::caution[Blast damage needs an impact animation]
+The [`Damage`](/keys/damage/#scope-animtype) blast, with its [`Warhead`](/keys/warhead/#scope-animtype) and the flash of light a bright warhead brings, is dealt only when this key names an animation. Without one, the thrown animation deals no blast damage when it ends. The damage dealt on a strike within [`DamageRadius`](/keys/damageradius/#scope-animtype) does not depend on this key.
 :::
 
-A value naming no registered animation is not refused: a type of that name is created on the spot, holding no artwork and every setting at its built-in value.
+A misspelled name is not refused. It creates a new, empty animation type of that name, with no artwork unless a shape file of that name exists. Because an animation is then named, the blast damage still happens.

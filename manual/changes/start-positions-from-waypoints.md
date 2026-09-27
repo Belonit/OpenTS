@@ -14,4 +14,4 @@ credit:
 - ZivDero
 ---
 
-A house now starts on open ground only when the map's eligible waypoints `0` through `7` have all been taken. An unofficial map was padded to eight positions with random open ground before the first house drew, so a house could start away from every placed waypoint while one stood free. Which waypoints `Official` makes eligible is unchanged.
+A house now starts on random open ground only after every eligible start waypoint, `0` through `7`, has been taken. An unofficial map used to be padded to eight positions with random open ground before the first house drew, so a house could start away from every placed waypoint while one was still free. Which waypoints `[Basic] Official=` makes eligible is unchanged.

@@ -8,7 +8,11 @@ when_omitted:
   value: "16"
 ---
 
-The number of sound effects that may play at once, from 4 to 32, read from `[General]` in `SOUND.INI` or `SOUND01.INI`. Music, speech and movie sound are not counted. When every voice is taken, a new sound can displace the playing sound with the lowest [`Priority=`](/keys/priority/), the quietest among equals. It does so when its priority is higher, or when the priorities are equal and the playing sound is more than a tenth quieter than the new one.
+How many sound effects can play at once. A value below 4 is read as 4, and a value above 32 as 32. Either sound file may set it; [SOUND.INI](/formats/sound-ini/) describes how the two files combine.
+
+Every sound effect that is playing counts toward this number, including unit responses. A sound waiting out a [`Delay=`](/keys/delay/) silence does not. Music, EVA speech and movie sound do not count.
+
+When every voice is in use, a new sound effect can take the voice of a playing one. [`Priority=`](/keys/priority/#scope-sounds) decides which sound gives way and whether the new one plays at all.
 
 ```ini title="sound01.ini"
 [General]

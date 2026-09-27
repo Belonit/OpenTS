@@ -25,17 +25,17 @@ source_files:
   - code/scenario.cpp
 ---
 
-`[ScriptTypes]` values name the Script sections to load. The number to the left of a `[ScriptTypes]` line is only that line's name. Inside a Script section the number is the mission's slot, and each section accepts lines `0` through `49`.
+Each value in `[ScriptTypes]` is a script ID, and the section with that name holds the script. The number to the left of a `[ScriptTypes]` line only names the line. Give each line a distinct number: a repeated number replaces the earlier line in the same file, as [INI syntax](/formats/ini-syntax/#repeats-and-later-files) describes, so the earlier script is not loaded.
 
-OpenTS loads `AI.INI`, then `AIFS.INI` when Firestorm is enabled, then the map-local definitions. When both files use the same `[ScriptTypes]` number, only the later file's script is registered.
+In a script section, `Name=` gives the display name and the numbered lines `0` through `49` hold the missions in order. The game reads those lines in number order and packs them together, so gaps in the numbering are skipped. Lines numbered `50` or higher are ignored. Each [mission page](/mapping/missions/) says what its argument means.
 
 ```ini title="AI.INI, AIFS.INI, or map file"
 [ScriptTypes]
 0=MyAttackScript
 
 [MyAttackScript]
-Name=Attack nearest target
-0=0,0
+Name=Attack any enemy
+0=0,1 ; Attack, with argument 1 (any suitable enemy)
 ```
 
-Lines load in slot order and pack together, so gaps in the numbered slots collapse.
+The game reads scripts from `AI.INI`, then from `AIFS.INI` when Firestorm is enabled, then from the map file. [OPENTS.INI](/formats/opents-ini/#the-files-it-reads) can rename the two AI files. When a later file lists a script ID that an earlier one already loaded, the later file's section replaces that script's missions. If the later file lists the ID but has no section for it, the earlier script is kept unchanged.

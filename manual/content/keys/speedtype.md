@@ -7,7 +7,7 @@ when_omitted:
   note: "`Track` in a `Crusher=yes` section and `Wheel` in every other."
 ---
 
-One `rules.ini` section per [land type](/reference/enums/land-type/), `[Clear]`, `[Road]`, `[Water]` and the rest, has one figure per [speed type](/reference/enums/speed-type/) token. The figure is a decimal fraction of full speed, capped at 1.0, so `1` crosses at full speed and `0` refuses the cell outright. This key picks which of those figures the vehicle reads out of each of those sections.
+`SpeedType` picks which column of the [terrain table](/systems/movement-and-terrain/#the-terrain-table) the vehicle reads. Each land type's section in `rules.ini`, such as `[Clear]`, `[Road]` or `[Water]`, holds one figure per [speed type](/reference/enums/speed-type/). A vehicle with `SpeedType=Hover` reads the `Hover=` figure from each of those sections. A figure of `0` closes that land type to the vehicle. For a vehicle moved by the drive locomotor, any other figure is a fraction of full speed.
 
 ```ini title="rules.ini"
 [Water]
@@ -20,16 +20,26 @@ SpeedType=Hover
 MovementZone=AmphibiousDestroyer
 ```
 
-Two decisions read the chosen column. A cell whose figure is `0` is refused when the vehicle asks whether it may step into it. The refusal lapses when the question is asked at the height of a bridge deck over that cell, or with no height at all. A vehicle standing at ground level under a bridge is refused exactly as it would be in the open. The second decision belongs to the drive locomotor alone. A driven vehicle crosses every other cell at the fraction of full speed the figure gives, after the slope multiplier that the same value selects. `Track` takes [`TrackedUphill`](/keys/trackeduphill/) and [`TrackedDownhill`](/keys/trackeddownhill/); every other speed type, `Foot`, `Hover`, `Amphibious` and the rest alike, takes [`WheeledUphill`](/keys/wheeleduphill/) and [`WheeledDownhill`](/keys/wheeleddownhill/). A vehicle moved by any other locomotor reads its column for the per-step test and nothing else. A hovercraft or a tunneler therefore crosses ground priced at a tenth of full speed at the same speed it crosses ground priced at full. [Movement and terrain](/systems/movement-and-terrain/#what-each-locomotor-drives-its-speed-from) sets out where each of the ten takes its speed from.
+A land type whose figure is `0` is closed to the vehicle in two ways:
+
+- The vehicle cannot step into such a cell. A vehicle on a bridge deck may still cross above such a cell, but a vehicle at ground level under the bridge is refused as it would be in the open.
+- When the game looks for a free cell to place or send the vehicle, such as an arrival or scatter spot, it skips such cells.
+
+A driven vehicle crosses each cell at that cell's fraction of full speed. On a slope, the speed type also picks the slope multiplier applied on top. `Track` uses [`TrackedUphill`](/keys/trackeduphill/) and [`TrackedDownhill`](/keys/trackeddownhill/). Every other speed type, including `Foot`, `Hover` and `Amphibious`, uses [`WheeledUphill`](/keys/wheeleduphill/) and [`WheeledDownhill`](/keys/wheeleddownhill/).
+
+A vehicle moved by any other locomotor uses its column only to close cells. A hovercraft or a tunneler crosses ground priced at `0.1` as fast as ground priced at `1`. [Movement and terrain](/systems/movement-and-terrain/#what-each-locomotor-drives-its-speed-from) lists where each locomotor takes its speed from.
 
 ## SpeedType and MovementZone
 
-[`MovementZone`](/keys/movementzone/) answers a different question. Every cell is sorted once into one of a handful of terrain classes, and connected runs of cells sharing a class become the zones that reachability is judged against. A type's movement zone says which of those classes count as connected for it. That sorting reads the `Wheel` entry of a land type and no other, after `Water` and `Beach` cells have already been set aside as water. A vehicle's own `SpeedType` therefore never changes which cells the game treats as connected.
+`SpeedType` does not decide which cells the game treats as connected; [`MovementZone`](/keys/movementzone/) does. The [zone map](/systems/movement-and-terrain/#the-zone-map) that judges whether a destination is reachable reads only the `Wheel` figures, and treats every `Water` and `Beach` cell as water whatever its figures say. A type's movement zone then decides which of those cells count as connected for it.
 
-The two settings therefore have to agree. A hovercraft whose `[Water] Hover=` is above zero still gets no route across a lake unless its movement zone accepts water, because the zone map never read the `Hover` column. A movement zone that accepts water still strands it if its own column reads `0` for `Water`, because the per-step check refuses each cell as it is reached.
+The two settings must agree:
 
-To keep a vehicle off one terrain, price its own column at `0` in that land's section. To confine it to a single land type whatever the other sections say, use [`MovementRestrictedTo`](/keys/movementrestrictedto/); that test runs ahead of this one and admits no exception from cost.
+- A hovercraft whose `[Water] Hover=` is above zero still gets no route across a lake unless its movement zone accepts water.
+- A movement zone that accepts water still leaves the hovercraft stranded if its `Hover=` figure for `Water` is `0`, because the vehicle cannot step into any water cell.
 
-:::danger[An unrecognized value leaves the type with no speed type at all]
-The value is matched against the token list and nothing else, and a spelling that misses resolves to no speed type rather than to a fallback. The repair that gives an unset speed type its `Track` or `Wheel` starting value runs before this key is read, so it cannot undo the bad value. Only a later rules layer that names the same section again gets another chance at it. Until then every throttle and passability question about the vehicle is answered from one slot short of the terrain table's first column. Those are the four bytes before the table's first entry, and for every land type but `Clear` they belong to the entry before it.
+To keep a vehicle off one land type, set its column to `0` in that land type's section. To confine it to a single land type, use [`MovementRestrictedTo`](/keys/movementrestrictedto/). That test runs before this one, and no terrain figure overrides it.
+
+:::caution[Spell the value exactly]
+A value that matches no speed type leaves the vehicle with no speed type at all. It does not fall back to `Track` or `Wheel`. The game then reads the vehicle's terrain figures from memory outside the terrain table, so its passability and speed follow no terrain section. A later rules file that contains the same section and does not repeat the bad value restores the `Track` or `Wheel` default.
 :::

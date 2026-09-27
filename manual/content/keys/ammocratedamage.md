@@ -7,11 +7,17 @@ when_omitted:
   value: "100"
 ---
 
-An overlay with [`Explodes=yes`](/keys/explodes/#scope-overlaytype) is cleared from its cell the moment an explosion reaches it, and this figure is the blast left in its place. The blast is centered on that cell, sets [`C4Warhead`](/keys/c4warhead/), and sets off any chain-reactive growth it touches. It is credited to nobody, so a unit killed by an exploding barrel counts as no one's kill.
+An [`Explodes=yes`](/keys/explodes/#scope-overlaytype) overlay deals this much raw damage through [`C4Warhead`](/keys/c4warhead/) when an explosion sets it off. The blast is centered on the point where the triggering explosion landed, inside the overlay's cell.
+
+The blast can reach objects in the overlay's cell and the eight cells around it. Which of them it damages, and how armor and distance adjust each object's damage, follow the rules for any `C4Warhead` blast in [what a blast reaches](/systems/warheads/#what-a-blast-reaches).
+
+No house is credited with the blast, so a unit killed by an exploding overlay counts as no one's kill.
+
+The blast sets off no chain-reactive Tiberium, because a blast sets off Tiberium only in its own cell, and that cell held the exploding overlay.
+
+[`Explodes=yes`](/keys/explodes/#scope-overlaytype) covers the animation, debris, particles and neighbor fires that come with the blast.
 
 ```ini title="rules.ini"
 [CombatDamage]
-AmmoCrateDamage=200  ; each object caught in the blast takes the full 200
+AmmoCrateDamage=200  ; raw damage before armor and distance adjustments
 ```
-
-[`BarrelExplode`](/keys/barrelexplode/) plays over the blast. One piece of [`BarrelDebris`](/keys/barreldebris/) is thrown: the first entry in that list to pass a fifteen percent roll, or none at all when every entry fails. [`BarrelParticle`](/keys/barrelparticle/) is spawned on a twenty-five percent roll. Each of the four cells directly north, east, south and west that also holds an exploding overlay is set alight with a `FIRE3` fire animation the engine supplies itself.

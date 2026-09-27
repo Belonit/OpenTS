@@ -42,6 +42,6 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-Every list that names the types filling a role is now resolved through the country the house acts as under `ActsLike`. That is the same ownership bit the house's construction yard produces against. A scenario that hands a house another country therefore hands it that country's buildings and units as well. Previously ownership was asked two ways. A house was planned and handed what its own country may own, while what it was allowed to put up was tested against the country it acts as. A campaign house acting as another country could be planned a base out of types it could never build.
+The lists that name which type fills a role now pick the first type that the country named by `ActsLike=` in the house's section of the scenario file may own. `ActsLike=` makes a house build and plan as that country. The lists include `BuildRefinery`, `BuildPower` and `ConcreteWalls` in `[AI]` of `rules.ini` and `HarvesterUnit` in `[General]`; `HarvesterUnit` takes its first entry when the country may own none of its entries. The lists used to pick for the house's own country, while its construction yard could build only what the `ActsLike` country may own. A campaign house acting as another country could therefore plan a base out of structures it could never build.
 
 AlexB is credited for the ts-patches bundle, which resolves its picks the same way.

@@ -8,9 +8,11 @@ when_omitted:
   value: "3.5"
 ---
 
-Leptons per frame: 256 leptons to a cell, 15 frames to the second. Debris is thrown upward at this speed plus a whole number of leptons drawn from the span up to [`MaxZVel`](/keys/maxzvel/). This is the slowest launch the type can produce. If [`MaxZVel`](/keys/maxzvel/) stands less than a lepton above it, the pick adds nothing and every piece launches at exactly this speed.
+The speed is in leptons per frame (256 leptons to a cell, 15 frames to the second). Ordinary debris is thrown upward at this speed plus a random whole number of leptons per frame, up to [`MaxZVel`](/keys/maxzvel/). This is therefore the slowest launch the type produces. When `MaxZVel` equals this setting or is less than one lepton per frame above it, every piece launches at exactly this speed.
 
-A type whose section reads as below throws its debris upward at 3 to 8 leptons per frame.
+Keep `MaxZVel` at or above this setting. A maximum just below it crashes the game, as [`MaxZVel`](/keys/maxzvel/) describes.
+
+A type whose section reads as below throws its debris upward at 3, 4, 5, 6, 7 or 8 leptons per frame.
 
 ```ini title="rules.ini"
 [MYDEBRIS]     ; a VoxelAnimType, declared under [VoxelAnims]
@@ -18,4 +20,4 @@ MinZVel=3
 MaxZVel=8
 ```
 
-A meteor takes the figure as its vertical speed outright, with no pick and no reference to the maximum. The sign then decides the approach, as [`IsMeteor`](/keys/ismeteor/#scope-voxelanimtype) describes.
+A meteor uses this setting as its vertical speed exactly, with no random addition and no reference to the maximum. The sign then decides the direction of approach, as [`IsMeteor`](/keys/ismeteor/#scope-voxelanimtype) describes.

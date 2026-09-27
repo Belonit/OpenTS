@@ -1,11 +1,11 @@
 ---
 key: HasRadialIndicator
 scope: animtype
-label: Animation art
+label: Radius ring
 no_effect: true
 when_omitted:
   kind: value
   value: "no"
 ---
 
-An animation is never selected and has no ring to draw, so the value is stored for AnimTypes and never reaches anything.
+Only a cloak generator or sensor array structure draws the ring, so an animation never shows one.

@@ -7,8 +7,10 @@ when_omitted:
   value: none
 ---
 
-The key names a single animation. It is attached to every vehicle, aircraft and infantryman [a pulse stuns](/systems/emp-pulse/#what-a-pulse-reaches), and to a stunned structure that is the deployed form of a vehicle. Each starts after a random delay of up to 25 frames. Any other stunned structure receives none. Its length is its own, so it may finish well before the stun does, and on recovery the engine only tells a still-running copy to stop after its current loop.
+Every vehicle, aircraft and infantryman [a pulse stuns](/systems/emp-pulse/#what-a-pulse-reaches) gets a copy of this animation, attached so that it moves with the object. A stunned structure gets one only if it is one of the deployed-vehicle kinds [listed under `DeploysInto`](/keys/deploysinto/). Other stunned structures get none.
 
-:::danger[The animation is created without checking that one is named]
-Every stun that attaches an animation reads this type. With no type named here the game crashes the first time a pulse stuns one of the objects above.
+Each copy starts after a random delay of up to 25 frames and plays for the animation's normal length, which can end before the stun does. When the object recovers, a copy that is still playing stops at the end of its current loop.
+
+:::danger[Name an animation before any pulse can stun]
+With no animation named here, the game crashes the first time a pulse stuns an object that gets one.
 :::

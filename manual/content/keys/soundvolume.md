@@ -7,8 +7,10 @@ when_omitted:
   value: ".7"
 ---
 
-The fraction is the level of the sound effect group in the mixer. It is applied on top of each sound's own volume rating and whatever volume the caller asked for, and it takes effect on sounds already playing. A sound effect is not started at all while the fraction is zero or below. The same fraction is the level of the movie group, so it also sets the volume of a movie's audio track. The menu and score screen sounds are sound effects, a briefing movie's audio plays in the movie group, and all of them follow the fraction too.
+`SoundVolume` sets the level of every sound effect and of every movie's soundtrack, briefings included. Sound effects include unit responses and the sounds of the menus and the score screen. The fraction multiplies the final volume of every sound effect and movie soundtrack, including sounds already playing.
 
-The read holds the fraction to `1` at the top but not at the bottom, so a negative figure is stored as written. Nothing else clamps it, and the sounds it gates are never heard.
+At `0` or below, sound effects and movie soundtracks are silent.
 
-The sound options dialog offers the fraction as a ten-step slider, and leaving the options screen behind it writes the setting back to `sun.ini`.
+Values above `1` are read as `1`. A negative value is kept and saved back as written until the player presses OK in the sound options. OK stores the slider's position, which rounds the level to the nearest tenth and turns a negative value into `0`.
+
+The sound options dialog offers the fraction as a ten-step slider. Moving the slider changes the level at once and plays a beep. The level is saved to `sun.ini` when the player leaves the options menu. During a game, the sound options return to the game controls dialog, and the level is saved when that dialog is accepted.

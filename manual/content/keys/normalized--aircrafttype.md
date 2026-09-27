@@ -7,8 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-Only a building reads the flag. When this flag is yes, the first animation state a building takes, and any state set while the scenario is being set up, does not use its configured frame delay as written. The delay is rescaled against the game speed setting, so the animation keeps roughly the same rate on the clock however fast or slow the match is running.
+On a structure, `Normalized=yes` rescales an animation state's frame delay against the game speed setting, so the animation keeps roughly the same real-time speed at every game speed setting. It applies in two cases only:
 
-The flag applies only on the path that reads it. Two other paths rescale the construction and idle states unconditionally, whatever this flag says: the queued change of animation state, and the restart at the end of a loop.
+- the first animation state the structure enters;
+- any animation state set while the scenario is being set up.
 
-An aircraft, infantry type, or vehicle stores the flag and never reads it. No art setting gives an aircraft the same control: its body is drawn turned to the aircraft's facing in every frame.
+The construction state is not rescaled in either case.
+
+Separately, every structure rescales its construction and idle states whatever this flag says. That happens when a queued change of animation state takes effect and each time an animation loops. At those points any other state goes back to its configured delay, so the flag's effect on that state lasts only until its first loop.
+
+An aircraft, infantry type or vehicle stores the flag without effect.

@@ -1,6 +1,6 @@
 ---
 key: TiberiumDeathToVisceroid
-summary: Whether infantry killed by Tiberium leave a visceroid behind.
+summary: Whether deaths to Tiberium and gas particles leave a visceroid behind.
 see_also: [SmallVisceroid, Visceroids, "system:tiberium"]
 when_omitted:
   kind: value
@@ -12,6 +12,11 @@ when_omitted:
 TiberiumDeathToVisceroid=no
 ```
 
-Two deaths are covered: an infantryman standing in a Tiberium cell who succumbs to the poisoning, and one killed by a Tiberium gas particle. Each one creates a [`SmallVisceroid`](/keys/smallvisceroid/) belonging to the `Neutral` house on the spot, provided no vehicle already occupies that cell.
+With the switch on, two kinds of death leave a visceroid on the cell where they happen:
 
-Nothing else spawns visceroids from infantry deaths, so clearing the switch removes them from the scenario entirely; the `[SpecialFlags]` entry named [`Visceroids`](/keys/visceroids/) is not read at all.
+- infantry killed by the [damage Tiberium deals](/systems/tiberium/#damage) as they move into its cell;
+- any object killed by the damage a gas particle ([`BehavesLike=Gas`](/keys/behaveslike/#scope-particletype)) deals to its cell.
+
+The visceroid is the UnitType named by [`SmallVisceroid`](/keys/smallvisceroid/#scope-global-rules), and it belongs to the `Neutral` house. No visceroid appears when a vehicle occupies the cell.
+
+This switch alone decides whether these deaths leave visceroids. The `[SpecialFlags]` entry [`Visceroids`](/keys/visceroids/) has no effect on them. Visceroids placed on the map or created by [`TiberiumWildlife`](/keys/tiberiumwildlife/) do not depend on it.

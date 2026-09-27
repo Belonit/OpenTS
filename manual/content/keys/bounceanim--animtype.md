@@ -8,10 +8,12 @@ when_omitted:
   value: none
 ---
 
-An animation of the named type is created at the thrown animation's position on the frame the bounce physics report a strike. A strike is contact with the ground, a bridge deck, or a building or wall standing in the way. A contact that leaves too little motion to keep tracking is reported as settling rather than as a strike, and plays nothing. [`Elasticity`](/keys/elasticity/#scope-animtype) decides which of the two a landing is, and every shipped bouncing animation sets a value that makes an ordinary landing settle.
+The named animation plays where a thrown animation strikes something. A thrown animation is one with [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype). It can strike the ground, a bridge deck, or a building or wall in its path.
 
-The strike is also the end of the flight. The animation is removed on the same frame, so this effect plays at most once and alongside [`ExpireAnim`](/keys/expireanim/#scope-animtype), at the same place.
+Not every contact is a strike. A contact that leaves the thrown animation with too little motion counts as settling and plays no bounce animation. [`Elasticity`](/keys/elasticity/#scope-animtype) decides which a contact is. Every bouncing animation in the shipped `art.ini` sets an `Elasticity` that makes an ordinary landing settle.
 
-Nothing on this path tests what is underneath. An animation striking water plays this animation and its sound where it comes down. The expiry that follows on the same frame plays no blast there: a wake and a splash take its place.
+A thrown animation is removed on its first contact, whether it strikes or settles. The bounce animation therefore plays at most once, on the same frame as [`ExpireAnim`](/keys/expireanim/#scope-animtype). It appears where the thrown animation was one frame before the contact, so it can sit a short distance from the contact point where `ExpireAnim` appears.
 
-A value naming no registered animation is not refused: a type of that name is created on the spot, holding no artwork and every setting at its built-in value.
+The bounce animation also plays on water. There, splash animations replace the expiry animation and its blast, but the bounce animation is unaffected.
+
+A name that matches no animation type still creates one under that name. It draws the shape file and reads the `art.ini` section of that name if they exist, so a misspelled name plays an animation with no artwork.

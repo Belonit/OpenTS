@@ -1,16 +1,9 @@
 ---
 key: CameoSortOrder
-summary: Places a type's sidebar cameo within its category, ahead of the order the strip would otherwise give it.
+summary: Orders a type's sidebar cameo among the cameos of the same kind.
 see_also: ["system:sidebar", "SidebarSorting"]
 ---
 
-The lowest number comes first and negative numbers are accepted. Types sharing a number fall
-back on [the order of the strips](/systems/sidebar/#the-order-of-the-strips), so leaving every
-type at zero arranges the strip entirely by that order.
+Negative numbers are accepted. To place a cameo between two types that are both left at zero, give those two types numbers as well.
 
-A cameo cannot be placed between two types that both keep the default; number both neighbours
-instead. A full strip still takes the types that reached it first, so a number cannot win a
-cameo a place on one.
-
-[`SidebarSorting=no`](/keys/sidebarsorting/) leaves the strips unsorted, and nothing reads this
-key.
+A full strip still takes the types offered to it first, so a low number cannot get a cameo onto a full strip.

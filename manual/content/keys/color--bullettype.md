@@ -5,17 +5,17 @@ label: Voxel projectile remap
 see_also: [Inviso, Voxel]
 when_omitted:
   kind: computed
-  note: The first color scheme in the loaded list.
+  note: "The first color scheme declared in [Colors]."
 ---
 
-The value is a color scheme name, matched against the loaded schemes without regard to letter case. A scheme with only one intensity level is skipped during that match, and a name matching no remaining scheme leaves the projectile on the scheme it already had.
+The value names a color scheme declared in [`[Colors]`](/keys/color/), in any letter case. A name that `[Colors]` does not declare leaves the projectile on the scheme it already had.
 
-Only a projectile drawn as a voxel model reads it. The model is posed and rendered, and the finished block is put on screen through this scheme's remap table, so the scheme is what decides the model's remapped colors. A projectile drawn from a shape, or one marked [`Inviso=yes`](/keys/inviso/), never reaches that path and takes no color from here at all.
+Only a projectile drawn as a voxel model uses the scheme. The model is drawn through it, so the scheme sets the model's remap colors. A projectile drawn from a shape, or one marked [`Inviso=yes`](/keys/inviso/), takes no color from this setting.
 
 ```ini title="rules.ini"
 [ChemMissile]
-Image=MISLCHEM ; an art entry marked Voxel=yes
-Color=DarkRed
+Image=MISLCHEM ; an art section marked Voxel=yes
+Color=DarkGreen
 ```
 
-Unlike a unit's remap, this is fixed to the projectile type rather than following the house that fired it.
+The scheme belongs to the projectile type. It does not follow the house that fired the projectile, as a unit's colors do.

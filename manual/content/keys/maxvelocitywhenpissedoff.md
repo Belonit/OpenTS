@@ -7,12 +7,14 @@ when_omitted:
   value: "6.5"
 ---
 
-This is the mood a levitating unit is in whenever it has a target, whether or not it also has a destination; the target is tested first and settles which figure applies. Once a thrust has ended and the unit is coasting, it brakes as soon as its speed has fallen *below* this figure, or as soon as the target is inside [`ProximityDistance`](/keys/proximitydistance/). Braking runs at [`IntentionalDeacceleration`](/keys/intentionaldeacceleration/) until the unit is stopped, and it then thrusts at the target again.
+A levitating unit with a target coasts after each thrust until its speed falls *below* this figure, then brakes. It also brakes if the target comes within [`ProximityDistance`](/keys/proximitydistance/). Braking runs at [`IntentionalDeacceleration`](/keys/intentionaldeacceleration/) until the unit stops, and the unit then steers at the target again.
 
-As on [`MaxVelocityWhenFollowing`](/keys/maxvelocitywhenfollowing/), the figure ends a coast rather than capping a speed. At the stock pair, `6.5` here against `5` there, the shorter coast is what makes a levitating unit close on something it means to attack faster than it travels anywhere else. `MaxVelocityWhenFollowing` covers why raising either figure without limit stops paying and eventually costs ground.
+The figure applies whenever the unit has a target, even when it also has a destination. The target must be an infantry, vehicle, aircraft or structure on the map; a unit ordered to fire at the ground counts as having no target. A unit with only a destination uses [`MaxVelocityWhenFollowing`](/keys/maxvelocitywhenfollowing/) instead.
 
-:::caution[A figure of zero strands the unit]
-The test is a strict comparison against the speed held, so at `0` the coast never ends on its own. Drag brings the unit to a standstill and it stays there, neither braking nor thrusting again, until its target happens to fall inside `ProximityDistance` or the target is lost.
+Like `MaxVelocityWhenFollowing`, the figure sets how long a coast lasts, not how fast the unit may go. A higher figure ends each coast sooner, so with this key above `MaxVelocityWhenFollowing`, as it is by default, a unit closing on a target coasts less between thrusts than one heading for a destination. `MaxVelocityWhenFollowing` explains why raising the figure too far makes the unit slower on average.
+
+:::caution[Keep MaxVelocityWhenPissedOff above 0]
+At `0` or below, a coasting unit never slows below the figure, so it never brakes on speed. [`Drag`](/keys/drag/) brings it to a halt, and it stays there, because a stopped unit thrusts again only after braking. It moves again only when its target comes within `ProximityDistance` or it loses the target.
 :::
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

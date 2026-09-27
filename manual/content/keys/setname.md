@@ -7,7 +7,7 @@ when_omitted:
   value: No Name
 ---
 
-A section headed with the value, if the file has one, supplies the animation attached to each base tile of the set. [Theater control files](/formats/theater-control/) covers the entries that section accepts. The lookup is by exact section heading, so two sets sharing a value share the animation section, and each set's own tile numbering is applied to it.
+`SetName` names the section that attaches animations to the set's tiles. If the control file has a section with exactly that heading, including case, its entries give each tile of the set its animation, numbered from 1 within the set. Only the first 63 characters of the value are matched against section headings. Alternate artwork for a tile gets no animation. [Theater control files](/formats/theater-control/) lists the entries that section accepts.
 
 ```ini title="TEMPERAT.INI"
 [TileSet0631]         ; example set
@@ -19,8 +19,10 @@ TilesInSet=8
 Tile03Anim=MYFALLS    ; example AnimType registered in rules.ini
 ```
 
-Every tile the set produces also keeps a name of its own: the first 28 characters of the value with the tile's two-digit position appended. The set above yields `Riverbank cliffs 01` and upward. Nothing in the running game reads that name back; it is the section lookup that has an effect.
+Two sets with the same value read the same section, and each applies the entries to its own tiles by number.
 
-:::caution[Sets that omit the value share one animation section]
-Every set without this key is looked up under the same heading, so a file that happens to contain a section with that name hands its entries to all of them at once.
+The value also labels the set's tiles, as `Riverbank cliffs 01` and upward in the example above. Those labels have no effect on play.
+
+:::caution[Sets without a SetName share the `[No Name]` section]
+Every set that omits the key is matched against `[No Name]`. If the control file has a section with that heading, its entries apply to all of those sets at once.
 :::

@@ -7,10 +7,10 @@ when_omitted:
   value: "0"
 ---
 
-The animation sheds a [`TrailerAnim`](/keys/traileranim/#scope-animtype) on every frame of the game clock whose number is a multiple of this figure. `1` leaves one every frame and `4` leaves one every fourth. The clock is the game's and not the animation's own, so two animations of the same type created a frame apart still drop their trails together.
+Trail animations are dropped on game frames whose number is a multiple of this value: `1` drops one every frame and `4` one every fourth frame. The count uses the game's frame number, not the animation's, so two animations of the same type created a frame apart still drop their trails on the same frames.
 
-The setting is read only where a trailer animation is named. A negative figure behaves as its magnitude, since the test asks only whether the frame divides evenly.
+The value is used only when the animation names a [`TrailerAnim`](/keys/traileranim/#scope-animtype). A negative value acts as its magnitude.
 
-:::danger[A trail without a separation stops the game]
-The test divides by this figure and nothing guards the zero it holds when the section leaves it out. An animation that names a trailer animation without a separation faults on its first logic frame, so the game stops the moment one is created. Every animation in the shipped `art.ini` that names a trailer gives a separation with it.
+:::danger[Set a separation with every trail]
+An animation that names a trail animation and leaves this at `0` crashes the game as soon as it is created. The shipped `art.ini` sets a separation for every animation that names a trail.
 :::

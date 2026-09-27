@@ -9,10 +9,17 @@ when_omitted:
 
 Only a [`Splits=yes`](/keys/splits/) projectile reads the weapon, and a projectile left splitting by [`Airburst=yes`](/keys/airburst/) counts as one. Naming a weapon here changes nothing on a projectile that does not split.
 
-Each bomblet uses the named weapon's own [`Projectile`](/keys/projectile/), [`Warhead`](/keys/warhead/#scope-weapontype) and [`Range`](/keys/range/), and ten times its [`Damage`](/keys/damage/#scope-weapontype). None of the carrier's own figures reach a bomblet. The bomblets are launched from the point the carrier detonated at, pointed straight down at the named weapon's [`Speed`](/keys/speed/#scope-weapontype), and whoever fired the carrier is credited with what they kill. Only the launch is at that speed: a homing bomblet then works toward a hard-coded ceiling of 50 leptons per game frame rather than toward its weapon's own figure. From the launch on, each bomblet is a projectile of its own: [`RetargetAccuracy`](/keys/retargetaccuracy/) draws the target each one dives at, and it then lands, hits or goes off by its own weapon's flight model.
+Each bomblet takes its [`Projectile`](/keys/projectile/) and [`Warhead`](/keys/warhead/#scope-weapontype) from the named weapon, and deals ten times the weapon's [`Damage`](/keys/damage/#scope-weapontype). A [`Ranged=yes`](/keys/ranged/) bomblet flies as far as the weapon's [`Range`](/keys/range/#scope-weapontype). None of the carrier's figures reach a bomblet, except that whoever fired the carrier is credited with what the bomblets kill.
 
-The name is resolved by registering a weapon of that name if one is not already known, so a name that matches no weapon section produces an empty weapon rather than an error. `none` and `<none>` are the two names not resolved that way; both leave the setting holding no weapon at all.
+The bomblets start from where the carrier detonated, pointing straight down, at the named weapon's [`Speed`](/keys/speed/#scope-weapontype). Only the launch uses that speed: a homing bomblet then works toward a fixed ceiling of 50 leptons per game frame, about `Speed=20`, whatever its weapon sets. A homing bomblet whose weapon's `Speed` is `20` or more therefore slows after launch, at the rate its projectile's [`Acceleration`](/keys/acceleration/#scope-bullettype) sets. [`RetargetAccuracy`](/keys/retargetaccuracy/) decides which target each bomblet is aimed at. From then on each bomblet flies, hits and detonates as its own projectile type dictates.
+
+A name that matches no weapon section registers a new, empty weapon instead of raising an error. `none` and `<none>` leave the setting holding no weapon at all.
 
 :::danger[A splitting projectile with no usable weapon here crashes the game]
-The split reads the weapon and its projectile without testing either. A `Splits=yes` projectile therefore crashes the game the moment it detonates if this key is absent, set to `none` or `<none>`, misspelled, or naming a weapon that has no `Projectile`. Both placeholders resolve to no weapon at all and crash exactly as an absent key does, and a misspelling registers an empty weapon, which has no projectile. So does a correctly spelled weapon this key alone names, because it is registered after the weapon sections are read; give it a line in the rules [`[Weapons]` list](/formats/rules-registries/) to register it in time.
+When a `Splits=yes` projectile with a [`Cluster`](/keys/cluster/) above `0` detonates, the game crashes if this key names no weapon with a `Projectile`. That covers all of these:
+
+- the key is absent, or set to `none` or `<none>`;
+- the name is misspelled, which registers an empty weapon with no projectile;
+- the named weapon's section sets no `Projectile`;
+- the weapon is named only here, and not in the rules [`[Weapons]` list](/formats/rules-registries/). Such a weapon is registered after the weapon sections are read, so its own section is never read and it has no projectile.
 :::

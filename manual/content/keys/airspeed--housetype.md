@@ -8,6 +8,6 @@ when_omitted:
   value: "1.0"
 ---
 
-Each country sets its own multiplier in its own section. A house of that country combines it with [the difficulty section's](/keys/airspeed/#scope-difficulty-settings) and with [`GameSpeedBias`](/keys/gamespeedbias/) once, [when it is given its difficulty slot](/systems/difficulty/#how-the-figures-are-combined). A campaign game drops the country's contribution and keeps the other two, which is how [`Groundspeed=`](/keys/groundspeed/#scope-housetype) is treated as well.
+A house of this country combines this multiplier with [the difficulty section's `Airspeed=`](/keys/airspeed/#scope-difficulty-settings) and [`GameSpeedBias`](/keys/gamespeedbias/) [when it is given its difficulty slot](/systems/difficulty/#how-the-figures-are-combined). A campaign game leaves the country's value out, as it does for [`Groundspeed=`](/keys/groundspeed/#scope-housetype).
 
-No gameplay path reads the combined figure, so neither this multiplier nor the difficulty setting's changes an aircraft's speed. An aircraft's flying speed comes from [`Speed=`](/keys/speed/#scope-aircrafttype) in the aircraft type's own section instead.
+Nothing in the game reads the combined figure, so no value here changes how fast anything moves. An aircraft flies at [`Speed=`](/keys/speed/#scope-aircrafttype) in its aircraft type's section.

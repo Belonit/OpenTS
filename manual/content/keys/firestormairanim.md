@@ -7,8 +7,16 @@ when_omitted:
   value: none
 ---
 
-It is created at the victim's own position rather than the wall's, centered and drawn in front of it. It runs its animation type's own [`LoopCount`](/keys/loopcount/), which is a single repetition unless the type sets one. The height test, more than 100 [leptons](/glossary/#lepton) above the ground, is the only thing that chooses between this animation and [`FirestormGroundAnim`](/keys/firestormgroundanim/); the flags, depth adjustment and loop count are identical. Both are created by every path that catches something: the sweep of a section's own cell, a flying object or jumpjet crossing it, and a projectile [consumed by the wall](/systems/laser-fences/#projectiles). The projectile path produces the animation without applying any damage.
+`FirestormAirAnim` plays when a raised firestorm wall catches something more than 100 [leptons](/glossary/#lepton) above the ground. It appears at the caught object's position. Anything lower gets [`FirestormGroundAnim`](/keys/firestormgroundanim/), drawn at the wall section instead.
 
-:::danger[An unset value faults the moment the animation is due]
-The animation is built from this setting without checking that it resolved to anything. With no value set the pointer is empty, and the first time a raised section catches something above that height, the engine builds an animation from it and reads through that empty pointer straight away.
+Either animation plays when the wall catches:
+
+- an object in a raised section's cell, when the section [sweeps its cell](/systems/laser-fences/#what-a-raised-section-destroys);
+- an object with the flying or jumpjet locomotor moving over a raised section;
+- a projectile the wall [stops](/systems/laser-fences/#projectiles). The projectile is removed without detonating, and the animation plays only if the projectile's damage is above 0.
+
+The animation plays its type's [`LoopCount`](/keys/loopcount/), once if the type sets none.
+
+:::danger[Set `FirestormAirAnim` before a wall can be raised]
+If the key is missing or empty, the game crashes the first time a raised section catches something above 100 leptons.
 :::

@@ -8,12 +8,26 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The value is a tile set number, counted from zero: a value of `3` selects the set declared in section `[TileSet0003]` of the theater control file. The sections are read in number order from `[TileSet0000]`, and the read stops at the first number with no section.
+This set, [`Ice2Set`](/keys/ice2set/) and [`Ice3Set`](/keys/ice3set/) are three ice sets of the same shape. When the engine matches an ice cell's tile to its neighbors, or when ice cracks, breaks or refreezes, it picks one of the three sets at random, so a frozen stretch does not repeat one pattern. Ice growth and the random map generator lay tiles of this set before that matching runs. [Theater control files](/formats/theater-control/) explains how the set number is resolved.
 
-Ice comes in three sets of the same shape, and every sixty-four-tile set is laid out identically. Offsets 0 through 15 are full ice, offset 16 is the cracked tile, and offsets 17 through 63 are the edge pieces that run ice up against everything else. The engine reads those positions as fixed offsets from the set's first tile, so replacement artwork must keep the same layout. The three exist only so that a frozen stretch does not repeat one pattern. Whenever the engine lays ice it picks one of the three at random, so a theater that resolves some but not all of them will place unresolved ice a third or two thirds of the time.
+Resolve all three roles in any theater with [`IsIceGrowthEnabled`](/keys/isicegrowthenabled/) on. The ice passes below do not check them, and a pick of an unresolved set lays a tile counted from `-1`, which is not an ice tile.
 
-Which variant a full-ice cell takes is decided from its four orthogonal neighbors much as blending works elsewhere, except that the neighbors being tested for are full ice rather than a ground type. The write is shifted: the pass lays offset 0 when all four neighbors are full ice. Otherwise it lays one more than the pattern value, which runs from 1 to 15, so the blended variants occupy offsets 2 through 16 and offset 1 is never written. A cell with no ice around it has pattern 15 and lands on offset 16, the cracked tile. Edge pieces are chosen from a pattern of all eight neighbors instead: a neighbor counts when it is not open water, an edge piece, or a shoreline piece. The lookup is shared with [`IceShoreSet`](/keys/iceshoreset/) on the land side of the same boundary.
+Keep the three sets consecutive, in the order `Ice1Set`, `Ice2Set`, `Ice3Set`. Several tests treat a whole range of tiles, from the first tile of this set to a point in a later set, as ice. [`Ice2Set`](/keys/ice2set/) and [`Ice3Set`](/keys/ice3set/) describe where those ranges end.
 
-All of this runs only where the theater has ice growth enabled (`IsIceGrowthEnabled`), and none of it is gated on the role resolving.
+Every ice set holds 64 tiles in the same fixed layout, and replacement artwork must keep it:
 
-Ice thickens and refreezes only while the scenario has ice growth turned on, but cracking does not: a vehicle crossing ice or an explosion over it can crack and break a sheet in any snow scenario.
+| Offset in the set | Tile |
+| --- | --- |
+| 0 | Full ice with full ice on all four sides |
+| 1 | Full ice that the engine never lays |
+| 2 to 15 | Full ice for the other patterns of full-ice neighbors |
+| 16 | Cracked ice, also laid for full ice with no full-ice neighbor |
+| 17 to 63 | Edge pieces, where ice meets open water |
+
+A full-ice cell's tile depends on which of its four side neighbors hold full ice (offsets 0 to 15 of any ice set). Cracked ice does not count as full ice. With all four neighbors full, the cell gets offset 0. Each of the other fifteen patterns selects one of offsets 2 to 16, and the pattern with no full-ice neighbor selects offset 16. A cracked cell keeps its tile until it refreezes or breaks.
+
+A cell that holds open water or an edge piece gets an edge piece chosen from all eight neighbors. A neighbor counts toward that choice when it holds anything other than open water, an edge piece or a [`ShorePieces`](/keys/shorepieces/) tile. The land-side pieces of [`IceShoreSet`](/keys/iceshoreset/) are chosen through the same table of patterns, with a different test for which neighbors count.
+
+These passes run only in a theater with `IsIceGrowthEnabled` on. They run after the [random map generator](/systems/map-generation/) lays ice, and during play whenever ice cracks, breaks, grows or refreezes.
+
+Cracking and breaking need only the theater setting. A heavy enough vehicle (see [`IceCrackingWeight`](/keys/icecrackingweight/) and [`IceBreakingWeight`](/keys/icebreakingweight/)) or an explosion from a [`Wall`](/keys/wall/#scope-warheadtype) or [`Fire`](/keys/fire/) warhead can crack or break ice in any scenario in such a theater. Growth and the refreezing of cracked ice also need the map's [`IceGrowthEnabled`](/keys/icegrowthenabled/).

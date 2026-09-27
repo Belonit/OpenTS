@@ -7,13 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-The value is read once per tile set and applied to every tile the set produces. Three things read it, through four tests in all:
+`Morphable=yes` lets the ground under a tile set change height, take smudges, and be repaved by a structure. The value applies to every tile in the set. A cell whose tile comes from a set with `Morphable=no` is protected in three ways:
 
-- Raising or lowering the ground refuses to move a cell whose tile forbids it. Two predicates ask the question, the one the smoothing pass uses and the map generator's own. What else each refuses differs, but neither moves a cell the flag pins. Objects standing on a cell can veto a height change as well, and the tile pins it whether or not anything stands there.
-- A crater or scorch mark is refused on such a cell. [`Height`](/keys/height/#scope-smudgetype) explains the rest of the placement test and how a smudge covering several cells is checked.
-- A structure that paves the ground it is placed on (one that turns its cells into a tile of its own) may not be built where the tile forbids reshaping.
+- Craters from a warhead's [`Deform`](/keys/deform/) and from meteors under [`CraterLevel`](/keys/craterlevel/) leave the cell's corners where they are, and so do the [random map generator's hills](/systems/map-generation/#hills). This holds even when nothing stands on the cell, although objects on a cell can also prevent a height change. A destroyable cliff that collapses still changes the height of the cells under it and under the slope that replaces it, whatever their setting.
+- No crater, scorch mark or other smudge created during play is placed on it. A smudge the map itself lists is placed regardless. [`Height`](/keys/height/#scope-smudgetype) explains the rest of the smudge placement test, including how a smudge covering several cells is checked.
+- A structure with `ToTile=` in its rules.ini section, which repaves its footprint with a tile of its own, cannot be built on it.
 
-A cell whose tile index is unresolved is treated differently by each. Reshaping and building both let it through as though the flag were set; the smudge test instead returns the flag on the theater's very first tile.
+A cell with no valid tile counts as morphable for height changes and for `ToTile=` structures. The smudge test uses the setting of the theater's first tile for such a cell instead.
 
 ```ini title="TEMPERAT.INI"
 [TileSet0631]      ; example cliff set
@@ -23,4 +23,4 @@ TilesInSet=8
 Morphable=no       ; cliffs stay where the artwork puts them
 ```
 
-Nothing else reads the flag: it does not affect movement, buildability in general, Tiberium growth, or which tiles the blend families may replace.
+The setting has no other effect. It does not change movement, general buildability, Tiberium growth, or terrain blending.

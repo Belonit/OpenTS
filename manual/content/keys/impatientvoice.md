@@ -7,4 +7,6 @@ when_omitted:
   value: none
 ---
 
-Clicking a cameo the weapon cannot be fired from picks between this line and [`SuspendVoice=`](/keys/suspendvoice/) on whether the charge timer is running: a running timer gives this one. A [`ManualControl=yes`](/keys/manualcontrol/) weapon has its timer stopped between firings, so it gives the suspend line instead, whatever is set here. An unrecognized speech name is not rejected; it leaves the weapon with no line.
+The line plays when the local player clicks the cameo of a weapon whose countdown is still running toward a full charge.
+
+A weapon that cannot be fired and whose countdown is stopped plays [`SuspendVoice=`](/keys/suspendvoice/) instead, whatever this key says. That covers a suspended weapon, and a [`ManualControl=yes`](/keys/manualcontrol/) weapon waiting for its next start. An unrecognized speech name gives the weapon no line.

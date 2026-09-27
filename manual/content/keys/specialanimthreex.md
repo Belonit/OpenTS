@@ -7,6 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-The horizontal half of the third special slot's offset. It moves the [`SpecialAnimThree`](/keys/specialanimthree/) animation right across the screen from the point the structure is drawn at, and a negative figure moves it left of that point instead. The offset pins the animation to a point on the artwork rather than to a cell, so it holds wherever the structure stands.
+`SpecialAnimThreeX` moves the [`SpecialAnimThree`](/keys/specialanimthree/) animation right of the structure's drawing point by that many screen pixels. A negative value moves it left. The offset pins the animation to a point on the artwork, so it stays in place wherever the structure stands.
 
-[Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how the offset differs from the two draw-order biases. [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) covers when the two figures are read and why they are not written in the same section as the slot's animation names.
+The value is read only when the slot has an animation name from `SpecialAnimThree` or [`SpecialAnimThreeDamaged`](/keys/specialanimthreedamaged/). Write it in the art entry named after the structure's ObjectType ID, even when [`Image=`](/keys/image/) puts the animation names in another entry. [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) has the full table. [Placement and draw order](/systems/building-animations/#placement-and-draw-order) covers how the offset differs from the slot's two draw-order biases.

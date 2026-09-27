@@ -16,9 +16,9 @@ values:
   - { constant: SPEED_WINGED, value: 4, input: "Winged", meaning: "Aircraft movement." }
   - { constant: SPEED_FLOAT, value: 5, input: "Float", meaning: "Watercraft movement." }
   - { constant: SPEED_AMPHIBIOUS, value: 6, input: "Amphibious", meaning: "Amphibious movement." }
-  - { constant: SPEED_CREEP, value: 7, input: "Creep", meaning: "Slow creeping movement." }
+  - { constant: SPEED_CREEP, value: 7, input: "Creep", meaning: "Creeping movement." }
 ---
 
-A SpeedType selects the column of the [terrain movement table](/systems/movement-and-terrain/) that a type is costed against. One rules.ini section per [land type](/reference/enums/land-type/) holds that table: `[Clear]`, `[Road]`, `[Water]` and the rest. Each section has one entry per speed type, named for a token below, plus [`Buildable`](/keys/buildable/), and every entry is a fractional speed multiplier for one land type and one speed type. `1.0` is full speed, and `0` makes the cell impassable rather than slow. A value above `1.0` is clamped down as it is read.
+A speed type picks the column of the [terrain table](/systems/movement-and-terrain/#the-terrain-table) that an object reads. The table is one `rules.ini` section per [land type](/reference/enums/land-type/), such as `[Clear]`, `[Road]` or `[Water]`. Each section holds one entry per speed type, named by the tokens below, beside its [`Buildable`](/keys/buildable/) setting. The terrain table section explains what each entry does.
 
-A SpeedType does not choose the locomotion physics, which [`Locomotor`](/keys/locomotor/) sets separately on the same type. Only a vehicle's rules section accepts a [`SpeedType=`](/keys/speedtype/) entry. Infantry types are always `Foot` and aircraft types always `Winged`, and a structure's speed follows its [`WaterBound`](/keys/waterbound/) setting.
+Only a vehicle's section accepts [`SpeedType=`](/keys/speedtype/). Every infantry type uses `Foot` and every aircraft type uses `Winged`. A structure uses `Float` when it sets [`WaterBound=yes`](/keys/waterbound/#scope-buildingtype) and has no speed type otherwise. The speed type does not choose how the object moves; [`Locomotor`](/keys/locomotor/) sets that separately.

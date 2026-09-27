@@ -83,6 +83,12 @@ targets:
 credit: [ZivDero, CCHyper, tomsons26]
 ---
 
-The computer's base building now comes from the side a house acts as. Each side names its power plants and turbine, its hunter-seeker drone, the towers it lays along its walls, its defense budget and placeholder counts, and whether it builds a wall. Those settings sit in the section matching the side's own name. A house that was neither GDI nor Nod took GDI's defense budget and received no wall towers and no threat ring. It answered a power shortage with Nod's plants. The first two sides inherit the rules' `GDI` and `Nod` keys as each file sets them, so the shipped rules build exactly the bases they always did. A side that names no plant takes the first `BuildPower` entry its country may own.
+A computer house now builds its base from the settings of the side it acts as. Each side sets them in the `rules.ini` section named after it. They cover its power plants and turbine, its hunter-seeker, the towers it places along its walls, how many base defenses and wall towers it plans, and whether it builds walls.
+
+When a house runs short of power, it may first add the side's turbine to a regular plant it owns that has a free upgrade slot. Otherwise it builds the side's advanced plant once it owns that plant's prerequisites, and failing that the side's regular plant. A house whose side names no regular plant builds the first `BuildPower` entry its country can own instead.
+
+A house on a side other than GDI or Nod used to take GDI's base-defense coefficient, build no wall towers, and answer a power shortage with Nod's power plants.
+
+The first two sides in `[Sides]` still take the old `GDI` and `Nod` keys under `[General]` and `[AI]` from each file that sets them, so the shipped rules build the same bases as before.
 
 CCHyper and tomsons26 are credited for Vinifera's side sections, whose power plant, turbine and hunter-seeker keys these share.

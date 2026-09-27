@@ -1,18 +1,26 @@
 ---
 key: UseChargeDrain
-summary: Whether the superweapon holds its effect for a timed spell instead of firing once.
+summary: Whether a fired superweapon spends its charge over a timed drain that can be ended early.
 see_also: ["system:superweapons", "system:power"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A charge-draining weapon runs [three states instead of two](/systems/superweapons/#charge-draining-weapons): charging, ready, and discharged. Firing it while ready puts it into the discharged state and turns the clock into a countdown of how long the effect lasts, scaled by [`ChargeToDrainRatio`](/keys/chargetodrainratio/). Firing it again returns it to ready with the ratio applied the other way. The discharged state itself does nothing: the [`Type=`](/keys/type/#scope-superweapontype) effect goes out once, with the click that starts the drain, and firing again mid-drain only ends the drain early. Letting the drain run out returns it to charging with a full [`RechargeTime`](/keys/rechargetime/) on the clock and takes the effect down.
+`UseChargeDrain=yes` makes a fired superweapon spend its charge over time. For a house under human control, firing the ready weapon delivers its [`Type=`](/keys/type/#scope-superweapontype) effect once, moves the weapon to the discharged state and starts a drain, a countdown that spends the charge. The drain's length is the charge built up, scaled by [`ChargeToDrainRatio`](/keys/chargetodrainratio/).
 
-The flag governs only the state machine and the cameo. What the weapon actually does when it is fired still comes from [`Type=`](/keys/type/#scope-superweapontype), and the [firestorm defense](/systems/laser-fences/#the-firestorm-generator-and-its-charge) is the one behavior whose raise and lower calls this state machine drives.
+Firing the weapon again during the drain ends it. The unspent drain goes back into the charge, so the weapon is ready again at once. When the drain runs out instead, the weapon starts charging from a full [`RechargeTime`](/keys/rechargetime/). [Charge-draining weapons](/systems/superweapons/#charge-draining-weapons) gives the conversion in both directions.
 
-The cameo follows from the same flag. Such a weapon always reports itself as charging, so it always draws a clock and never shows the plain ready face. It can be fired from any state but charging or suspended.
+`Type=Firestorm` is the behavior built for this cycle. Its wall stays raised while the drain runs and comes down when the drain ends, whether it runs out or is ended by hand. [The firestorm generator and its charge](/systems/laser-fences/#the-firestorm-generator-and-its-charge) covers the wall.
 
-:::caution[Suspension costs a charge-draining weapon its progress]
-Where an ordinary weapon resumes from the point its timer stopped, this one has its timer reset to a full `RechargeTime` when it comes back. Every spell of [low power](/systems/power/#superweapons), however brief, therefore starts its charge over, and [`IsPowered=no`](/keys/ispowered/) is the only way to keep it charging through one.
+The weapon's sidebar cameo always shows a clock, including while the weapon is ready or discharged. A human-controlled house can fire it only while it is ready or discharged, not while it is charging or suspended. [The sidebar cameo](/systems/superweapons/#the-sidebar-cameo) lists its captions.
+
+For a computer house, firing never starts a drain or changes the countdown. Once the weapon has first charged, the superweapon AI can fire it again on any later pass, even while it is charging or suspended. The firestorm trigger actions switch a computer house's wall at any time, whatever the weapon's state. A computer house's firestorm wall therefore stays up until something else lowers it, as [Computer houses](/systems/laser-fences/#computer-houses) describes.
+
+:::caution[Use it only with `Type=Firestorm`]
+Any other behavior delivers its effect each time the weapon is fired from ready. Ending a drain at once returns all the charge it took, so a player can alternate the two: fire the effect, end the drain, and fire the effect again, with no recharge between shots. A computer house never drains the weapon, so it can fire the effect again on its next AI pass. While that house's firestorm wall is up, firing any of its charge-draining weapons does nothing.
+:::
+
+:::caution[Keep the house powered to keep the charge]
+When a suspended charge-draining weapon resumes, it starts charging from a full `RechargeTime`, however little time it spent suspended. An ordinary weapon resumes where its countdown stopped. Suspending any charge-draining weapon also lowers its house's firestorm wall. [Power](/systems/power/#superweapons) covers when a weapon is suspended.
 :::

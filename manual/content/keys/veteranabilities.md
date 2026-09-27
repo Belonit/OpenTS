@@ -7,15 +7,17 @@ when_omitted:
   value: ""
 ---
 
-A comma-separated list of ability tokens, matched without regard to letter case. An object of this type gains everything named here once it reaches veteran, and keeps all of it after a further promotion to elite, where [`EliteAbilities`](/keys/eliteabilities/) is added on top. [The ability table](/systems/veterancy/#abilities) lists the eighteen accepted tokens and what each one does.
+A comma-separated list of ability tokens, matched without regard to letter case. An object of this type gains every ability named here when it reaches veteran rank. It keeps them after a promotion to elite, where [`EliteAbilities`](/keys/eliteabilities/) adds more. [The ability table](/systems/veterancy/#abilities) lists the eighteen accepted tokens and what each one does.
 
 ```ini title="rules.ini"
 [MYTANK] ; example UnitType
 VeteranAbilities=FIREPOWER,ROF,SIGHT
 ```
 
-An unrecognized token is discarded without complaint. The list replaces rather than merges, so a later rules layer that sets this key starts from an empty set and keeps only the tokens it names. Omitting the key in that layer leaves the earlier list in force, and so does an empty value: an assignment with nothing after the `=` is discarded when the file is read. A list therefore cannot be cleared by leaving the key out or by emptying it.
+An unrecognized token is ignored.
 
-:::caution[A space after a comma silences the token]
-Whitespace is stripped from the value as a whole, not from each token, so `VeteranAbilities=FIREPOWER, ROF` grants only `FIREPOWER`. Write the separators without spaces.
+A later rules file that sets the key replaces the earlier list; it does not add to it. Leaving the key out of that file keeps the earlier list, and so does writing it with nothing after the `=`, because the game ignores an empty assignment. To clear an earlier list, write a value with no recognized token, such as `VeteranAbilities=none`.
+
+:::caution[Do not put spaces after the commas]
+Spaces are removed only from the start and end of the whole value, not around each token. `VeteranAbilities=FIREPOWER, ROF` therefore grants only `FIREPOWER`, because ` ROF` with its leading space is not a recognized token.
 :::

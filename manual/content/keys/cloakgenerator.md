@@ -7,15 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-The field reaches [`CloakRadiusInCells`](/keys/cloakradiusincells/) and is not thrown up at once: the radius grows by one cell per game frame until it is complete, and collapses the same way. Every cell inside it is marked as cloaked for the owning house, and the mobile objects standing in each cell are asked to cloak as it passes over them.
+A `CloakGenerator=yes` structure hides its own house's vehicles, infantry, aircraft and structures that stand in its field, unless something on the [list of refusals](/systems/cloaking/#starting-a-cloak) applies. Allied objects in the field stay visible. [`CloakRadiusInCells`](/keys/cloakradiusincells/) sets how far the field reaches.
 
-The field falls whenever the structure stops being operational, which it does under **Any of:**
+The field is up while the structure is [operational](/systems/power/#defenses). It grows outward by one cell of radius per game frame, and it collapses ring by ring when the structure is switched off, stunned, or stops being operational through a power shortfall. Except right after a capture, a `Powered=yes` generator also waits for its house to have full power before it raises or regrows its field. A generator whose type stays operational through a shortfall, such as one at `Powered=no`, keeps its field.
 
-- it is switched off;
-- it is stunned;
-- its strength has reached zero;
-- **All of:** its type is [`Powered=yes`](/keys/powered/), its type sets drain of its own, its type is [`TogglePower=yes`](/keys/togglepower/), and its house's power fraction is below 1.
+Destroying, selling or capturing the generator removes the whole field at once. A captured generator raises a new field for its new owner at once if it is operational, even while the new owner is short of power.
 
-The field regrows ring by ring once the structure is operational again. One caught mid-collapse resumes from the ring it had reached, and only a fully collapsed one starts over from the structure. A generator left at `Powered=no` keeps its field through a shortfall.
-
-The frame a field finishes growing, every operational [`SensorArray=yes`](/keys/sensorarray/) structure on the map (of any house) re-stamps its coverage, refreshing the display of the objects the new field just faded wherever a sensor reaches them.
+[Cloaking fields](/systems/cloaking/#cloaking-fields) covers what overlapping fields do to each other, the refreshes that follow a change, and the square edge that can cut a field short.

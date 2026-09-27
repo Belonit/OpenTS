@@ -12,4 +12,4 @@ targets:
 credit: [ZivDero]
 ---
 
-A unit more than about 181 cells from its docking buildings now goes to the nearest one. The distance comparison used to overflow at that range, so a harvester on a large map drove to the farthest refinery and an aircraft to the farthest pad.
+A harvester or aircraft more than about 181 cells from a building it can dock with now picks the nearest one, as it does at shorter range. The distance used to overflow at that range, so on a large map a harvester could drive to a farther refinery and an aircraft fly to a farther pad.

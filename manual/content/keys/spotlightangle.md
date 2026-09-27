@@ -7,13 +7,17 @@ when_omitted:
   value: "20"
 ---
 
-A sweeping beam turns about its pivot until it has covered half this figure from the direction it started in. It then bleeds its rate off at [`SpotlightAcceleration`](/keys/spotlightacceleration/) and reverses. The other half is spent the same way on the return, so the arc is centered on the structure's facing and spans this figure end to end. A beam [set to circle its structure or follow a target](/mapping/actions/taction-change-spotlight-behavior/) does not read it. A structure has a beam to sweep only where its type sets [`HasSpotlight=yes`](/keys/hasspotlight/).
+`SpotlightAngle` sets how wide a sweeping spotlight swings. The beam starts pointing straight ahead of its structure and turns to one side about a pivot that [`SpotlightMovementRadius`](/keys/spotlightmovementradius/) places behind the structure. Once it has turned past half this angle, it slows by [`SpotlightAcceleration`](/keys/spotlightacceleration/) each frame until it stops, then turns back. It does the same on the other side, so the sweep is centered on the direction the structure faces.
+
+The beam only starts slowing after it passes the half angle, so the sweep is wider than this value. The overshoot grows with [`SpotlightSpeed`](/keys/spotlightspeed/) and shrinks as `SpotlightAcceleration` rises. The angle is also measured at the pivot, so the beam covers a still wider angle as seen from the structure. With the shipped rules, the beam turns about 34 degrees about its pivot, which is about 90 degrees as seen from the structure.
 
 ```ini title="rules.ini"
 [General]
-SpotlightAngle=1.05  ; a sweep about sixty degrees wide
+SpotlightAngle=1.05  ; an arc of about sixty degrees before the overshoot
 ```
 
-:::caution[The arc is measured in radians]
-The turned angle is compared against half this figure as a raw radian count, with no conversion from degrees. The shipped rules write `SpotlightAngle=.5`, an arc a little under thirty degrees wide; anything above roughly 12.6 turns the beam through more than a full circle in each direction before it reverses.
+Only a structure whose type sets [`HasSpotlight=yes`](/keys/hasspotlight/) has a beam. The angle applies only while the beam sweeps. A beam [set to circle its structure or follow a target](/mapping/actions/taction-change-spotlight-behavior/) does not use it.
+
+:::caution[Write the angle in radians]
+The value is not converted from degrees. The shipped rules set `SpotlightAngle=.5`, a little under thirty degrees before the overshoot. A value above about 12.6 sends the beam more than a full circle in each direction before it turns back. The built-in value of `20`, used when no rules file sets the key, is one of these.
 :::

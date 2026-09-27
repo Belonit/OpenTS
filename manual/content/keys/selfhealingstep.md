@@ -13,6 +13,8 @@ when_omitted:
 SelfHealingStep=15
 ```
 
-The type's own answer to [`SelfHealStep`](/keys/selfhealstep/), read from any TechnoType and used in place of the game-wide step while it [mends itself](/systems/repair/#self-healing). It is the only way to single a type out: unlike [`RepairStep`](/keys/repairstep/) and [`IRepairStep`](/keys/irepairstep/), the game-wide step draws no line even between infantry and everything else.
+Each [self-healing](/systems/repair/#self-healing) tick restores this many strength points to an object of this type. It replaces the rules-wide [`SelfHealStep`](/keys/selfhealstep/) for this type. It has no effect unless the object heals itself, through [`SelfHealing=yes`](/keys/selfhealing/) or the `SELF_HEAL` ability.
 
-A resolved step below `1` is raised to `1`, so `0` heals a point at a time rather than nothing, and the healing stops at the type's [`Strength`](/keys/strength/#scope-aircrafttype). It does nothing without [`SelfHealing=yes`](/keys/selfhealing/) or the `SELF_HEAL` ability.
+This key is the only way to give one type a different step. The rules-wide step applies to every type alike: unlike [`RepairStep`](/keys/repairstep/) and [`IRepairStep`](/keys/irepairstep/), it does not even treat infantry differently.
+
+`0` heals one point per tick. Healing never raises strength above the type's [`Strength`](/keys/strength/#scope-aircrafttype).

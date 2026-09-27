@@ -1,12 +1,15 @@
 ---
 key: SeparateAircraft
-summary: Stops a helipad coming with a free aircraft and pricing itself around one.
+summary: Whether pad aircraft are bought separately from the pads they dock at.
 see_also: ["system:production"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-At `yes` two things are switched off together. The structure that the first [`PadAircraft`](/keys/padaircraft/) entry docks at no longer strips the average price of the whole `PadAircraft` list out of its repair figure. It is repaired against the plain [`Cost=`](/keys/cost/#what-a-structure-gives-away) written for it instead. What it costs to buy and what selling it refunds are the written figure either way, because the price asked adds that same average straight back. The other change is that a [`HoverPad=yes`](/keys/hoverpad/) structure no longer receives a free copy of the first `PadAircraft` entry as it opens.
+At `yes`, pad aircraft are bought separately from the pads they dock at, with these effects:
 
-Nothing else changes: aircraft are still built at pads and still dock at them, and are now paid for one at a time.
+- A [`HoverPad=yes`](/keys/hoverpad/) structure no longer receives a free copy of the first [`PadAircraft`](/keys/padaircraft/) entry when it first opens.
+- The first structure in the `Dock` list of the first `PadAircraft` entry no longer has the average `PadAircraft` price deducted from its `Cost` to form its [reduced price](/keys/cost/#what-a-structure-gives-away). Its repairs therefore cost more, and damage to it raises more anger toward the attacker. The linked section lists every use of the reduced price.
+
+The price paid for the pad and the refund for selling it are based on the written `Cost` at either setting. Aircraft are still built at pads and still dock at them. The shipped rules set `yes`.

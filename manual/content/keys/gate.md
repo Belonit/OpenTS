@@ -1,12 +1,16 @@
 ---
 key: Gate
-summary: Makes the BuildingType a gate that opens for a unit wanting to pass.
+summary: Makes the BuildingType a gate that opens for allied units wanting to pass.
 see_also: ["system:production"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A unit that wants to cross the cell asks the gate to open and waits until the door reports itself open; the gate then holds while anything is still in the way and closes afterwards. Any structure that is not a gate answers both questions as permanently open, so movement never waits on it.
+A `Gate=yes` structure blocks movement while closed and opens for allied units. Infantry, walkers, hovercraft and driven vehicles ask a closed allied gate to open as they reach it, then wait until the door is fully open. A closed enemy gate never opens for them: an armed unit treats it as something to destroy, and an unarmed unit cannot pass. [Gates](/systems/walls-and-gates/#gates) covers opening, holding and closing. [`GateCloseDelay`](/keys/gateclosedelay/) sets how long the gate stays open, and [`DeployTime`](/keys/deploytime/) how long the door takes to move.
 
-Two drawing rules follow from the flag. The construction animation runs from its last frame back to its first, and the buildup step count that [`BuildupTime`](/keys/builduptime/) is divided into is [`GateStages`](/keys/gatestages/) plus one rather than half the frames in the buildup art.
+The flag also changes placement. A gate may be placed on a cell holding one of its house's laser fence sections, and placing it takes that fence down. Placing it also removes the brick, sandbag and Nod walls its house owns in its footprint, under the conditions [Placing a gate](/systems/walls-and-gates/#placing-a-gate) gives. That section also names the `[General]` gate keys that let a gate be placed over walls.
+
+[`GateStages`](/keys/gatestages/) sets which frames the door and the buildup animation use. [Buildup](/systems/production/#buildup) covers the buildup animation's timing.
+
+On the sidebar, a gate's cameo sorts after walls and before base defenses that share its [`CameoSortOrder`](/keys/cameosortorder/), as [the order of the strips](/systems/sidebar/#the-order-of-the-strips) describes.

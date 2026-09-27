@@ -14,10 +14,12 @@ SizeLimit=3
 IsVehicleTransport=yes
 ```
 
-A transport refuses a unit outright unless this is set, and refuses it the same way it refuses a type that carries nobody at all: the cursor does not change and no enter order is offered. Infantry are unaffected either way.
+Without the flag, a transport refuses every vehicle. Over a transport that is standing still, the player gets no enter order and the cursor does not change, exactly as over an allied object that carries nobody. Infantry can board either way.
 
-The refusal is answered by the transport itself rather than decided at the cursor. It holds for every route into a hold: a player's order, a computer team loading up, and the final check as the passenger reaches the transport.
+A moving transport, or one on a team whose [`Loadable`](/keys/loadable/) is off, shows every would-be passenger the no-enter cursor, with or without the flag.
 
-With the flag set and nothing else changed, a unit occupies one slot exactly as an infantryman does. [`Size`](/keys/size/) and [`SizeLimit`](/keys/sizelimit/) are what make a vehicle cost more than a rifleman.
+The refusal applies to a player's order, to a computer team loading its transport, and to the final check as the passenger arrives. A carryall lift and a reinforcement group loaded at creation skip it; [Transports](/systems/transports/#being-admitted) lists both.
 
-A transport that carries units can itself be carried if some other transport admits it. Nothing forbids the arrangement; [`SizeLimit`](/keys/sizelimit/) is what a ruleset uses to rule it out.
+With the flag set and nothing else changed, a vehicle takes one space in the hold, the same as an infantryman. Raise its [`Size`](/keys/size/) to make it take more, and use the transport's [`SizeLimit`](/keys/sizelimit/) to cap the largest passenger it admits.
+
+The engine does not stop a transport vehicle, loaded or not, from boarding another transport that admits vehicles. Keep the carried transport's `Size` above the carrier's `SizeLimit` to rule this out.

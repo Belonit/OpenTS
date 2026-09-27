@@ -1,18 +1,22 @@
 ---
 key: HoverPad
-summary: Hands the structure a free aircraft as it opens for business.
+summary: Gives the structure a free aircraft when it is first built or placed.
 see_also: [PadAircraft, SeparateAircraft, Helipad, AIIonCannonHelipadValue]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-A structure that opens for business having been built rather than captured creates one aircraft of the first [`PadAircraft`](/keys/padaircraft/) entry for its own house. The aircraft appears at the structure's center at ground level, facing the direction its type poses at, is put on guard, and enters radio contact with the structure, which tethers it. [`SeparateAircraft=yes`](/keys/separateaircraft/) suppresses the gift outright.
+A structure with this flag receives one free aircraft when its construction finishes. A structure placed already built receives it when it first appears on the map. Capturing the structure gives the new owner none. The aircraft is the first type listed in [`PadAircraft`](/keys/padaircraft/) and belongs to the structure's house. It appears parked on the structure, at its center and at ground level, facing [`PoseDir`](/keys/posedir/). It starts on guard, linked to the structure as the aircraft docked there.
 
-The flag is also the last of the structure tests behind [the rating a computer house gives each candidate](/systems/superweapons/#the-computers-use) for its ion cannon, where it selects [`AIIonCannonHelipadValue`](/keys/aiioncannonhelipadvalue/).
+No aircraft is given when **any of** the following holds:
 
-:::caution[This is not the flag that lets an aircraft dock]
-Accepting an aircraft as a docking target, and being approached at a docking cell, are what [`Helipad=yes`](/keys/helipad/) gives a structure. The two are read independently, so a structure with only this one hands out an aircraft that has nowhere of its own to land.
+- [`SeparateAircraft=yes`](/keys/separateaircraft/);
+- `PadAircraft` is empty;
+- the structure's [`FreeUnit`](/keys/freeunit/) is an aircraft type, even if that aircraft was not given or could not be placed.
+
+The flag is also the last structure test in [the rating a computer house gives each ion cannon target](/systems/superweapons/#the-computers-use), where it selects [`AIIonCannonHelipadValue`](/keys/aiioncannonhelipadvalue/).
+
+:::caution[This flag does not let aircraft dock]
+Accepting an aircraft for docking comes from [`Helipad=yes`](/keys/helipad/). The two flags are independent, so a structure with only `HoverPad=yes` receives an aircraft that cannot dock with it.
 :::
-
-The free aircraft comes from the first entry of [`PadAircraft`](/keys/padaircraft/). An empty list hands out nothing, so the structure opens without its aircraft.

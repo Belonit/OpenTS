@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-Center Base now looks for any structure whose type is listed in `BuildConst`, preferring the primary one, so a mod's second construction yard type is found. Only the type the base unit deploys into counted before. A base built from another construction yard centered on an arbitrary structure instead.
+Center Base used to find only the construction yard the base unit deploys into, so a base built around another construction yard type could center on some other structure. It now centers on any structure whose type is in `BuildConst`, the construction yard list under `[AI]` in `rules.ini`, and prefers the primary one.

@@ -1,6 +1,6 @@
 ---
 key: StartPitch
-summary: The barrel elevation a structure is created with, in eighths of a turn, where 2 is level.
+summary: The barrel elevation a Juggernaut or artillery structure returns to before it packs up, in eighths of a turn, where 2 is level.
 see_also: [StartFacing, IsJuggernaut, Artillary, TickTank, UndeploysInto]
 when_omitted:
   kind: value
@@ -13,10 +13,12 @@ IsJuggernaut=yes
 StartPitch=2 ; level
 ```
 
-The figure is read on the same eighth-of-a-turn dial as [`StartFacing`](/keys/startfacing/), applied to barrel elevation instead of body facing, and `2` is level. A structure sets it as its desired barrel elevation as it is created and the barrel swings to it.
+The value uses the same eighth-of-a-turn steps as [`StartFacing`](/keys/startfacing/), applied to barrel elevation. `2` is level.
 
-A structure that appears by deploying a vehicle is treated differently when its type is [`Artillary=yes`](/keys/artillary/) or [`TickTank=yes`](/keys/ticktank/): its barrel is snapped level at that moment whatever this key says.
+`StartPitch` matters only when a structure packs up into a vehicle:
 
-Going back the other way, an [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure will not begin to fold away until its barrel is back at this elevation and its body is back at `StartFacing`. An `Artillary=yes` structure takes the same paired test at the point its [`UndeploysInto`](/keys/undeploysinto/) vehicle would be created. Either way the vehicle that results is given this elevation as it appears, so the barrel does not jump between the two forms.
+- Before an [`IsJuggernaut=yes`](/keys/isjuggernaut/) structure packs up, it moves its barrel back to this elevation and turns back to `StartFacing`. Its pack-up animation starts only once both have arrived.
+- An [`Artillary=yes`](/keys/artillary/) structure does the same after its pack-up animation. Its [`UndeploysInto`](/keys/undeploysinto/) vehicle is created only once both have arrived.
+- For both kinds, the vehicle that results starts with its barrel at this elevation, so the barrel does not jump between the two forms.
 
-Nothing else reads the figure. A deployed artillery piece that has stopped firing is not returned to it while it idles.
+A structure's barrel is always level when the structure is placed on the map, whatever this key says. The barrel does not return to this elevation while the structure idles.

@@ -7,8 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-The check runs only while candidates are being scored, and only for the weapon in the firing object's first slot. Each allied building found in the cell rings around a candidate halves that candidate's threat score, so a candidate hemmed in by friendly structures falls behind an equally attractive one standing in the open.
+With `Supress=yes`, an object whose primary weapon is this weapon rates targets that stand near its own or allied buildings lower. While it chooses a target for itself, each nearby cell holding such a building halves a candidate's threat score. A candidate hemmed in by friendly structures therefore falls behind an equally attractive one standing in the open. If the discount brings a candidate's score below 1, the object ignores that candidate. The setting has no effect when the weapon is in the object's second slot.
 
-The rings searched come from [`FireSupress`](/keys/firesupress/) in `[CombatDamage]`, whose default of one cell leaves no ring to walk: the discount never applies until that distance is raised.
+[`FireSupress`](/keys/firesupress/) in `[CombatDamage]` sets how far around the candidate the search reaches, and that page describes the search. At its default distance the search covers no cells, so `Supress=yes` has no effect until `FireSupress` is raised to at least `2`.
 
-The setting neither stops the weapon firing nor changes the damage it deals. It only makes the object less likely to choose such a target for itself.
+The setting does not stop the weapon from firing and does not change the damage it deals. The discount does not apply to a target the player orders the object to attack.

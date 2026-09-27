@@ -13,14 +13,14 @@ NaturalParticleSystem=MYSTEAMSYS ; a ParticleSystemType registered in [ParticleS
 NaturalParticleLocation=0,-40,180 ; the chimney mouth
 ```
 
-The value is three lepton components, X, Y and Z, added to the structure's own position to place its [`NaturalParticleSystem`](/keys/naturalparticlesystem/). Only a BuildingType reaches it.
+The value is an X, Y and Z offset in leptons, 256 to a cell, from the structure's position. The structure's [`NaturalParticleSystem`](/keys/naturalparticlesystem/) starts at that point. Only a BuildingType uses it.
 
-The offset is also a switch. The plume is deleted when a cloaking structure turns fully transparent. The branch that puts it back once the structure is visible again tests this offset instead of the system. At `0,0,0` the rebuild is skipped, and the structure stays plumeless for the rest of the match.
+The offset also decides whether a cloaked structure gets its plume back. Cloaking removes the plume when the structure becomes fully transparent. When the structure is fully visible again, the plume is recreated only if this offset is not `0,0,0`. A structure whose plume belongs at its exact position can use an offset such as `0,0,1` to keep the plume through cloaking.
 
-:::danger[An offset without a system is a bad pairing]
-Because the rebuild checks only the offset, a cloaking structure that has a non-zero offset and no [`NaturalParticleSystem`](/keys/naturalparticlesystem/) builds a particle system out of no type at all the moment it finishes uncloaking. Reading that type's timings is the first thing the new system does, so it crashes there.
+:::danger[Pair a non-zero offset with a particle system]
+On a structure that can be cloaked, set `NaturalParticleSystem` whenever this offset is not `0,0,0`. Otherwise the game crashes when the structure finishes uncloaking, because it tries to recreate a plume that has no particle system type.
 :::
 
-:::note[A value with fewer than three components reads as the default]
-`NaturalParticleLocation=0,-40` is short of the three components a location needs, so the key reads as its default and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.
+:::note[Write all three numbers]
+A value with fewer than three numbers, such as `0,-40`, is malformed and ignored. [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.
 :::

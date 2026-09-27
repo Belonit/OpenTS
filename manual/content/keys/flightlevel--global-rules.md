@@ -8,6 +8,6 @@ when_omitted:
   value: "500"
 ---
 
-The figure is a height above the ground in leptons. Any type that does not set a [cruising altitude of its own](/keys/flightlevel/#scope-aircrafttype) takes this one. The shipped value is `600`, the height every stock aircraft flies at, bar the dropship and the two hunter seekers, which set figures of their own.
+The cruising height, in leptons above the ground, of every type that does not set a [cruising altitude of its own](/keys/flightlevel/#scope-aircrafttype). The stock rules set `600`, which every stock aircraft except the dropship flies at. The dropship and the two hunter-seeker drones set their own heights.
 
-Three other paths read it directly rather than through a type. An animation that is not a ground-layer animation starts at this height. Every object below six tenths of it is drawn in the ground layer, and everything at or above it is drawn in the top layer. That is what decides whether an object passes over or under the things around it. An aircraft below half of it takes the height test that blocks [`AircraftFogReveal`](/keys/aircraftfogreveal/) behind high ground, which [who looks, and when](/systems/map-visibility/#who-looks-and-when) covers.
+The value also sets the height test for [`AircraftFogReveal`](/keys/aircraftfogreveal/). An aircraft flying below half this height can have that reveal blocked by high ground, as [who looks, and when](/systems/map-visibility/#who-looks-and-when) describes. The aircraft type's own `FlightLevel` does not move this threshold.

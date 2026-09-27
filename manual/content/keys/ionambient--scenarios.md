@@ -14,4 +14,4 @@ Ambient=1
 IonAmbient=.5
 ```
 
-A storm does not apply this level outright. It becomes the target of [the ambient fade](/systems/ion-storms/#the-ambient-ramp), which moves the map's light level toward it in steps and back to [`Ambient`](/keys/ambient/) when the storm ends. The palette tint changes at once, so a map with a dark ion level shows its ion colors well before it shows its ion darkness.
+When a storm breaks, [the ambient fade](/systems/ion-storms/#the-ambient-ramp) moves the map's light level toward this value in steps. When the storm ends, the fade moves it back to [`Ambient`](/keys/ambient/), or to the level a [Set ambient light...](/mapping/actions/taction-set-ambient-light/) action stored during the storm. The storm's tint changes in one step, so a map with a low `IonAmbient` shows its storm colors before it reaches its storm darkness.

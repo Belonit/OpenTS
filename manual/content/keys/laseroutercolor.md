@@ -7,20 +7,22 @@ when_omitted:
   value: "0,0,0"
 ---
 
-Two extra lines are drawn a pixel away from the beam's core, both in this color, and both jittered each frame by [`LaserOuterSpread`](/keys/laserouterspread/). A value of exactly `0,0,0` suppresses them: the color is compared against black before the jitter is applied. No spread can bring back a glow that was left at black.
+The glow is two extra lines drawn one pixel off the beam's core, both in this color. [`LaserOuterSpread`](/keys/laserouterspread/) shifts the color by a random amount on every frame.
+
+`0,0,0` turns the glow off. The color is tested against black before the spread is added, so no `LaserOuterSpread` brings back a glow set to `0,0,0`.
 
 ```ini title="rules.ini"
 [MyObeliskRay] ; example WeaponType
 IsLaser=yes
 LaserInnerColor=255,0,0
-LaserOuterColor=128,32,32 ; only the 128 reaches the screen at normal detail
+LaserOuterColor=128,32,32 ; above the lowest detail only the red 128 shows
 ```
 
-:::caution[Only the red channel of the glow is drawn]
-The two glow lines blend their red onto whatever lies beneath them and leave the green and blue of the pixel exactly as they were. The green and blue written here therefore change nothing. The one exception is the lowest detail setting, which draws both lines as flat lines in the full color instead of blending them.
+:::caution[The glow shows only its red above the lowest detail]
+Above the lowest detail setting, the glow lines blend only the red of the pixels beneath them toward this color, so the green and blue written here have no effect. At the lowest setting both lines are drawn solid in the full color.
 :::
 
-The color is read from the weapon in the object's first slot whichever slot fired.
+The color always comes from the weapon in the object's [first weapon slot](/systems/firing-geometry/#what-each-part-of-a-shot-reads), even when a laser in the second slot fires.
 
 :::note[A partial triplet reads as the default]
 `LaserOuterColor=128` names one channel where three are needed, so the glow keeps its default color and the debug log records the line; [INI syntax](/formats/ini-syntax/#malformed-values) has the rule.

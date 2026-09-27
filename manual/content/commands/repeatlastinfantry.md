@@ -2,4 +2,4 @@
 command_id: RepeatLastInfantry
 ---
 
-Queues another infantry unit of the type that last finished training for the player, as a click on its cameo would, when the [sidebar](/systems/sidebar/) still offers that type. It queues behind whatever the barracks is training. Nothing happens before the player has trained an infantry unit in the current game.
+Queues another infantry unit of the type the player trained most recently, as a click on its cameo would. An infantry unit counts once it has left the barracks. The command acts only while the [sidebar](/systems/sidebar/) still offers that type, and the new unit queues behind whatever the barracks is already training. Nothing happens until the player has trained an infantry unit in the current game.

@@ -7,11 +7,13 @@ when_omitted:
   value: "no"
 ---
 
+While an ion storm is active, no object can fire an `IonSensitive=yes` weapon, in either weapon slot. The weapon's reload, range and ammunition are unchanged.
+
 ```ini title="rules.ini"
 [MyRailgun] ; example WeaponType
 IonSensitive=yes
 ```
 
-The refusal is checked once the weapon itself has been resolved, so it applies to whichever object has the weapon and to both weapon slots. Nothing else about the weapon changes: reload, range, and ammunition are untouched, and the object may still fire its other weapon when that one is not marked.
+During the storm, an object with two weapons can still fire the other one, if that weapon is not ion-sensitive and can hit the target.
 
-Aircraft are barred from firing during [a storm](/systems/ion-storms/#aircraft) whatever their weapons set, so this key changes nothing for them.
+Aircraft cannot fire at all during [a storm](/systems/ion-storms/#aircraft), whatever their weapons set, so this key changes nothing for them.

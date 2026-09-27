@@ -9,6 +9,4 @@ when_omitted:
   value: "no"
 ---
 
-An animation is never entered into a cell's occupier list. An AnimType is not a footprint type, so placing one down registers nothing with the cell it sits over. Thirteen tests read the flag: five are fed from that list, four directly and one through the object under the cursor. Six read the cell's overlay. The remaining two are handed a vehicle's attacker or its target. An animation can be none of these, so no gameplay path reads the flag for an animation.
-
-The setting is read out of `art.ini` rather than `rules.ini`, because an AnimType takes all of the settings it shares with other object types from the art database.
+A crusher looks for its victims among the objects occupying a cell, in the cell's overlay, and in the target it is attacking or the attacker that hit it. An animation is none of these: placing one does not make it an occupant of the cell it is drawn over, and it can be neither a target nor an attacker. No crush path reads the flag for an animation.

@@ -18,12 +18,16 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-A building of any type listed in `BuildConst` in `rules.ini [AI]` is now a construction yard. It joins its house's yard tally, produces only what the country its house's `ActsLike` names may own, and its loss or capture is judged like entry 0's.
+`BuildConst` under `[AI]` in `rules.ini` lists the construction yard types. A structure of any listed type now counts as a construction yard, where only the first entry used to.
 
-A house whose yard was a later entry was counted as owning none, so a computer house built no structures at all. Capturing one left the placement cursor up, and a second yard type was built for any country at all.
+A house whose only yard was a later entry used to count as owning no yard. A computer house in that state built no structures, and a player in that state got no low power warning.
 
-Any vehicle whose `DeploysInto` names a listed yard is likewise an MCV. A computer house sends it to find a site and deploys it, its deploy cursor sits where the yard will, and the ion cannon counts it as an MCV when it picks a target.
+A later-entry yard could also build for any country. It is now limited to what its country may own, as a first-entry yard is, unless `MultiMCV=yes` is set.
 
-A generated base plan starts from the first listed yard the house may own, and treats any listed yard as satisfying a prerequisite. It no longer reads a `BuildPower` entry that names nothing the house may own, or past the end of a base plan with fewer than three entries.
+Losing a construction yard to capture used to cancel the structure the player was placing whenever no first-entry yard remained. It is now canceled only when the player has no listed yard left.
+
+A vehicle whose `DeploysInto` in its `rules.ini` section names any listed yard now counts as an MCV. A computer house sends it to find a site and deploy, and a computer house's ion cannon values it as an MCV when choosing a target. Its deploy cursor now shows no-deploy where the yard cannot be placed; it used to check the wrong cells.
+
+A computer house's generated base plan now starts from a listed yard the house may own. The plan treats a prerequisite that names any listed yard as met, where only the first entry used to count. `BuildPower` under `[AI]` lists the power plants a computer house builds. When the house may own none of them, the plan now leaves out the power plant, where it used to add an empty entry. A starting plan of fewer than three structures is now the whole plan, where the game used to read past its end.
 
 AlexB is credited for the ts-patches bundle that first read this list whole.

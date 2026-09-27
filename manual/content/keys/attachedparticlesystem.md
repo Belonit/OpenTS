@@ -7,7 +7,7 @@ when_omitted:
   value: none
 ---
 
-Three flags reach for it, and nothing else does: [`UseFireParticles=yes`](/keys/usefireparticles/), [`UseSparkParticles=yes`](/keys/usesparkparticles/) and [`IsRailgun=yes`](/keys/israilgun/). Each spawns one system of the named type as the shot leaves, and each keeps its own hold on the object. A weapon that sets two of the flags spawns the same type twice over. Until that system has burned itself out the weapon is refused another shot, which is what ties the effect's own lifetime to the weapon's rate of fire. The refusal sits on top of the reload rather than replacing it: every shot pays its full [`ROF`](/keys/rof/#scope-weapontype), and a system still burning when the reload ends stretches the wait beyond that.
+Only three weapon flags use this system: [`UseFireParticles=yes`](/keys/usefireparticles/), [`UseSparkParticles=yes`](/keys/usesparkparticles/) and [`IsRailgun=yes`](/keys/israilgun/). Each flag spawns one system of the named type when the weapon fires. A weapon that sets two of the flags spawns two systems of the same type.
 
 ```ini title="rules.ini"
 [MyRailgun] ; example WeaponType
@@ -17,12 +17,16 @@ AmbientDamage=200
 Damage=0
 ```
 
-A name the game does not already know is registered as a new particle system of that name rather than rejected. A misspelling therefore produces a system with none of the type's settings filled in instead of an error. Only `<none>` and an empty value resolve to nothing, and both leave whatever an earlier rules file set in place rather than clearing it.
+While a spawned system is still running, the object cannot fire this weapon again, and cannot fire its other weapon either. The system's lifetime therefore paces the weapon together with its [`ROF`](/keys/rof/#scope-weapontype): the next shot waits until the reload has passed and the system has ended. [Firing geometry](/systems/firing-geometry/#effects-that-hold-the-weapon-shut) covers how each weapon slot is held.
 
-:::caution[The value is cut off after nineteen characters]
-The name is read into a twenty-character buffer, so a longer one is truncated before it is looked up. The truncated text is then registered as a particle system of its own, and the weapon spawns that empty system instead of the one intended.
+A spark weapon shares its [particle hold](/systems/particle-systems/#the-five-holds-an-object-keeps) with the sparks a damaged object gives off. While those damage sparks are running, an object with a spark weapon cannot fire either of its weapons.
+
+A name the game does not already know is registered as a new particle system type. A misspelled name therefore spawns a system built from default settings. `none` without angle brackets is also taken as a name. `<none>` and an empty value keep whatever an earlier rules file set, so no value can clear a system that an earlier file named.
+
+:::caution[Keep the name to nineteen characters]
+A longer name is cut off after its nineteenth character. The shortened name is registered as a new particle system type, and the weapon spawns that system with default settings.
 :::
 
-:::danger[A flame, spark or railgun weapon with no system named crashes the game]
-None of the three flags checks that a system was named before spawning one. The first time such a weapon fires, the engine reads the settings of a type that is not there and the game stops. Give every weapon with one of those flags an `AttachedParticleSystem=`.
+:::danger[Name a system for every flame, spark or railgun weapon]
+If a weapon sets `UseFireParticles=yes`, `UseSparkParticles=yes` or `IsRailgun=yes` and no `AttachedParticleSystem=` is set, the game crashes the first time the weapon fires.
 :::

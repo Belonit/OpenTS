@@ -62,6 +62,8 @@ targets:
 credit: [ZivDero, CCHyper]
 ---
 
-A sound section may now list several samples and loop them, with attack and decay samples and a body drawn at random or in order. It may delay between cycles, shift pitch and volume at random, limit how many copies play at once, and set how far from the view it is heard. `[Defaults]` supplies what a section omits, and `[General] Channels=` sets how many sound effects play at once. The shipped files set no `Volume=` and read unchanged. Sections written for Yuri's Revenge read with their named priorities and percent volumes.
+A sound's section in `SOUND.INI` can now list several samples under `Sounds=`, play them at random or in order, loop them, and add attack and decay samples. It can also wait between cycles, vary pitch and volume at random, limit how many copies play at once, and set how far from the view it can be heard. `[Defaults]` supplies any key a section leaves out, and `Channels=` under `[General]` sets how many sound effects can play at once.
 
-CCHyper is credited for the Vinifera additions to the grammar this follows: `SEQUENTIAL`, `QUEUE`, `SHROUDED` and `UNSHROUDED`.
+`Priority=` now also accepts the Yuri's Revenge names such as `HIGH`, and a `Volume=` above 1 is read as a percentage, so sections written for Yuri's Revenge play as intended. The shipped files set no `Volume=` and play as before.
+
+CCHyper is credited for the Vinifera additions to the Yuri's Revenge keys that this follows: the `SEQUENTIAL` and `QUEUE` controls and the `SHROUDED` and `UNSHROUDED` types.

@@ -8,4 +8,4 @@ when_omitted:
   value: "1.5"
 ---
 
-In Red Alert this key scaled the speed of aircraft returning to base.
+In Red Alert, this value multiplied the launch speed of a projectile fired at an aircraft by a weapon with [`TurboBoost=yes`](/keys/turboboost/#scope-weapontype).

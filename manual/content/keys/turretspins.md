@@ -7,8 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-Only a vehicle reads the flag. Once per frame its turret facing is snapped forward by 8 of the 256 directions, one thirty-second of a circle. The turret comes round once every 32 frames, a little over two seconds, at a rate no [`ROT`](/keys/rot/#scope-aircrafttype) can change.
+Only a vehicle reads the flag. Its turret turns clockwise by one thirty-second of a circle every game frame, so it completes a turn every 32 frames. [`ROT`](/keys/rot/#scope-aircrafttype) does not change this speed.
 
-The snap replaces the facing outright rather than setting a direction to turn toward. An aim given to the turret earlier in the same frame is discarded before it can be acted on: a spinning turret never settles on a target. Nothing draws a turret unless the type also sets [`Turret=yes`](/keys/turret/), so on a type without one the spin is invisible.
+Each step sets the turret's facing outright, replacing any aim given to it in the same frame. A spinning turret therefore never settles on a target.
+
+The flag has an effect only with [`Turret=yes`](/keys/turret/). On any other vehicle the spin is neither drawn nor used for aiming.
 
 No stock type sets the flag.

@@ -7,8 +7,13 @@ when_omitted:
   value: none
 ---
 
-Two substitutions run off this one type, and each has its own ownership test. A [`Disguised=yes`](/keys/disguised/) soldier of a house the local player does not control is listed under this type's [`Name=`](/keys/name/) string. A `Disguised=yes` soldier of any house but the local player's own is drawn with this type's shape. Outside a campaign the two tests agree. Inside one they do not, because a second house the scenario marks [`PlayerControl=yes`](/keys/playercontrol/) counts as controlled for the name and not for the artwork. Its disguised soldiers keep their own name while wearing the disguise.
+A [`Disguised=yes`](/keys/disguised/) soldier takes two things from this InfantryType, and each has its own ownership test:
 
-The swap reaches the shape file and nothing else. The soldier keeps its own sequence data and steps through the disguise artwork on frame numbers taken from its real type. The two types therefore need matching sequences for the disguise to animate.
+- **Name.** Holding the cursor over the soldier shows this type's [`Name=`](/keys/name/) to a player who is allied with the soldier's house, or observing, but does not control it. An enemy player sees the generic "Enemy Soldier" label instead, unless the soldier's own type sets [`Nominal=yes`](/keys/nominal/).
+- **Artwork.** The soldier is drawn with this type's shape file for every player except its owner.
 
-Both reads check for a type first, so with none named a disguised soldier simply shows its own name and its own shape to everyone.
+Outside a campaign, the two tests give the same answer. In a campaign, a second house that the scenario marks [`PlayerControl=yes`](/keys/playercontrol/) counts as controlled for the name but not for the artwork. Its disguised soldiers therefore wear the disguise artwork under their own name.
+
+Only the shape file changes. The soldier still animates with its own type's sequence, so it picks frames from the disguise artwork by its own frame numbers. Give both types matching sequences, or the disguise shows the wrong frames.
+
+With no type named, a disguised soldier keeps its own name and artwork for every player.

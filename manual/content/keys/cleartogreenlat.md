@@ -8,6 +8,6 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-Green terrain blends by the rule [`ClearToRoughLat`](/keys/cleartoroughlat/) describes, against the single plain [`GreenTile`](/keys/greentile/) ground tile. When the set is unresolved the whole green family is skipped, and green terrain keeps its square edges.
+Green ground blends by the rule [`ClearToRoughLat`](/keys/cleartoroughlat/) describes, against the plain [`GreenTile`](/keys/greentile/) tile. When this set is unresolved, green ground is not blended and keeps its square edges.
 
-A cell holding one of these sixteen tiles is treated as clear ground when the random map generator scatters loose rock. It takes a clear rock overlay rather than the sand rock overlays a [`ClearToSandLat`](/keys/cleartosandlat/) cell would take.
+When the random map generator scatters loose rocks, it treats these sixteen tiles like clear ground; [`ClearToSandLat`](/keys/cleartosandlat/) gives the rule.

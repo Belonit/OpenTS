@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The setting gates the drop for every [`CarriesCrate=yes`](/keys/carriescrate/) vehicle whose type is [`IsTrain=yes`](/keys/istrain/); everything else uses [`TruckCrate`](/keys/truckcrate/) instead. The engine drops the crate only when the vehicle is destroyed, and only if a free cell lies near where it died.
+With the switch on, a destroyed [`CarriesCrate=yes`](/keys/carriescrate/) vehicle whose type sets [`IsTrain=yes`](/keys/istrain/) drops a crate on a free cell near where it died. Other `CarriesCrate=yes` vehicles follow [`TruckCrate`](/keys/truckcrate/) instead.
 
-Unlike its counterpart, this setting can change during a mission. The [Toggle Train Cargo](/mapping/actions/taction-toggle-train-cargo/) trigger action flips it to the opposite state each time it runs, so a scenario can switch cargo trains on and off as the mission progresses.
+Unlike `TruckCrate`, this setting can change during a mission. Each time the [Toggle Train Cargo](/mapping/actions/taction-toggle-train-cargo/) trigger action runs, it turns the setting to the opposite state.

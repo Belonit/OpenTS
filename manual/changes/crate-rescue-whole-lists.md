@@ -9,6 +9,8 @@ targets:
 credit: [ZivDero, AlexB]
 ---
 
-A unit crate now judges its free harvester on every `BuildRefinery` and `HarvesterUnit` entry. It hands out the first harvester the collector's country may own, where it used to compare entry 0 of each list alone. The random vehicle draw that follows now stops when no UnitType qualifies. A rules set where nothing is both `CrateGoodie=yes` and ownable by the collector used to hang the game on the spot.
+A unit crate can give a free harvester to a collector whose house owns a refinery and no harvester. The crate now counts every refinery in `BuildRefinery` under `[AI]` and every harvester in `HarvesterUnit` under `[General]` of `rules.ini`, where it used to count only the first entry of each. The harvester it gives is the first `HarvesterUnit` entry the collector's country may own, or the first entry when the country may own none.
+
+When no vehicle type qualifies for the crate's random vehicle, for example because none with `CrateGoodie=yes` can be owned by the collector, the crate now gives nothing. It used to hang the game.
 
 AlexB is credited for the ts-patches bundle that first read these lists whole.

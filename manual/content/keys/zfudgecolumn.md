@@ -7,6 +7,17 @@ when_omitted:
   value: "5"
 ---
 
-The figure is multiplied by a strength taken from the bridge tiles around the object. The product is offered as the object's depth bias. The strength is counted only while the object is under a bridge now, or standing where a destroyed bridge span used to pass. It counts middle span tiles, the pieces between the two ends of a span, in any state of damage. One to the south or east contributes 1, and one to the south-east adds another whether or not either of those matched. The multiplier therefore runs from 0 to 2. Only a road bridge is counted, never a railway one.
+`ZFudgeColumn` moves an object back in drawing order while it passes the support columns of a road bridge, so the columns draw over it. A larger value moves it further back.
 
-Only the largest of the four fudges applies at any moment, so this one has an effect only while it beats whatever [`ZFudgeBridge`](/keys/zfudgebridge/), [`ZFudgeCliff`](/keys/zfudgecliff/) and [`ZFudgeTunnel`](/keys/zfudgetunnel/) are contributing. The winner is added to the bias the object's locomotor asks for and to a second bias the object works out for itself. The stock rules set it on 23 vehicles, between 7 and 18.
+The value is multiplied by a strength from `0` to `2`. The strength is `0` unless the object is under a bridge as [`ZFudgeBridge`](/keys/zfudgebridge/) defines it, or under the place where a destroyed span stood.
+
+The strength counts the middle span tiles of a road bridge, the pieces between the two ends of a span, in any state of damage:
+
+- A middle span tile to the south or to the east adds `1`. Tiles in both places still add only `1`.
+- A middle span tile to the south-east adds another `1`.
+
+Railway bridge tiles never count.
+
+Only the largest of the four depth fudges applies; [`ZFudgeBridge`](/keys/zfudgebridge/) describes how they combine.
+
+The stock rules set this value on 23 vehicles, between `7` and `18`.

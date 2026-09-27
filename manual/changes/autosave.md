@@ -17,4 +17,8 @@ credit:
 - Rampastring
 ---
 
-The game now saves on its own at a fixed interval of frames. A campaign rotates through `AUTOSAVE1.SAV` to `AUTOSAVE5.SAV`, and a skirmish through `AUTOSAVE_SKIRMISH1.SAV` to `AUTOSAVE_SKIRMISH5.SAV`. Against other machines, a client-launched game writes a numbered multiplayer save on every machine at the same frame. The interval for a game started from the menu comes from the new `AutoSaveInterval` setting, 10800 frames unless changed. A client-launched game takes its interval from its launch file's `AutoSaveGame`, which the launch file reader previously read without acting on. The launch file's `NextSPAutoSaveId` and `NextSkirmishAutoSaveId` now seed that rotation, and every save records which slot comes next, so a loaded game picks it up.
+The game now saves automatically each time a set number of game frames has passed. A campaign mission rotates through `AUTOSAVE1.SAV` to `AUTOSAVE5.SAV`, and a skirmish through `AUTOSAVE_SKIRMISH1.SAV` to `AUTOSAVE_SKIRMISH5.SAV`. For a campaign or skirmish started from the menu, the new `AutoSaveInterval` under `[Options]` in `sun.ini` sets that number of frames; a larger value saves less often. A network game started from the menu does not save automatically.
+
+A game started by a client takes its interval from `AutoSaveGame` in the `[Settings]` section of the client launch file, `SPAWN.INI`. In such a game against other players, every machine writes a numbered multiplayer save at the same frame. `NextSPAutoSaveId` and `NextSkirmishAutoSaveId` in the same section choose the first campaign and skirmish autosave file to write.
+
+Every save records which autosave file comes next, so a loaded game continues the rotation.

@@ -10,9 +10,4 @@ credit:
 - ZivDero
 ---
 
-A mission in an expansion campaign refused to start unless the installation had that
-expansion's side CD archive, `E01SCD01.MIX` or `E01SCD02.MIX`. An installation holding
-those members in `SIDECD01.MIX` and `SIDECD02.MIX` instead has every file the mission
-asks for, but the game looked for the expansion archive alone and stopped with
-`Unable to read scenario!` without it. The side's base archive is now mounted when the
-expansion archive is absent.
+A mission in an expansion campaign now starts when the installation lacks that expansion's side CD archive, such as `E01SCD01.MIX` or `E01SCD02.MIX` for Firestorm. The game mounts the side's base archive, `SIDECD01.MIX` or `SIDECD02.MIX`, in its place. Such a mission used to stop with `Unable to read scenario!`, even when the base archive held every file it needed.

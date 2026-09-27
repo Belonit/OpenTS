@@ -12,6 +12,6 @@ when_omitted:
 PreMapSelect=GDI_M11
 ```
 
-The movie runs after [`PostScore`](/keys/postscore/) and before the campaign decides where to go next. It plays even when that decision skips the map selection screen or ends the game: [`OneTimeOnly`](/keys/onetimeonly/) and [`EndOfGame`](/keys/endofgame/) are both tested afterwards.
+The movie plays after [`PostScore`](/keys/postscore/) and before the campaign moves on. It plays even when the mission skips the map selection screen with [`SkipMapSelect`](/keys/skipmapselect/), or ends the campaign with [`OneTimeOnly`](/keys/onetimeonly/) or [`EndOfGame`](/keys/endofgame/).
 
 [`Intro`](/keys/intro/) covers how a movie name is resolved and what happens to one that cannot be found.

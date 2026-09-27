@@ -12,4 +12,4 @@ when_omitted:
 FreeRadar=yes
 ```
 
-The search for a working [`Radar=yes`](/keys/radar/) structure is skipped and the radar map is raised on the strength of this setting alone. The other two conditions still apply: an ion storm suppresses the map while it runs, and the local player's house must be producing at least as much power as it draws.
+The player has the radar map without owning a working [`Radar=yes`](/keys/radar/) structure. The radar map still goes off during an ion storm and while the player's house uses more power than it produces.

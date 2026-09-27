@@ -12,4 +12,4 @@ when_omitted:
 LightningSound=IonThunder ; a sound registered in [SoundList]
 ```
 
-The sound is played without a position, so a bolt is heard at full volume wherever on the map it lands and wherever the view happens to be. It is played once per bolt, before any damage is applied, and the scripted [Lightning strike at...](/mapping/actions/taction-ion-lightning-strike/) action plays it too.
+Each lightning bolt plays this sound once as it strikes. The sound has no position on the map, so every bolt sounds the same wherever it lands and wherever the view is. Bolts from the [Lightning strike at...](/mapping/actions/taction-ion-lightning-strike/) trigger action play it too.

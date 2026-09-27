@@ -8,12 +8,14 @@ when_omitted:
   value: "3"
 ---
 
-Only a projectile steered by the homing flight model reads the figure: one whose [`ROT`](/keys/rot/#scope-bullettype) is above zero. A projectile with no rate of turn follows the arc it was launched along and never changes speed under its own power.
+Only a homing projectile reads the figure: one whose [`ROT`](/keys/rot/#scope-bullettype) is above zero. A projectile with no rate of turn follows the arc it was launched along and never changes speed under its own power.
 
-The figure is leptons of speed gained per game frame, added once every frame until the projectile reaches the speed the firing weapon allows. There are 256 leptons to a cell and 15 game frames to the second. The figure only decides how quickly the projectile reaches the weapon's speed, never how fast it ends up flying: the gain is clamped to that ceiling the moment it is reached.
+The figure is the speed a homing projectile gains each game frame, in leptons per frame, until it reaches its ceiling. There are 256 leptons to a cell and 15 game frames to the second. The ceiling is normally the firing weapon's [`Speed`](/keys/speed/#scope-weapontype) converted to leptons per frame, about 2.56 leptons for each point, so `Speed=100` gives 255. A bomblet released by a [splitting](/keys/splits/) projectile has a ceiling of 50 leptons per frame instead, the equivalent of about `Speed=20`. At `2` or more, the figure decides only how quickly the projectile reaches its ceiling.
 
-A projectile leaves the launcher at one lepton per frame. While it is still in that launch phase the setting is put aside entirely: the speed rises by one lepton on even game frames and not at all on odd ones. The projectile therefore eases away from its firer at half a lepton per frame however large the figure. The launch phase ends as soon as the projectile is within half a lepton of the weapon's speed, and a weapon whose [`Speed`](/keys/speed/#scope-weapontype) is `16` or more has no launch phase at all.
+A homing projectile leaves the launcher at one lepton per frame, in a launch phase that ignores this setting. During the launch phase its speed rises by one lepton every second game frame. The phase ends once the projectile is within half a lepton of its ceiling, so a weapon whose `Speed` is below `16` reaches full speed on the launch ramp alone, and this setting makes no difference to it. A weapon whose `Speed` is `16` or more skips the launch phase, and this figure carries its projectile the whole way from one lepton per frame to the ceiling.
+
+A projectile flying faster than its ceiling slows by half the figure each frame, rounded down to a whole lepton, so at `0` or `1` it never slows. This matters for a bomblet whose weapon's `Speed` is `20` or more, because it is launched faster than its ceiling of 50 leptons per frame.
 
 :::caution[A fast weapon with no acceleration leaves its projectile crawling]
-The launch ramp is the only thing that moves a projectile set to `Acceleration=0`, and a weapon whose `Speed` is `16` or more skips that ramp. Such a projectile is left at its launch speed of one lepton per game frame, about a seventeenth of a cell each second, for the whole flight.
+A weapon whose `Speed` is `16` or more skips the launch ramp, and at `Acceleration=0` nothing else speeds its projectile up. The projectile stays at its launch speed of one lepton per game frame, about a seventeenth of a cell each second.
 :::

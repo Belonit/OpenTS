@@ -1,7 +1,7 @@
 ---
 format_id: ai_triggers
 title: AI triggers
-summary: Defines weighted conditions that create one or two TeamTypes for an AI house.
+summary: Defines the weighted records from which a house draws its next one or two teams.
 kind: record
 route: /mapping/ai-triggers/
 files:
@@ -24,17 +24,18 @@ fields:
     label: Owner
     value: House ID, <all>, or <none>
     required: true
+    note: Tested only in a campaign game. A house ID the game does not recognize counts as <none>.
   - position: 4
     label: Ignored
     value: Present but discarded
     required: true
   - position: 5
     label: Condition type
-    value: Integer from 0 through 4
+    value: Integer from -1 through 4
     required: true
   - position: 6
     label: Condition object
-    value: TechnoType ID
+    value: ObjectType ID
     required: true
   - position: 7
     label: Comparator
@@ -59,22 +60,64 @@ source_files:
   - code/scenario.cpp
 ---
 
-Parsing stops at the first of positions 1 through 7 that is missing, and every field after it is left unread. An incomplete entry is still registered, holding the fields read before the stop.
+Each assignment in `[AITriggerTypes]` defines one AI trigger: its ID to the left of `=`, and its fields, separated by commas, to the right. [AI triggers and team production](/systems/ai-team-production/) explains how a house chooses among triggers and what each field decides.
 
-OpenTS loads `AI.INI`, then `AIFS.INI` when Firestorm is enabled, then the map-local definitions.
+## Where triggers are read
 
-For global definitions, OpenTS enables every loaded AI trigger. For map definitions, `[AITriggerTypesEnable]` maps AITrigger IDs to booleans. In non-campaign sessions, a listed local trigger is enabled regardless of that boolean.
+The game reads AI triggers from `AI.INI`, then from `AIFS.INI` when Firestorm is enabled, then from the map.
 
-Five condition types are defined. Only one asks about the owning house; the other four are questions about that house's enemy, and a house with no enemy fails all four. A condition that reads neither of the two supporting fields leaves them inert: a record may write anything at all there and none of it is read.
+Whether a trigger is enabled depends on where it was defined:
 
-| Value | What it measures | Supporting fields it reads |
+- A trigger from `AI.INI` or `AIFS.INI` is enabled.
+- A trigger from the map is disabled unless the map's `[AITriggerTypesEnable]` section enables it.
+
+`[AITriggerTypesEnable]` pairs an AI trigger ID with a yes-or-no value. In a campaign game, `yes` enables the trigger and `no` disables it, and this works for a trigger from `AI.INI` or `AIFS.INI` as well. Outside a campaign, every ID listed in the section is enabled, whatever its value.
+
+A map entry with the same ID as a trigger from `AI.INI` or `AIFS.INI` redefines that trigger. Each field the map entry supplies replaces the earlier value. The trigger stays enabled unless `[AITriggerTypesEnable]` disables it, and it counts as a map trigger, so [`IgnoreGlobalAITriggers=yes`](/keys/ignoreglobalaitriggers/) does not skip it.
+
+## Writing the fields
+
+Put a value in every field up to the last one you write. Consecutive commas count as one separator, so an empty field moves every later field one position earlier. Write `<none>` in a team or owner field you want to leave empty, and the intended value in every other field. A `0` in a weight field sets that weight to `0`, and a `0` in a difficulty field turns the trigger off at that difficulty.
+
+Fields 1 through 7 are required. If the value ends before field 7, the trigger is still registered with the fields read so far. A new trigger cut short after its owner and before its condition type has no condition, so a campaign game can still draw it. A redefined trigger cut short there keeps its earlier condition.
+
+Fields 8 through 18 can be left off the end. A new trigger missing them has weights of `1`, is not available in skirmish, has no side restriction and no secondary team, and is enabled at every difficulty. A redefined trigger keeps the values it already had.
+
+## Condition types
+
+The condition type selects what the trigger measures and which of the next two fields it reads. A field the condition does not read can hold anything.
+
+| Value | What it measures | Fields it reads |
 | --- | --- | --- |
-| `0` | How many of the condition object the enemy currently holds | Condition object and comparison block |
-| `1` | How many of the condition object the owning house currently holds | Condition object and comparison block |
-| `2` | The enemy's power output less its drain, below a fixed `100` | Neither |
-| `3` | The enemy's power output less its drain, below a fixed `0` | Neither |
-| `4` | The enemy's spendable credits | Comparison block |
+| `-1` | Nothing; the condition always holds | Neither |
+| `0` | How many objects of the condition object's type the enemy owns | Condition object and comparison block |
+| `1` | How many objects of the condition object's type the owning house owns | Condition object and comparison block |
+| `2` | Whether the enemy's power output minus its drain is below `100` | Neither |
+| `3` | Whether the enemy's power output minus its drain is below `0` | Neither |
+| `4` | The enemy's money, counting stored Tiberium | Comparison block |
 
-The comparison block has two values rather than one: the number being compared against, and which of six comparisons is applied to it. The six are less than, less than or equal to, equal to, greater than or equal to, greater than, and not equal to. The block is hexadecimal. Its first four bytes hold the number being compared against and the next four hold the comparison's position in that list counted from zero, each written low byte first. A threshold of 5 with the greater-than-or-equal comparison, for example, opens `0500000003000000`.
+A condition type outside this table never holds. [AI triggers and team production](/systems/ai-team-production/#defensive-teams-and-the-enemy) covers which house is the enemy and what happens when a house has none.
 
-The condition object resolves as infantry, vehicle, aircraft, then building, and the first matching ID is used. An ID that matches none of them does not reject the trigger: the count it stands for is taken as zero and the comparison is made against that.
+## The comparison block
+
+The comparison block holds the number to compare against and the comparison to apply. It is written in hexadecimal, two digits to a byte:
+
+- bytes 1 to 4 hold the number;
+- bytes 5 to 8 hold the comparison, as a value from the table below.
+
+Each is a four-byte integer written low byte first. Digits after the sixteenth are not used.
+
+| Comparison value | Holds when the measured amount is |
+| --- | --- |
+| `0` | Less than the number |
+| `1` | Less than or equal to the number |
+| `2` | Equal to the number |
+| `3` | Greater than or equal to the number |
+| `4` | Greater than the number |
+| `5` | Not equal to the number |
+
+Any other comparison value never holds. For example, "at least 5" is the number `5` with comparison `3`, so the block starts `0500000003000000`.
+
+## The condition object
+
+The condition object is an ObjectType ID. The game looks it up among infantry, vehicle, aircraft and structure types, in that order, and uses the first match. An ID that matches no type does not reject the trigger: the count is `0`, and the comparison is made against that.

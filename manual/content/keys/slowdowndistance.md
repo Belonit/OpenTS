@@ -7,13 +7,18 @@ when_omitted:
   value: "500"
 ---
 
-The figure is a raw lepton count, not a number of cells: a cell is 256 leptons across, so the engine's own 500 is a little under two cells and the dropship's 2000 is nearly eight.
+A driven vehicle with [`Accelerates=yes`](/keys/accelerates/) and an aircraft both start to slow down once they are within this distance of their destination. The value is in leptons, and a cell is 256 leptons across. The default of `500` is a little under two cells, and `2000` is nearly eight.
 
 ```ini title="rules.ini"
 [MYDROP] ; an AircraftType registered in [AircraftTypes]
 SlowdownDistance=2000
 ```
 
-A driving vehicle with [`Accelerates=yes`](/keys/accelerates/) begins braking once it is within this distance of its destination. An aircraft uses it differently. The fly locomotor sets the aircraft's target throttle to the remaining distance divided by this figure, so the approach tapers off smoothly over the whole stretch rather than braking at a fixed rate. Inside a tenth of the figure, the aircraft drops to a crawl and then to a stop.
+A vehicle with `Accelerates=yes` brakes from the moment it comes within the distance. [`DeaccelerationFactor`](/keys/deaccelerationfactor/) sets how hard it brakes.
 
-An [`IsDropship=yes`](/keys/isdropship/) type reads it three times more on the way in. It starts tipping its nose over the moment it comes within the figure. The nose reaches its full [`PitchAngle`](/keys/pitchangle/) four tenths of the way in and holds that angle from there. Its cruising height is meant to ease down to a third of its [`FlightLevel`](/keys/flightlevel/#scope-aircrafttype) over the same stretch, but the blend is worked out in whole numbers and always comes out at the end of its range. The height drops to a third the instant the dropship crosses this distance, and stays there.
+An aircraft throttles down in proportion to the distance left. When half this distance remains, it heads for half speed, and its speed moves toward that figure by a tenth of full speed each frame. Below a tenth of full speed, it holds a tenth until it is within a third of a cell, then stops. A hunter-seeker does not slow down this way, and an aircraft making a strafing run with ammunition left keeps full speed.
+
+A dropship ([`IsDropship=yes`](/keys/isdropship/)) also uses the distance on its way in:
+
+- Its nose starts to tilt as soon as it comes within the distance. The tilt reaches the full [`PitchAngle`](/keys/pitchangle/) once four tenths of the distance is covered, and holds from there.
+- Its target cruising height drops to a third of its [`FlightLevel`](/keys/flightlevel/#scope-aircrafttype) the moment it crosses the distance, and the dropship descends toward that height. The height does not ease down across the distance.

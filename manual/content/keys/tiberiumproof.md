@@ -7,4 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-The infantry takes none of the [per-cell Tiberium damage](/systems/tiberium/#damage), on a Tiberium overlay or on a blossom tree's cell. The Tiberium-proof veteran ability grants the same exemption to a type without the flag. Nothing else is affected: the type takes ordinary weapon damage as before, including from weapons that use the same warhead.
+Infantry of a `TiberiumProof=yes` type take no [Tiberium damage](/systems/tiberium/#damage) when they finish moving into a Tiberium cell, including a blossom tree's cell. The `TIBERIUM_PROOF` [veteran ability](/systems/veterancy/#abilities) gives the same protection to a type without the flag.
+
+The flag covers only that damage. Weapon hits are unaffected.

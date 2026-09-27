@@ -1,10 +1,14 @@
 ---
 key: IsVeinholeMonster
-summary: Lets an explosion collect the veinhole monster standing under the overlay.
+summary: Lets explosions centered on the veinhole monster's cell damage it.
 see_also: ["system:veins", "IsVeins"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-An explosion builds its victim list from the cell it is centered on and the eight around it. Finding this overlay on any of those nine cells is what makes it look for a [veinhole monster](/systems/veins/#destruction) as well. The lookup itself names the blast's own cell, so the monster is collected only when the explosion is centered on the cell the monster occupies. Nothing else in the engine reads the flag.
+Set `IsVeinholeMonster=yes` on the veinhole overlay to let explosions damage the [veinhole monster](/systems/veins/#destruction). The monster takes damage only from an explosion centered on the monster's cell. That cell or one of the eight around it must also hold an overlay with this key. The shipped `VEINHOLE` overlay sets it, and that overlay stands in the monster's cell. The key has no other effect.
+
+:::caution[Set it on the veinhole overlay only]
+An explosion centered on the monster damages it once for each cell in the three-by-three block around it that holds an overlay with this key. If the `VEINHOLEDUMMY` overlays around the monster also set it, one explosion damages the monster up to nine times.
+:::

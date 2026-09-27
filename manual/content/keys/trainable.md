@@ -7,8 +7,8 @@ when_omitted:
   note: "`yes` for AircraftTypes, InfantryTypes, and UnitTypes; BuildingTypes start at `no` and must set the key to earn from kills or receive a veterancy-crate promotion."
 ---
 
-The kill test is made on the type that dealt the fatal damage, at the moment the victim dies. A type set to `no` never accumulates anything, however much it destroys.
+When an object is destroyed, the object that dealt the fatal damage earns [experience](/systems/veterancy/) only if its type is `Trainable=yes`. An object of a `Trainable=no` type never gains experience, however much it destroys.
 
-The key also gates the radius sweep of a veterancy crate. An object of a `Trainable=no` type is skipped without losing any rank it already holds. The crate still ignores ownership, so eligible enemy and neutral objects are promoted alongside the collector's own.
+A veterancy crate also checks the key. It promotes every `Trainable=yes` object on the ground within [`CrateRadius`](/keys/crateradius/) of the crate, whoever owns it, so enemy and neutral objects rise alongside the collector's own. An object of a `Trainable=no` type is skipped and keeps any rank it already holds.
 
-Other ways of assigning a rank ignore this key. An object promoted by deploying from a promoted vehicle, a reinforcement's [`VeteranLevel`](/keys/veteranlevel/), or an armory holds that rank and everything it unlocks regardless of this setting.
+Other ways of giving a rank ignore this key. An object promoted by deploying from a promoted vehicle, by a reinforcement's [`VeteranLevel`](/keys/veteranlevel/), or by an armory holds that rank and everything it unlocks, whatever this setting says.

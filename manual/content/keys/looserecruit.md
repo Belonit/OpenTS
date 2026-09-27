@@ -8,4 +8,4 @@ when_omitted:
   value: "no"
 ---
 
-[Recruitment](/systems/ai-team-production/#recruitment) is widened by [`Recruiter=yes`](/keys/recruiter/) and by a [`Group`](/keys/group/#scope-teamtype) of `-2`, neither of which reads this flag. Every team in the shipped `ai.ini` and `aifs.ini` spells the key out along with the rest of its settings, all 420 of them as `LooseRecruit=no`.
+To let a team [recruit](/systems/ai-team-production/#recruitment) objects outside its group, set [`Recruiter=yes`](/keys/recruiter/) or give the TeamType a [`Group`](/keys/group/#scope-teamtype) of `-2`.

@@ -12,6 +12,6 @@ when_omitted:
 ScatterSound=SCATCMD ; a sound ID registered in SOUND.INI
 ```
 
-The [Scatter](/commands/scatterobject/) command plays this once after it has walked the selection, at full volume rather than faded from a place on the map. One sound covers the whole selection however many objects were in it.
+The [Scatter](/commands/scatterobject/) command plays this sound once per use, however many objects are selected. It plays as an interface sound, not from a place on the map.
 
-It is the sound of the key being pressed rather than of an order being taken. The command only sends its scatter event for an object the player may move, so a structure that does not undeploy into a vehicle is passed over, but the sound is played whenever the selection holds anything at all. Only an empty selection is silent.
+The sound confirms the key press, not the order. It plays whenever anything is selected, even when nothing in the selection can scatter, such as a structure. Only an empty selection is silent.

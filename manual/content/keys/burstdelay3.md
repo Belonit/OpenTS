@@ -7,12 +7,16 @@ when_omitted:
   value: "-1"
 ---
 
+`BurstDelay3` is the wait, in game frames, after the fourth shot of a burst and before the fifth. `-1` gives a random three to five frames instead.
+
 ```ini title="rules.ini"
 [MyChaingun] ; example WeaponType
 Burst=5
 BurstDelay3=3 ; three frames between the fourth shot and the fifth
 ```
 
-The value is the reload delay the firing object is given once its fourth shot of a burst has gone off, in game frames. `-1` asks for a random three to five frames instead. The assignment is reached only on a weapon whose [`Burst`](/keys/burst/) is above `4`; at a burst of exactly four the fourth shot is the last one and pays [`ROF`](/keys/rof/).
+The wait applies only when [`Burst`](/keys/burst/) is above `4`. With `Burst=4`, the fourth shot is the last of the burst and is followed by [`ROF`](/keys/rof/#scope-weapontype) instead.
 
-This is the last gap the weapon can name. The fifth shot and every one after it takes a random three to five frames whatever these assignments say, because the table holds only four entries and no assignment reaches past it.
+Any value other than `-1` is used as written. The house rate-of-fire bias, the random extra frames and the veteran rate-of-fire ability change only the `ROF` wait. [`Burst`](/keys/burst/) lists the weapons and structures that never use the short gap.
+
+No key sets the wait after the fifth or a later shot. Those gaps are a random three to five frames.

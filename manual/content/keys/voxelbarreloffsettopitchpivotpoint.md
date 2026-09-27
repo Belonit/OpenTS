@@ -7,9 +7,19 @@ when_omitted:
   value: "0,0,0"
 ---
 
-Three whole numbers, `X,Y,Z`. A [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building places its barrel with five moves in order. First the assembly moves out from the building by [`VoxelBarrelOffsetToBuildingPivotPoint`](/keys/voxelbarreloffsettobuildingpivotpoint/); a turn to the building's facing comes next, then out by [`VoxelBarrelOffsetToRotatePivotPoint`](/keys/voxelbarreloffsettorotatepivotpoint/). The barrel then elevates to its pitch and moves out by this offset, with the model itself hanging off the end of that.
+Three whole numbers, `X,Y,Z`, that place the barrel model of a [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building relative to the point it tilts about. That point stays still while the rest of the barrel rises and falls. At `0,0,0` the barrel tilts about the model's origin.
 
-This one is applied after the elevation, so it rides up and down with the gun. `X` runs out along the pitched barrel, `Y` to its left and `Z` at right angles to both. That is the place in the sequence [`PBarrelLength`](/keys/pbarrellength/) occupies for an object with no voxel barrel, with two more components to it. The point it lands on is where the barrel model is hung, so it is the offset that decides which part of the barrel stays still while the rest swings.
+The building places its barrel in five steps, in this order:
+
+1. Move by [`VoxelBarrelOffsetToBuildingPivotPoint`](/keys/voxelbarreloffsettobuildingpivotpoint/).
+2. Turn to the gun's current facing.
+3. Move by [`VoxelBarrelOffsetToRotatePivotPoint`](/keys/voxelbarreloffsettorotatepivotpoint/).
+4. Tilt to the barrel's current pitch.
+5. Move by `VoxelBarrelOffsetToPitchPivotPoint`.
+
+The barrel model is drawn at the point these steps reach, at the size [`VoxelBarrelScale`](/keys/voxelbarrelscale/) sets.
+
+This offset comes after the tilt, so it rises and falls with the barrel. `X` runs out along the tilted barrel, `Y` to its left, and `Z` at right angles to both. For an object without a voxel barrel, [`PBarrelLength`](/keys/pbarrellength/) is applied at this same step, but only along `X`.
 
 ```ini title="rules.ini"
 [MYARTILLERY] ; a BuildingType registered in [BuildingTypes]
@@ -20,8 +30,8 @@ VoxelBarrelOffsetToPitchPivotPoint=15,0,-8 ; forward along the barrel and slight
 VoxelBarrelOffsetToBarrelEnd=350,75,0
 ```
 
-The three pivot offsets are read at two scales. Drawing places the barrel with them as raw model units, while the firing point consumes the same matrix and reads the result as leptons, 256 to a cell. The same value therefore moves the drawn barrel farther than it moves the shot. [`VoxelBarrelOffsetToBarrelEnd`](/keys/voxelbarreloffsettobarrelend/) is the exception to the split: the firing point is the only place it is read, so it is leptons alone.
+The barrel model is drawn with the three pivot offsets in voxel model units, but shots start from a point that uses the same numbers as leptons, 256 to a cell. A pivot offset therefore moves the drawn barrel farther than it moves the shots. [`VoxelBarrelOffsetToBarrelEnd`](/keys/voxelbarreloffsettobarrelend/) moves only the shots, so it is in leptons alone.
 
-:::caution[An offset the files never set reads as 0,0,0]
-A BuildingType that never assigns this key gets `0,0,0`, and a value that is not three whole numbers is ignored whole, leaving the previous value standing. A `BarrelAnimIsVoxel=yes` building that leaves this offset at that default pitches the barrel about the model's own origin.
-:::
+When the building's art entry sets [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/), shots start from that offset, and the barrel offsets do not move them. A building that also sets [`TurretAnimIsVoxel=yes`](/keys/turretanimisvoxel/) draws its barrel without these offsets, as [`BarrelAnimIsVoxel`](/keys/barrelanimisvoxel/) explains.
+
+A value that does not begin with three whole numbers separated by commas, such as `15,0` or `15.5,0,-8`, is ignored. The building keeps the offset it had before that line was read. Text after the third number is dropped, so `15,0,-8,2` reads as `15,0,-8`.

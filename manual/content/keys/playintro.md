@@ -6,10 +6,6 @@ when_omitted:
   value: "yes"
 ---
 
-The entry sits in the `[Intro]` section of `sun.ini`. `PlayIntro=yes` selects the
-first-time startup path. The game writes `PlayIntro=no` back to `sun.ini` before
-playing `EVA.VQA`, so a later start skips that movie unless the setting is enabled
-again.
+With `PlayIntro=yes`, the game plays `EVA.VQA` before the other startup movies, which play whatever this setting says. Before the movie starts, the game writes `PlayIntro=no` back to the settings file, so later starts skip it even if this one is closed during the movie. Set it to `yes` again to see the movie once more.
 
-[`FROMINSTALL`](/using/command-line/from-install/) selects the same path without
-reading this setting. The other startup movies are not gated by `PlayIntro`.
+Starting the game with [`FROMINSTALL`](/using/command-line/from-install/) plays `EVA.VQA` whatever this setting says, and still writes `PlayIntro=no`. A game started with [`-SPAWN`](/using/command-line/spawn/) plays no startup movies and neither reads nor changes this setting.

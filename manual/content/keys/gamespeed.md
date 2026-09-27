@@ -7,19 +7,19 @@ when_omitted:
   value: "3"
 ---
 
-Each figure holds the game to a frame rate, in frames per second. A single-player mission or skirmish uses a faster table than a network game at every figure except `6`:
+Each value holds the game to a frame rate, in frames per second. A campaign mission or skirmish uses a faster table than a multiplayer game at every value except `6`:
 
-| Figure | `0` | `1` | `2` | `3` | `4` | `5` | `6` |
+| Value | `0` | `1` | `2` | `3` | `4` | `5` | `6` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Network game | 60 | 45 | 30 | 20 | 15 | 12 | 10 |
-| Single-player mission or skirmish | No limit | 60 | 45 | 30 | 20 | 15 | 10 |
+| Multiplayer game | 60 | 45 | 30 | 20 | 15 | 12 | 10 |
+| Campaign mission or skirmish | No limit | 60 | 45 | 30 | 20 | 15 | 10 |
 
-With no limit, the game runs as fast as the computer allows. A network game runs at its figure's rate or the rate the slowest player's computer can sustain, whichever is lower. A figure above `6` counts as `0`.
+With no limit, the game runs as fast as the computer allows. A multiplayer game runs at its value's rate or at the rate the slowest player's computer can sustain, whichever is lower.
 
-The same figure rescales delays that have to keep their real-world timing whatever the frame rate is: building animations, infantry sequences, and the pauses between EVA reminders. Lowering the figure speeds the game up, but those delays do not shrink in proportion.
+The value also stretches some delays, more at faster speeds, so that they speed up less than the rest of the game. These are animations whose art sets [`Normalized=yes`](/keys/normalized/), a structure's construction and idle animations, infantry idle animations, and the pause between repeated EVA warnings that [`SpeakDelay`](/keys/speakdelay/) sets.
 
-The in-game game controls dialog and the options screen both offer seven positions and write the choice back to `sun.ini`. A multiplayer lobby overwrites the figure with the speed the session settled on, and the in-game speed control issues an order that changes it for every player at once.
+The game controls dialog offers `0` through `6` and saves the chosen value to `sun.ini`. A value of `7` set in `sun.ini` gives the same frame rate as `0`. The skirmish and multiplayer setup screens replace the value with the speed chosen there, and a game started from [`SPAWN.INI`](/formats/spawn-ini/) uses the speed that file names. During a multiplayer game, a speed change from the game controls dialog, or from the in-game options screen in an Internet game, is sent as an order that changes the speed for every player.
 
-:::danger[A negative figure divides by zero and a large one reads past a table]
-Nothing narrows the figure on the way in. `-1` makes the divisor zero, and the game then stops on a division fault the first time a delay of five frames or more is rescaled. A building animation or an EVA reminder does that within moments of a scenario starting. A figure of `8` or more reads past the end of the rescaling table used for the delays shorter than that. `7` is the last figure the table holds.
+:::danger[Keep GameSpeed between 0 and 7]
+The game does not range-check the value it reads from `sun.ini`. With `-1`, the game crashes with a division by zero the first time it stretches a delay of five frames or more, which a structure's animation or an EVA warning can do early in a mission. Any other value below `0` or above `7` reads outside the table the game uses to stretch delays shorter than five frames, so those delays take arbitrary lengths. A value below `-1` also turns delays of five frames or more into negative or zero lengths. The animations they time then advance every frame or stop, and repeated EVA warnings play with no pause.
 :::

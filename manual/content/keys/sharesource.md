@@ -7,9 +7,9 @@ when_omitted:
   value: none
 ---
 
-Read only where one of [`ShareBodyData`](/keys/sharebodydata/), [`ShareTurretData`](/keys/shareturretdata/) or [`ShareBarrelData`](/keys/sharebarreldata/) is set. With none of them set the type loads a `.VXL` of its own, named after its [`Image`](/keys/image/#scope-aircrafttype), and this setting is not read at all.
+`ShareSource` names the object type whose voxel model the animation draws. It is read only when [`ShareBodyData`](/keys/sharebodydata/), [`ShareTurretData`](/keys/shareturretdata/) or [`ShareBarrelData`](/keys/sharebarreldata/) is set, and that flag chooses which of the type's models is used. With none of the flags set, the animation loads the `.VXL` file named by its [`Image`](/keys/image/#scope-aircrafttype) and ignores this key.
 
-The value is an ObjectType ID, matched against the InfantryType, VehicleType, AircraftType and BuildingType lists in that order. The model is taken by reference rather than copied: the animation points at the very data the named type draws from, so the two always show the same artwork and the borrowing costs no memory of its own.
+The value is an ObjectType ID. The engine looks for it among the InfantryTypes, then the VehicleTypes, AircraftTypes and BuildingTypes, and takes the first match. The animation draws that type's model directly, not a copy.
 
 ```ini title="rules.ini"
 [VoxelAnims]
@@ -23,8 +23,15 @@ MinAngularVelocity=10.0
 MaxAngularVelocity=14.0
 ```
 
-A name matching nothing in those four lists leaves the animation holding no model, and so does a named type that has no model for the part asked for. A type drawn from shapes rather than voxels has no model, and a vehicle without a turret has neither turret nor barrel model. Such a piece is still created, still bounces, still damages what it lands on and still expires; it is simply never drawn.
+The animation has no model when the name matches no type, or when the named type holds no model for the part the flag asks for. An infantry type drawn from shapes has no body model, and a vehicle without a turret has no turret or barrel model. A piece without a model is still created, bounces, damages what it lands on and expires, but it is never drawn.
 
-:::danger[Dropping the borrowing in a later file frees the lender's model]
-A borrowed model belongs to the type it came from: while the borrowing stands the animation only drops its reference to it and never frees it. A later rules or map file that declares the section again without repeating the sharing flag turns the borrowing off. The section is then read as an owner: the borrowed model is released and one of the animation's own is loaded in its place. The lending object type is then drawn out of freed memory, and the motion data that animates its model is released a second time when the game shuts down, corrupting the heap.
+:::danger[Declare the borrowing again wherever the lender or the flag changes]
+A borrowed model belongs to the type it came from. Two kinds of later declaration leave the animation pointing at freed memory:
+
+- A later rules or map file that declares the animation's section without its sharing flag turns the borrowing off. The animation frees the borrowed model and loads a `.VXL` file for itself. The lending type is then drawn from freed memory, and the game frees the same memory twice when the next mission loads or the game exits.
+- A later rules or map file that declares the lending type's section makes a lender with voxel artwork load its models again and free the old ones. The animation keeps drawing the freed model unless the same file also declares the animation's section with its sharing flag.
+:::
+
+:::caution[Borrowed models are lost in a loaded game]
+Loading a saved game does not restore a borrowed model. Each borrowing animation looks for a `.VXL` and `.HVA` pair named by its [`Image`](/keys/image/#scope-aircrafttype) instead. If the pair exists, the animation draws that model; otherwise its pieces are invisible for the rest of the game.
 :::

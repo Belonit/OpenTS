@@ -16,12 +16,17 @@ MaxPips=12
 
 `MaxPips` sets how many pips the row has, replacing the default length of the type's [`PipScale`](/keys/pipscale/). The example transport shows twelve passenger pips instead of five. A type with no `PipScale` has no row, so the key does nothing for it.
 
-Under `PipScale=Ammo` and `PipScale=Passengers`, the row is still capped by the type's [`Ammo`](/keys/ammo/) or [`Passengers`](/keys/passengers/) value. `MaxPips=20` on a transport with `Passengers=6` draws six pips.
+Some rows stay capped by another value:
 
-On a structure using [`PipScale=Tiberium`](/keys/pipscale/) or `PipScale=Power`, the key replaces the default of six pips per cell of footprint width. Under `Tiberium` the row is still capped by the structure's [`Storage`](/keys/storage/), or by `[General] WeedCapacity` on a weeder.
+- Under `PipScale=Ammo` or `PipScale=Passengers`, the row holds at most the type's [`Ammo`](/keys/ammo/) or [`Passengers`](/keys/passengers/) value. `MaxPips=20` on a transport with `Passengers=6` draws six pips.
+- On a structure under `PipScale=Tiberium`, the row holds at most the structure's [`Storage`](/keys/storage/), or [`[General] WeedCapacity`](/keys/weedcapacity/) on a [`Weeder=yes`](/keys/weeder/#scope-buildingtype) structure.
+
+On a structure under `PipScale=Tiberium` or `PipScale=Power`, the key replaces the default of six pips per cell of footprint width.
+
+Under `PipScale=Power`, no pips are drawn unless the type also sets `Passengers` above `0`. Such a type shows passenger pips across the length `PipScale=Power` gives.
 
 A negative value counts as `0`, which leaves the row with no pips.
 
-:::caution[A long row runs past its object]
-A vehicle, infantry or aircraft draws its row to the right, four pixels per pip, and nothing limits the row to the object's width. A row much longer than the object is wide is drawn over whatever stands beside it. A structure's default length is sized to its footprint, and a value set here can make the row run past the structure's edge too.
+:::caution[Keep a long row within its object]
+A vehicle, infantry soldier or aircraft draws its row to the right, four pixels per pip, and the row does not stop at the object's edge. A row much longer than the object is wide is drawn over whatever stands beside it. A structure's default length fits its footprint, but a larger `MaxPips` can run the row past the structure's edge too.
 :::

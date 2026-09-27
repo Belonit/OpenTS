@@ -8,6 +8,6 @@ when_omitted:
   note: The special options are initialized with this built-in default when the game starts.
 ---
 
-Two conditions have to meet for this flag to matter, and they exclude each other. The map's `[SpecialFlags]` block is parsed only in a single-player mission, while the one routine that reads the locked-alliance state refuses to run there: it is the command that offers to ally with the owner of a selected object. Every game type that could reach the command replaces the scenario's flags wholesale as soon as the map has been read. Nothing the map wrote survives to be tested.
+`FixedAlliance` has no effect in any game type. A locked alliance would disable the [`ToggleAlliance`](/commands/togglealliance/) command, which forms or breaks an alliance with the selected object's owner. That command works only outside single-player missions, and only a single-player mission reads this entry.
 
-Locked alliances come from the internet setup instead. It sets the state directly when the alliances were dictated from outside the game, and clears it when the players are free to negotiate. Whatever the map says here reaches no gameplay path at all.
+No game setup in OpenTS locks alliances either. Whether players can ally is decided by the game's alliance option.

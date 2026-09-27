@@ -7,20 +7,20 @@ when_omitted:
   value: "25"
 ---
 
-Each webbed soldier draws a whole number between minus and plus this figure, inclusive, and that shift is added to [`WebDuration`](/keys/webduration/). The built-in `25` therefore spreads a web across a range of just over three seconds, which is what keeps a group of soldiers caught by one shot from breaking loose together. A figure of `0` gives every soldier the same wait.
+Each infantryman caught by a web draws a whole number at random between minus and plus this figure, inclusive, and adds it to [`WebDuration`](/keys/webduration/). Infantry caught by the same shot can break free at different times. At `25` and the default `WebDuration`, the waits run from 275 to 325 frames, a spread of a little over three seconds at fifteen frames a second. At `0`, every infantryman waits exactly `WebDuration`.
 
 ```ini title="rules.ini"
 [MyWebWH] ; example WarheadType
 Webby=yes
 Particle=MyWebSys ; example ParticleSystemType
 WebDuration=600
-WebDurationVariation=90 ; each soldier waits 34 to 46 seconds
+WebDurationVariation=90 ; each infantryman waits 510 to 690 frames, 34 to 46 seconds
 ```
 
-The sign makes no difference: the two ends of the range are put in order before the draw, so a negative figure behaves exactly as its positive counterpart.
+A negative figure behaves exactly like its positive counterpart.
 
-The setting is read only while [`Webby=yes`](/keys/webby/) stands in the same section.
+The setting is read only while the warhead is [`Webby=yes`](/keys/webby/).
 
-:::caution[A variation larger than the duration can pin nothing]
-The shift is applied without a floor. A draw that takes the total to zero or below leaves the soldier's remaining wait untouched, so it plays one struggle and stands straight back up, still having taken no damage from the hit.
+:::caution[Keep the variation below WebDuration]
+The shifted wait has no lower limit. When a draw brings it to zero or below, the web does not hold the infantryman. One that was free plays the struggle animation once, drops prone and can act again. One that was already webbed keeps the wait it had left. The hit deals no damage either way.
 :::

@@ -1,21 +1,20 @@
 ---
 key: ThreatPosed
-summary: How much danger the type represents, used by team weighting, the region threat map, and base-defense call-ups.
+summary: How much danger the type represents, used by the region threat map and base-defense call-ups.
 see_also: ["system:target-selection"]
 when_omitted:
   kind: value
   value: "0"
 ---
 
-No part of target scoring reads this figure; it is what an object is worth as a danger, not what it is worth as a target. Three systems consume it:
+The figure rates how dangerous an object of this type is to other houses. It is not the object's worth as a target: no part of [target scoring](/systems/target-selection/) reads it. Two systems use it:
 
-- The weight an object has when a team tallies its members. Separately, this figure plus the type's [`Points`](/keys/points/) (and the same sum for anything carried as cargo) forms an object's worth to the computer. The computer's superweapon targeting reads it: nine times in ten it picks the enemy building with the greatest worth.
-- The per-house, per-region threat map, credited when the object is placed on the map and debited when it leaves. The pathfinder reads that map through [`ThreatAvoidanceCoefficient`](/keys/threatavoidancecoefficient/).
-- The size of a computer house's response when its base is attacked: the attacker's figure multiplied by [`ComputerBaseDefenseResponse`](/keys/computerbasedefenseresponse/) is the defensive strength the house tries to assemble.
+- **The threat map.** An object adds its figure to [the threat map](/systems/base-attacked/#the-threat-map) for the region it stands in. The computer's missile strikes, its regrouping teams, and the pathfinder through [`ThreatAvoidanceCoefficient`](/keys/threatavoidancecoefficient/) read that map.
+- **Base defense.** When a computer house's base is attacked, the attacker's figure multiplied by [`ComputerBaseDefenseResponse`](/keys/computerbasedefenseresponse/) is the [defensive strength](/systems/base-attacked/#the-strength-budget) the house calls back. Each defender's own figure counts toward that total.
 
 ```ini title="rules.ini"
 [MYTANK] ; example UnitType
 ThreatPosed=25
 ```
 
-A type left at `0` contributes nothing to any of the three, so an attacker of that type provokes no base-defense call-up at all.
+A type left at `0` adds nothing to the threat map, and an object of that type is never called back as a defender. An attacker of that type gives the [call-up](/systems/base-attacked/#the-strength-budget) a budget of zero, so no one is called back. The call-up still [empties and suspends the house's low-priority teams](/systems/base-attacked/#teams-are-emptied-first), and it does so again on every hit.

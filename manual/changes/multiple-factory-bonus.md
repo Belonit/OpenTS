@@ -18,7 +18,7 @@ targets:
 credit: [ZivDero, CCHyper, dkeeton, Krnyoshi]
 ---
 
-Each factory of a category past the first now multiplies that category's build times by `MultipleFactory` in `[General]` of `rules.ini`: at `0.8`, two factories build in 80% of the time and three in 64%. Before, the build time was multiplied once by `1 / ((factories - 1) × MultipleFactory)`, so at `1` a second factory gave no discount and below `1` it slowed production. The stock rules set `MultipleFactory=0`, which still gives no discount.
+Each factory of a category past the first now multiplies that category's build times by `MultipleFactory` in `[General]` of `rules.ini`: at `0.8`, two factories build in about 80% of the time and three in about 64%. Before, the build time was divided once by `(factories - 1) × MultipleFactory`. At `1` a second factory gave no discount and a third halved build times, and below `1` a second factory lengthened them. The stock rules set `MultipleFactory=0`, which still gives no discount.
 
 `MultipleFactoryCap` in the same section limits how many factories count toward the discount.
 

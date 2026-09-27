@@ -8,23 +8,22 @@ when_omitted:
   value: "no"
 ---
 
-The flag is what makes a cell overlay behave as a barrier rather than as scenery. It turns on:
-
-- the connection artwork that joins neighboring cells into a run,
-- the [damage stages](/systems/walls-and-gates/#taking-damage) that [`Strength`](/keys/strength/#scope-overlaytype) and [`DamageLevels`](/keys/damagelevels/) drive,
-- blocked passability: the flag blocks the cell on its own, and a `Wall=no` overlay blocks only when its `Land` value's movement cost is zero,
-- the sell cursor,
-- eligibility for a [`Wall=yes`](/keys/wall/#scope-warheadtype) warhead.
-
-An overlay left at `no` has none of that: damage passes over it, it no longer blocks as a wall, and no BuildingType can convert into it usefully.
-
 ```ini title="rules.ini"
 [GAWALL]
 Wall=yes
-Land=Wall
-Strength=100
+Strength=150
 ```
 
-`Wall=yes` is the load-bearing line in that fence: it blocks whatever the `Land` value is, `Clear` included.
+`Wall=yes` makes an overlay a wall segment. The flag turns on:
 
-It is read separately from the flag of the same name on the BuildingType that lays the overlay. A [`Wall=yes`](/keys/wall/#scope-buildingtype) structure whose [`ToOverlay`](/keys/tooverlay/) names an overlay without this flag still converts into that overlay. The result is an ordinary decorative overlay; any blocking it does comes from its own `Land` value, not from this flag.
+- the connection artwork that joins neighboring segments into a run;
+- the [damage stages](/systems/walls-and-gates/#taking-damage) that [`Strength`](/keys/strength/#scope-overlaytype) and [`DamageLevels`](/keys/damagelevels/) drive;
+- blocking, whatever the overlay's [`Land`](/keys/land/) value, unless the overlay is also [`Crushable=yes`](/keys/crushable/#scope-aircrafttype), which lets crusher vehicles drive over it;
+- the sell cursor and the sale of the segment;
+- damage from a [`Wall=yes`](/keys/wall/#scope-warheadtype) warhead, or from a [`Wood=yes`](/keys/wood/) warhead when the overlay's armor is wood.
+
+[Walls and gates](/systems/walls-and-gates/) covers each of these. The stock wall overlays leave `Land` at `Clear`, so this flag alone makes them block.
+
+Without the flag, an overlay takes no wall damage and has none of the behavior above. It blocks movement only through its land type, as its `Land` value and the movement costs decide.
+
+This flag is separate from [`Wall=yes`](/keys/wall/#scope-buildingtype) on the BuildingType that lays the overlay. A wall structure converts into the overlay its [`ToOverlay`](/keys/tooverlay/) names whether or not that overlay sets this flag. If the overlay does not set it, the result is an ordinary overlay with none of the wall behavior.

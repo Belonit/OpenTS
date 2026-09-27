@@ -1,6 +1,6 @@
 ---
 key: VeryHigh
-summary: Raises a homing projectile's cruising clearance and delays the dive onto its target.
+summary: Raises a homing projectile's cruising clearance and starts its dive farther from the target.
 see_also: [ROT, High, Airburst]
 when_omitted:
   kind: value
@@ -9,12 +9,19 @@ when_omitted:
 
 Only a projectile steered by the homing flight model is affected: one whose [`ROT`](/keys/rot/#scope-bullettype) is above zero.
 
-An ordinary homing projectile follows the terrain while it is still more than three cells from its target horizontally. It holds as many terrain levels of clearance above the ground ahead of it as there are whole cells left to run, up to five (a little over two cells of height). Inside three cells it stops following the ground and pitches straight at the target.
+The setting changes how the projectile approaches a ground target. While it is far from the target, it follows the terrain at a set clearance above the ground ahead of it. Near the target, it stops following the ground and dives straight at the target. [Steered flight](/systems/projectile-flight/#steered-flight) lists when a projectile follows the terrain at all; a launching projectile, for example, never does.
 
-The setting changes both figures. The clearance becomes a flat ten terrain levels, about four cells of height, however far out the projectile is, and the dive is not begun until the projectile is within six cells. A shot fired across a ridge therefore rides over it rather than into it.
+| | Ordinary homing projectile | `VeryHigh=yes` |
+| --- | --- | --- |
+| Clearance above the ground ahead | One terrain level for each whole cell still to the target, up to five levels (about two cells of height) | Ten terrain levels (about four cells of height), whatever the distance to the target |
+| Starts its dive | Within three cells of the target, measured horizontally | Within six cells |
 
-It also exempts the projectile from the stall check, which forces a homing projectile that has stopped gaining on its target to detonate.
+A `VeryHigh=yes` projectile therefore comes down on its target from higher and from farther out.
 
-A projectile chasing an aircraft skips terrain-following altogether and flies straight at its quarry, so on that shot only the exemption from the stall check remains.
+The setting also exempts the projectile from the [stall check](/systems/projectile-flight/#steered-flight), which otherwise detonates a homing projectile that has nearly stopped closing on its target.
 
-The setting is unrelated to [`High`](/keys/high/#scope-bullettype), which decides whether a projectile passes over walls and other tall overlays.
+A projectile chasing an aircraft never follows the terrain and flies straight at the aircraft, so against aircraft only the stall-check exemption remains.
+
+On an [`Airburst=yes`](/keys/airburst/) projectile the setting changes nothing. `Airburst` already gives ten levels of clearance, keeps the projectile following the terrain all the way to the target, and exempts it from the stall check.
+
+The setting is unrelated to [`High`](/keys/high/#scope-bullettype), which lets a projectile fly through the cell of a `High=yes` overlay.

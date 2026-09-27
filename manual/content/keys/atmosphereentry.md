@@ -12,10 +12,10 @@ when_omitted:
 AtmosphereEntry=MYPODRING ; an AnimType registered in [Animations]
 ```
 
-A pod starts its run from an elevated coordinate offset from the cell it is aimed at, and this animation is created there on the frame the passenger is first placed. It appears once per pod, before any part of the descent begins. [Approach selection](/systems/drop-pods/#approach-selection) covers where that coordinate falls for each of the four approaches, and nothing else in the game reads the setting.
+Each drop pod creates this animation once, at the start of its fall. It appears at the high point where the fall begins, on the frame the passenger is placed there, and plays as many times as its animation type's [`LoopCount`](/keys/loopcount/) sets. [Approach selection](/systems/drop-pods/#approach-selection) covers where that point lies for each of the four approaches. No other part of the game uses the animation.
 
-A placement that fails is retried at once, and the retry does not create the effect. A pod aimed somewhere it cannot start from therefore arrives without one.
+If the passenger cannot be placed at the start point, the engine tries once more and creates no animation on the second try. A pod placed on that retry falls without the animation.
 
-:::danger[An unset animation crashes the game as the first pod arrives]
-The placement creates the animation without first checking that one was named, so a rules layer that leaves the key unset crashes the game the moment a [Drop Pods superweapon or a drop-pod team](/systems/drop-pods/#entry-paths) sends its first passenger.
+:::danger[Set an animation before using drop pods]
+If `AtmosphereEntry` names no animation, the game crashes when a [Drop Pods superweapon or a drop-pod team](/systems/drop-pods/#entry-paths) places its first passenger.
 :::

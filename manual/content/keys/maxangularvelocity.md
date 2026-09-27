@@ -7,14 +7,14 @@ when_omitted:
   value: "-1"
 ---
 
-Degrees per frame, converted to radians as it is read. A piece is given one tumbling rate for the whole of its life, drawn once when it is created from the range this setting closes and [`MinAngularVelocity`](/keys/minangularvelocity/) opens.
+Each piece tumbles at one rate for its whole life, drawn when it is created from the range between [`MinAngularVelocity`](/keys/minangularvelocity/) and this setting.
 
-A value of exactly `0` is discarded rather than stored. The conversion is skipped and the rate already held stands, which for a type no earlier file touched is ten degrees per frame. Every other value, negative ones included, is taken as written.
+A value of exactly `0` is ignored, and the type keeps the maximum it already held. On the type's first read, that is ten degrees per frame. Every other value, negative ones included, is used as written.
 
-:::caution[The pick is quantized in whole radians]
-The range is measured after the conversion to radians, and the pick that spans it moves in whole radians. A range narrower than about 57 degrees therefore always yields the minimum, and this setting changes nothing at all. A wider range adds whole radians, about 57 degrees per frame apiece, as the only alternatives to it.
+:::caution[The pick moves in steps of about 57 degrees]
+The rate is picked in steps of one radian, about 57 degrees per frame, counted up from the minimum. If this setting is less than about 57 degrees above the minimum, every piece tumbles at exactly the minimum rate and this setting has no effect. A wider range adds only whole steps: the minimum plus 57, plus 114, and so on.
 :::
 
-:::danger[A maximum below the minimum usually crashes the game]
-The divisor the pick uses is the truncated whole number of radians in the range, plus one. A maximum below the minimum by less than about 114 degrees makes that divisor zero, the division faults, and the game stops the moment a piece of the type is created. Leaving this setting out of a section that writes a minimum reaches the same fault, because an unwritten maximum is minus one degree per frame.
+:::danger[A maximum just below the minimum crashes the game]
+If this setting is below `MinAngularVelocity` by less than about 114.6 degrees, the game crashes when a piece of the type is created. Leaving this setting out while writing a minimum above -1 and below about 113.6 degrees has the same result, because an omitted maximum is -1 degree per frame.
 :::

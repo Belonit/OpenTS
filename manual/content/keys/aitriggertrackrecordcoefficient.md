@@ -7,4 +7,8 @@ when_omitted:
   value: "1"
 ---
 
-The history term is the trigger's successes so far minus half its runs so far. This value scales that term on the [failure path only](/systems/ai-team-production/#the-track-record); the success path uses the same term unscaled. The scaled term is then clamped to at most zero, so raising the value deepens the penalty for a trigger with a poor record, and does nothing once its record reaches one success in two. At `0` a failure moves the weight by [`AITriggerFailureWeightDelta`](/keys/aitriggerfailureweightdelta/) alone, regardless of history.
+The history term is the trigger's successes so far minus half its runs so far. On a [failure](/systems/ai-team-production/#the-track-record), this value multiplies the term, and a positive result is replaced by `0` before it is added to the weight. Successes use the term unscaled, so this value has no effect on them.
+
+Raising a positive value deepens the extra penalty for a trigger that has succeeded in fewer than half its runs. A trigger with at least one success in two gets no extra penalty. At `0`, a failure moves the weight by [`AITriggerFailureWeightDelta`](/keys/aitriggerfailureweightdelta/) alone.
+
+A negative value reverses the effect. A failure then costs a trigger with a good record extra weight, and costs a trigger with a poor record only the failure delta.

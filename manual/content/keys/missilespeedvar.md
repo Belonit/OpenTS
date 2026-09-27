@@ -8,6 +8,9 @@ when_omitted:
   value: ".25"
 ---
 
-The name marks it as the counterpart of [`MissileROTVar`](/keys/missilerotvar/): a fluctuation applied to a homing projectile's speed in flight. Nothing reads the stored figure, so no fluctuation is ever applied. A homing projectile's speed climbs toward the firing weapon's [`Speed`](/keys/speed/#scope-weapontype) and holds there, coasting back down by half the BulletType's [`Acceleration`](/keys/acceleration/#scope-bullettype) if it is ever moving faster. That `Acceleration` governs the climb only for a weapon whose `Speed` is `40` or more. Below that the projectile stays in its launch phase and gains one lepton of speed every other frame until it is up to speed.
+Homing projectiles have no speed variation to match the turn-rate weave of [`MissileROTVar`](/keys/missilerotvar/). Their speed comes from the firing weapon and the BulletType:
 
-The matching rate-of-turn setting is read, and it is what gives a missile its weaving flight path.
+- It leaves the launcher at one lepton per frame, accelerates toward the weapon's [`Speed`](/keys/speed/#scope-weapontype), and then holds that speed.
+- With a weapon `Speed` of `40` or more, it gains the BulletType's [`Acceleration`](/keys/acceleration/#scope-bullettype) each frame.
+- With a lower `Speed`, it gains one lepton of speed every other frame until it reaches the weapon's `Speed`.
+- If it is ever moving faster than the weapon's `Speed`, it slows by half the BulletType's `Acceleration` each frame, rounded down.

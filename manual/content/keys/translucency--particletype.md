@@ -8,17 +8,34 @@ when_omitted:
   value: "0"
 ---
 
-Only three levels of translucency can be drawn, and the value has to land on one of them: 25 draws the particle a quarter faded, 50 a half, and 75 through 127 three quarters. Every other number draws the particle solid, `0` among them. The particle holds the level in one signed byte, so the figure wraps modulo 256: 128 through 255 land below zero and draw solid too, while 281 lands on `25` and 306 on `50` again. The whole test is skipped below the High detail setting: at Medium detail particles are drawn solid whatever this says, and at Low detail smoke and spark particles are not drawn at all.
+`Translucency` sets how faded a particle of this type is when it is created. The game draws only three fade levels, and the value must land on one of them:
 
-The figure is only where a particle starts. A [`Fire`](/keys/behaveslike/#scope-particletype) particle raises its own as its sequence passes [`Translucent25State`](/keys/translucent25state/) and [`Translucent50State`](/keys/translucent50state/). A smoke system adds a step to five of every six successors it creates, and to the particles it emits once the emitting system has aged past its [`SpawnTranslucencyCutoff`](/keys/spawntranslucencycutoff/). A puff authored at `25` is therefore usually drawn at `50`, and its successors more faded still.
+| Value | Particle is drawn |
+| --- | --- |
+| `25` | a quarter faded |
+| `50` | half faded |
+| `75` through `127` | three quarters faded |
+| any other value, including `0` | solid |
 
-`Spark` and `Railgun` particles are plotted as single pixels rather than drawn from artwork, and that path never reads the setting.
+Each particle keeps its level in one signed byte, so the value wraps around every 256. `128` through `255` wrap below zero and draw solid, while `281` acts as `25` and `306` as `50`.
+
+Fading is drawn only at the High detail setting. At Medium detail every particle is drawn solid. At Low detail, `Smoke` and `Spark` particles are not drawn at all and the rest are drawn solid.
+
+`Spark` and `Railgun` particles are drawn as single pixels with no artwork, and they ignore this setting.
+
+The level can change after the particle is created:
+
+- A [`Fire`](/keys/behaveslike/#scope-particletype) particle switches to `25` when its animation state reaches [`Translucent25State`](/keys/translucent25state/), and to `50` when it reaches [`Translucent50State`](/keys/translucent50state/).
+- A smoke system adds `25` to each particle it emits once its spawn interval has grown past [`SpawnTranslucencyCutoff`](/keys/spawntranslucencycutoff/).
+- When a smoke system replaces an expiring particle with its [`NextParticle`](/keys/nextparticle/) pair, each successor starts at its parent's current level and ignores its own type's `Translucency`. Five times in six, `25` is added to that level.
+
+Those steps can push a level past `127`. It then wraps, and the particle is drawn solid again. A particle that starts at `25` wraps after five generations of successors that each add a step.
 
 ```ini title="rules.ini"
 [MYSMOKEPUFF] ; a ParticleType registered in [Particles]
 Image=SGRYSMK1
 BehavesLike=Smoke
-Translucency=25 ; a quarter faded when created, half once the plume thins
+Translucency=25 ; a quarter faded when created
 MaxEC=80
 EndStateAI=20
 ```

@@ -12,6 +12,6 @@ when_omitted:
 GameClosed=GAMESHUT ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the network game list a player sits in before joining a LAN match, and it is played without a position. It marks one announcement: a game already on the list going from open to closed, which the host reports in the answers it broadcasts about itself. The chat panel prints a matching line beside it.
+The sound plays in the LAN game list that a player sees before joining a match. It marks a listed game changing from open to closed, as reported in the replies to the list's game queries. Once a game is closed, any player in it can send that reply. A matching line appears in the chat panel with the sound.
 
-The announcement is made only while the player has not yet been confirmed into a game, so a game closing behind an already-joined player is silent. A game that drops off the list entirely, rather than reporting itself closed, is also silent.
+The sound plays only until the player has been confirmed into a game. A game that disappears from the list without first reporting itself closed does not play it.

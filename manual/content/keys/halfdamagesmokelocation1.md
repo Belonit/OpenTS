@@ -8,4 +8,4 @@ when_omitted:
   value: 0,0,0
 ---
 
-The three components are parsed and stored, and no path reads them back. Where a damaged structure's smoke and sparks actually sit is set by [`DamageSmokeOffset`](/keys/damagesmokeoffset/).
+[`DamageSmokeOffset`](/keys/damagesmokeoffset/) sets where a damaged structure's smoke and sparks appear.

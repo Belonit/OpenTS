@@ -7,7 +7,7 @@ when_omitted:
   value: "0"
 ---
 
-The comparison is strict: a blast must deal more than this figure before [`Deform`](/keys/deform/) is rolled at all, and one dealing exactly the figure is refused. The amount tested is the raw damage of the blast, not the amount any object standing in it ends up taking, so armor and distance never move a blast across the threshold.
+A blast must deal more than this figure before its [`Deform`](/keys/deform/) chance is rolled. A blast that deals exactly the figure never craters. The damage tested is the blast's full damage, not what any object in it takes, so armor never moves a blast across the threshold. Distance matters only in a [wide-area blast](/systems/warheads/#the-wide-area-blast), where each cell's blast is tested with that cell's own figure.
 
 ```ini title="rules.ini"
 [MyShellWH] ; example WarheadType
@@ -15,4 +15,4 @@ Deform=15%
 DeformThreshhold=120 ; 121 damage and above may crater
 ```
 
-The doubled `h` is part of the accepted spelling. Any other spelling is not read at all, leaving the threshold at whatever it already held: `0` unless an earlier file set it, where every blast of one point or more reaches the roll.
+The key is spelled with a doubled `h`. A key spelled any other way, such as `DeformThreshold`, is ignored and leaves the threshold unchanged.

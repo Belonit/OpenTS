@@ -7,11 +7,11 @@ when_omitted:
   value: "0"
 ---
 
-The wind pushes a particle by a fixed step of at most two leptons on each axis, in the direction [`WindDirection`](/keys/winddirection/) names. What this figure changes is either how often that step lands or how large it is, and which of the two depends on the [behavior](/keys/behaveslike/#scope-particletype).
+The wind moves a particle by a step of up to two leptons on each axis, in the direction [`WindDirection`](/keys/winddirection/) names. For `Gas` and `WeakGas` particles, this value sets how often the step is taken. For `Smoke` particles, it sets how large the step is. `Fire`, `Spark`, `Railgun` and `Web` particles ignore it. The behavior is set by [`BehavesLike`](/keys/behaveslike/#scope-particletype).
 
-`Gas` and `WeakGas` particles take the step on one frame in ten divided by this figure, rounded down, so the scale is coarse and saturates quickly:
+`Gas` and `WeakGas` particles take the step once every N frames, where N is 10 divided by this value and rounded down. The scale is coarse and reaches every frame quickly:
 
-| Value | Step applied |
+| Value | Step taken |
 | --- | --- |
 | `0` or less | never |
 | `1` | one frame in ten |
@@ -20,8 +20,8 @@ The wind pushes a particle by a fixed step of at most two leptons on each axis, 
 | `4` or `5` | every other frame |
 | `6` through `10` | every frame |
 
-`Smoke` particles work the other way: the step lands every frame and is multiplied by this figure instead, so the drift scales without any ceiling, and a negative value carries the puff upwind. `Fire`, `Spark`, `Railgun` and `Web` particles ignore the setting entirely.
+`Smoke` particles take the step every frame, multiplied by this value. The drift has no upper limit, and a negative value carries the puff upwind.
 
-:::danger[Above 10 on a gas particle the game stops]
-The interval for `Gas` and `WeakGas` particles is ten divided by this figure in whole numbers, and at `11` or more that division yields zero. The frame counter is then divided by zero and the game stops as soon as a particle of the type moves. Only those two behaviors are exposed: the `Smoke` path multiplies by the figure rather than dividing by it, and takes any value.
+:::danger[Keep gas values at 10 or below]
+For `Gas` and `WeakGas` particles, a value of `11` or more rounds the interval down to zero. The game divides by zero and crashes as soon as a particle of the type moves. `Smoke` particles accept any value.
 :::

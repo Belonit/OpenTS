@@ -14,9 +14,11 @@ DebrisTypes=MYSCRAP,MYTIRE ; VoxelAnimTypes registered in [VoxelAnims]
 DebrisMaximums=4,2
 ```
 
-A figure of zero turns wreckage off, and it is the first thing tested, so neither debris list is read at all. Above zero, the figure is a budget rather than a count, and which list it is spent on depends on whether the type declares [`DebrisTypes`](/keys/debristypes/) of its own:
+At `0`, a destroyed object throws no wreckage, whatever its debris lists say. Above `0`, the value caps the total number of pieces. Which pieces are thrown depends on whether the type sets [`DebrisTypes`](/keys/debristypes/):
 
-- **With a list**, the budget is handed out along it in order, up to the matching [`DebrisMaximums`](/keys/debrismaximums/) figure from each entry and only as far as the budget stretches. Every piece is created at the object's center, owned by the object's house. A budget larger than the sum of those figures simply goes unspent; the walk stops at the end of the list.
-- **Without a list**, a count is drawn at random from zero up to the budget and that many [`[AudioVisual] MetallicDebris`](/keys/metallicdebris/) animations are created, each picked independently, twenty leptons above the object's center.
+- **With `DebrisTypes`**, the entries are taken in order. Each throws a random number of pieces, from zero up to its matching [`DebrisMaximums`](/keys/debrismaximums/) figure, until `MaxDebris` pieces have been thrown. Give every entry a figure of `0` or more, or the game can crash when the object is destroyed. Any budget left after the last entry goes unused. The pieces start at the object's center and belong to the object's owner.
+- **Without `DebrisTypes`**, a random number of pieces from zero up to `MaxDebris` is thrown, each a [`MetallicDebris`](/keys/metallicdebris/) animation picked at random, 20 leptons above the object's center.
 
-The wreckage is thrown before any [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) blast and after the death voice. An object that a collapsing bridge or a shove over water has dropped, and that then died within ten leptons of the water, leaves the death path before either and throws nothing.
+In the example, `MYSCRAP` throws zero to four pieces and `MYTIRE` zero to two. Their maximums add up to six, so the budget never cuts a draw short.
+
+Wreckage is thrown after the death voice and before any [`Explodes=yes`](/keys/explodes/#scope-aircrafttype) blast. An object that has fallen from a height, for example off a bridge, and dies over water within 10 leptons of the ground throws no wreckage and does not explode.

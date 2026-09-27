@@ -7,17 +7,19 @@ when_omitted:
   value: "175"
 ---
 
-While a beam is nearer its structure than [`SpotlightLocationRadius`](/keys/spotlightlocationradius/), it detects at exactly this radius. Past that distance it gains about seven and a half leptons for every whole tenth of the span up to [`SpotlightMovementRadius`](/keys/spotlightmovementradius/) that it has traveled. The same radius fixes the spread of the two glowing edges drawn from the structure down to the pool of light, so a beam that sees further is a visibly broader one. Once that radius passes the beam's own distance from the structure, the two edges are not drawn at all.
+`SpotlightRadius` is the radius at which a spotlight detects intruders before it widens. A beam closer to its structure than [`SpotlightLocationRadius`](/keys/spotlightlocationradius/) detects at exactly this radius. Farther out, the radius grows by about seven and a half leptons for each sweep stage the beam has reached. A stage is a tenth of the gap between `SpotlightLocationRadius` and [`SpotlightMovementRadius`](/keys/spotlightmovementradius/). Only a structure whose type sets [`HasSpotlight=yes`](/keys/hasspotlight/) has a beam.
 
 ```ini title="rules.ini"
 [General]
 SpotlightRadius=256  ; one cell
 ```
 
-A structure has a beam at all only where its type sets [`HasSpotlight=yes`](/keys/hasspotlight/).
+The detection radius also sets how far apart the beam's two glowing edges spread where they meet the pool of light, so a beam that detects farther looks broader. When the detection radius is larger than the beam's distance from its structure, the edges are not drawn.
 
-Noticing an intruder has one consequence. A sweeping beam whose structure holds a tag springs the [Enemy In Spotlight...](/mapping/events/tevent-enemy-in-spotlight/) and [Enemy In Spotlight... (repeating)](/mapping/events/tevent-enemy-in-spotlight-repeating/) trigger events. They spring for any non-allied infantryman or vehicle standing in the nine cells around the beam, within 30 leptons more than that radius. The scan never looks outside those nine cells, so a radius that reaches past them catches nobody further out. A beam set to circle its structure springs neither. A following beam springs them only on the frame it gives its target up and reverts to sweeping. [Fields, fences and lights](/systems/power/#fields-fences-and-lights) covers the power condition that both the drawing and the scan depend on.
+Detection only matters to triggers. A sweeping beam whose structure has a tag springs the [Enemy In Spotlight...](/mapping/events/tevent-enemy-in-spotlight/) and [Enemy In Spotlight... (repeating)](/mapping/events/tevent-enemy-in-spotlight-repeating/) events when an infantry unit or vehicle that is not allied to the structure's owner stands within the detection radius plus 30 leptons. Only the nine cells around the beam are searched, so a radius that reaches past them catches nobody farther out.
 
-:::caution[The pool of light on the ground does not follow this key]
-The images that pool is drawn from are built once when the game starts, before any rules file has been read. They keep the size the built-in figure gave them for the rest of the session. A value written in `[General]` reaches the detection radius and the width of the beam above the ground, and nothing else.
+A beam set to circle its structure never springs these events. A following beam springs them only on the frame it loses its target and goes back to sweeping. [Fields, fences and lights](/systems/power/#fields-fences-and-lights) covers the power the structure needs for its beam to be drawn and to detect.
+
+:::caution[The pool of light on the ground keeps the built-in size]
+The images for the pool of light are built when the game starts, before any rules file is read, so they always use the built-in `175`. A value set in `[General]` changes the detection radius and the spread of the beam's edges only.
 :::

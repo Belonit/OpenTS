@@ -7,12 +7,23 @@ when_omitted:
   value: "no"
 ---
 
-On the frame whose artwork covers the most ground, the animation creates the rules' [`SmallFire`](/keys/smallfire/) at the nearest free spot 64 leptons away in a random direction. It then has an even chance of a second `SmallFire` 160 leptons out and an even chance of a [`LargeFire`](/keys/largefire/) 112 leptons out, each direction picked separately. Every fire runs for one or two times the loop count the fire type sets. A looping animation throws a fresh batch each time it comes back to that frame.
+When the animation shows its largest frame, the one with the biggest drawn area, it starts fires around itself:
 
-Nothing filters the fires by height or by the ground underneath, so a flame thrower animation playing over water or high in the air still scatters them.
+- one [`SmallFire`](/keys/smallfire/) 64 leptons away;
+- a 50% chance of a second `SmallFire` 160 leptons away;
+- a 50% chance of a [`LargeFire`](/keys/largefire/) 112 leptons away.
 
-The setting displaces the single fire that [`Scorch=yes`](/keys/scorch/) would otherwise leave, and does not itself scorch or crater anything. An animation that should blacken the ground as well needs `Scorch=yes` alongside it.
+Each fire is placed at its distance in a random direction and then moved to the nearest infantry position in that cell, whether or not something already stands there. It sits at ground level, or on the bridge deck when that cell is under a bridge and the animation is at deck height or above. The animation's height and the terrain do not stop the fires, so an animation over water or high in the air still starts fires on the ground beneath it.
 
-:::note[No stock animation declares it]
-The shipped `art.ini` sets the flag on nothing, so the behavior is reachable only from an animation a mod flags itself.
-:::
+Each fire plays one or two times the [`LoopCount`](/keys/loopcount/) of its fire type, or once if the fire type sets none.
+
+When the fires start depends on which frame is the largest:
+
+- When the largest frame is frame 0 of the shape, the fires start each time the animation starts. That covers its creation or the end of its creation delay, the end of each [`RandomLoopDelay`](/keys/randomloopdelay/) pause, and a switch to this type through [`Next=`](/keys/next/). Showing frame 0 later starts none.
+- Otherwise, the fires start each time the animation advances onto the largest frame, so a looping animation starts a new set on each pass through it. The frame an animation or a loop pass opens on is not advanced onto. A largest frame equal to [`Start`](/keys/start/) therefore starts no fires on the first pass, and one equal to [`LoopStart`](/keys/loopstart/) starts none on the later passes.
+- A largest frame outside the frames `Start` and [`End`](/keys/end/) select, other than frame 0, starts no fires.
+- A [`Bouncer=yes`](/keys/bouncer/) or [`IsMeteor=yes`](/keys/ismeteor/#scope-animtype) animation starts fires only when its largest frame is frame 0.
+
+`Flamer=yes` replaces the single fire that [`Scorch=yes`](/keys/scorch/) would start, and does not scorch or crater the ground by itself. Add `Scorch=yes` for scorch marks as well.
+
+The shipped `art.ini` sets `Flamer` on no animation.

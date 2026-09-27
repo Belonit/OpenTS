@@ -7,6 +7,8 @@ when_omitted:
   value: ".25"
 ---
 
-The figure is a threshold on the aircraft's throttle: a fraction of its own top speed running from 0 to 1. It is not a speed in its own right, so it does not scale with [`Speed=`](/keys/speed/#scope-aircrafttype). Above the threshold the fly locomotor drops the aircraft's nose by [`PitchAngle`](/keys/pitchangle/) and, while its facing is turning, banks it by [`RollAngle`](/keys/rollangle/). At or below it the aircraft is drawn level in both axes. A figure of 1 or more holds a type level at every speed; `PitchSpeed=0` puts it into its flying attitude the moment it starts moving.
+`PitchSpeed` is a throttle threshold. Throttle is the aircraft's current speed as a fraction of its top speed, from 0 to 1. Because it is a fraction, the same `PitchSpeed` means the same share of top speed whatever [`Speed=`](/keys/speed/#scope-aircrafttype) is.
 
-An [`IsDropship=yes`](/keys/isdropship/) type takes neither the ordinary nose-down nor the bank. For one of those the threshold is read only while the aircraft is being rocked by a nearby jolt: above it, the type's pitch angle is added to the tilt the jolt produced. The stock dropship sets `.4`.
+Above the threshold, an airborne aircraft pitches its nose down by [`PitchAngle`](/keys/pitchangle/) and banks by [`RollAngle`](/keys/rollangle/) while it turns. At or below the threshold it is drawn level. `PitchSpeed=0` gives an aircraft its flying attitude as soon as it starts moving. A value of 1 or more keeps it level at every speed.
+
+An [`IsDropship=yes`](/keys/isdropship/) type neither pitches nor banks this way. For a dropship, the threshold matters only after it is destroyed in the air. While its throttle is above the threshold, its `PitchAngle` is added to its tumble as it falls, as for any other aircraft. The stock dropship sets `.4`.

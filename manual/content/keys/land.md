@@ -8,12 +8,18 @@ when_omitted:
 ---
 
 ```ini title="rules.ini"
-[GAWALL]
+[MYWALL]  ; example overlay; the stock walls leave Land at Clear
 Land=Wall
 ```
 
-An overlay replaces the [land type](/reference/enums/land-type/) its cell would otherwise take from the tile underneath, and that land type is what the movement cost table and the buildable test read. `Wall` and `Railroad` settle the cell's land in a single step, subject only to the [cliff-back rule](/keys/cliffbackimpassability/) that can force `Rock` beneath a sufficiently higher neighbor. Any other value survives only while the overlay keeps [`NoUseTileLandType=yes`](/keys/nousetilelandtype/); with that turned off, the tile's own land type wins instead.
+An overlay can give its cell a [land type](/reference/enums/land-type/) in place of the one the tile underneath provides. Movement costs and the buildable test read the cell's land type. Which one the cell reports depends on this value and on [`NoUseTileLandType`](/keys/nousetilelandtype/):
 
-Two rules rewrite the value. [`Tiberium=yes`](/keys/tiberium/#scope-overlaytype) promotes a `Clear` setting to `Tiberium` as the section is read. An overlay that turns `NoUseTileLandType` off and leaves `Land` at `Clear` reports `Tiberium` on a cell where Tiberium is growing.
+1. `Wall` or `Railroad`: the cell reports this value, whatever `NoUseTileLandType` says.
+2. Any other value with `NoUseTileLandType=yes`, the default: the cell reports this value.
+3. Any other value with `NoUseTileLandType=no`: the cell usually reports the tile's land type. The `NoUseTileLandType` page lists the exceptions for cells that hold Tiberium.
 
-`Wall` is what puts a cell into the `[Wall]` movement-cost section, and a man set on fire refuses to run into a cell that reports it. No stock wall overlay actually sets it; they leave `Land` at `Clear`. It is not what makes an overlay a wall. That is [`Wall=yes`](/keys/wall/#scope-overlaytype), which is read separately and owns blocking, damage and connection behavior.
+In each case, [`CliffBackImpassability`](/keys/cliffbackimpassability/) can still turn the cell to `Rock` when a neighbor stands a cliff step higher.
+
+[`Tiberium=yes`](/keys/tiberium/#scope-overlaytype) changes a `Land=Clear` setting to `Tiberium` when the section is read. A Tiberium overlay that leaves `Land` alone therefore reports `Tiberium`, which is the land type harvesters collect from.
+
+`Land=Wall` puts the cell under the `[Wall]` movement costs, and a burning infantryman will not run into the cell. It does not make the overlay a wall. [`Wall=yes`](/keys/wall/#scope-overlaytype) does that, and it controls blocking, damage and connections.

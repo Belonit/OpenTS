@@ -12,6 +12,6 @@ when_omitted:
 GuardSound=GUARDCMD ; a sound ID registered in SOUND.INI
 ```
 
-The [Guard](/commands/guardobject/) command plays this once after it has walked the selection, at full volume rather than faded from a place on the map. One sound covers the whole selection however many objects were in it.
+The [Guard](/commands/guardobject/) command plays this sound once each time it runs with anything selected, without a map position. One sound covers the whole selection.
 
-It is the sound of the key being pressed rather than of an order being taken. The command puts an object into guard area mode only when the player may both move and fire it, so an unarmed object is passed over, but the sound is played whenever the selection holds anything at all. Only an empty selection is silent.
+The sound confirms the key press, not an order. It plays even when no selected object obeys, for example when the selection holds only structures or unarmed infantry. An empty selection plays nothing.

@@ -7,4 +7,6 @@ when_omitted:
   value: "0"
 ---
 
-The value is applied once, as the vehicle is created, and never again: a pulse resets an [`IsMobileEMP=yes`](/keys/ismobileemp/) vehicle's charge to zero and it rebuilds from there. Setting it to [`MaxCharge`](/keys/maxcharge/) or above lets such a vehicle discharge on the frame it arrives.
+The value sets a vehicle's charge only when the vehicle is created. From there the charge rises toward [`MaxCharge`](/keys/maxcharge/). An [`IsMobileEMP=yes`](/keys/ismobileemp/) vehicle's pulse resets its charge to `0`, so this value affects only its first pulse.
+
+Set it to `MaxCharge` or above to let a mobile EMP vehicle discharge as soon as it is created.

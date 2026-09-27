@@ -21,36 +21,62 @@ source_files:
   - code/motlib.cpp
 ---
 
-A voxel model is a `.VXL` and a `.HVA` under the same base name, loaded as a pair. The `.VXL` holds the model itself, divided into layers. The `.HVA` holds one transform per layer per frame, and it is what puts each layer where it belongs. One pair is one piece of an object, so a turreted vehicle draws from three of them.
+A voxel model is a `.VXL` and a `.HVA` under the same base name, loaded as a pair. The `.VXL` holds the model itself, divided into layers. The `.HVA` holds one transform per layer per frame, and those transforms place each layer. One pair is one piece of an object, so a turreted voxel vehicle draws from three pairs: body, turret and barrel.
+
+Both files are looked up like any other game file, so either can sit in a [MIX archive](/formats/mix/) or loose in the game directory.
 
 ## Which pairs a type loads
 
-An ObjectType marked [`Voxel=yes`](/keys/voxel/) fetches its whole set at once, from base names built out of its [Image ID](/keys/image/). The table sets each base name against the condition under which it is looked for at all. The column to read is the second one. What a type asks for is settled by the kind of type it is and whether it has a turret, never by what its artwork happens to contain. Anything that is not a UnitType is therefore asked for a turret and a barrel whether it could use them or not.
+A vehicle, aircraft, infantry, structure or projectile type marked [`Voxel=yes`](/keys/voxel/) loads its pairs when the rules are read. Each base name is built from the type's [Image ID](/keys/image/). The kind of type and its [`Turret`](/keys/turret/) setting decide which pieces are looked for; the files present do not. Every type that is not a vehicle therefore looks for a turret and a barrel, whether or not it could draw them.
 
 | Base name | Looked for when |
 | --- | --- |
 | `<Image ID>` | Always; this is the body |
-| `<Image ID>TUR` | The type is not a UnitType, or is a UnitType with a turret |
+| `<Image ID>TUR` | The type is not a vehicle, or is a vehicle with `Turret=yes` |
 | `<Image ID>BARL` | The same condition as the turret |
-| `<Image ID>W` | The type is a UnitType without a turret whose ID is exactly `APC` |
+| `<Image ID>W` | The type is a vehicle without a turret whose rules section is named exactly `APC` |
 
-Only the `.VXL` decides whether a piece is looked for at all. Once one is present its `.HVA` is opened whether or not it exists. Within this set, a model with no motion file beside it counts as a piece that failed rather than as a piece without motion. The shape-drawn case below is fetched by a separate routine that records no failure.
+A piece is loaded only when its `.VXL` exists. Once the `.VXL` exists, the `.HVA` is required: a piece whose `.HVA` is missing counts as a failed piece, as [When a set fails](#when-a-set-fails) describes.
 
-A UnitType that is drawn from shapes rather than voxels still picks up `<Image ID>TUR` and `<Image ID>BARL` when it has a turret and its shape artwork loaded. A building takes its voxel turret and barrel from a base name of its own instead of from its Image ID. [`TurretAnimIsVoxel`](/keys/turretanimisvoxel/) and [`VoxelBarrelFile`](/keys/voxelbarrelfile/) cover how that name is arrived at. A voxel animation type loads a `.VXL` alone and no motion file with it. [`ShareSource`](/keys/sharesource/) is the exception: the type borrows another type's body, turret or barrel and takes that pair whole. One further pair, `DPOD.VXL` and `DPOD.HVA`, is loaded once at startup under those fixed names.
+Other objects load voxel models by different rules:
 
-Both files are found through the ordinary game file layer, so either can sit in a [MIX archive](/formats/mix/) or loose in the game directory.
+- A vehicle drawn from shapes that has `Turret=yes` and whose shape file was found loads the `<Image ID>TUR` and `<Image ID>BARL` pairs. It draws only the barrel from them; its turret comes from its shapes. A piece that fails here affects nothing else.
+- A structure with [`TurretAnimIsVoxel=yes`](/keys/turretanimisvoxel/) or [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) loads its voxel turret and barrel from a name derived from its turret animation, or from [`VoxelBarrelFile`](/keys/voxelbarrelfile/). `TurretAnimIsVoxel` and `VoxelBarrelFile` cover how the name is formed.
+- A voxel animation type loads `<Image ID>.VXL` alone, with no motion file. When it borrows a model through [`ShareSource`](/keys/sharesource/), it uses the body, turret or barrel pair of another type instead.
+- `DPOD.VXL` and `DPOD.HVA` are loaded once at startup under those fixed names. Nothing in the game draws them.
 
-:::danger[A voxel barrel with no motion file beside it stops the game when the unit is drawn]
-The routine that gives a shape-drawn turreted UnitType its turret and barrel neither records a failure nor releases what it built. A `<Image ID>BARL.VXL` with no `<Image ID>BARL.HVA` beside it therefore leaves the type holding a barrel model paired with a motion library that never loaded. That library reports no frames, and the shape drawing code accepts the pair on the strength of both pointers being set. Asking it for a frame takes the modulus against that count, and the game stops the first time the unit is drawn. A missing `<Image ID>TUR.HVA` does not reach this, because the shape path draws the barrel and not the turret.
+:::danger[Ship a .VXL for every voxel animation type]
+If a voxel animation type that does not borrow a model through `ShareSource` has a missing or unreadable `.VXL`, the game crashes the first time the animation is drawn.
 :::
+
+:::danger[Ship a complete .HVA with every voxel turret and barrel]
+Each piece below is loaded even when its `.VXL` has no `.HVA` beside it. The game then crashes the first time that piece is drawn.
+
+- The `<Image ID>BARL` barrel of a vehicle drawn from shapes.
+- The voxel turret and barrel of a structure.
+
+A structure's voxel turret or barrel `.HVA` that is present but ends early crashes the game the same way.
+
+On a vehicle drawn from shapes, a `<Image ID>TUR.HVA` or `<Image ID>BARL.HVA` that ends early crashes the game while the rules are read. This happens only when the matching `.VXL` loads.
+
+A vehicle drawn from shapes does not draw its `<Image ID>TUR` model, so a missing `<Image ID>TUR.HVA` has no effect there.
+:::
+
+Voxel artwork is not stored in a save game. [Save games](/formats/save-games/) covers what a restored type loads in its place, and `ShareSource` covers what happens to a borrowed model.
 
 ## When a set fails
 
-If any piece fails, the body and turret pieces are released and the type is left with no voxel artwork, whatever else loaded successfully. A piece fails when the body model is missing, or when a model or motion file that is present refuses to load. A barrel that loaded is not released with them.
+A `Voxel=yes` type's set fails when any of these holds:
 
-Where the whole set loads, the largest X, Y or Z size among the body model's layers becomes the size the type reports for its artwork. A size below 8 is raised to 8.
+- `<Image ID>.VXL` is missing.
+- A piece's `.VXL` is present but its `.HVA` is missing.
+- A `.VXL` or `.HVA` that is present cannot be read in full.
 
-Voxel artwork is not stored in a save game; [save games](/formats/save-games/) covers what a restored type is given in its place.
+When the set fails, the type keeps no body model and no turret or `W` model, whatever else loaded. A barrel model that loaded is kept. [`Voxel`](/keys/voxel/) covers how each kind of object is drawn without its body model.
+
+:::danger[Keep every .VXL readable]
+A `.VXL` that is present but cannot be read in full, beside a `.HVA` that loads, crashes the game while the pair is loaded. This applies to the pieces of a `Voxel=yes` type and to a structure's voxel turret and barrel.
+:::
 
 ## What the model file holds
 
@@ -62,22 +88,35 @@ The loader reads a `.VXL` in this order:
 - the voxel body, run length encoded down each column, with a color index and a normal index for every voxel in a run;
 - one record per layer info, holding the offsets within the body of its two span tables and of its voxel data, the scale the layer was built at, a placement transform, two opposite corners of its bounding box, its X, Y and Z sizes in voxels, and which normal table its voxels index.
 
-A layer names its first info record and may own several that follow it, so the layer count and the info count need not agree.
+A layer names its first info record, and the format lets it own several that follow, so the layer count and the info count need not agree. The game uses only each layer's first info record.
 
-Several of those parts never reach the routines that draw the model. The palettes are stepped over rather than loaded: no caller asks for the file's own colors, so a model is always drawn from `VOXELS.VPL`, which startup reads separately. The palette count still matters, because it is what sizes the step. The internal names in the header and in each layer header are never read: files are found by filename, and a layer is paired with its motion by position. The placement transform is converted into the engine's own matrix layout as it is read and then left alone, so a layer's position comes entirely from the motion file.
+Several parts of the file do not affect how the model is drawn:
 
-A normal table selector of zero marks a layer as having no usable normals, and it is drawn without lighting. Values 1 through 4 select one of the four normal tables the engine holds. Nothing rejects a larger one. The selector is an unvalidated byte from the file, and the drawing pass tests only whether it is zero. The routine that builds the lighting lookup indexes both its table of normal sets and its table of set sizes with it. A value above four therefore reads past the end of each.
+- The palettes are skipped. Every model is drawn with the colors from `VOXELS.VPL`, which the game reads at startup. The palette count must still be correct, because it sets how far the loader skips to reach the layer headers.
+- The internal names in the header and in each layer header are not read. Files are found by filename, and each model layer is matched to the motion layer in the same position.
+- The placement transform is not used. A layer's position comes entirely from the motion file.
+
+The normal table selector of a layer takes these values:
+
+| Selector | Effect |
+| --- | --- |
+| `0` | The layer has no usable normals and is drawn without lighting. |
+| `1` to `4` | The layer is lit. On the first layer, the value also selects which of the engine's four normal tables shades the whole model. |
+
+Give every lit layer the same selector as the first layer, because all of them are shaded from the first layer's table. If the first layer's selector is `0`, the model's other lit layers are shaded with the lighting left from the voxel model drawn before it.
+
+Keep the first layer's selector at 4 or below. The game does not check it, and a larger value reads past the end of the engine's normal tables whenever the model is drawn.
 
 ## What the motion file holds
 
-The loader reads a `.HVA` as a header holding an internal name, the number of frames and the number of layers. A table of layer names follows, sixteen bytes each and one per layer, and it is stepped over. Then, frame by frame, one transform of twelve floating point values is read for each layer. As the pair is loaded, the translation of every one of those transforms is multiplied by the scale recorded in the model's first layer info. That brings the animation into the model's scale.
+The loader reads a `.HVA` as a header holding an internal name, the number of frames and the number of layers. A table of layer names follows, sixteen bytes each and one per layer, and it is skipped. Then, frame by frame, one transform of twelve floating point values is read for each layer.
 
-Frames are asked for modulo the frame count, so an animation loops rather than running off its end. A file that declares no frames at all still loads. The modulus against a count of zero is what stops the game the first time the model is drawn.
+Give the `.HVA` the same number of layers as its `.VXL`, in the same order. Layers are matched by position, and the game does not compare the two counts. A model layer beyond the motion file's count is placed with a transform meant for another layer, or with data from past the end of the file's transforms.
 
-:::danger[An empty model or motion file is loaded from uninitialized memory]
-The counts of layers, layer infos and frames are taken from the start of each file without testing that any bytes were read. An empty file is the plainest case. Its counts come from whatever that memory last held, and the tables the loader allocates from them are as large as those counts demand. Allocating for an implausible count is not survivable; where the count is small enough to allocate, the first read the file cannot satisfy abandons the load.
-:::
+When a pair is loaded, the translation of every transform is multiplied by the scale recorded in the model's first layer. That brings the animation into the model's scale. Give every model at least one layer. For a model with none, the game reads the scale from memory outside the model, which can crash the game while the pair loads or scale the animation unpredictably.
 
-:::danger[A model with no first layer is read all the same]
-Loading a pair scales the motion by the scale in the model's first layer info, and nothing checks that the model has one. A `.VXL` that is present but refuses to load, beside a `.HVA` that loads, is read for that scale through a layer table the failed load has already released. The game stops as the type is read. A model that loads but declares no layers is read past the end of its own empty table instead, and whatever figure comes back scales the entire animation.
+Frames are taken modulo the frame count, so an animation that runs past its last frame starts again at the first. A file that declares no frames still loads, and the game crashes the first time the model is drawn.
+
+:::danger[Do not ship an empty model or motion file]
+An empty `.VXL` or `.HVA` is loaded with unpredictable layer, layer info and frame counts. If a count is too large to allocate, the game crashes while it loads the file. Otherwise the load usually fails at the first read past the end of the file. An empty file can also load as a model with no layers or a motion file with no frames, with the crashes described above.
 :::

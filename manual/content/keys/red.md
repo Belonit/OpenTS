@@ -14,6 +14,8 @@ Green=.9
 Blue=.8
 ```
 
-The value multiplies the red component of every terrain palette color, each on a 0-255 scale, and clips the result at 255. Above 1 adds red, below 1 takes it away, 0 removes it entirely, and values clamp to the range 0 through 2. It is stored as whole hundredths, truncated rather than rounded, so Red=.925 runs as .92. The tint is built into the palette every cell draws its ground through as the map loads, so it is in place from the first frame rather than fading in. House color schemes are never tinted by these keys; only an ion storm retints them.
+`Red` scales the red in the terrain's colors. `1` leaves red unchanged, a value above `1` adds red, and a value below `1` takes it away. `0` removes it. The value is kept in whole hundredths, rounded down, so `Red=.925` acts as `.92`. The tint is applied as the map loads, so it is in place from the first frame.
 
-This value is read before its ion counterpart in the same section, and [`IonRed`](/keys/ionred/) falls back to it. A map that gives only the three ordinary tint keys keeps its terrain coloring through [an ion storm](/systems/ion-storms/#lighting). Unit and building art picks the same tint up for the storm's duration.
+For each cell, the map's tint is added to the tint of any structure light that reaches the cell. [`LightRedTint`](/keys/lightredtint/) explains how the red, green and blue totals color and brighten the ground.
+
+Units and structures are not tinted by `Red`. During an [ion storm](/systems/ion-storms/#lighting), terrain, units and structures all take the ion tint instead. [`IonRed`](/keys/ionred/) falls back to `Red`, so a map that sets only the ordinary tint keys keeps its terrain color through a storm, and its units and structures take that tint while the storm lasts.

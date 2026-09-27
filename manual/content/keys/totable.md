@@ -7,13 +7,15 @@ when_omitted:
   value: "yes"
 ---
 
+`Totable=no` stops every [`Carryall=yes`](/keys/carryall/) aircraft from lifting the vehicle. The Carryall page describes the lift itself.
+
 ```ini title="rules.ini"
 [MYBIGTANK] ; a UnitType registered in [VehicleTypes]
 Totable=no
 ```
 
-[`Carryall=yes`](/keys/carryall/) owns the lift. This key decides only which vehicles are eligible for one, and every vehicle is until its own section says otherwise.
+A player's carryall shows no tote cursor over the vehicle. A carryall ordered onto it anyway, for example with a force-move, treats the vehicle's cell as occupied, lands near it and does not pick it up.
 
-`Totable=no` withdraws the tote cursor, so a player cannot ask for the lift. A move ordered onto the vehicle anyway, by force-move or by a computer-controlled carryall keeping up with a team-mate, stays a move. The carryall counts the cell as occupied like any other and settles beside it. The refusal is by type and permanent, unlike the situational ones [`Carryall`](/keys/carryall/) lists, which lapse as soon as the vehicle is no longer unloading or tethered.
+`Totable=no` refuses the lift at all times. The other refusals the Carryall page lists apply only while the vehicle is in the situation they name, such as unloading or standing under a bridge.
 
-The flag reaches the lift alone. An aircraft with [`Passengers`](/keys/passengers/) capacity still takes a vehicle into its hold on the ordinary load handshake, and a scenario can still deliver one aboard an air transport as reinforcements.
+The flag affects only carryall lifts. It does not stop an aircraft with [`Passengers`](/keys/passengers/) capacity and [`IsVehicleTransport=yes`](/keys/isvehicletransport/) from loading the vehicle, or a scenario from delivering it as reinforcements aboard an air transport.

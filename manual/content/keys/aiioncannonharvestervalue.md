@@ -7,4 +7,8 @@ when_omitted:
   value: ""
 ---
 
-The rating covers a [`Harvester=yes`](/keys/harvester/) UnitType and is the first of the three vehicle tests, so a harvester is never rated as a deployer or a transport. Like every list in this family it is read at the firing house's own difficulty slot, and must have one entry each for easy, normal and hard. A missing or short list is read past its end. The rating is read only while [the target's strength is at or below `IonCannonDamage`](/systems/superweapons/#the-computers-use). A harvester above that figure is left at 1.
+Applies to a vehicle type with [`Harvester=yes`](/keys/harvester/#scope-unittype). It is the first vehicle test, so a harvester never takes the rating for a vehicle that deploys into a construction yard or one that carries passengers.
+
+The computer uses this rating only while the harvester's current strength is at or below [`IonCannonDamage`](/keys/ioncannondamage/). A stronger harvester keeps its starting rating of 1. A cloaked harvester is rated at random at any strength. The computer strikes one of the [highest-rated targets](/systems/superweapons/#the-computers-use), so a higher value puts harvesters ahead of more kinds of target.
+
+Each entry belongs to one [difficulty slot](/systems/difficulty/#the-per-difficulty-lists) of the firing house, so give the list three entries. For a computer house the first entry is used at the Hard setting and the last at Easy. The key has no built-in list. If no rules file sets it, the game crashes the first time the computer rates a harvester at or below `IonCannonDamage`. A list with fewer than three entries gives an unpredictable rating in the slots it does not cover.

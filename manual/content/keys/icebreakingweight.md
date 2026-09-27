@@ -12,21 +12,26 @@ when_omitted:
 IceBreakingWeight=6
 
 [MYHVYTNK]  ; synthetic UnitType
-Weight=6    ; equal to the threshold, so it breaks the ice rather than cracking it
+Weight=6    ; equal to the threshold, so it breaks the ice
 ```
 
-The figure is compared against the crossing type's [`Weight`](/keys/weight/), a bare number set by the type definition with no unit attached. Arrival runs two weight tests in order, and the second is reached only where the first fails:
+A vehicle whose [`Weight`](/keys/weight/) is at or above this value breaks the ice it drives onto. The test runs each time a vehicle finishes entering a cell, and only in a theater whose [`IsIceGrowthEnabled`](/keys/isicegrowthenabled/) is `yes`. Infantry and aircraft never break ice, however heavy. A vehicle on a bridge over the ice is exempt.
 
-1. weight at or above this figure: the ice is broken open into water;
-2. otherwise, weight at or above [`IceCrackingWeight`](/keys/icecrackingweight/): the ice is cracked;
-3. otherwise, the ice is left alone.
+The vehicle's weight is tested in this order:
 
-Both comparisons are at-or-above, so a vehicle whose weight exactly matches this value takes step 1. Step 2 is reached only from a failed step 1, so a vehicle at or above this weight never cracks ice. It either opens the ice or leaves it untouched.
+1. At or above this value, the vehicle breaks the ice.
+2. Otherwise, at or above [`IceCrackingWeight`](/keys/icecrackingweight/), the vehicle cracks the ice.
+3. Otherwise, the ice is left alone.
 
-Only a vehicle runs the test, only in a theater whose [`IsIceGrowthEnabled`](/keys/isicegrowthenabled/) is `yes`, and only as it finishes arriving in a cell. Infantry and aircraft never trigger it however heavy they are, and a vehicle crossing on a bridge over the ice is exempt.
+Breaking affects a two-by-two block of cells: the cell the vehicle is in and three neighbors roughly in the direction it faces. If any cell of the block holds neither ice nor open water, nothing happens and the vehicle drives on. Otherwise all four cells become open water, and the ice around them is redrawn to match.
 
-Breaking takes a two-by-two block of cells laid out ahead of the vehicle's facing. Every cell of that block must already be water or ice, or nothing happens at all. When the block does give way, all four cells take the broken edge tile of an ice set picked afresh for each cell, and the ice around them is re-dressed to suit. Vehicles standing on the block start sinking and are stunned. Infantry and aircraft on it are removed outright and fire the destroyed events of any trigger attached to them, and each affected object leaves a wake animation behind.
+Objects on the block are affected by type:
 
-:::caution[Amphibious movement does not save the vehicle that broke through]
-A vehicle standing on the block is spared the sinking when its [movement zone](/reference/enums/movement-zone/) is `Amphibious`, `AmphibiousCrusher` or `AmphibiousDestroyer`. The vehicle whose arrival broke the ice is set sinking and stunned afterwards regardless of its movement zone, so that exemption does not reach it.
+- Vehicles start sinking and are stunned, unless their [movement zone](/reference/enums/movement-zone/) is `Amphibious`, `AmphibiousCrusher` or `AmphibiousDestroyer`.
+- Infantry and aircraft are removed. Each one fires the destroyed events of any trigger attached to it.
+
+Every object that sinks or is removed leaves a [`Wake`](/keys/wake/) animation.
+
+:::caution[The vehicle that breaks the ice always sinks]
+The vehicle whose arrival broke the ice starts sinking and is stunned even when its movement zone is amphibious. Open water counts as breakable, so a heavy amphibious vehicle also sinks when it drives across open water in a theater with ice.
 :::

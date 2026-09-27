@@ -7,21 +7,26 @@ when_omitted:
   note: The mission's own Rate=, taken from the same section.
 ---
 
-The value is a fraction of a minute, multiplied out to game frames at 900 to the minute and truncated, with a random zero to two frames added on top. Only two paths ask for it, and both belong to structures.
+`AARate=` sets how long a structure with a primary weapon waits between passes of its Guard or Area Guard mission. On each pass it looks for a target and switches to attacking when it finds one. An [`EMPulseCannon=yes`](/keys/empulsecannon/) structure, or one that holds a chemical missile superweapon, skips the search but still waits this long.
 
-- An armed building idling on guard, having found nothing to attack, waits this long before looking again.
-- A [`SAM=yes`](/keys/sam/) building on the attack mission reaches it only as a fall-through. Both states of its launcher return a single frame, so the delay is served only when the mission was entered as an override. An override does not restart the mission, so the launcher's state machine stays wherever the previous mission left it.
+The value uses the same units as [`Rate`](/keys/rate/#scope-mission-behavior): a fraction of a minute, multiplied by 900 and rounded down to whole game frames. The structure adds a random 0 to 2 frames to each wait. `[Guard]` and `[Area Guard]` each read their own `AARate=`.
 
 ```ini title="rules.ini"
 [Guard]
 Rate=.030
-AARate=.016
+AARate=.016  ; an armed structure looks for a target every 14 to 16 frames
 ```
 
-The name, and the note beside it in the shipped rules, describe an anti-aircraft override. Neither path tests whether the building or its target has anything to do with aircraft: this is the ordinary servicing delay for a weapon-equipped structure standing on guard.
+Despite the name, the delay is not tied to aircraft. It applies to every armed structure on guard, whatever its weapon can hit. A [`SAM=yes`](/keys/sam/) structure uses it on guard too, but once it is attacking, it tracks and fires every frame and does not normally wait for `AARate`.
 
-This key never times an unarmed building. [`HasStupidGuardMode`](/keys/hasstupidguardmode/) defaults to `yes`, which holds such a building's guard pass on a fixed 100-frame cycle that reads neither figure. A type that turns the flag off is serviced at three times the mission's [`Rate`](/keys/rate/#scope-mission-behavior), or at `Rate` itself for a repair facility. `Rate` reaches a building on its own account too: the repair, missile, unload and open missions all read it with no test of armament.
+`AARate` never sets the delay for a structure without a primary weapon. With [`HasStupidGuardMode=yes`](/keys/hasstupidguardmode/), the default, such a structure on guard checks again every 100 frames. With `HasStupidGuardMode=no`, it waits three times the mission's `Rate`, or `Rate` itself for a [`UnitRepair=yes`](/keys/unitrepair/) structure.
 
-:::caution[The delay can come out at zero frames]
-The read falls back to the mission's `Rate=` whenever the value read is zero, so `AARate=0` behaves exactly like leaving the key out. A section that also sets `Rate=0` takes that zero through the fallback. A figure below about `.0012` multiplies out to zero once truncated, leaving nothing but the random frames the caller adds on top.
+Other structure missions that repeat, such as Repair, Unload and Open, wait for their mission's `Rate`.
+
+:::caution[Zero and very small values]
+`AARate=0` takes the mission's `Rate`, as though the key were missing. If `Rate=` is also `0`, the delay is zero. Any delay below about `.0011`, whether set by `AARate=` or taken from `Rate=`, also gives zero, because it rounds down to zero frames. In both cases the structure looks for a target again after only the random 0 to 2 frames.
+:::
+
+:::caution[Repeat AARate in every file that sets the mission]
+A rules file read after `rules.ini`, such as a map, resets `AARate` whenever it contains the mission's section without `AARate=`. The mission's `AARate` then equals its `Rate` again, and a separate value set in `rules.ini` is lost. Give `AARate=` again in any later file that includes `[Guard]` or `[Area Guard]`.
 :::

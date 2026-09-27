@@ -2,7 +2,7 @@
 enum_id: CategoryType
 slug: object-category
 title: Object category
-summary: Classification tokens set on by infantry, vehicle, aircraft and building types, which only the dropship loadout screen reads.
+summary: Classification tokens that infantry, vehicle, aircraft and building types can set, read only by the dropship loadout screen.
 representation: token
 bindings:
   key_value_types: [CategoryType]
@@ -22,9 +22,9 @@ values:
   - { constant: CATEGORY_AIRTRANSPORT, value: 10, input: "AirLift", meaning: "Air transport." }
 ---
 
-Only one of the eleven ever decides anything. The dropship loadout screen leaves an InfantryType marked `Civilian` out of the cameos a player may pick from. It does even that only where the scenario supplies no allowable-units list of its own. Nothing the engine itself calls compares against the other ten.
+Only `Civilian` has an effect. An InfantryType with `Category=Civilian` is left off the dropship loadout screen when the scenario lists no [`AllowableUnits`](/keys/allowableunits/). [`Category`](/keys/category/) gives the details. The other ten categories change nothing.
 
-Each category has two spellings and answers to both, and the comparison ignores case: `recon vehicle` and `Recon` name the same category. A name that is neither leaves the type with no category at all rather than falling back on the previous one. `Soldier` and `Civilian` spell the two forms alike, so the table pairs the remaining nine. Read it in either direction, since a rules file may use the long form where a modder expects the short.
+Each category has a short and a long spelling, and `Category=` accepts either in any letter case. For example, `recon vehicle` and `Recon` name the same category. `Soldier` and `Civilian` are spelled the same both ways; the table pairs the other nine.
 
 | Short token | Long description |
 | --- | --- |

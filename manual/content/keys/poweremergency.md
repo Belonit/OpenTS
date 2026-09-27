@@ -8,4 +8,4 @@ when_omitted:
   value: ".75"
 ---
 
-No routine sells a computer house's buildings to recover power. A shortfall is answered while the plan is walked, by [inserting a power plant node ahead of the structure that would cause it](/systems/ai-base-building/#power-and-money-interventions). The only sell-off in the planner is the one a house that cannot earn performs to pay for a harvester or a refinery.
+A computer house never sells structures to recover power. Instead, a house that is not following a map plan [builds a power plant first](/systems/ai-base-building/#power-and-money-interventions) whenever its next structure would push its drain above its power output.

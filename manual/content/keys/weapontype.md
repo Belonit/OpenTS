@@ -1,14 +1,22 @@
 ---
 key: WeaponType
-summary: The WeaponType a missile silo launches for this superweapon.
+summary: The WeaponType a missile silo launches, read only from the first and sixth entries of the superweapon list.
 see_also: ["system:superweapons"]
 when_omitted:
   kind: value
   value: none
 ---
 
-The silo takes the projectile, warhead, maximum speed and projectile range from this weapon and launches them with [a hard-coded strength of 200](/systems/superweapons/#multi-missile-and-chem-missile). Nothing else reads the value. The ion cannon, the EM pulse, the firestorm, the hunter seeker and the drop pods all deliver payloads of their own. A one-time missile is built from the hard-coded weapons `MultiLauncher` and `ChemLauncher` regardless of what is set here.
+A missile silo launching a repeating `Type=MultiMissile` or `Type=ChemMissile` superweapon takes the missile's projectile, warhead, maximum speed and projectile range from the WeaponType this key names, in the section the caution below identifies. It ignores that WeaponType's `Damage=` and gives the missile [a fixed strength of 200](/systems/superweapons/#multi-missile-and-chem-missile).
 
-:::danger[The silo does not look the weapon up by section]
-A silo records the *behavior number* of the weapon that ordered the launch (0 for `MultiMissile`, 5 for `ChemMissile`, 6 for `DropPods`) and at launch reads `WeaponType=` from whichever declared section stands at that position of the `[SuperWeaponTypes]` list. The fired section's own weapon is read only when it stands at that position itself, which the shipped list arranges by declaring its seven sections in behavior order. A custom `Type=MultiMissile` entry appended after the stock seven therefore grants and charges normally, but its `WeaponType=` is never read at launch. The missile flies with the weapon of the stock section standing at position 0. Only the section standing at the behavior's own position decides what a silo fires.
+No other use of a superweapon reads this key. A one-time missile, granted by a trigger action or a crate, is built from the hard-coded weapons `MultiLauncher` and `ChemLauncher` instead.
+
+:::caution[The silo reads this key by list position]
+A silo does not read the `WeaponType=` of the section that ordered the launch. It reads the section at a fixed position in `[SuperWeaponTypes]`: the first entry for every `Type=MultiMissile` launch and the sixth for every `Type=ChemMissile` launch. The shipped list puts its multi missile and chem missile sections at those positions.
+
+A custom `Type=MultiMissile` section added after the shipped seven therefore charges and fires normally, but its missile uses the first entry's `WeaponType=`. [Declaring a superweapon](/systems/superweapons/#declaring-a-superweapon) gives the full order to keep.
+:::
+
+:::danger[Give the first and sixth sections a WeaponType]
+Set `WeaponType=` in the first section of `[SuperWeaponTypes]` when any section uses `Type=MultiMissile`, and in the sixth when any section uses `Type=ChemMissile`. If the section a launch reads sets none, the game crashes when the silo launches the missile.
 :::

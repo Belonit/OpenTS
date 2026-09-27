@@ -1,4 +1,4 @@
 ---
 key: AIBuildsWalls
-summary: Lets a computer house close its base plan with the node that runs the perimeter wall planner.
+summary: Whether computer houses plan a perimeter wall around their bases.
 ---

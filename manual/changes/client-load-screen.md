@@ -12,6 +12,6 @@ credit:
 - CCHyper
 ---
 
-`CustomLoadScreen` in `[Settings]` of `SPAWN.INI` names the picture shown while the scenario loads, in place of the one the game picks for the player's side and screen size. A name no file answers to leaves the game's own picture in place.
+`CustomLoadScreen` in `[Settings]` of `SPAWN.INI` names the picture shown while the scenario loads, replacing the one the game picks by the player's side and screen size. If no file has that name, the game shows its usual picture.
 
-`CustomLoadScreenPos` places the loading bars within that picture rather than on the screen, so one position suits every screen size the picture is shown at.
+`CustomLoadScreenPos` in the same section places the loading bars, measured from the top-left corner of that picture, when both of its numbers are above 0. The picture is centered on the screen, so one position works at every screen size.

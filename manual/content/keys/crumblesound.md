@@ -12,6 +12,11 @@ when_omitted:
 CrumbleSound=BLDGDIE1 ; a sound ID registered in SOUND.INI
 ```
 
-The sound is played from the structure's own position, once, on the pass that tears the structure down. It comes after the cargo has been killed and the cloak generator or laser fence links have been shut off, and before the scorch marks, debris and survivors are placed. One sound covers every structure however large, and it is independent of the explosion animations the type names for itself.
+The sound plays once, at the structure's position, when the structure is destroyed. It plays after anything inside the structure has been killed and before the scorch marks, fires, explosions, debris and survivors appear. Every structure uses this one sound, whatever its size, in addition to the explosion animations its own type names.
 
-Two paths reach that sequence: a structure damaged to destruction, and an [`IsLimpetMine=yes`](/keys/islimpetmine/) structure caught in an [EM pulse](/systems/emp-pulse/), which is destroyed outright rather than stunned. Selling a structure does not reach it. The build-down runs its own sequence and takes [`SellSound`](/keys/sellsound/) instead.
+Two things destroy a structure this way:
+
+- damage that brings it to zero strength;
+- an [EM pulse](/systems/emp-pulse/) that reaches an [`IsLimpetMine=yes`](/keys/islimpetmine/) structure, which is destroyed instead of being disabled.
+
+Selling a structure does not play this sound. A sale plays [`SellSound`](/keys/sellsound/) instead.

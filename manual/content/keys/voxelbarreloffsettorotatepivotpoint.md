@@ -7,9 +7,19 @@ when_omitted:
   value: "0,0,0"
 ---
 
-Three whole numbers, `X,Y,Z`. A [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building places its barrel with five moves in order. First the assembly moves out from the building by [`VoxelBarrelOffsetToBuildingPivotPoint`](/keys/voxelbarreloffsettobuildingpivotpoint/); a turn to the building's facing comes next, then out by this offset. The barrel then elevates to its pitch and moves out by [`VoxelBarrelOffsetToPitchPivotPoint`](/keys/voxelbarreloffsettopitchpivotpoint/), with the model itself hanging off the end of that.
+Three whole numbers, `X,Y,Z`, that move the barrel of a [`BarrelAnimIsVoxel=yes`](/keys/barrelanimisvoxel/) building away from the axis the gun turns about. At `0,0,0` the point the barrel tilts about sits on that axis.
 
-This one is applied once the assembly has been turned but before it is elevated, so it swings with the gun and holds still as the barrel rises. `X` runs forward along the direction the turret faces, `Y` out to the turret's left and `Z` upward. That is the frame [`PrimaryFireFLH`](/keys/primaryfireflh/) is measured in, and the same place in the sequence that offset occupies for an object with no voxel barrel.
+The building places its barrel in five steps, in this order:
+
+1. Move by [`VoxelBarrelOffsetToBuildingPivotPoint`](/keys/voxelbarreloffsettobuildingpivotpoint/).
+2. Turn to the gun's current facing.
+3. Move by `VoxelBarrelOffsetToRotatePivotPoint`.
+4. Tilt to the barrel's current pitch.
+5. Move by [`VoxelBarrelOffsetToPitchPivotPoint`](/keys/voxelbarreloffsettopitchpivotpoint/).
+
+The barrel model is drawn at the point these steps reach, at the size [`VoxelBarrelScale`](/keys/voxelbarrelscale/) sets.
+
+This offset comes after the turn and before the tilt, so it turns with the gun but stays put as the barrel rises. `X` runs forward along the gun's facing, `Y` to its left, and `Z` up. For an object without a voxel barrel, [`PrimaryFireFLH`](/keys/primaryfireflh/) is applied at this same step and in the same axes.
 
 ```ini title="rules.ini"
 [MYARTILLERY] ; a BuildingType registered in [BuildingTypes]
@@ -20,8 +30,8 @@ VoxelBarrelOffsetToPitchPivotPoint=15,0,-8
 VoxelBarrelOffsetToBarrelEnd=350,75,0
 ```
 
-The three pivot offsets are read at two scales. Drawing places the barrel with them as raw model units, while the firing point consumes the same matrix and reads the result as leptons, 256 to a cell. The same value therefore moves the drawn barrel farther than it moves the shot. [`VoxelBarrelOffsetToBarrelEnd`](/keys/voxelbarreloffsettobarrelend/) is the exception to the split: the firing point is the only place it is read, so it is leptons alone.
+The barrel model is drawn with the three pivot offsets in voxel model units, but shots start from a point that uses the same numbers as leptons, 256 to a cell. A pivot offset therefore moves the drawn barrel farther than it moves the shots. [`VoxelBarrelOffsetToBarrelEnd`](/keys/voxelbarreloffsettobarrelend/) moves only the shots, so it is in leptons alone.
 
-:::caution[An offset the files never set reads as 0,0,0]
-A BuildingType that never assigns this key gets `0,0,0`, and a value that is not three whole numbers is ignored whole, leaving the previous value standing. A `BarrelAnimIsVoxel=yes` building that leaves this offset at that default turns the barrel about the mount point without moving it forward.
-:::
+When the building's art entry sets [`PrimaryFirePixelOffset`](/keys/primaryfirepixeloffset/), shots start from that offset, and the barrel offsets do not move them. A building that also sets [`TurretAnimIsVoxel=yes`](/keys/turretanimisvoxel/) draws its barrel without these offsets, as [`BarrelAnimIsVoxel`](/keys/barrelanimisvoxel/) explains.
+
+A value that does not begin with three whole numbers separated by commas, such as `2,0` or `2.5,0,0`, is ignored. The building keeps the offset it had before that line was read. Text after the third number is dropped, so `2,0,0,5` reads as `2,0,0`.

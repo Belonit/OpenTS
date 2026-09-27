@@ -8,5 +8,6 @@ when_omitted:
   value: "0"
 ---
 
-Super weapon cameos hold the head of the right-hand strip as a block of their own, and the
-number orders them within it. It cannot move one out of that block or a buildable type into it.
+While [`SidebarSorting`](/keys/sidebarsorting/) is on, `CameoSortOrder=` orders superweapon cameos among themselves, lowest first. Cameos with equal values keep their order in `[SuperWeaponTypes]`. With sorting off, the value has no effect.
+
+Sorting always places superweapon cameos together at the top of the right strip, ahead of infantry, aircraft and vehicles. No value moves a superweapon below them or another cameo into the superweapon block. [The order of the strips](/systems/sidebar/#the-order-of-the-strips) covers the full ordering.

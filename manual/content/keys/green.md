@@ -12,4 +12,6 @@ when_omitted:
 Green=.9
 ```
 
-The value is stored in hundredths and tints the terrain palette that every cell draws its ground through, from the moment the map loads. House color schemes are never tinted by these keys; only an ion storm retints them. The engine reads this value before its ion counterpart in the same section, and [`IonGreen`](/keys/iongreen/) falls back to it.
+This value scales the green channel of the terrain palette that each cell's ground is drawn through, from the moment the map loads. `.9` takes a tenth of the green out of the ground. The value is kept in whole hundredths, rounded down.
+
+[House color schemes](/glossary/#color-scheme) are not tinted by this key; only an ion storm's tint reaches them. While a storm runs, [`IonGreen`](/keys/iongreen/#scope-scenarios) replaces this tint.

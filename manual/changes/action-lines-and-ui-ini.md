@@ -84,6 +84,10 @@ targets:
 credit: [ZivDero, CCHyper, tomsons26]
 ---
 
-A selected object drew its target line or its movement line, not both, and the movement line stopped short of the planned route's end. Both now draw together, and the movement line reaches the far end of the route. Destinations queued with the queue-move key continue from that end as further lines, so a looping queue closes into a ring. The lines also show while that key is held. A new optional file, `UI.INI`, sets each line's color, dashes, thickness and shadow, and gives the `TargetLaser=` sighting line the same styling and its own duration. `AlwaysShowActionLines=yes` keeps the lines on. Without the file the lines look as before.
+A selected object drew either its target line or its movement line, never both, and showed none of its queued destinations. Both lines now draw together, and destinations queued with the queue-move key continue from the end of the movement line as further lines. A looping queue closes into a ring.
 
-The keys and their names follow Vinifera's `UI.INI`, so a file written for it carries over. CCHyper and tomsons26 are credited for that implementation.
+The lines now also show while the queue-move key is held. The new optional file `UI.INI` controls them from its `[Ingame]` section. `AlwaysShowActionLines=yes` keeps them shown for as long as the object is selected, provided `UnitActionLines` under `[Options]` in `sun.ini` is on. `ShowNavComQueueLines=no` hides the queue lines.
+
+The same section sets the color, dashes, thickness and drop shadow of each line. Its `TargetLaser` keys style the sighting laser drawn by a vehicle with `TargetLaser=yes` in its `rules.ini` section, and `TargetLaserTime` sets how long that laser stays after each shot. Without `UI.INI`, the target and movement lines look as they did before.
+
+The keys are named as in Vinifera's `UI.INI`, so the action line settings of a file written for Vinifera carry over. CCHyper and tomsons26 are credited for that implementation.

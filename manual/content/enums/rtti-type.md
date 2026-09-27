@@ -21,14 +21,14 @@ values:
   - { constant: RTTI_BULLETTYPE, value: 9, input: "BulletType", meaning: "Projectile type definition." }
   - { constant: RTTI_CAMPAIGN, value: 10, input: "Campaign", meaning: "Campaign definition." }
   - { constant: RTTI_CELL, value: 11, input: "Cell", meaning: "Map cell object." }
-  - { constant: RTTI_FACTORY, value: 12, input: "Factory", meaning: "Production factory object." }
+  - { constant: RTTI_FACTORY, value: 12, input: "Factory", meaning: "A production line, which builds one object at a time for a house." }
   - { constant: RTTI_HOUSE, value: 13, input: "House", meaning: "Live player or house object." }
   - { constant: RTTI_HOUSETYPE, value: 14, input: "HouseType", meaning: "House type definition." }
   - { constant: RTTI_INFANTRY, value: 15, input: "Infantry", meaning: "Live infantry object." }
   - { constant: RTTI_INFANTRYTYPE, value: 16, input: "InfantryType", meaning: "Infantry type definition." }
   - { constant: RTTI_ISOTILE, value: 17, input: "Isotile", meaning: "Live isometric tile object." }
   - { constant: RTTI_ISOTILETYPE, value: 18, input: "IsotileType", meaning: "Isometric tile type definition." }
-  - { constant: RTTI_LIGHT, value: 19, input: "Light", meaning: "A structure's sweeping searchlight beam." }
+  - { constant: RTTI_LIGHT, value: 19, input: "Light", meaning: "A structure's spotlight beam." }
   - { constant: RTTI_OVERLAY, value: 20, input: "Overlay", meaning: "Live overlay object." }
   - { constant: RTTI_OVERLAYTYPE, value: 21, input: "OverlayType", meaning: "Overlay type definition." }
   - { constant: RTTI_PARTICLE, value: 22, input: "Particle", meaning: "Live particle object." }
@@ -75,6 +75,8 @@ values:
   - { constant: RTTI_VEINHOLEMONSTER, value: 63, input: "VeinholeMonster", meaning: "Veinhole monster object." }
 ---
 
-These are engine object kinds rather than identifiers a rules file defines. A [`Factory`](/keys/factory/) assignment names one of them to say what kind of object a structure produces rather than the particular vehicle, structure or other definition. That page covers which of the kinds put a structure to work at all.
+The engine fixes this list of object kinds; rules files cannot add to it. In rules, only [`Factory`](/keys/factory/) takes one of these names, to set the kind of object a structure produces. That page lists the names that make a structure produce anything.
 
-Most of the list never appears in an assignment. Every live object and every definition has a kind, so the engine can tell the two apart while the game runs. That is why so many names come in pairs: `Building` for a structure standing on the map, `BuildingType` for the rules entry it was made from. The rest name machinery a rules file has no use for: a cell, a production line, the record a fogged cell keeps of what stood in it, the tunnel route joining one tunnel mouth to another. A name matching nothing in the list resolves to `<none>` rather than leaving the stored value alone, so a misspelling is read as naming no kind.
+A `Factory` value that matches no name in the list, ignoring case, reads as `<none>`. A misspelled value therefore replaces any earlier setting with no kind at all.
+
+Most names never appear in rules. Every object in play and every rules definition has a kind, which is why many names come in pairs: `Building` for a structure standing on the map, `BuildingType` for the rules entry it was made from. The rest cover engine objects such as map cells, production lines, the record a fogged cell keeps of what stood in it, and tunnel routes.

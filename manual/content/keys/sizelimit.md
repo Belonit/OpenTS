@@ -14,12 +14,12 @@ SizeLimit=3
 IsVehicleTransport=yes
 ```
 
-A passenger whose [`Size`](/keys/size/) exceeds this figure is refused however much room is left, so the transport above turns away anything larger than three even while empty. The test is separate from the room test: a passenger has to pass both, and failing on size alone gives the same refusal as a full hold.
+A transport refuses any passenger whose [`Size`](/keys/size/) is larger than this value, however much room is left. The transport above refuses anything larger than `Size=3`, even when empty.
 
-The default of one admits objects of the default size and nothing larger. A transport that is to carry something bigger has to say so, which is why raising [`Passengers`](/keys/passengers/) on its own is not enough to make room for a large passenger.
+A passenger must also fit in the room left: its `Size` added to the `Size` of everyone aboard must not exceed [`Passengers`](/keys/passengers/). A passenger that fails either test gets the cannot-enter cursor.
 
-Together with [`IsVehicleTransport`](/keys/isvehicletransport/) this is how a ruleset decides which vehicles a transport takes: the flag decides whether vehicles may board at all, and this figure decides how large they may be.
+At the default of `1`, a transport takes no passenger larger than the default size. Raising `Passengers` alone therefore does not let it carry a larger passenger; raise `SizeLimit` as well. `SizeLimit=0` refuses every passenger of the default size.
 
-A carryall is not restrained by either, because it takes hold of a vehicle directly rather than asking to load it. Giving vehicles a larger [`Size`](/keys/size/) therefore does not stop a carryall lifting them.
+[`IsVehicleTransport`](/keys/isvehicletransport/) decides whether vehicles may board at all, and `SizeLimit` decides how large any passenger may be.
 
-Where Red Alert 2 reads this as a floating-point number and defaults it to zero, OpenTS reads a whole number and defaults it to one. Zero would refuse every default-sized passenger, which would stop existing transports carrying infantry.
+A carryall lifting a vehicle ignores this limit, and so does a reinforcement group created with its passengers already aboard. [Transports](/systems/transports/) covers both.

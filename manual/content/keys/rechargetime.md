@@ -7,7 +7,9 @@ when_omitted:
   value: "5"
 ---
 
-The figure is in minutes and is converted to game frames at 900 frames to the minute. Fractions are accepted: the stock chem missile uses `.3`. A [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon measures its discharged spell from the same figure, scaled by [`ChargeToDrainRatio`](/keys/chargetodrainratio/), so raising the delay lengthens both the charge and the effect.
+`RechargeTime=` is the weapon's charge delay in minutes. Fractions of a minute are accepted; the stock chem missile uses `.3`. The game converts the value at 900 frames a minute and drops any part of a frame. [Charging](/systems/superweapons/#charging) covers which events start, stop and restart the countdown.
+
+For a [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon, a full charge becomes an effect lasting `RechargeTime` times [`ChargeToDrainRatio`](/keys/chargetodrainratio/), so raising the delay also lengthens the longest effect.
 
 ```ini title="rules.ini"
 [MyIonStrike] ; example superweapon section
@@ -15,6 +17,6 @@ Type=IonCannon
 RechargeTime=8.5
 ```
 
-:::caution[`RechargeTime=0` is read as if the key were absent]
-The read takes no default from the value already in force. A missing key and a written `0` both fail the same test, and both leave the delay standing at whatever the last file to set it left there, five minutes if no file ever has. An instantly recharging superweapon cannot be authored here, and a rules layer cannot use `0` to undo a delay an earlier layer set.
+:::caution[`RechargeTime=0` counts as unset]
+A value of exactly `0` is ignored, like a missing key. The weapon keeps the delay from the last file that set one, or five minutes if none has, so `0` cannot undo a delay an earlier rules file set. For a near-instant recharge, write `0.002` or more, which gives a one-frame delay. A smaller positive value drops to a zero-frame delay, which the charge clock on the cameo does not handle.
 :::

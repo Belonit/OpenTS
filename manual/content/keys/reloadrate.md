@@ -12,4 +12,6 @@ when_omitted:
 ReloadRate=.1   ; one ammunition point every 90 frames
 ```
 
-The value is a fraction of a minute, multiplied by 900 frames where it is used, so a docked object gains one point of [`Ammo`](/keys/ammo/) every 45 frames at the default. It is read in one place only: the branch a [`UnitReload=yes`](/keys/unitreload/) building runs. Nothing about weapon reloading between shots, repair timing or aircraft turnaround reads it.
+A [`UnitReload=yes`](/keys/unitreload/) building gives the object docked with it one point of [`Ammo`](/keys/ammo/) per interval, and this key sets the interval. A building that is also [`UnitRepair=yes`](/keys/unitrepair/) repairs instead and never gives these points, as [the service order](/systems/repair/#unitreload-is-a-different-service) describes. The value is a fraction of a minute: the game multiplies it by 900 frames and truncates, so the default gives one point every 45 frames. The first point arrives one interval after the object docks.
+
+It does not affect a weapon's delay between shots, or a vehicle that refills its ammunition by itself away from any building.

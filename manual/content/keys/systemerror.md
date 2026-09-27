@@ -1,6 +1,6 @@
 ---
 key: SystemError
-summary: Sound played when the LAN game list refuses a join attempt.
+summary: Sound played on the LAN game screens when a join is refused or the host removes the player.
 see_also: [GameForming, GameClosed, PlayerJoined, PlayerLeft]
 when_omitted:
   kind: value
@@ -12,16 +12,18 @@ when_omitted:
 SystemError=BUZZER1 ; a sound ID registered in SOUND.INI
 ```
 
-The sound belongs to the LAN game list and is played without a position, always beside a system line printed into the chat panel explaining the refusal. Seven refusals are checked before a join request is even sent:
+The sound plays on the LAN game screens when a join is refused or the host removes the player. It has no position on the map, and each time it plays, a system line also appears in the chat panel.
 
-- no game selected;
-- no game left in the list to join;
-- an empty player handle;
-- a game that is no longer open;
-- a Firestorm game with the expansion not installed;
-- a Firestorm game with the expansion installed but not enabled;
-- a base-game host approached from a Firestorm client.
+In the game list, the game refuses to send a join request in seven cases:
 
-An eighth plays it when a request that was sent comes back rejected by the host because the name is already taken, because the game is full, or for any other reason the host gives.
+- no game is selected;
+- the list holds no game to join;
+- the player handle is empty;
+- the selected game is no longer open;
+- the game uses Firestorm and the expansion is not installed;
+- the game uses Firestorm and the expansion is installed but not enabled;
+- the game uses the base game and Firestorm is enabled on this client.
 
-Nothing outside that list uses it, so it is not a general-purpose error sound: an interface refusal during a match takes [`ScoldSound`](/keys/scoldsound/) instead.
+After a request is sent, the host can turn it down, or remove the player from the lobby of a game they had already joined. Either way the chat line says the request was denied. For most refusals by the host, a message box gives the reason, such as a duplicate name, a full game or a version mismatch.
+
+No screen outside the LAN game list and lobby plays this sound. During a match, a refused interface action plays [`ScoldSound`](/keys/scoldsound/) instead.

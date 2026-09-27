@@ -7,7 +7,7 @@ when_omitted:
   value: "4"
 ---
 
-The value is a count of cells rather than a depth. It selects how far the deformation spreads from the impact cell:
+The value selects how far a meteor's crater spreads from the impact cell. It does not change how deep each cell slumps:
 
 | Value | Cells deformed |
 | --- | --- |
@@ -17,10 +17,10 @@ The value is a count of cells rather than a depth. It selects how far the deform
 | `3` | the impact cell and all eight neighbors |
 | `4` or more | as `3`, and the impact cell a second time |
 
-The setting is read only at the impact of an animation or voxel animation declaring [`IsMeteor=yes`](/keys/ismeteor/), and an impact landing on a bridge deck deforms nothing at all. A warhead that reshapes the ground works from its own [`Deform`](/keys/deform/) and [`DeformThreshhold`](/keys/deformthreshhold/) and always takes the single cell it lands on.
+Only an animation or voxel animation with [`IsMeteor=yes`](/keys/ismeteor/) uses this setting, when it lands. A meteor that lands on water or on a bridge deck deforms nothing. A warhead that reshapes the ground uses its own [`Deform`](/keys/deform/) and [`DeformThreshhold`](/keys/deformthreshhold/) and affects only the cell it hits.
 
-Each cell is treated on its own: one that does not have all eight of its own neighbors inside the playfield refuses the deformation, so a crater near the edge of the playfield comes out clipped.
+A cell deforms only when all eight of its neighbors lie inside the playfield. A crater near the edge of the playfield therefore comes out clipped.
 
-:::caution[Only the last cell of a burst caves in completely]
-A cell's crater arrives in two halves: one randomly chosen corner slumps at once, and the other three follow five frames later. Only one deferred half is held at a time, and every further cell in the same burst that actually deforms overwrites it. At `2` or more, therefore, all but the last cell touched keep three of their four corners.
+:::caution[Only the last cell of a crater slumps completely]
+Each cell slumps in two steps. One random corner drops at once, and the other three drop five frames later. The game holds only one pending second step at a time, so each further cell that deforms replaces it. At `2` or more, every cell except the last one deformed ends up with only one corner lowered. At `4`, the last cell is the impact cell.
 :::

@@ -12,8 +12,10 @@ when_omitted:
 Multiplay=yes
 ```
 
-The flag is what keeps a story-only country out of the country box. The skirmish and LAN setup screens each walk the whole country list and offer only the countries with it, listing each by its [`Name=`](/keys/name/); [`Side`](/keys/side/#scope-multiplayer-settings) covers what the choice is stored as.
+The skirmish and LAN setup screens list only the countries with `Multiplay=yes`, each under its [`Name=`](/keys/name/). Leave the flag off a country meant only for the campaign to keep it out of the list. [`Side`](/keys/side/#scope-multiplayer-settings) covers how a player's choice is stored.
 
-It is also what puts a house on the in-game player standings panel: the radar's name-and-kills list skips any house whose country lacks the flag, so a house of a country without it plays without ever appearing there.
+A computer player seated from the menu gets a random country with the flag. A [launch file](/formats/spawn-ini/) can name a computer player's country instead. If no country has the flag, computer players take the first country in the rules.
 
-A computer player the menu seats is given one of the countries with the flag, drawn at random. No other gameplay path reads it. Whether a house takes part in the contest at all is [`MultiplayPassive`](/keys/multiplaypassive/), which is a separate question.
+The in-game list of player names and kills beside the radar shows only houses whose country has the flag. A house of any other country plays without appearing there.
+
+Nothing else reads the flag. Whether a house takes part in the contest at all is set by [`MultiplayPassive`](/keys/multiplaypassive/).

@@ -7,9 +7,18 @@ when_omitted:
   value: none
 ---
 
-The animation is created half a cell up and to the left of the section, centered and drawn in front of it. It inherits the section's fogged state. A section takes one when its house has [raised the wall](/systems/laser-fences/#raising-and-lowering-the-wall) and its connection shape is neither of the two straight runs (north-to-south and east-to-west). Corners, tees, crossings and isolated sections are lit; a plain stretch of wall is not. A refresh that finds a section already running one removes it rather than leaving it in place, so a section refreshed twice in a row ends up unlit. The pass runs when the wall goes up or down, and whenever a section is placed or taken off the map.
+`FirestormActiveAnim` plays over a raised firestorm wall section that is not part of a straight run. A section with wall sections only to its north and south, or only to its east and west, does not show it. All other sections do: corners, tees, crossings, ends and isolated sections. The animation is drawn half a cell up and to the left of the section, and starts fogged if the section is fogged.
 
-:::danger[An unset value faults the moment the animation is due]
-The animation is built from this setting without checking that it resolved to anything. With no value set the pointer is empty, and the first time a raised section takes one, the engine builds an animation from it and reads through that empty pointer straight away.
+A section checks whether it should show the animation at these moments:
+
+- its house [raises or lowers the wall](/systems/laser-fences/#raising-and-lowering-the-wall);
+- the section is placed;
+- a section beside it is placed or removed.
+
+The animation plays its type's [`LoopCount`](/keys/loopcount/), once if the type sets none. Once it ends, it starts again only at the section's next check.
+
+Each check removes an animation that is already playing, whatever the section's shape. While the wall is up, placing or removing a section beside a lit section therefore turns its animation off. The next such change turns it back on if the section still qualifies.
+
+:::danger[Set `FirestormActiveAnim` before a wall can be raised]
+If the key is missing or empty, the game crashes the first time a raised section needs the animation.
 :::
-

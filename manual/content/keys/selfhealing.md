@@ -7,10 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-The tick restores [`SelfHealStep`](/keys/selfhealstep/) strength points on the [`SelfHealRate`](/keys/selfhealrate/) interval, and the type's own [`SelfHealingStep`](/keys/selfhealingstep/) and [`SelfHealingRate`](/keys/selfhealingrate/) come first where they are stated. State none of the four and the object heals one point every 14 frames, on [`RepairRate`](/keys/repairrate/). It costs nothing, needs no building and no order, and works the same way on structures, vehicles, aircraft and infantry.
+`SelfHealing=yes` makes an object heal itself. It costs nothing, needs no building or order, and works on structures, vehicles, aircraft and infantry alike. The `SELF_HEAL` ability from [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/) has the same effect, so a promoted object heals exactly as a type with this flag does.
 
-Granting the `SELF_HEAL` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/) reaches the same path, so a promoted object heals exactly as a type with this flag does.
+Each tick restores a set number of strength points, and ticks come at a set interval. At the engine defaults an object heals one point every 14 frames, the interval that [`RepairRate`](/keys/repairrate/) sets for structure repair. The type's [`SelfHealingStep`](/keys/selfhealingstep/) and [`SelfHealingRate`](/keys/selfhealingrate/) change the step and the interval for one type; [`SelfHealStep`](/keys/selfhealstep/) and [`SelfHealRate`](/keys/selfhealrate/) change them for every type. [Self-healing](/systems/repair/#self-healing) explains how the settings combine.
 
-:::caution[Healing stops at a ceiling, not at full strength]
-The tick is refused the moment the object rises above [`SelfHealCap`](/keys/selfhealcap/), or the type's [`SelfHealingCap`](/keys/selfhealingcap/), so it ends one step past that share of maximum strength. With neither stated the ceiling is [`ConditionYellow`](/keys/conditionyellow/), and the object recovers to just over half strength and stops. A ceiling of `100%` mends it completely, as [`TiberiumHeal=yes`](/keys/tiberiumheal/#scope-aircrafttype) does on its own path.
+:::caution[Set a ceiling of 100% to heal to full strength]
+An object stops healing once its strength passes the ceiling, which can leave it up to one step above it. Unless [`SelfHealingCap`](/keys/selfhealingcap/) or [`SelfHealCap`](/keys/selfhealcap/) sets the ceiling, it is [`ConditionYellow`](/keys/conditionyellow/), so at the engine defaults an object heals to just over half strength and stops. Set the ceiling to `100%` to heal the object completely.
 :::

@@ -7,6 +7,8 @@ when_omitted:
   value: "1"
 ---
 
-The distance is written in cells, and one branch reads it. The aim point of a projectile whose type sets both [`Inaccurate=yes`](/keys/inaccurate/) and [`Arcing=yes`](/keys/arcing/) is moved by between half of this figure and all of it, in a direction picked at random over the whole circle. A shot is therefore never displaced by less than half the value. The key has no other reader: a projectile type with one flag without the other is fired without this scatter. [`Inaccurate`](/keys/inaccurate/) covers what the displacement does to the shot.
+An inaccurate arcing shot has its aim point moved by up to this many cells. The scatter applies only to a projectile type that sets both [`Inaccurate=yes`](/keys/inaccurate/) and [`Arcing=yes`](/keys/arcing/). A type with only one of the two flags is not scattered.
 
-The scatter is applied to the offset from the barrel to the predicted target position, before the launch pitch is solved, so it changes the angle the shot leaves at as well as where it comes down.
+Each shot's aim point moves in a random direction by a random distance between half this value and the full value.
+
+The aim point moves before the launch is worked out, so the shot's pitch and speed are worked out for the moved point. A projectile type with [`ROT=0`](/keys/rot/#scope-bullettype) that is not [`Dropping=yes`](/keys/dropping/) also leaves toward the moved point, so it comes down near it. A type with a nonzero `ROT` or `Dropping=yes` leaves in the direction the firer faces. [`Inaccurate`](/keys/inaccurate/) covers the other effects of that flag.

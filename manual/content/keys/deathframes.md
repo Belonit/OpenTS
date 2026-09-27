@@ -6,11 +6,18 @@ when_omitted:
   kind: value
   value: "0"
 ---
-Above `0`, the hit that destroys the vehicle no longer finishes it. The vehicle drops to one point of strength, stays on the map as a wreck that cannot move, and is exploded and removed once its death counter reaches [`MaxDeathCounter`](/keys/maxdeathcounter/). At `0` the destroying hit finishes the vehicle outright. The count is kept in a single signed byte, so `256` stores as that same zero and quietly turns the wreck off, while any figure above `127` stores as a negative number.
+Above `0`, a destroyed vehicle stays on the map as a wreck. The destroying hit leaves it at one point of strength and unable to move. The wreck explodes and is removed once [`MaxDeathCounter`](/keys/maxdeathcounter/) game frames have passed. At `0` the destroying hit removes the vehicle at once.
 
-Nothing the ordinary destruction does happens on the wreck path: no death announcement, no passengers thrown clear, no wooden crate from a crate-carrying truck, and no crew survivor. [`CrewEscape`](/keys/crewescape/) covers the survivor roll that is passed over.
+Keep the value between `0` and `127`. The engine stores it in a single signed byte, so values from `128` to `256` wrap to zero or a negative number and turn the wreck off.
 
-The count is a total rather than a per-facing figure. The frame drawn is [`StartDeathFrame`](/keys/startdeathframe/) plus the death counter divided by [`DeathFrameRate`](/keys/deathframerate/), held at the last frame of the run once that division reaches `DeathFrames − 1`. No facing term enters it, so the wreck shows the same run whichever way the vehicle was pointing.
+A vehicle that leaves a wreck skips the usual effects of destruction, both when it is destroyed and when the wreck later explodes:
+
+- no "unit lost" announcement;
+- no passengers escape;
+- no crate drops, even with [`CarriesCrate=yes`](/keys/carriescrate/);
+- no crew survivor appears, whatever [`CrewEscape`](/keys/crewescape/) holds.
+
+The run has one set of frames for every facing, so the wreck plays the same frames whichever way the vehicle was pointing. It starts at [`StartDeathFrame`](/keys/startdeathframe/), advances one frame every [`DeathFrameRate`](/keys/deathframerate/) game frames, and holds its last frame once it gets there. Only shape artwork draws these frames. A [`Voxel=yes`](/keys/voxel/) vehicle with a value above `0` still becomes a wreck.
 
 ```ini title="art.ini"
 [MYWALKER] ; the Image ID of a shape-drawn UnitType

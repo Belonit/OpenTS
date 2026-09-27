@@ -7,14 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-While a team is [coordinating a move](/systems/ai-team-execution/#moving), each member is measured against the destination. A member is put on the Move mission and sent there under **Any of:**
+On an aggressive team, a member that holds a target keeps fighting while the rest of the team moves. When the team [moves](/systems/ai-team-execution/#moving), a member is normally ordered toward the team's target if it is too far from it, for example farther than [`Stray`](/keys/stray/). An aggressive team leaves such a member alone as long as it holds a target of its own.
 
-- it is farther from the destination than [`Stray`](/keys/stray/), which is tripled for an aircraft;
-- **All of:** it is below ground level, and the team's next script line is not itself a move;
-- **All of:** it is an aircraft, it is still in the air, it is not already over the destination, and the team's next script line is not itself a move.
+The exempted member is not put on the Move mission and does not hold up the team's arrival. The rest of the team can arrive and start its next script line while that member stays where it is and keeps shooting. A member with no target is ordered toward the team's target as on any other team.
 
-The team does not count as having arrived until none are left outstanding.
-
-On an aggressive team a member that holds a target is passed over at that point. It is neither given the move order nor counted as outstanding, so the rest of the team can finish the move and start the next script mission while it stays where it is and keeps shooting. A member with no target is treated exactly as it would be on any other team.
-
-The exemption belongs to the move step alone. Nothing about it changes recruitment, or the regroup that follows damage, or the gathering a stopped team does.
+The setting affects only the move. Recruitment, the team's response to damage, and regrouping ignore it.

@@ -15,8 +15,12 @@ credit:
 - dkeeton
 ---
 
-An out-of-sync report was written as `SYNC<n>.TXT` in the working directory. It is now written into the `Debug` folder beside the executable, named for the local player and the frame, at most once per frame. It names every player whose checksum disagreed along with both sides' values, records the session identity and seed so two players' reports can be lined up, and keys each object to its stable identifier. It no longer draws from the shared random generator. Its histories of the recent random draws, target assignments, mission orders, facing assignments, animation creations and events are bounded and newest first.
+An out-of-sync report used to be written as `SYNC<n>.TXT` in the working directory. It is now written to the `Debug` folder beside the executable, under a name that gives the local player's house, the date and time, and the frame. A machine writes at most one report per frame and three per game, and writing one no longer advances the game's random numbers.
 
-Divergence is detected before any of the frame's events run, so two players' reports describe the same point in the game. The new `-DESYNCTEST=<frame>` launch option corrupts the local checksum once, so a report can be checked without waiting for a real divergence. The message box reads "The game is out of sync." instead of "Reconnection Error!".
+The report now names every player whose checksum disagreed, with both machines' checksums, and records the session identity and seed so two players' reports can be matched. It identifies objects by IDs that are the same on every machine still in sync. Its histories of recent random draws, target assignments, mission orders, facing assignments, animation creations and events are limited in length and list the newest first. Each machine now compares checksums before it runs a frame's events, so two players' reports describe the same point in the game.
+
+The new `-DESYNCTEST=<frame>` launch option spoils this machine's checksum once, at that frame or the first checked frame after it, so a report can be tested without a real divergence.
+
+A recording that goes out of sync during playback shows "The game is out of sync." instead of "Reconnection Error!".
 
 Rampastring is credited for the ts-patches state histories this follows and the Vinifera check that reads a frame's checksums before its events run. dkeeton is credited for the expanded ts-patches sync file this takes the FPU control word from.

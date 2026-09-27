@@ -10,11 +10,11 @@ when_omitted:
 ```ini title="rules.ini"
 [CAOILD]
 ProduceCashAmount=100
-ProduceCashDelay=750  ; frames; 750 is 50 seconds at the normal game rate
+ProduceCashDelay=750  ; 50 seconds at 15 frames a second
 ```
 
-The interval is loaded with this many frames when the structure opens for business and again after each payment, so [`ProduceCashAmount`](/keys/producecashamount/) is paid on this spacing. Each structure counts its own interval down, so two of the same type built apart pay apart.
+A structure pays [`ProduceCashAmount`](/keys/producecashamount/) once every `ProduceCashDelay` frames. The count starts when the structure [opens for business](/systems/produce-cash/#the-interval), and it restarts from the full delay after each payment and on each capture. Each structure keeps its own count, so two structures of the same type built a few seconds apart also pay a few seconds apart.
 
-Zero or a negative figure produces nothing at all, which makes the recurring payment opt-in. A type setting only [`ProduceCashStartup`](/keys/producecashstartup/) pays its capture bonus and nothing else, rather than paying an unset amount on every frame.
+A value of zero or less turns the recurring payment off. A type that sets `ProduceCashAmount` without this key never pays on a schedule, although it can still pay [`ProduceCashStartup`](/keys/producecashstartup/) on capture.
 
-On a [`Powered=yes`](/keys/powered/) structure the count is paused rather than restarted whenever the structure cannot produce, so [restoring power](/systems/produce-cash/#power) resumes the interval where it stopped. A structure whose count had already run out when power failed pays as soon as power returns.
+On a [`Powered=yes`](/keys/powered/) structure, the count pauses while the structure lacks power and resumes with the frames it had left. [Buildings that produce cash](/systems/produce-cash/#power) says what counts as lacking power.

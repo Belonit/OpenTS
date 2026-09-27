@@ -8,6 +8,6 @@ when_omitted:
   value: "7"
 ---
 
-An object already on a team is taken from it only when another team recruits, and only by a team whose value is strictly greater. Two TeamTypes sharing one value never poach from each other, and a team on the default `7` is safe from every other team left at the default. The value has no weight in [trigger selection](/systems/ai-team-production/#the-weighted-draw) and is not a build order.
+A team can [recruit](/systems/ai-team-production/#recruitment) an object that is already on another team only when its own `Priority` is strictly greater than that team's. Teams with equal values, including all teams left at the default, never take members from each other. The value plays no part in [which AI trigger is drawn](/systems/ai-team-production/#the-weighted-draw) and does not set a build order.
 
-It is read once more when a house's base comes under attack. Every team of that house whose value is below [`SuspendPriority`](/keys/suspendpriority/) in `[General]` has each of its members removed and is suspended for [`SuspendDelay`](/keys/suspenddelay/) minutes, freeing those members to answer the attack. The emptied team's logic does not run again until the timer expires. That threshold defaults to `20`, so a team left on the default `7` is stripped whenever the response runs.
+`Priority` also decides which teams a computer house [empties when its base is attacked](/systems/base-attacked/#teams-are-emptied-first): those whose `Priority` is below [`SuspendPriority`](/keys/suspendpriority/). At the default `SuspendPriority`, a team left at the default `Priority` is emptied every time the house calls defenders back. To protect a team, give its TeamType a `Priority` of at least `SuspendPriority`.

@@ -8,6 +8,8 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-One test reads the set, and it counts every one of the eight pieces as rock face with no subtile spared. Its callers are all [random map generator](/formats/map-seed/) terrain passes, among them the fill that squares off high ground and the pass that picks a variant for a tile it is about to lay. The role therefore bears on what the generator builds, and on nothing a scenario does afterwards. A cave mouth placed by hand takes whatever land type its own artwork reports, and this key changes none of that.
+The [random map generator](/formats/map-seed/) treats all eight pieces as cliff on every cell they cover. Several of its passes avoid or build around cliff cells: raising high ground, seeding hills, laying shore pieces, and placing bridges and urban areas.
 
-The test is guarded against a role that no tile set answered, so a theater with no cave mouths simply has none to offer it.
+Outside the generator nothing reads the role. On any map, a cave mouth's land type, and so where units can go, comes from its tile artwork.
+
+With the role unresolved, the generator treats no tile as a cave mouth.

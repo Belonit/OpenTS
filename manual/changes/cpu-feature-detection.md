@@ -11,6 +11,6 @@ targets: []
 credit: [tinix0]
 ---
 
-OpenTS no longer asks the processor whether it supports MMX or CMOV. The routines those flags selected between are C++ now and take one path on every processor. Neither the flags nor the detection that set them remain. OpenTS already requires SSE2, so every supported processor, a Pentium 4 or Athlon 64 onward, has MMX and CMOV.
+OpenTS no longer detects whether the processor supports MMX or CMOV. The routines that used to choose a path by those flags are C++ now and take one path on every processor. Every processor OpenTS runs on has both features, because the builds already require SSE2, which means a Pentium 4 or Athlon 64 onward.
 
 The processor family and vendor CPUID reports are still read and returned through `Get_CPU_Type` and the `CPUType` and `VendorID` globals.

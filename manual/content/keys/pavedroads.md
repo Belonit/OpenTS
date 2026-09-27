@@ -8,6 +8,10 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The role has one consequence away from the map generator: a paved road counts as pavement when the blend between pavement and clear ground is worked out. A cell showing [`PaveTile`](/keys/pavetile/) or one of the [`ClearToPaveLat`](/keys/cleartopavelat/) pieces looks at its four orthogonal neighbors and edges away from each one that is not pavement. The first eight pieces of this set count as pavement for that purpose, as do the [`MiscPaveTile`](/keys/miscpavetile/) and [`Medians`](/keys/medians/) pieces. Laying pavement against a road therefore leaves a clean join rather than a shoreline of transition pieces. The test is guarded, so a role that no tile set answered simply stops roads counting as pavement.
+The first eight tiles of this set count as pavement for the [`ClearToPaveLat`](/keys/cleartopavelat/) blend, alongside the [`MiscPaveTile`](/keys/miscpavetile/) and [`Medians`](/keys/medians/) tiles. Pavement laid against one of these road tiles therefore joins it cleanly, without a blended edge. If the role is not bound to a tile set, road tiles do not count as pavement, and pavement next to a road gets a blended edge.
 
-The [random map generator](/formats/map-seed/) reads the set more heavily. It lays its urban roads out of numbered pieces counted from this role. Its placement test admits road and [end caps](/keys/pavedroadends/) already on the ground only when the caller allows them to be built over, and refuses anything else that is not clear ground or pavement.
+The [random map generator](/systems/map-generation/#settlements) builds its town roads from this set's tiles, and uses its longer end pieces as an alternative to a [`PavedRoadEnds`](/keys/pavedroadends/) cap at town road ends and at low-bridge ends. It lays new road only over clear ground, pavement and pavement patches. A road or cap it has already laid blocks new road, except where a north-south road crosses an east-west one.
+
+:::caution[Set PavedRoads in any theater that gets towns or bridges]
+The generator does not check that this role is bound. Without it, the game can crash while generating a town, because the straight east-west road piece reads a tile that does not exist. Other road pieces lay unrelated tiles from the start of the theater.
+:::

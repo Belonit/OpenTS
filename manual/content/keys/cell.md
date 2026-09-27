@@ -8,6 +8,6 @@ when_omitted:
   value: "0,0"
 ---
 
-The sync-bug settings are read only as the multiplayer menu is entered, and only while recording playback is armed. The two comma-separated numbers name a map cell to watch; cell `0,0`, which is also the value used when the setting is left out, counts as no cell at all and is rejected.
+The value names a map cell as two comma-separated numbers, such as `40,52`. The engine keeps a reference to that cell and never uses it. `0,0` names no cell.
 
-Any other pair stores a pointer to that cell, and nothing anywhere reads the pointer. No gameplay path acts on it.
+`Cell` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/playback/).

@@ -7,4 +7,12 @@ when_omitted:
   value: "no"
 ---
 
-The flag swaps the freeze for outright destruction and recreation, and is read only with [`SpecialAnimPowered=no`](/keys/specialanimpowered/) beside it. [A powered light on any structure](/keys/specialanim/#a-powered-light-on-any-structure) covers the one route by which that pair fills a special slot on a structure that has no use for one. [`SpecialAnim`](/systems/building-animations/#where-each-setting-is-read-from) covers why it is not written in the same section as the slot's animation names.
+With `yes`, the [`SpecialAnim`](/keys/specialanim/) animation is removed while its house is short of power, and created again when the house has full power. The flag works only with [`SpecialAnimPowered=no`](/keys/specialanimpowered/) written beside it. While `SpecialAnimPowered` is `yes`, the animation freezes instead and this flag is ignored.
+
+A shortfall removes the animation only on some structures; [Fields, fences and lights](/systems/power/#fields-fences-and-lights) says which.
+
+Each time the house [rechecks its power](/systems/power/#when-the-tally-is-rebuilt) at full power, it creates the animation if the slot is empty. This starts the slot on any structure, including one that is not a service depot, storage structure or firestorm wall section; [A powered light on any structure](/keys/specialanim/#a-powered-light-on-any-structure) covers that route. A non-looping animation plays again at each recheck.
+
+The value is read only when the slot has an animation name from `SpecialAnim` or [`SpecialAnimDamaged`](/keys/specialanimdamaged/). Write it in the art entry named after the structure's ObjectType ID, even when [`Image=`](/keys/image/) puts the animation names in another entry. [Where each setting is read from](/systems/building-animations/#where-each-setting-is-read-from) has the full table.
+
+Despite its name, the flag does not tint or light anything.

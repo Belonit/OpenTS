@@ -10,4 +10,6 @@ targets:
 credit: [ZivDero]
 ---
 
-The skirmish and LAN side boxes now name each entry's country, so the country chosen is the one played whatever position it holds in the rules. Both used to store the entry's position in the box as the country. That agreed only while the playable countries were the first two in the rules: a third playable country played as whatever country sat at its position. The skirmish box also clamped any remembered choice past the second entry. The LAN player list draws the first side's icon for a first-side country and the second's for every other. It names a country of a third side by its own name.
+The skirmish and LAN side boxes now give the player the country picked in them, wherever that country sits in the rules. Both boxes used to take the entry's position in the box as the country, which matched only while the `Multiplay=yes` countries came first in `[Houses]`; otherwise a player could pick one country and play another. The skirmish box also switched a country remembered in `Side=` under `[MultiPlayer]` in `sun.ini` to the second entry whenever that country came after the second country in `[Houses]`.
+
+The LAN player list now picks a player's icon by the country's side. Countries of the first side show the first side's icon and label, and all other countries show the second side's; a country of a third side is labeled with its own name. The list used to give the first side's icon and label only to the first country in `[Houses]`.

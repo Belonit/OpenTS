@@ -8,11 +8,15 @@ when_omitted:
   note: "`yes` for SNOW, which keeps its original settings; `no` for TEMPERATE and for every other theater."
 ---
 
-Ice is a snow feature the rest of the simulation is gated on. Where this is off, no ice sheet grows or is smoothed, a vehicle crossing ice never cracks it, and [`IceGrowthEnabled`](/keys/icegrowthenabled/) on a map does nothing.
+`IsIceGrowthEnabled` turns ice behavior on for a theater. With it off:
+
+- ice never grows, refreezes, or has its edges smoothed;
+- ice never cracks or breaks under a vehicle, and explosions never crack it;
+- [`IceGrowthEnabled`](/keys/icegrowthenabled/) on a map has no effect.
 
 ```ini title="rules.ini"
 [DESERT]
 IsIceGrowthEnabled=no
 ```
 
-It also decides one thing at load time. In a theater with ice, the land type of the ice edge tiles is rewritten to water, so that units treat the open edge of a sheet as the sea it floats in. A theater without ice keeps whatever land types its tiles declare.
+The setting also changes the tiles when the theater loads. With it on, the edge tiles of [`Ice1Set`](/keys/ice1set/), [`Ice2Set`](/keys/ice2set/) and [`Ice3Set`](/keys/ice3set/) count as water, so the open edge of an ice sheet is water to anything moving across it. With it off, those tiles keep the land types their artwork declares.

@@ -7,6 +7,9 @@ when_omitted:
   value: "1"
 ---
 
-The multiplier reaches only an object whose rank grants it the `FIREPOWER` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/); rank alone does not qualify. The default doubles damage, and `0` leaves it unchanged.
+Raising the value increases the damage the object's weapons deal: the default doubles it, and `0` leaves it unchanged. Only an object whose rank grants the `FIREPOWER` ability through [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/) is affected.
 
-Scaling is applied last, after the house and per-object firepower biases. A sonic weapon and a weapon that fires through the fire particle system have their damage figure zeroed before this step, so they never gain anything from the ability.
+The multiplier applies last, after the house's firepower multiplier and any firepower crate bonus. It never raises these weapons:
+
+- a sonic weapon or a weapon that fires through the fire particle system, because their damage does not come from the projectile this multiplier scales;
+- a weapon with negative damage, such as a healing weapon.

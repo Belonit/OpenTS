@@ -1,14 +1,37 @@
 ---
 key: VehicleThief
-summary: Makes a soldier take the vehicle it is sent at, and lets it walk into that vehicle's cell.
+summary: Lets a soldier be ordered onto another house's vehicle and walk into its cell to take it.
 see_also: ["system:capture"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The capture cursor appears over anything that counts as a vehicle and is not a structure, a landed aircraft included, when it belongs to a different house; a unit type flagged [`NonVehicle=yes`](/keys/nonvehicle/) does not count as a vehicle. The test is house identity, not alliance, so an allied house's vehicle qualifies too. One exception: with the [HarvesterImmune](/keys/harvesterimmune/) truce switched on, a vehicle its list covers gets a select cursor instead. An [`IsTrain=yes`](/keys/istrain/) type is excluded from every cursor, targeting and movement path the feature uses. [Stealing a vehicle](/systems/capture/#stealing-a-vehicle) covers what the arrival does.
+A `VehicleThief=yes` soldier can be ordered onto another house's vehicle, and it takes the vehicle when it reaches the vehicle's cell. [Stealing a vehicle](/systems/capture/#stealing-a-vehicle) covers the arrival and what changes hands.
 
-Two effects outlive the theft. The stolen vehicle counts against this type's [`BuildLimit`](/keys/buildlimit/) for as long as it lives, so a hijacker limited to one cannot be rebuilt while its prize survives. When that vehicle is destroyed, the hijacker is recreated at the wreck with a strength between 5 hit points and half its maximum, whether or not the vehicle type is [`Crewed`](/keys/crewed/).
+For a player-controlled soldier, the enter cursor appears over any vehicle that belongs to a different house, a landed aircraft included. The test compares houses, not alliances, so an allied player's vehicle qualifies too. The setting gives no enter cursor over these:
 
-The setting also changes what its owner scans for and what it will keep without scanning again, both covered by [target selection](/systems/target-selection/#what-each-kind-of-object-considers).
+- any vehicle, when the soldier's weapon heals;
+- a structure, including a deployed vehicle;
+- a type with [`NonVehicle=yes`](/keys/nonvehicle/);
+- an [`IsTrain=yes`](/keys/istrain/) type, which gets the select cursor;
+- while the [`HarvesterImmune`](/keys/harvesterimmune/) truce is on, a type listed in [`HarvesterUnit`](/keys/harvesterunit/), which gets the select cursor.
+
+The setting also changes how the soldier moves and picks targets:
+
+- It may step into the cell of the vehicle it is heading for, unless that vehicle is an `IsTrain=yes` type.
+- While it is heading for a vehicle within 15 cells, it keeps that vehicle as its target and does not scan.
+- When unarmed, it looks for vehicles, never buildings or aircraft. [Target selection](/systems/target-selection/#what-each-kind-of-object-considers) gives the full targeting rules.
+- On the hunt mission, it walks to each target it finds on a capture order instead of attacking it.
+- When unarmed, owned by a computer house and not in a team, it goes on area guard when idle once the house's [`IQ`](/keys/iq/) reaches [`GuardArea`](/keys/guardarea/).
+- When the vehicle it is targeting deploys into an [`IsMobileWar=yes`](/keys/ismobilewar/) structure or a [`ConstructionYard=yes`](/keys/constructionyard/) structure, it drops that target.
+- A computer house choosing an ion cannon target rates the soldier by [`AIIonCannonThiefValue`](/keys/aiioncannonthiefvalue/) while its strength is at most [`IonCannonDamage`](/keys/ioncannondamage/). A type that is also [`Engineer=yes`](/keys/engineer/#scope-infantrytype) is rated as an engineer instead.
+
+A vehicle this type has stolen counts against the type's positive [`BuildLimit`](/keys/buildlimit/) while the thief's house owns it. With `BuildLimit=1`, a house that owns a vehicle this type stole cannot build the type again. A stolen aircraft does not count, and neither does a vehicle taken when it drives over its thief. A stolen vehicle that deploys into a structure stops counting, and it does not count again after it undeploys.
+
+When a stolen vehicle is destroyed, a soldier of the thief's type steps out of the wreck, unless it cannot be placed there. It belongs to whoever owns the vehicle at that moment and has between 5 hit points and half its maximum strength, whatever [`Crewed`](/keys/crewed/) says. No soldier steps out of these:
+
+- a stolen aircraft;
+- a vehicle taken when it drives over its thief;
+- a vehicle type with a death animation, set by [`DeathFrames`](/keys/deathframes/) above 0;
+- a stolen vehicle that deployed into a structure and later undeployed.

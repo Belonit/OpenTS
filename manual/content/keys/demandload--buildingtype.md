@@ -8,8 +8,14 @@ when_omitted:
   value: "no"
 ---
 
-A structure's shape is found in the archives under its [Image ID](/keys/image/) before this flag is read. The flag detaches that archive pointer, records the theater-resolved [main-shape basename](/keys/image/#scope-buildingtype), and leaves the type empty until its first draw loads a private copy.
+With `DemandLoad=yes`, a structure type's main shape is not loaded with the rules. The game records the [main-shape filename](/keys/image/#scope-buildingtype), resolved for the current theater, and loads the file the first time the shape is needed, usually to draw a structure of the type. A type nothing uses loads nothing, and a shape the game cannot find is not drawn.
 
-The copy is released when the type's rules are reread, the type is destroyed, or theater setup revisits a `Theater=yes` or `NewTheater=yes` type. Unused types allocate nothing; a missing shape is not drawn.
+The loaded shape is released when any of these happens:
 
-The construction animation is a separate setting, [`DemandLoadBuildup`](/keys/demandloadbuildup/). The deploying, door, under-door, bib and Z-shape overlay artwork is fetched with the rules whatever this is set to.
+- the type's rules are read again;
+- the type is destroyed;
+- a theater is set up and the type is [`Theater=yes`](/keys/theater/) or [`NewTheater=yes`](/keys/newtheater/).
+
+The next use loads it again.
+
+The flag covers only the main shape. The construction animation has its own setting, [`DemandLoadBuildup`](/keys/demandloadbuildup/). The deploying, door, under-door, bib and special Z overlay shapes are always loaded with the rules.

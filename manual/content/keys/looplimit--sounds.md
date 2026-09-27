@@ -8,7 +8,7 @@ when_omitted:
   value: "0"
 ---
 
-Another name for [`Loop=`](/keys/loop/), accepted so that sound sections written for Vinifera read unchanged. It is read only when `Loop=` is absent from the section.
+Another name for [`Loop=`](/keys/loop/), accepted so that sound sections written for Vinifera read unchanged. It is read only when `Loop=` is absent from the section or negative.
 
 ```ini title="sound01.ini"
 [ALARM]

@@ -8,8 +8,26 @@ when_omitted:
   value: "no"
 ---
 
-The flag puts the vehicle on the creature's conduct instead of a vehicle's. Standing still on a guard or empty mission with no destination and no target, it picks one of the eight directions and steps into that cell when it can enter it. It keeps the last direction two times in three. Below [`ConditionYellow`](/keys/conditionyellow/) health it heads instead for Tiberium within a sixteen-cell search radius, and once it is standing on Tiberium it accepts only another Tiberium cell as its next step. Standing there mends nothing on its own: the repair steps run only for a type that also sets [`TiberiumHeal=yes`](/keys/tiberiumheal/), or that holds the `TIBERIUM_HEAL` ability from [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/). This flag supplies the steering alone.
+`SmallVisceroid=yes` makes the vehicle behave as a small visceroid. It wanders on its own, heads for Tiberium when hurt, and merges with other small visceroids into a large one.
 
-Merging is what separates it from a [`LargeVisceroid=yes`](/keys/largevisceroid/#scope-unittype) type. Standing still, it looks at the eight cells around it from north clockwise and stops at the first that holds another small visceroid. If that one has no destination and no target of its own, it is sent here. Finding a neighbor ends the pass either way, so a visceroid with one beside it neither wanders nor makes for Tiberium that frame. Two small visceroids never block each other's cell, so the one that was sent drives all the way onto this one. On arrival the visceroid it was sent to is turned into the UnitType named by [`LargeVisceroid`](/keys/largevisceroid/#scope-global-rules) at that type's full strength, while the arriving one deletes itself.
+It wanders when it stands still with no destination and no target, on a guard mission or no mission at all. It picks one of the eight directions and moves one cell that way if it can enter the cell. It keeps its last direction two times in three.
 
-Both visceroid flags have the same handful of exemptions. [`NonVehicle`](/keys/nonvehicle/) is forced on after this key is read, whatever the section said. An EM pulse passes over the creature without stunning it, and being immobilized does not stop it firing, which no other object may do. It is not required to bring a turret to bear before it shoots, a [`Jellyfish=yes`](/keys/jellyfish/) unit never stings it, and it is drawn without a shadow. While wandering it is drawn from its ordinary artwork; for the five frames of an attack it is drawn from [`AltImage`](/keys/altimage/).
+Below [`ConditionYellow`](/keys/conditionyellow/) health, a visceroid standing off Tiberium heads for Tiberium within 16 cells instead. While it is hurt and standing on Tiberium, it wanders only onto other Tiberium cells. This steering heals nothing by itself. The visceroid heals on Tiberium only with [`TiberiumHeal=yes`](/keys/tiberiumheal/#scope-aircrafttype), as the shipped `VISC_SML` sets, or with the `TIBERIUM_HEAL` ability from [`VeteranAbilities`](/keys/veteranabilities/) or [`EliteAbilities`](/keys/eliteabilities/).
+
+Merging is what separates it from a [`LargeVisceroid=yes`](/keys/largevisceroid/#scope-unittype) type:
+
+1. A small visceroid standing still checks the eight cells around it, starting north and going clockwise, and stops at the first that holds another small visceroid.
+2. If that neighbor has no destination and no target, it is sent to the first visceroid's cell. Either way, finding a neighbor ends that frame's check, so the visceroid neither wanders nor heads for Tiberium.
+3. Small visceroids never block each other's cells, so the neighbor drives onto the first one.
+4. On arrival, the visceroid that stayed becomes the type named by the global [`LargeVisceroid`](/keys/largevisceroid/#scope-global-rules) at that type's maximum strength. The one that arrived is removed.
+
+Both visceroid flags give the type the same exemptions:
+
+- [`NonVehicle`](/keys/nonvehicle/) is forced on after this key is read, whatever the section says.
+- An EM pulse does not stun it.
+- It can fire while immobilized, which no other object can.
+- It does not need to face its target before it fires.
+- A [`Jellyfish=yes`](/keys/jellyfish/) unit never stings it.
+- It is drawn without a shadow.
+
+It is drawn from its ordinary artwork except during an attack, which plays five frames of its [`AltImage`](/keys/altimage/) artwork.

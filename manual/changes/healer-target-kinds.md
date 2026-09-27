@@ -15,6 +15,6 @@ targets:
 credit: [ZivDero, CCHyper, Rampastring]
 ---
 
-A healing weapon mended whatever kind its owner was: a soldier only infantry, a vehicle only vehicles. `Mechanic=yes` in a soldier type's own section in `rules.ini` now points its healing weapon at vehicles instead. `OmniHealer=yes` points a healer of either kind at infantry and vehicles alike, both for the cursor's heal action and for automatic targeting.
+`Mechanic=yes` in an infantry type's section of `rules.ini` makes its healing weapon mend vehicles in place of infantry. `OmniHealer=yes` on an infantry or vehicle type makes its healing weapon mend both, for the heal cursor and for the targets it picks by itself.
 
-A healing vehicle dropped a landed aircraft or a deployed vehicle as a target the moment it could not fire, though it was allowed to mend both. It now holds one until the job is done.
+A healing vehicle now keeps a landed aircraft or a deployed vehicle as its target until the job is done. It used to drop such a target as soon as it could not fire at it, although it was allowed to mend it.

@@ -7,21 +7,19 @@ when_omitted:
   value: "no"
 ---
 
-A building with this flag offers the enter cursor to a player-controlled infantry of an allied house, provided that infantry is not already elite. The building itself must meet **all of** the following:
+An `Armory=yes` building promotes infantry that the player sends into it. It takes one infantry at a time, holds it for the servicing delay that [`IRepairRate`](/keys/irepairrate/) sets, then promotes and releases it.
 
+The player gets the enter cursor for their own infantry that is not yet elite, when the building is theirs or an ally's. The building must meet **all of** these conditions:
+
+- it is not being built or sold;
+- it is not already servicing another infantry;
 - it is switched on;
-- it is out of construction;
-- it is not already servicing someone;
-- it still holds ammunition.
+- its [`Ammo`](/keys/ammo/) count is not zero.
 
-Admitting the infantry costs one point of the building's [`Ammo`](/keys/ammo/) pool, and an armory, like a hospital, is exempt from the instant ammunition reload other buildings receive, so the pool only ever goes down.
+The promotion depends on the infantry's rank when it enters. Infantry below rookie leaves as a veteran, and any other infantry leaves as elite, so a rookie skips the veteran rank. [Promotion without kills](/systems/veterancy/#promotion-without-kills) compares the armory with the other sources of rank.
 
-Once the servicing counter set by [`IRepairRate`](/keys/irepairrate/) runs out, the occupant is promoted and released. [Promotion without kills](/systems/veterancy/#promotion-without-kills) covers where that promotion sits among the other non-combat sources.
+[Hospitals and armories](/systems/repair/#hospitals-and-armories) covers the full admission order and the servicing delay. At the default settings, the same `IRepairRate` keeps infantry in an armory about fourteen times longer than in a hospital.
 
-:::caution[The promotion skips the veteran rank]
-An occupant below rookie is raised to veteran; everything else is raised straight to elite. A rookie therefore leaves the building elite, while a veteran gains a rank it could have reached by fighting.
-:::
-
-:::caution[An unset ammunition pool allows exactly one visit]
-A building type that names no `Ammo` starts its pool at `-1`, which passes the non-zero entry test; the decrement on the first admission then clamps the pool to zero. Because an armory is never restocked, the enter cursor is refused from then on, so the building promotes exactly one infantry in its lifetime. Give the type an explicit `Ammo` count for the number of promotions it should hand out.
+:::caution[Set Ammo to the number of promotions]
+Each admission uses one point of `Ammo`. Like a hospital, and unlike other buildings, an armory never restocks. A type that sets no `Ammo` admits one infantry and then refuses every other for the rest of the match. Set `Ammo` to the number of promotions the building should give.
 :::

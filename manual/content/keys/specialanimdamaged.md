@@ -7,4 +7,10 @@ when_omitted:
   note: The animation SpecialAnim names.
 ---
 
-[The damaged form](/systems/building-animations/#the-damaged-form) covers when a slot picks this name over [`SpecialAnim`](/keys/specialanim/). A depot and a storage structure both ask for the healthy name as they [fill a special slot](/keys/specialanim/#what-starts-a-special-animation). This one is reached later, as the structure crosses the damage threshold with the animation already running, not at the moment the slot is filled.
+`SpecialAnimDamaged=` names the animation that the first special slot runs in place of [`SpecialAnim`](/keys/specialanim/) while the structure's health is at or below [`ConditionYellow`](/keys/conditionyellow/).
+
+A service depot and a storage structure always [start this slot](/keys/specialanim/#what-starts-a-special-animation) with the `SpecialAnim` name, whatever their health. The exception is a [`SpecialAnimPoweredLight=yes`](/keys/specialanimpoweredlight/) slot that is created when the house rechecks its power at full power. It starts with the name that matches the structure's health.
+
+Otherwise the damaged name replaces the healthy one only when the structure's running animations switch form, such as after a damage or repair step. [The damaged form](/systems/building-animations/#the-damaged-form) lists the switches.
+
+Setting only `SpecialAnimDamaged=` leaves a depot's first slot empty through every repair. On a [`SiloDamage=yes`](/keys/silodamage/) structure it crashes the game.

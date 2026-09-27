@@ -13,6 +13,13 @@ when_omitted:
 AIBaseDefensePlaceholders=3
 ```
 
-How many extra `-1` base-defense placeholders a computer house playing for this side appends to its plan when it will not build a wall, or whenever [`AIBaseDefensesWithWalls=yes`](/keys/aibasedefenseswithwalls/). The count is `(3 - Difficulty)` times this figure. Each placeholder is preceded by the side's [`AIWallTowers`](/keys/aiwalltowers/) entry when the country may own one. [Building the plan](/systems/ai-base-building/#building-the-plan) shows where they land.
+Sets how many extra base defenses a computer house playing for this side adds at the end of its [generated base plan](/systems/ai-base-building/#building-the-plan). The house adds `(3 - Difficulty)` times this value as `-1` placeholders, where `Difficulty` is its [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot). On a Hard game the computer normally holds slot 0, so it adds three times this value; on Easy it adds the value once.
 
-The [defense planner](/systems/ai-base-building/#base-defenses) fills each placeholder with one of the country's ownable [`IsBaseDefense=yes`](/keys/isbasedefense/) types, picked by its computed defense values. No side list names the defense roster: which defenses get built follows the candidate buildings themselves.
+When its plan holds at least three structures, the house adds this block in either of these cases:
+
+- it plans no perimeter wall, because the side's or the global [`AIBuildsWalls`](/keys/aibuildswalls/) is `no`;
+- the side sets [`AIBaseDefensesWithWalls=yes`](/keys/aibasedefenseswithwalls/).
+
+When the side's [`AIWallTowers`](/keys/aiwalltowers/) names a type the house's country may own, a node of that tower precedes each placeholder.
+
+The [defense planner](/systems/ai-base-building/#base-defenses) later fills each placeholder with an [`IsBaseDefense=yes`](/keys/isbasedefense/#scope-buildingtype) type the country may own, chosen by its defense values. The side does not list which defenses to build.

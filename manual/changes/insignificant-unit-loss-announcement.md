@@ -14,4 +14,4 @@ credit:
 - Iran
 ---
 
-A vehicle, soldier or aircraft whose type sets `Insignificant=yes` now dies without EVA announcing a lost unit and without moving the Goto Radar Event location. The hunter seeker is the shipped case: every launch used to report a lost unit.
+When one of the player's vehicles, infantry or aircraft dies and its type sets `Insignificant=yes` in `rules.ini`, EVA no longer announces a lost unit, and the Goto Radar Event command no longer jumps to where it died. The hunter seeker is the shipped case: every launch used to be announced as a lost unit.

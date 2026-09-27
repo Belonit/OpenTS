@@ -7,8 +7,12 @@ when_omitted:
   value: ""
 ---
 
-Owning at least one live structure of any type on this list satisfies a `FACTORY` entry in a [`Prerequisite=`](/keys/prerequisite/) list. The entries are alternatives, not requirements: the first one the house owns ends the search, and order has no other meaning.
+A player meets a `FACTORY` entry in a [`Prerequisite=`](/keys/prerequisite/) list by owning a structure of any type on this list. One is enough, and the order of the list does not matter.
 
-The computer's [base planner](/systems/ai-base-building/#building-the-plan) does not read this list. It answers a `FACTORY` entry from its own build lists instead.
+A computer house skips prerequisites when it produces, and its [base planner](/systems/ai-base-building/#building-the-plan) does not read this list. The planner treats `FACTORY` as met once the first [`BuildWeapons`](/keys/buildweapons/) entry the house's country may own is in the plan.
 
-The list is read as BuildingType IDs without regard to case, and a name matching none is dropped. An empty list leaves `FACTORY` impossible to satisfy, which blocks every type naming it from a player's [production](/systems/production/).
+Separate the BuildingType IDs with commas and no spaces. IDs are matched without regard to case, and an ID that matches no BuildingType is dropped. An empty value leaves the list already loaded in place.
+
+List only BuildingType IDs. A group name such as `POWER` or `FACTORY` stays in the list but never satisfies it.
+
+If the list holds no valid ID, `FACTORY` can never be met, and a player cannot build any type that names it.

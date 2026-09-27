@@ -8,10 +8,10 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The set's first tile is the unbroken pavement that [`ClearToPaveLat`](/keys/cleartopavelat/) blends against and the tile a paved cell reverts to when pavement surrounds it. It is also the tile the random map generator lays over the footprint of a generated town. Cells that end up with an unpaved neighbor are dropped from the list the generator works through; the ground under them stays paved. It then drops [`MiscPaveTile`](/keys/miscpavetile/) weathering over what is left.
+The set's first tile is plain, unbroken pavement. The [`ClearToPaveLat`](/keys/cleartopavelat/) blend treats it as the pavement it edges against, and turns a blended pavement cell back into this tile once pavement surrounds it on all four sides.
 
-Sixteen tiles are counted from here for the terrain test that asks whether a cell is pavement, which is what the generator's road and building placement passes check before committing to a cell. The town and junction passes compare against the first tile directly instead.
+The [random map generator](/systems/map-generation/#settlements) paves a town with this tile before it lays the town's roads, buildings and [`MiscPaveTile`](/keys/miscpavetile/) patches. Road planning inside the town looks for this first tile only. When the generator checks whether a cell is pavement before placing a road, a building or a large patch, any of the set's first sixteen tiles qualifies.
 
-:::caution[Clear ground reads as pavement when the set is unresolved]
-That terrain test is not gated on the set resolving. With the role unresolved it accepts everything from the start of the tile heap up to index 14, so the theater's first fifteen tiles — clear ground among them — answer that they are pavement.
+:::caution[Set PaveTile in any theater that gets towns]
+The generator does not check that this role is bound. Without it, the generator paves towns with a tile that does not exist, which can crash the game. It also takes any of the theater's first fifteen tiles for pavement, including tile 0, which the game treats as clear ground.
 :::

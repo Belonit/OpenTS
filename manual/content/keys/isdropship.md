@@ -1,16 +1,18 @@
 ---
 key: IsDropship
-summary: Flies an aircraft as a heavy transport that noses over on approach instead of banking.
+summary: Flies an aircraft as a heavy transport that raises its nose on approach instead of banking.
 see_also: ["SlowdownDistance", "PitchAngle", "FlightLevel", "Dock"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The fly locomotor treats such an aircraft differently in a handful of places, nearly all of them about how it comes down.
+The flag changes how an aircraft that uses the flyer [`Locomotor`](/keys/locomotor/) lands, how it is drawn, and where it goes to unload.
 
-Its attitude is worked out even while it is sitting on the ground; an ordinary aircraft's attitude code runs only in the air, so on the ground it is drawn level. It never banks into a turn and never holds the nose-down attitude other aircraft take at speed. It tips over as it comes in instead, reaching its full [`PitchAngle`](/keys/pitchangle/) four tenths of the way through its [`SlowdownDistance`](/keys/slowdowndistance/), and levels out again at 0.02 radians per frame once it is down. Its cruising height drops to a third of its [`FlightLevel`](/keys/flightlevel/#scope-aircrafttype) as it crosses that same distance.
+In normal flight it never banks into a turn and does not take the nose-down attitude other aircraft hold at speed. Instead, it tilts the opposite way, nose up, as it approaches its destination. The tilt starts when it comes within [`SlowdownDistance`](/keys/slowdowndistance/) of the destination and reaches the full [`PitchAngle`](/keys/pitchangle/) when 60% of that distance remains. After touchdown it levels out by 0.02 radians per frame and is drawn tilted until it is level. An ordinary aircraft on the ground is always drawn level. A dropship destroyed in the air tumbles like any other aircraft, as [`PitchAngle`](/keys/pitchangle/) describes.
 
-It does not bob gently in the air the way other aircraft do, and its shadow is laid flat rather than over the slope of the ground beneath it. Coming down it plays the `DROPLAND` animation below 300 leptons where a carryall plays `CARYLAND`.
+Within [`SlowdownDistance`](/keys/slowdowndistance/) of its destination it also descends toward a cruising height of one third of its [`FlightLevel`](/keys/flightlevel/#scope-aircrafttype). When it comes below 300 leptons on landing, the `DROPLAND` animation plays on the ground beneath it. A dropship that is also a carryall plays `DROPLAND` in place of the carryall's `CARYLAND`.
 
-Left without orders while airborne it goes looking for somewhere to put down: the first building from its [`Dock`](/keys/dock/) list that has a free bay, or a clear landing zone if none has. Before it lands on a spot, whatever is standing there that is not a structure is made to scatter.
+It does not bob up and down in flight, and its shadow is drawn flat instead of following the slope of the ground beneath it.
+
+While unloading, a dropship that is airborne and has no destination picks a place to land. It takes one of its owner's buildings of the first [`Dock`](/keys/dock/) type that has a building willing to take it, normally the nearest one. If no listed type has such a building, it picks a clear landing zone instead.

@@ -9,4 +9,4 @@ when_omitted:
   note: No tile set is bound to the role.
 ---
 
-The value is resolved into a tile index along with the rest of the theater's roles and then read by nothing at all.
+The theater binds this role to a tile set like any other `[General]` role, but nothing in the game uses it. Maps can still contain the set's tiles, which behave like any other tile.

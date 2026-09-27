@@ -7,6 +7,12 @@ when_omitted:
   note: No tile set is selected, so the role stays unresolved.
 ---
 
-The ten tiles are variants of one decoration and are drawn from evenly. They are unrelated to [`RoughTile`](/keys/roughtile/), which is the plain rough *ground* a whole cell is made of. These are placed as pieces over ground that is already there, and a piece is refused unless every cell it covers is clear ground, or a ramp whose type matches the piece's own. Nothing on that path tests whether a cell is occupied, so a unit or a structure standing there does not turn a placement away.
+Only the random map generator uses this set. On desert, mutated, tundra and taiga maps it scatters a few pieces from it across the map, picking each piece from the ten with equal chance. [Ground cover](/systems/map-generation/#ground-cover) gives the count. Desert and mutated maps use the temperate theater and tundra and taiga maps use the snow theater, so both theaters need the set.
 
-Nothing outside the random map generator reads the role. The generator scatters between 5 and 30 of them across a map: on desert and mutated maps, and on every tundra and taiga map. It gives up after twenty times as many attempts as pieces wanted, successes counted among them. With the role unresolved, the scatter's picks run from one entry below the start of the tile heap through the theater's first nine tiles. Where the placement test accepts one, the generator lays that tile across the footprint instead of a decoration. A random map is stored as a seed and rebuilt by each player at load time, so every client that plays the map generates that same wrong ground, not just the machine that produced it.
+These pieces are unrelated to [`RoughTile`](/keys/roughtile/), the plain rough ground that rough patches are made of.
+
+A piece replaces the tile of each cell it covers, and it can cover several cells. It is placed only where each cell it covers is clear ground or a ramp sloped the same way as that part of the piece. Overlays such as tiberium, and objects standing on the cells, do not block it. Any part of a piece that falls off the map is left out.
+
+:::danger[Set RoughGround in every theater used for generated maps]
+If the role is unresolved, the generator scatters the theater's first nine tiles in place of the decorations. One pick in ten is index `-1`, which is not a tile, and testing that pick reads outside the theater's tile list.
+:::

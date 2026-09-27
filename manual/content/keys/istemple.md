@@ -7,6 +7,6 @@ when_omitted:
   value: "no"
 ---
 
-One test reads the flag: [the rating a computer house gives each candidate](/systems/superweapons/#the-computers-use) while its ion cannon looks for something worth striking. A flagged structure that reaches the temple test takes [`AIIonCannonTempleValue`](/keys/aiioncannontemplevalue/) in place of the rating an unremarkable structure gets.
+The flag's only effect is on [the rating a computer house gives each ion cannon target](/systems/superweapons/#the-computers-use). A flagged structure that reaches the temple test is rated with [`AIIonCannonTempleValue`](/keys/aiioncannontemplevalue/) in place of the rating an ordinary structure gets.
 
-Nothing a temple does on the map follows from the flag. The superweapon it grants comes from [`SuperWeapon=`](/keys/superweapon/) and the objects it turns out from [`Factory=`](/keys/factory/); clearing the flag costs it neither.
+Nothing a temple does on the map comes from the flag. Its superweapon comes from [`SuperWeapon=`](/keys/superweapon/). Clearing the flag does not remove the superweapon or stop the structure satisfying other types' prerequisites.

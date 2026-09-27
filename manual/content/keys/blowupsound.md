@@ -12,6 +12,13 @@ when_omitted:
 BlowupSound=EXPLOSML ; a sound ID registered in SOUND.INI
 ```
 
-The sound is played from the structure's own position, so it fades with distance from the view. It plays only on the hit that crosses a threshold: from at or above half the structure's maximum strength, rounded down, to below that, or from above [`ConditionRed`](/keys/conditionred/) of that strength to below it. Continued damage at the same condition is silent, and a hit that crosses both thresholds at once plays the sound once.
+The sound plays when a single hit takes a structure past either of two thresholds, as long as the hit does not destroy it:
 
-Only structures reach it. A vehicle, an infantryman or an aircraft crossing the same thresholds makes no sound of its own.
+- from at least half its maximum strength, rounded down, to below half;
+- from above [`ConditionRed`](/keys/conditionred/) of its maximum strength to below it.
+
+A hit that crosses both thresholds plays the sound once. Further damage that crosses no threshold plays nothing.
+
+The sound plays at the structure's position, so it is quieter the farther the structure is from the view.
+
+Only structures play it. Vehicles, infantry and aircraft crossing the same thresholds make no sound.

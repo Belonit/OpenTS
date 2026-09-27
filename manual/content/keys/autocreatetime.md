@@ -8,4 +8,4 @@ when_omitted:
   value: "5"
 ---
 
-The interval a house actually raises teams on is [`TeamDelays`](/keys/teamdelays/), a frame count chosen by difficulty.
+[`TeamDelays`](/keys/teamdelays/) sets how often a house raises teams, as a frame count chosen by difficulty.

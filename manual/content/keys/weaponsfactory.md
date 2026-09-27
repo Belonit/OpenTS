@@ -7,8 +7,8 @@ when_omitted:
   value: "no"
 ---
 
-The object is put down at a fixed coordinate inside the structure's footprint rather than on a searched exit cell. The structure then switches to its unload mission, which opens the door, clears whatever is standing on the exit cell and the cells around it, drives the object out and closes again.
+A finished object appears at a fixed point inside the structure's footprint, not on an exit cell beside it. The structure then opens its door. While another object stands on the exit cell, that object and anything in the cells around the exit cell are told to move away. Once the exit cell is empty and the door is open, the finished object drives out, and the door closes behind it.
 
-Two exceptions to the ordinary exit rules follow. The structure is exempt from the one-object-at-a-time rule that makes a factory still in contact with its last object refuse the next attempt. While it is still unloading, it looks for another idle structure of the same type owned by the same house and lends it the production slot, so that structure lets the object out instead. With none free, the attempt is reported as a temporary blockage and retried. [Leaving the factory](/systems/production/#leaving-the-factory) covers what each outcome does to the order.
+A weapons factory lets out one object at a time. While it is unloading, it hands the next object to another structure of the same type and house that is idle and producing nothing, and that structure lets the object out. If no such structure is free, the attempt is temporarily blocked. [Leaving the factory](/systems/production/#leaving-the-factory) covers what a blocked attempt does to the order.
 
-A carryall is also refused the pick-up cursor over an object standing on such a structure.
+A carryall cannot be ordered to pick up an object standing on such a structure.

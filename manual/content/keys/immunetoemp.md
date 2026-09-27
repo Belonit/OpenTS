@@ -4,7 +4,7 @@ summary: Stops an EM pulse from stunning, powering off, downing or destroying ob
 see_also: ["system:emp-pulse", "IsCoreDefender", "EMEffect", "Cyborg"]
 when_omitted:
   kind: context-dependent
-  note: A BuildingType or UnitType uses its own `IsCoreDefender=` value. Every other type uses `no`.
+  note: A BuildingType or UnitType uses its `IsCoreDefender=` value. Every other type uses `no`.
 ---
 
 ```ini title="rules.ini"
@@ -12,10 +12,15 @@ when_omitted:
 ImmuneToEMP=yes
 ```
 
-With `ImmuneToEMP=yes`, an [EM pulse](/systems/emp-pulse/) from any source, including an [`EMEffect=yes`](/keys/emeffect/) warhead, does not affect objects of this type. A vehicle, landed aircraft, cyborg or burrowing object is not stunned, an aircraft taking off or landing does not crash, a structure is not powered off or stunned, and a limpet mine is not destroyed.
+With `ImmuneToEMP=yes`, an [EM pulse](/systems/emp-pulse/) from any source, including an [`EMEffect=yes`](/keys/emeffect/) warhead, has no effect on objects of this type:
+
+- a vehicle, cyborg, burrowing object or aircraft on the ground is not stunned;
+- an aircraft taking off or landing does not crash;
+- a structure is not powered off or stunned;
+- a limpet mine is not destroyed.
 
 An immune object still springs its [Paralyzed](/mapping/events/tevent-paralyzed/) trigger event when [a pulse reaches it](/systems/emp-pulse/#what-a-pulse-reaches).
 
-The key matters only for objects a pulse can reach. Infantry other than [cyborgs](/keys/cyborg/), and aircraft one height level or more above the ground, are never affected, so the key changes nothing for them.
+The key changes nothing for objects that a pulse never affects, such as infantry other than [cyborgs](/keys/cyborg/) and aircraft one height level or more above the ground.
 
-A structure or vehicle type that omits the key is immune when it sets [`IsCoreDefender=yes`](/keys/iscoredefender/), which keeps the stock Core Defender immune. Set `ImmuneToEMP=no` to make such a type vulnerable.
+To make an [`IsCoreDefender=yes`](/keys/iscoredefender/) type vulnerable, set `ImmuneToEMP=no`.

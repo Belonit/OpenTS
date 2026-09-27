@@ -7,6 +7,10 @@ when_omitted:
   value: "no"
 ---
 
-A docked client gains one point of [`Ammo`](/keys/ammo/) per [`ReloadRate`](/keys/reloadrate/) interval, 45 frames at the default, until its magazine is full. Nothing is repaired and nothing is charged. A helipad rearms the aircraft that land on it only if it sets this flag as well.
+`UnitReload=yes` makes a building rearm the object docked with it. The object gains one point of [`Ammo`](/keys/ammo/) every [`ReloadRate`](/keys/reloadrate/) interval until its ammunition is full. Rearming is free and repairs nothing.
 
-The branch is separate from [`UnitRepair`](/keys/unitrepair/) and a building runs only [the first service branch its flags match](/systems/repair/#unitreload-is-a-different-service), so a type with both repairs and never rearms. A second aircraft asking to dock is not simply refused, though: a parked aircraft whose magazine is already full is sent to a nearby cell to make room for it.
+A helipad rearms the aircraft that land on it only if it also sets this flag.
+
+A building with both `UnitReload=yes` and [`UnitRepair=yes`](/keys/unitrepair/) repairs and never gives the one-point rearming, because the building runs only [the first service its flags match](/systems/repair/#unitreload-is-a-different-service). Such a depot still [refills a `ManualReload=yes` object for free](/systems/repair/#what-a-depot-does-for-free).
+
+When another aircraft asks to dock, a parked aircraft with full ammunition moves to a nearby cell to make room for it. Otherwise the parked object keeps its place and the building refuses the newcomer.

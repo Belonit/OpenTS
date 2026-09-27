@@ -13,4 +13,6 @@ when_omitted:
 AIBuildsWalls=yes
 ```
 
-Lets a computer house close its base plan with the node that runs [the perimeter wall planner](/systems/ai-base-building/#walls-and-gates). With `no` no house appends that node, so no computer base reaches the planner, and every house instead receives the extra base-defense placeholders. Each side can refuse walls for itself with its own [`AIBuildsWalls`](/keys/aibuildswalls/#scope-side).
+Whether computer houses may plan a [perimeter wall](/systems/ai-base-building/#walls-and-gates) around their bases. With `yes`, each side decides with its [`AIBuildsWalls`](/keys/aibuildswalls/#scope-side). With `no`, no computer house plans a wall, whatever its side sets.
+
+A house that plans no wall adds its side's [`AIBaseDefensePlaceholders`](/keys/aibasedefenseplaceholders/) block of extra base defenses to its plan instead, when its plan holds at least three structures.

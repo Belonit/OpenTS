@@ -7,11 +7,13 @@ when_omitted:
   value: "no"
 ---
 
-At `no`, a human-owned object that is not a building answers damage only while its current mission is Guard, Area Guard or Patrol. Damage taken while it is moving, attacking, harvesting or in any other mission is absorbed without a response. At `yes` that mission restriction is lifted and any human-owned object that clears [the remaining retaliation tests](/systems/target-selection/#retaliation) answers.
-
 ```ini title="rules.ini"
 [CombatDamage]
 PlayerReturnFire=yes
 ```
 
-Buildings are exempt from that mission restriction, but the setting reaches them on a second path. A damaged human-owned building left idle acquires its attacker directly only at `yes`, unless the attacker is an aircraft, which it answers regardless. A computer house never reads the setting on either path.
+At `no`, a player's vehicle, infantry or aircraft fires back at its attacker only while its mission is Guard, Area Guard or Patrol. Damage taken while it moves, attacks, harvests or follows any other mission goes unanswered. At `yes` the mission no longer matters, and the object fires back whenever it passes [the other retaliation tests](/systems/target-selection/#retaliation).
+
+A player's structure is not held to that mission rule, but the setting decides whether it [targets its attacker directly](/systems/target-selection/#a-damaged-building). At `no`, a damaged structure that could fire back turns to a random facing instead. At `yes` it targets the attacker, unless the attacker is an aircraft.
+
+Computer-owned objects and structures are never held back by this setting.

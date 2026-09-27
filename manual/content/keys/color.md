@@ -3,15 +3,17 @@ key: Color
 summary: Color scheme for a projectile, house, or Tiberium type; the multiplayer setting holds the index of the player's preferred color.
 ---
 
-`Color=` is read in five scopes. Four of them take a color scheme name and one takes a number, so the file the setting belongs in decides what a valid value looks like.
+This page covers five `Color=` settings. Four take a color scheme name and one takes a number, so the file you are writing decides what a valid value looks like.
 
-The four name scopes, each read from the section the type or house owns:
+The four scheme names, each written in the section of the type or house it colors:
 
-- [Voxel projectile remap](/keys/color/#scope-bullettype): the bullet type's own section in the rules. It recolors the type's voxel model in flight.
-- [Country color](/keys/color/#scope-housetype): the country's section in the rules. It colors everything the country owns, and it survives into a campaign only.
-- [Scenario house color](/keys/color/#scope-house-per-scenario): the scenario map's own house record. It recolors that one house for that one mission.
-- [Tiberium remap](/keys/color/#scope-tiberium): the Tiberium type's section in the rules. It recolors the overlay and the animations it spawns.
+- [Voxel projectile remap](/keys/color/#scope-bullettype): a projectile's section in the rules. It colors the projectile's voxel model in flight.
+- [Country color](/keys/color/#scope-housetype): a country's section in the rules. It is the color every house of that country starts with.
+- [Scenario house color](/keys/color/#scope-house-per-scenario): a house record in a campaign map. It recolors that one house for that one mission.
+- [Tiberium remap](/keys/color/#scope-tiberium): a Tiberium type's section in the rules. It colors the Tiberium overlay and the animations it creates.
 
-The name each of these holds is matched against the schemes the rules declare in `[Colors]`: one entry per scheme, giving the hue, saturation and value its palette remap is built from. Every declaration builds two variants, a flat one and a full intensity ramp, and the flat one is the single-intensity scheme the name match passes over.
+Each name is looked up, in any letter case, among the schemes the rules declare in `[Colors]`. Each entry there names a color scheme and gives the hue, saturation and value its colors are built from.
 
-The number scope is the [preferred multiplayer color](/keys/color/#scope-multiplayer-settings). It lives in `[MultiPlayer]` of the player's own settings file, `SUN.INI`, and holds a position in the lobby's eight-entry color list rather than any name the rules know.
+The number is the [preferred multiplayer color](/keys/color/#scope-multiplayer-settings). It lives in `[MultiPlayer]` of the player's settings file, `SUN.INI`, and is a position in the lobby's eight-color list, not a name the rules know.
+
+A spawned game reads one more `Color=`, in each person's section of the [spawn file](/formats/spawn-ini/#who-is-playing). It gives the lobby color that person plays.

@@ -7,8 +7,10 @@ when_omitted:
   value: none
 ---
 
-The engine never places this overlay. It reaches a map only when the map author draws it into the overlay layer. That also means it appears only in a campaign: crates in a map's overlay layer are discarded in every other game type. Collecting it selects [`SilverCrate`](/keys/silvercrate/).
+In a campaign, collecting a crate of this OverlayType gives the [`SilverCrate`](/keys/silvercrate/) result. Outside a campaign, it gives a random result like any other crate. The OverlayType must set [`Crate=yes`](/keys/crate/) to be collected at all.
 
-:::caution[The two image settings must name different overlays]
-The campaign lookup tests this setting first and [`WoodCrateImg`](/keys/woodcrateimg/) second, and the second test overwrites the first. Naming one OverlayType in both settings therefore turns every crate into a [`WoodCrate`](/keys/woodcrate/) and leaves `SilverCrate` unreachable. The shipped rules do this, and the silver crate needs an OverlayType of its own with [`Crate=yes`](/keys/crate/) before it can be used.
+Unless [`WoodCrateImg`](/keys/woodcrateimg/) names the same overlay, the engine never places this overlay itself. It appears only where a map draws it into its overlay layer.
+
+:::caution[Name a different overlay from WoodCrateImg]
+When this setting and [`WoodCrateImg`](/keys/woodcrateimg/) name the same overlay, every crate of that overlay gives the [`WoodCrate`](/keys/woodcrate/) result, and `SilverCrate` never applies. The shipped rules name the same overlay in both settings. To use `SilverCrate`, add a second OverlayType with `Crate=yes`, name it here only, and draw it into the map.
 :::

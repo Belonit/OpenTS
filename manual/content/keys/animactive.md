@@ -7,6 +7,10 @@ when_omitted:
   value: "0,1,0"
 ---
 
-The value has the form [`AnimIdle`](/keys/animidle/) describes, and the same damaged-frame arithmetic applies to it.
+`AnimActive` is the frame sequence a structure's artwork plays while the structure is working. The value takes the same three numbers as [`AnimIdle`](/keys/animidle/): first frame, frame count and delay. The delay is used as written, with no game-speed adjustment. A damaged structure running this sequence draws damaged frames placed after the end of all four sequences, as `AnimIdle` describes.
 
-Three structures switch to this sequence: a [`ConstructionYard=yes`](/keys/constructionyard/) structure while something it placed is building, a [`UnitReload=yes`](/keys/unitreload/) structure while it reloads whatever it is in radio contact with, and a [`NukeSilo=yes`](/keys/nukesilo/) structure opening its door for a launch. The silo holds the sequence until it reaches its last frame and then moves to [`AnimAux1`](/keys/animaux1/).
+Three kinds of structure play the sequence:
+
+- A [`ConstructionYard=yes`](/keys/constructionyard/) structure plays it while a structure it placed is being built.
+- A [`UnitReload=yes`](/keys/unitreload/) structure plays it while it reloads the object docked with it.
+- A [`NukeSilo=yes`](/keys/nukesilo/) structure plays it to open its door for a launch. The silo stays on the sequence until it reaches the last frame, then switches to [`AnimAux1`](/keys/animaux1/). With a delay of `0`, it switches to `AnimAux1` at once.

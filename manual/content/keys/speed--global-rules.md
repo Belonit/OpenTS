@@ -8,13 +8,13 @@ when_omitted:
   value: "30"
 ---
 
-The jumpjet locomotor keeps a speed counter of its own and slides the unit that many leptons along its facing every game frame. This figure is the ceiling that counter is clamped to, so it is the top travel rate every jumpjet in the game shares. At the engine default of `30` that is a little under two cells a second. [`Acceleration`](/keys/acceleration/#scope-global-rules) decides how quickly the counter reaches it.
+Every jumpjet unit travels at no more than this many leptons per game frame. There are 256 leptons to a cell and 15 game frames to the second, so the default of `30` is a little under two cells a second. [`Acceleration`](/keys/acceleration/#scope-global-rules) sets how quickly a jumpjet reaches this speed.
 
 ```ini title="rules.ini"
 [JumpjetControls]
 Speed=20  ; about 1.2 cells a second
 ```
 
-A unit's own [`Speed=`](/keys/speed/#scope-aircrafttype) does not move a jumpjet. What the locomotor hands the unit instead is a throttle: the counter divided by this figure. The type's speed rating is left to the places that read a moving object's rate second hand, such as another object leading its shot at one.
+A jumpjet unit's own [`Speed=`](/keys/speed/#scope-aircrafttype) does not set how fast it travels. It still matters when another object aims ahead of a moving jumpjet vehicle. The lead is worked out from `Speed=` with the same modifiers a ground vehicle's speed gets, multiplied by the jumpjet's current speed as a fraction of this ceiling.
 
-The slower bands the locomotor drops to as it arrives are fractions of this figure. It runs at three tenths within one cell of the destination and one half within two, with the counter zeroed outright inside the last 20 leptons. Those proportions hold whatever the ceiling is set to.
+A jumpjet slows down as it arrives, to fractions of this value. Within two cells of its destination it flies at half this speed, and within one cell at three tenths. Within 20 leptons it stops.

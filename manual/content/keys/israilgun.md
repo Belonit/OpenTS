@@ -1,13 +1,13 @@
 ---
 key: IsRailgun
-summary: Punches a damaging line through the world from the muzzle to the target as the weapon fires.
+summary: Fires a beam that damages objects along the line from the muzzle to the target as the weapon fires.
 see_also: ["AmbientDamage", "AttachedParticleSystem", "ROF", "Warhead"]
 when_omitted:
   kind: value
   value: "no"
 ---
 
-The beam is worked out the instant the shot goes off, before the projectile has traveled anywhere. The line from the muzzle to the target's center is walked in 50 steps, and every cell it passes into is examined. An object standing there is damaged when its center lies within [`[CombatDamage] RailgunDamageRadius`](/keys/railgundamageradius/) of the line. A structure in a crossed cell is never measured against that distance and always counts. The object aimed at is damaged whether or not the line actually crossed it. Each victim takes [`AmbientDamage`](/keys/ambientdamage/) through the weapon's [`Warhead=`](/keys/warhead/#scope-weapontype), once, and the firing object is skipped.
+`IsRailgun=yes` fires a beam from the muzzle to the target's center at the moment the weapon fires, after the projectile has been launched. The beam damages objects along its line once each, dealing the weapon's [`AmbientDamage`](/keys/ambientdamage/) through its [`Warhead=`](/keys/warhead/#scope-weapontype). The weapon's [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) is drawn along the beam.
 
 ```ini title="rules.ini"
 [MyRailgun] ; example WeaponType
@@ -19,12 +19,28 @@ AttachedParticleSystem=LargeRailgunSys ; a ParticleSystemType registered in [Par
 ROF=60
 ```
 
-The walk stops at the first point where the ground stands higher than the beam, so a hill between the two ends of the shot cuts it short there. A destroyable cliff at that point may be brought down, at the chance [`[CombatDamage] CollapseChance`](/keys/collapsechance/) sets. The beam's own settled point is where the particle system is drawn to.
+## What the beam hits
 
-Unlike a sonic weapon, a railgun does not give up its projectile's damage. [`Damage=`](/keys/damage/#scope-weapontype) is still held by the shot and still delivered on impact, so a weapon meant to do its work through the beam alone must set it to nothing.
+The beam damages:
 
-The particle system named by [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) is spawned along the beam, and neither of the object's weapons may fire again until it has burned out. While one is alive the reload delay is exactly [`ROF`](/keys/rof/): the house's rate of fire bias, the burst gaps and the random padding are all skipped. The effect's own lifetime and `ROF` together decide the firing rate. A structure with more than one round left waits a single frame instead, so only the effect's own lifetime paces it.
+- a vehicle, infantry or aircraft in a cell the beam enters after leaving the firer's cell, when its center is within [`[CombatDamage] RailgunDamageRadius`](/keys/railgundamageradius/) of the beam's line;
+- a structure in such a cell, however far its center is from the line;
+- the vehicle, infantry, aircraft or structure the shot was aimed at, even if the beam did not pass through its cell.
 
-:::danger[A railgun with no particle system named crashes the game]
-Nothing checks that [`AttachedParticleSystem=`](/keys/attachedparticlesystem/) resolved to anything before the system is spawned, and the game stops the first time such a weapon fires. The beam is walked first, so its damage is dealt to everything under the line and the game then stops.
+The firing object is never damaged.
+
+## Rising ground stops the beam
+
+If the ground rises above the beam before it reaches the target, the beam stops there and deals no `AmbientDamage` to anything, including the target and the objects it passed on the way. At that point, a destroyable cliff may collapse at the chance [`[CombatDamage] CollapseChance`](/keys/collapsechance/) sets. The particle system is drawn only as far as the stopping point.
+
+## The projectile still deals damage
+
+The weapon still fires its projectile, which delivers [`Damage=`](/keys/damage/#scope-weapontype) on impact like any other shot. Set `Damage=0` for a weapon that should deal its damage through the beam alone.
+
+## Firing rate
+
+While the particle system is still alive, neither of the object's weapons can fire. The reload delay after a railgun shot is exactly [`ROF`](/keys/rof/#scope-weapontype), with no house rate-of-fire bias, burst delay, random extra frames or veteran bonus. The next shot waits until both `ROF` has passed and the particle system has burned out. A structure with more than one round of [`Ammo`](/keys/ammo/) left waits only for the particle system. [The reload delay](/systems/firing-geometry/#the-reload-delay) gives the full rules.
+
+:::danger[Name a particle system]
+Give every railgun weapon an `AttachedParticleSystem=`. Without one, the game crashes the first time the weapon fires. [`AttachedParticleSystem`](/keys/attachedparticlesystem/) covers the names it accepts.
 :::

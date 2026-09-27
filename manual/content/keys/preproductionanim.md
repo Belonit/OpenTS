@@ -7,13 +7,13 @@ when_omitted:
   value: ""
 ---
 
-The slot holds an animation registered in `[Animations]` and runs it on the terms [Building animations](/systems/building-animations/) covers. Two structures use it. On the construction yard it is the lead-in that [`ProductionAnim`](/keys/productionanim/) takes over from; on the refinery the two are separate slots and neither ends the other.
+The slot runs an animation registered in `[Animations]`, on the terms [Building animations](/systems/building-animations/) covers. Two kinds of structure use it. On a construction yard it is the lead-in that [`ProductionAnim`](/keys/productionanim/) replaces. On a refinery it runs alongside the production slot, and neither stops the other.
 
-- A [`ConstructionYard=yes`](/keys/constructionyard/) structure starts it when a structure it built reports that construction has begun, choosing between the two names from its own health. It is stopped when contact with that structure drops, and replaced by the production slot when the structure reports its buildup finished.
-- A [`Harvester=yes`](/keys/harvester/#scope-unittype) vehicle starts it on the structure it is docked with as it begins to unload, always in the healthy form. Nothing stops it, so an animation that plays to its end empties the slot and a looping one holds it for the rest of the structure's life. The production slot is a separate slot and does not stop it, and nothing on a refinery ever does. The two animations run together from then on.
+- **Construction yard.** A [`ConstructionYard=yes`](/keys/constructionyard/) structure starts the slot when a newly placed structure reports to it that construction has begun. The yard picks the healthy or damaged name from its own health at that moment. The slot stops if contact with that structure drops. When the structure reports its buildup finished, the slot stops and the production slot starts.
+- **Refinery.** A [`Harvester=yes`](/keys/harvester/#scope-unittype) vehicle starts the slot on the structure one cell west of it as it begins to unload, always in the healthy form. At a refinery's dock, that structure is normally the refinery itself. No refinery event stops the slot; only selling or destroying the structure ends it. An animation that plays to its end leaves the slot empty until the next harvester unloads; a looping one runs for the rest of the structure's life.
 
 :::caution[The harvester starts the slot on whatever stands west of it]
-The vehicle takes the structure one cell west of its own cell and starts that structure's pre-production slot without testing what kind of structure it is. Only the later start of the production slot is limited to a [`Refinery=yes`](/keys/refinery/) structure.
+The harvester starts the pre-production slot of the structure one cell west of its own cell, whatever kind of structure that is. Only the later start of the production slot checks for [`Refinery=yes`](/keys/refinery/).
 :::
 
-The two names are read from the structure's `[<Image ID>]` art entry, and the offset and the two draw-order biases from the entry named after the BuildingType itself. [Where the settings are read](/keys/productionanim/#where-the-settings-are-read) covers that split. The offset and biases are read only once the slot holds a name, and the slot has no power flags.
+The two names come from the structure's `[<Image ID>]` art entry. The offset and the two draw-order biases come from the entry named after the BuildingType itself, and are read only when the slot has a name. [Where the settings are read](/keys/productionanim/#where-the-settings-are-read) covers that split. The slot has no power flags.

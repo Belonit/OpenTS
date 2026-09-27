@@ -9,10 +9,10 @@ targets:
 credit: [ZivDero, Rampastring]
 ---
 
-Saved games now live in a `Saved Games` folder, beside the game or inside the user data directory when one is named. Every save, load, listing and deletion names that folder, and the settings the random map generator saves keep to it too.
+Saved games are now written to, listed from and loaded from a `Saved Games` folder, beside the game or in the user directory when one is named. Settings saved from the random map generator go there too.
 
-Saves made by earlier builds sit beside the game, or in the user data directory when one is named, and are no longer listed. Moving the files into `Saved Games` restores them.
+Saves made by earlier releases stay beside the game. This release cannot load them.
 
-After a load, the campaign difficulty now comes from the save rather than the menu setting.
+The missions that follow a loaded campaign save are now played at the difficulty stored in the save. They used to take the difficulty set in the menu.
 
 Rampastring is credited for the ts-patches patch of the same name.

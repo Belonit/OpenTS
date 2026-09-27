@@ -13,8 +13,8 @@ Player=Nod
 SpeechSide=GDI
 ```
 
-The voice archive is chosen by the side's position in the rules `[Sides]` list plus one, so the first side draws `SPEECH01.MIX` and the second `SPEECH02.MIX`; any expansion voice packs registered for the same position are layered over it. The setting exists so that a mission fought as one side can be narrated by the other; two of the stock Firestorm missions are voiced this way.
+The named side supplies the mission's voice archive. The archive number is the side's position in the rules `[Sides]` list plus one, so the first side uses `SPEECH01.MIX` and the second `SPEECH02.MIX`. Each enabled expansion's voice archive for the same position is mounted with it. The stock Firestorm missions `fsnod07` to `fsnod09` use the key so that a Nod mission is narrated by GDI.
 
-It is read only in a campaign mission, and only after the side has already been settled from [`Player`](/keys/player/#scope-scenarios-2), so it overrides that choice for speech alone. Art, interface and the buildable list continue to follow `Player`. Writing `<none>` is the same as leaving the key out.
+The key is read only in a campaign mission, and it changes speech alone. The side taken from [`Player`](/keys/player/#scope-scenarios-2) still decides the mission's art and interface. Writing `<none>` is the same as leaving the key out.
 
-The game ships voices for the first two sides only. A side with no voice archive of its own is narrated by the first side; the `Civilian` and `Mutant` sides the stock rules also declare are two of these. The load is abandoned only when the first side's archive cannot be found either. A name matching no side at all is logged and ignored, so the side settled from `Player` narrates.
+The stock game ships voice archives for the first two sides only. A side with no voice archive, such as the `Civilian` and `Mutant` sides the stock rules also declare, is narrated by the first side. The mission fails to load only when the first side's archive is missing as well. A name that matches no side is ignored, and the side taken from `Player` narrates.

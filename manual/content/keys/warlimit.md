@@ -8,4 +8,4 @@ when_omitted:
   value: "2"
 ---
 
-No routine counts the war factories a computer house owns against a maximum. Each ownable type appears in [the assembled plan](/systems/ai-base-building/#building-the-plan) as often as that pass appends it, and the finished node list is what the house builds.
+No part of the computer's base planning counts war factories against a limit. A generated plan queues one of each war factory type the house may build, as [Building the plan](/systems/ai-base-building/#building-the-plan) describes, and a plan the map supplies builds what it lists.

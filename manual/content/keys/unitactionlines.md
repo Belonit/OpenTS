@@ -7,6 +7,8 @@ when_omitted:
   value: "yes"
 ---
 
-The lines are drawn once per rendered frame, for every selected vehicle, infantryman or aircraft that belongs to a house under the player's own control. A selected object belonging to anyone else never draws one, whatever the setting, and a structure never does. They report the orders the object is running, its target and its movement destination together with the destinations queued behind that, and are drawn over the tactical map only, after the objects themselves. [Action lines](/systems/action-lines/) covers when they appear and how `UI.INI` styles them.
+`UnitActionLines=yes` lets selected vehicles, infantry and aircraft draw action lines: a line to the object's target, a line along its route, and lines through its queued destinations. Only objects that belong to a house under the player's control draw them. Structures never do. `UnitActionLines=no` turns the lines off for every object, but does not affect the sighting laser.
 
-The in-game game controls dialog has the same switch and writes the choice back to `sun.ini`. Changing it there takes effect on the next frame rather than at the next scenario.
+The lines do not stay up all the time even when the setting is on. [Action lines](/systems/action-lines/) covers when they appear and how `UI.INI` styles them.
+
+The game controls dialog has the same switch. Accepting the dialog applies the change on the next frame and saves it to `sun.ini`.

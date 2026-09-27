@@ -17,8 +17,8 @@ credit:
 - dkeeton
 ---
 
-`QuickMatch=yes` in `[Settings]` of `spawn.ini` now shows the players as `Player 1` to `Player 8` wherever the match names them, with the same number for a player on every machine. The names stay in the launch file and the log.
+`QuickMatch=yes` in the `[Settings]` section of `spawn.ini` shows the players as `Player 1` to `Player 8` wherever the match names them on screen, and each player has the same number on every machine. Their real names still appear in the launch file and the debug log.
 
-A name longer than 39 characters no longer overruns the radar's player list.
+A player name of 40 or more characters no longer overruns memory when the radar pane lists it.
 
 dkeeton is credited for the ts-patches patch that first hid names in a quick match.

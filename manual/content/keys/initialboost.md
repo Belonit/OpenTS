@@ -7,8 +7,12 @@ when_omitted:
   value: "1.5"
 ---
 
-The figure is added to the unit's velocity on the frame a thrust starts, in the direction the thrust is aimed, before any of the per-frame [`Acceleration`](/keys/acceleration/) is applied. It adds to whatever velocity the unit already holds instead of replacing it, so a thrust taken while the unit is moving compounds with the motion it had. The figure is in leptons per frame (256 leptons to a cell, 15 frames to the second). A figure of `8` starts a thrust at eight leptons per frame, about half a cell per second before [`Drag`](/keys/drag/) wears it off.
+Every thrust opens by adding this speed to the unit at once, in the direction of the thrust. [`Acceleration`](/keys/acceleration/#scope-levitation-controls) then adds more speed on each frame of the thrust. The figure applies to every thrust, whether the unit is wandering or heading for a target or destination.
 
-It is applied on every thrust, whether the unit is wandering at random or heading for something. When [`AccelerationDuration`](/keys/accelerationduration/) is zero, it is the whole of a thrust's effect. Nothing caps the result; [`IntentionalDriftVelocity`](/keys/intentionaldriftvelocity/) describes what happens once one frame's movement crosses more than a single cell.
+The figure is in leptons per frame, with 256 leptons to a cell and 15 frames to the second. At `8`, a thrust starts at 8 leptons per frame, about half a cell per second, before [`Drag`](/keys/drag/) and `Acceleration` change it. When [`AccelerationDuration`](/keys/accelerationduration/) is `0`, this boost is all a thrust does.
 
-[`Drag`](/keys/drag/) covers which objects read this section and the `[General]` section a file must contain for any of it to be read at all.
+The boost adds to the motion the unit already has instead of replacing it. This matters for a wandering unit, which can start a new thrust while it is still coasting: on the same heading the speeds add up, and on a different heading they combine as vectors.
+
+Nothing caps the speed that results. [`IntentionalDriftVelocity`](/keys/intentionaldriftvelocity/) describes the hang that a movement of more than a cell per frame can cause.
+
+[`Drag`](/keys/drag/) explains which objects use `[LEVITATION]` and why a file's `[LEVITATION]` section is read only when the file also has a `[General]` section.

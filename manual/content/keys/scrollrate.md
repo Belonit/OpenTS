@@ -1,18 +1,28 @@
 ---
 key: ScrollRate
-summary: How fast the tactical map is allowed to scroll, as a position from 0 to 6 where a lower figure scrolls faster.
+summary: How fast the tactical map is allowed to scroll, from 0 to 7, where a lower figure scrolls faster.
 see_also: [ScrollMethod, AutoScroll, ScrollMultiplier]
 when_omitted:
   kind: value
   value: "3"
 ---
 
-Resting the pointer against the edge of the screen scrolls the map unless [`AutoScroll`](/keys/autoscroll/) is off, and the map gathers speed the longer the pointer is held there. The distance covered each sixtieth of a second comes from a fixed table of nine steps, spread across however many frames the display draws in that time. This figure fixes how far along that table the map may climb: `0` allows the second-longest of the nine steps and `6` a short one. A file figure of `7` is still in range and holds the edge scroll to the shortest step of the nine. No figure of `0` or more reaches the longest step in the table. Holding the right mouse button down while the map is scrolling from the edge shortens the step instead of lengthening it, and pins it to the slower half of the table. [`ScrollMultiplier`](/keys/scrollmultiplier/) then scales whatever step was chosen.
+`ScrollRate` limits the speed of both kinds of scrolling: edge scrolling and coast scrolling with the right mouse button. A lower value scrolls faster.
 
-The figure also divides the coast-scroll distance described by [`ScrollMethod`](/keys/scrollmethod/): the further the pointer is dragged from the point where the right button went down, the further the map moves. This figure plus one is the divisor.
+Unless [`AutoScroll`](/keys/autoscroll/) is off, resting the pointer against the edge of the screen scrolls the map, slowly at first and faster the longer the pointer stays there. The speed climbs through nine fixed steps, and `ScrollRate` sets the fastest step it may reach:
 
-The in-game game controls dialog offers seven positions and writes the choice back to `sun.ini`. Its slider runs the other way around, so dragging it toward the fast end stores a smaller figure.
+- `0` allows the second-fastest step. No value of `0` or more reaches the fastest.
+- `6` allows up to the second-slowest step.
+- `7` is outside the dialog's range but still valid, and holds edge scrolling to the slowest step.
 
-:::danger[A figure of eight or more reads past the scroll table]
-Nothing narrows the figure on the way in. A figure of `8` or more indexes past the end of the nine-step edge-scroll table. `-1` is milder but still wrong: it makes the coast-scroll divisor zero, and the distance the map is then scrolled by is whatever converting an infinite quantity to a whole number leaves behind.
+Each step is a distance per sixtieth of a second, so the speed does not depend on the frame rate while the game draws at least 15 frames a second. [`ScrollMultiplier`](/keys/scrollmultiplier/) scales the step reached.
+
+A right-button press on the map switches to coast scrolling. If the button went down off the map and is still held while edge scrolling, the speed drops by one step and cannot exceed the middle step of the nine.
+
+For coast scrolling, `ScrollRate` plus one divides the distance the map moves for a given drag, as described on [`ScrollMethod`](/keys/scrollmethod/). `0` gives the full distance and `3` a quarter of it.
+
+The game controls dialog offers seven positions and saves the choice to `sun.ini` when accepted. The slider's fastest position, at its right end, stores `0`, and its slowest stores `6`.
+
+:::caution[Keep the value between 0 and 7]
+The value is not range-checked. A value of `8` or more, or `-2` or less, makes edge scrolling read past the end of its table of steps, so the map scrolls by an unpredictable distance. `-1` lets edge scrolling reach the fastest step, but makes coast scrolling divide by zero, with the same unpredictable result.
 :::

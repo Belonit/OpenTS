@@ -8,24 +8,23 @@ when_omitted:
   value: "no"
 ---
 
-On an AircraftType this flag does nothing. A voxel aircraft has no shape file to rename. A shape aircraft fetches its plain `<Image ID>.SHP` once more, immediately after the extension swap, and keeps whatever that fetch returns, so the theater file never survives the read. Marking [`NewTheater=yes`](/keys/newtheater/) as well changes nothing here.
+The type's shape file takes the extension set by the scenario theater's [`Suffix`](/keys/suffix/#scope-theater) in place of `.SHP`. By default that is `.TEM` in temperate and `.SNO` in snow. The rest of the name is the Image ID, with the exceptions below for a TerrainType, SmudgeType, or BuildingType. There is no fallback to `.SHP`, so a type with no file for the current theater has no shape in that theater.
 
 ```ini title="art.ini"
-[ORCA] ; the Image ID of an AircraftType
-Theater=yes ; no effect: the aircraft keeps drawing ORCA.SHP
-```
-
-No stock aircraft art section carries this flag or [`NewTheater`](/keys/newtheater/); every shipped aircraft section sets [`Voxel=yes`](/keys/voxel/).
-
-On other scopes the flag substitutes a theater-specific shape file. The shape file keeps the Image ID as its name and exchanges its extension for the theater's own: `.TEM` in temperate and `.SNO` in snow. Nothing else about the name changes. A BuildingType, OverlayType, SmudgeType or TerrainType marked with the flag loads the theater-named file alone: there is no fallback to `.SHP`, so a type whose theater file is missing is left with no shape.
-
-```ini title="art.ini"
-[MYROCK] ; the Image ID of a TerrainType
+[MYROCK] ; a TerrainType that sets no Image=
 Theater=yes ; draws MYROCK.TEM or MYROCK.SNO, never MYROCK.SHP
 ```
 
-A [`Voxel=yes`](/keys/voxel/) InfantryType or UnitType is in the same position as an aircraft: no shape to rename at all. A BuildingType resolves and loads a theater-named shape either way.
+This applies to a BuildingType, OverlayType, SmudgeType, TerrainType, BulletType, and ParticleType. A ParticleSystemType or VoxelAnimType draws no shape, so the flag changes nothing on them.
 
-:::caution[Only some of these types keep the substitution]
-An AircraftType, InfantryType, or UnitType looks its plain `<Image ID>.SHP` up again immediately after the flag has been applied and keeps whatever that returns. The theater file never reaches it. Those three, a BulletType, a ParticleType, a ParticleSystemType and a VoxelAnimType also leave their artwork as it stands when the scenario theater changes. A BuildingType, OverlayType, SmudgeType, or TerrainType marked with the flag resolves its name again against the new theater.
-:::
+The file is looked up again for every scenario and every loaded saved game, so its extension always matches the current theater.
+
+A type that also sets [`NewTheater=yes`](/keys/newtheater/) uses this flag and ignores that one.
+
+Leave [`Image=`](/keys/image/) unset on a TerrainType or SmudgeType marked here, or set it to the type's own ObjectType ID. When the scenario's theater differs from the previous scenario's, these two types look up the theater file under their ObjectType ID. When the theater repeats, and after a saved game loads, they use the Image ID, so a different Image ID gives different artwork depending on how the scenario was reached.
+
+A BuildingType loads its theater shape even when it is [`Voxel=yes`](/keys/voxel/). After a saved game loads, the name's second letter is also replaced as [`NewTheater=yes`](/keys/newtheater/) describes. A structure whose Image ID is `GAHUT` therefore draws `GAHUT.TEM` in a temperate scenario, and `GTHUT.TEM` once that game is saved and loaded.
+
+When a scenario starts, a BuildingType marked here also loads its [`Buildup`](/keys/buildup/) file with the theater's extension, unless it sets [`DemandLoadBuildup=yes`](/keys/demandloadbuildup/). The Buildup page covers how that changes the construction animation. After a saved game loads, the structure uses the ordinary construction file and timing described there.
+
+On an AircraftType, InfantryType, or UnitType the flag has no effect when a scenario starts: the type loads its plain `<Image ID>.SHP`. After a saved game loads, though, these types take the theater file when one exists, so an infantry type or a shape-drawn vehicle can change its look on loading. Leave the flag off these types.

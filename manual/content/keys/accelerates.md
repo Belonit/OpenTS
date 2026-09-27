@@ -7,8 +7,14 @@ when_omitted:
   value: "yes"
 ---
 
-Only the drive locomotor reads the flag. A type moved by any other [`Locomotor=`](/keys/locomotor/) travels at whatever speed its own locomotor asks for, whatever this says.
+Only the drive locomotor reads the flag. A type moved by any other [`Locomotor=`](/keys/locomotor/) gets its speed from that locomotor, whatever this flag says.
 
-Cleared, the vehicle is set outright to the speed it has been told to hold, every step of the way: it reaches full speed in one frame and stops dead. Set, the speed is walked toward that target instead. [`AccelerationFactor`](/keys/accelerationfactor/) raises it while it is climbing and [`DeaccelerationFactor`](/keys/deaccelerationfactor/) lowers it while it is falling, with the braking run beginning within [`SlowdownDistance`](/keys/slowdowndistance/) of the destination.
+With `Accelerates=no`, the vehicle moves at its target speed from the first step and does not brake as it nears its destination. The target speed depends on the terrain of the cell the vehicle is entering, and slopes and damage change it.
 
-The passive test sits inside this flag's own branch: a vehicle is passive when its type sets [`Passive=yes`](/keys/passive/). While the flag is set, nothing ramps a passive vehicle's speed, while `Accelerates=no` still sets its throttle outright every step. A passive vehicle that is following another is driven from the front instead: on every step, the front vehicle copies its own speed onto every vehicle following it. The clamp that holds a vehicle to a fifth of its speed while it is crushing something sits inside the ramping branch, so a vehicle without the flag crushes at full speed.
+With `Accelerates=yes`, the vehicle's speed changes toward the target speed a step at a time. [`AccelerationFactor`](/keys/accelerationfactor/) sets how fast it climbs and [`DeaccelerationFactor`](/keys/deaccelerationfactor/) how fast it falls. Braking begins once the vehicle is within [`SlowdownDistance`](/keys/slowdowndistance/) of its destination.
+
+A ramped vehicle that other vehicles follow, such as a locomotive pulling cars, copies its speed onto every vehicle behind it on each step.
+
+The ramping skips a [`Passive=yes`](/keys/passive/) vehicle. With the flag set, a passive vehicle does not ramp its own speed. While it follows a ramped vehicle, it moves at that vehicle's speed. With `Accelerates=no`, a passive vehicle moves at its target speed like any other.
+
+While it is crushing something, a ramped vehicle moves at no more than a fifth of its top speed. A vehicle with `Accelerates=no` does not slow down to crush and keeps its target speed.

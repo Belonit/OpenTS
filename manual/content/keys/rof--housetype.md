@@ -8,11 +8,11 @@ when_omitted:
   value: "1.0"
 ---
 
-The delay an object of a house of this country waits before its next shot is [the firing weapon's own `ROF=`](/keys/rof/#scope-weapontype) multiplied by this value. It multiplies the delay rather than the rate, so a figure above 1 fires more slowly. The product is worked out once, when the house is [given its difficulty slot](/systems/difficulty/#how-the-figures-are-combined), and not per shot.
+The value scales the delay between shots for every object owned by a house of this country, so a value above 1 fires more slowly. It applies in skirmish and multiplayer games only. There, [the weapon's `ROF`](/keys/rof/#scope-weapontype) is multiplied by this value and by the [difficulty multiplier](/keys/rof/#scope-difficulty-settings) before the weapon page's other adjustments. A campaign game ignores this value and uses the difficulty multiplier alone.
 
 ```ini title="rules.ini"
-[NOD]
-ROF=1.25 ; NOD objects wait 25% longer between shots
+[Nod]
+ROF=1.25 ; outside a campaign, Nod objects wait about 25% longer between shots
 ```
 
-A campaign game drops the country's contribution, so this value shapes skirmish and multiplayer games only; the [difficulty setting's own multiplier](/keys/rof/#scope-difficulty-settings) applies in both.
+The multiplier does not reach a shot inside a burst, a beam or particle weapon's delay, or a structure still holding more than one round. The weapon's `ROF` page describes each of these cases, and [the difficulty page](/systems/difficulty/#how-the-figures-are-combined) shows how the country and difficulty figures combine.

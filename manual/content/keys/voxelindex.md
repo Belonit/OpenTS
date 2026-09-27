@@ -7,12 +7,12 @@ when_omitted:
   value: "0"
 ---
 
-A voxel model holds one or more sections and a voxel animation draws exactly one of them. The index selects it by position, counting from zero, for the shadow and for the lit model alike. A piece borrowing another type's model through [`ShareSource`](/keys/sharesource/) indexes that model's sections, which is how one vehicle file supplies several distinct pieces of wreckage.
+A voxel model holds one or more sections, and a voxel animation draws one of them together with its shadow. `VoxelIndex` picks the section by position, counting from 0. With a model borrowed through [`ShareSource`](/keys/sharesource/), the index counts that model's sections, so several animations can each draw a different section of one vehicle's model as separate pieces of wreckage.
 
-:::caution[The shading table is always built from the first section]
-The lighting lookup a piece is shaded through is precalculated from section zero however this is set. A model whose sections do not all use the same normal set therefore shades every section but the first through the wrong table.
+:::caution[Lighting always follows the first section]
+The piece is shaded with a lighting table built for the first section's normals. A section that uses a different normal set from the first section is shaded incorrectly.
 :::
 
-:::danger[An index past the last section reads outside the model]
-Nothing measures the index against the number of sections the model holds. An index beyond the last one, or a negative one, takes the piece's bounding box from whatever memory lies outside the section table. The piece is drawn at a size and position that come from unrelated data, and an address far enough outside the tables faults and stops the game.
+:::danger[Keep the index within the model's sections]
+The engine does not check the index. An index past the last section, or a negative one, makes the piece read its data from memory outside the model. The piece is then drawn from unrelated data, or the game crashes.
 :::

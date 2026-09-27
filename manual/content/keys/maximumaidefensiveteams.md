@@ -8,4 +8,8 @@ when_omitted:
   note: The list stays empty and the difficulty slot is used to index it anyway, reading storage that was never allocated.
 ---
 
-Entries run hardest game setting first, and a computer house indexes them with its own difficulty slot, which is the inverse of the setting the player chose. The test is strict: the house must hold more defensive teams than the entry. It is reached only while the house is [under `TotalAITeamCap`, or holds fewer defensive teams than half its team count rounded down](/systems/ai-team-production/#the-team-budget). Exceeding the entry suppresses defensive triggers for that one pass; it never deletes a team.
+A house passes over its [defensive AI triggers](/systems/ai-team-production/#defensive-teams-and-the-enemy) while it owns more defensive teams than its entry. A defensive team is one made from an [`IsBaseDefense=yes`](/keys/isbasedefense/#scope-teamtype) TeamType. The comparison is strict, so an entry of `2` stops defensive triggers only once the house owns three defensive teams.
+
+The limit deletes no team, and it holds only for the current AI trigger pass; the next pass counts again. It is tested only while the house has fewer teams than [`TotalAITeamCap`](/keys/totalaiteamcap/), or fewer defensive teams than half its team count, rounded down. Otherwise [the team budget](/systems/ai-team-production/#the-team-budget) deletes the house's oldest defensive team instead.
+
+Each house reads the entry for its [difficulty slot](/systems/difficulty/#the-per-difficulty-lists). For a computer house, entry 0 applies at the Hard setting and entry 2 at Easy.

@@ -8,4 +8,7 @@ when_omitted:
   value: "yes"
 ---
 
-Nothing reads the flag, so it cannot exempt a structure from being shut down. [An EM pulse](/systems/emp-pulse/#what-a-pulse-reaches) powers off and stuns every structure it catches except a limpet mine, which it destroys, and a type with [`ImmuneToEMP=yes`](/keys/immunetoemp/) or [`InvisibleInGame=yes`](/keys/invisibleingame/). Low power shuts down only structures whose type sets [`Powered=yes`](/keys/powered/) and drains power.
+`Disableable=no` does not protect a structure from being shut down. Other settings decide that:
+
+- An EM pulse powers off and stuns every structure it reaches unless the structure's type sets [`ImmuneToEMP=yes`](/keys/immunetoemp/). [What a pulse reaches](/systems/emp-pulse/#what-a-pulse-reaches) lists the other exceptions.
+- Low power shuts down only a structure whose type sets [`Powered=yes`](/keys/powered/) and drains power.

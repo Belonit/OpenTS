@@ -9,6 +9,6 @@ targets:
   effect: changed
 ---
 
-A fog-of-war scenario could stop the game while loading or playing. A cell's redraw area extends beyond its own diamond. A fogged structure, terrain object, overlay or smudge at the edge of the tactical view therefore passed an out-of-frame clipping window to the shape renderer, which then addressed pixels outside the frame. These are now clipped to the view.
+A game with fog of war no longer crashes while loading or playing when a fogged structure, terrain object, overlay or smudge lies at the edge of the tactical view. Such an object could be drawn outside the screen buffer; it is now clipped to the view.
 
-Fogged buildings that use their owner's palette also draw with that owner's colors, matching visible buildings. They took those colors from the map cell instead, which could overwrite the cell with rendering state and stop the game during a later terrain-overlay redraw.
+A fogged structure now draws in its owner's colors, as a visible one does, unless it uses the terrain palette. It used to take its colors from the map cell's data, which could corrupt the cell and crash the game during a later redraw.

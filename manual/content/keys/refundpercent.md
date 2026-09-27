@@ -12,15 +12,15 @@ when_omitted:
 RefundPercent=.75   ; a human player's sale returns three quarters of the price
 ```
 
-The fraction is applied to the price the house would have paid for the type, [multipliers included](/keys/cost/#what-a-house-pays), and the product is truncated to whole credits. Current strength never enters into it, so a structure one point from destruction sells for what an undamaged one does.
+A human player's house receives this fraction of an object's price when it sells the object. The price is what the house would pay for the type, [multipliers included](/keys/cost/#what-a-house-pays), and the refund is truncated to whole credits. Damage does not reduce it, so a structure one point from destruction sells for as much as an undamaged one.
 
-Only a house a human is playing takes the reduction. In a campaign that is a house the local player controls: its own, and any the scenario marks [`PlayerControl=yes`](/keys/playercontrol/). In every other game it is a house with a human behind it. Every computer house is refunded the full price instead.
+Computer houses always receive the full price. In a campaign, the fraction applies to every house the local player controls: the player's house and any house the scenario marks [`PlayerControl=yes`](/keys/playercontrol/). In other games, it applies to every house a human plays.
 
-Four paths pay through it:
+The fraction applies to four payments:
 
 - selling a structure;
-- [selling a vehicle or aircraft at a service depot](/systems/repair/#selling-at-the-pad);
-- the upgrade handed back when a structure with one is sold;
-- the compensation paid when a construction yard undeploys and its MCV cannot be placed anywhere.
+- [selling a vehicle or aircraft parked at a service depot](/systems/repair/#selling-at-the-pad);
+- selling a structure's upgrade. A sell order on a structure with an upgrade removes and refunds its newest upgrade, and the structure stays;
+- the compensation paid when a structure undeploys and the vehicle it becomes cannot be created or placed. The payment is based on the structure's price.
 
-Canceling something still under construction is a different figure and [refunds what has been paid so far](/systems/production/#paying-for-it) in full.
+Canceling something still under construction is different: it [refunds everything paid so far](/systems/production/#paying-for-it).

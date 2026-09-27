@@ -11,7 +11,7 @@ related:
     id: game-data
 ---
 
-Configuration is documented in five areas. The table names what each area covers, so a reader chasing a single fact can go straight to the area that owns it:
+Look up a configuration fact in the area that covers it:
 
 | Area | Covers |
 | --- | --- |
@@ -21,6 +21,13 @@ Configuration is documented in five areas. The table names what each area covers
 | [Command line options](/using/command-line/) | Options accepted on the OpenTS command line |
 | [Mapping](/mapping/) | Scenario sections, triggers, TeamTypes, TaskForces, Scripts, and AI triggers |
 
-`SUN.INI` stores local player options. `KEYBOARD.INI` maps command names to keys. [`UI.INI`](/formats/ui-ini/), which a mod or deployment may ship, styles the order lines. Rules, art, sound, theme, and scenario files supply game and mod data. A deployment that keeps these under other names writes them in its [`OPENTS.INI`](/formats/opents-ini/#the-files-it-reads).
+The game reads its configuration from these files:
 
-The engine loads its configuration files in the order [`OPENTS.INI`](/formats/opents-ini/#the-order-files-are-searched-for-in) describes. Use the relevant Format page when file selection, layering, registration, or section identity affects the result.
+- `SUN.INI` stores the player's options.
+- [`KEYBOARD.INI`](/formats/keyboard-ini/) assigns keys to command names.
+- [`UI.INI`](/formats/ui-ini/), which a mod or deployment may ship, sets how order lines and the sighting laser are drawn.
+- Rules, art, sound, theme, and scenario files supply game and mod data.
+
+A deployment can rename these files in [`OPENTS.INI`](/formats/opents-ini/#the-files-it-reads): the settings file, `UI.INI`, the tutorial file, and the rules, language rules, multiplayer rules, art, AI, sound, theme, and campaign list files together with their expansion copies. `KEYBOARD.INI` and scenario files cannot be renamed.
+
+The game looks for each file in the [search order](/formats/opents-ini/#the-order-files-are-searched-for-in) and uses the first copy it finds. Settings and hotkeys the player saves are written to the first directory in that order, so the saved copy is read ahead of a shipped one.

@@ -8,4 +8,10 @@ when_omitted:
   note: The list stays empty and the difficulty slot is used to index it anyway, reading storage that was never allocated.
 ---
 
-Entries run hardest game setting first, and a computer house indexes them with its own difficulty slot, which is the inverse of the setting the player chose. The countdown is seeded once, as a skirmish or multiplayer session is set up, for every non-passive computer house; a campaign never seeds it and never runs the pick. When it expires and the house still has no enemy, the nearest non-passive, undefeated house becomes one. Until a house has an enemy, [only defensive AI triggers can pass](/systems/ai-team-production/#defensive-teams-and-the-enemy).
+Each entry is a delay in game frames. Outside a campaign, a computer house waits that long from the start of the game before it can pick an enemy on its own. Damage can still give it an enemy sooner, because every hit from a house it is not allied with [raises its anger](/systems/base-attacked/#what-raises-it) toward that house.
+
+Each entry belongs to one [difficulty slot](/systems/difficulty/#the-per-difficulty-lists), so give the list three entries. For a computer house the first entry is used at the Hard setting and the last at Easy. A shorter list is read past its end for the missing slots.
+
+The countdown is set once, as a skirmish or multiplayer game is set up, for every computer house whose country does not set `MultiplayPassive=yes`. A campaign never sets it, and a campaign house never picks an enemy this way.
+
+When the countdown has run out, the house has no enemy and one of its structures is on the map, it [picks a first enemy](/systems/base-attacked/#picking-a-first-enemy). That is normally the nearest house that is not its ally, not passive and not defeated. Until a house has an enemy, [only defensive AI triggers can pass](/systems/ai-team-production/#defensive-teams-and-the-enemy).

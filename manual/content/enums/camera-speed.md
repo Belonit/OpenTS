@@ -16,8 +16,8 @@ values:
   - { constant: SCROLL_SPEED_4, value: 4, input: "4", meaning: "The fastest pan: about 17 frames to arrive." }
 ---
 
-A scripted pan moves the view an equal distance each frame. The setting therefore fixes how long the view takes to arrive rather than how fast it travels, whatever the distance. There is no easing at either end. The five rates are built into the engine and no rules setting reaches them.
+The speed sets how many frames a scripted pan takes to reach its destination, whatever the distance. The view covers an equal share of the distance each frame, with no easing at either end, so a longer pan moves faster. No rules setting changes the five durations.
 
-:::caution[There is no sixth rate]
-A sixth setting or higher, or a negative one, takes its pan rate from outside the table, where nothing fixes how long the pan takes. Both a [scripted camera move](/mapping/actions/taction-center-viewpoint/) and the [team script mission](/mapping/missions/tmission-center-viewpoint/) reach the same rate the same way.
+:::caution[Use a speed from 0 to 4]
+Both the [scripted camera move](/mapping/actions/taction-center-viewpoint/) and the [team script mission](/mapping/missions/tmission-center-viewpoint/) accept any number. A negative speed or one above 4 has no entry in the engine's table of rates, so how long the pan takes, and whether it arrives at all, is unpredictable.
 :::
