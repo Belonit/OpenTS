@@ -188,9 +188,9 @@ void EgoClass::Render(bool fresh)
 	if ((YPos < LogicalSurface->Get_Height() && YPos > LogicalSurface->Get_Height() - 52) || YPos >= -16 && YPos <= 32 || fresh) {
 		static HFONT font;
 		if (font == NULL) {
-			HDC dc = GetDC(MainWindow);
+			HDC dc = GetDC(NULL);
 			font = WS_Get_Font(dc, "Arial", 0, 16, 1);
-			ReleaseDC(MainWindow, dc);
+			ReleaseDC(NULL, dc);
 		}
 
 		Rect textrect(XPos, YPos, VideoModeWidth, 0);
