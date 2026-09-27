@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
-#include <windowsx.h>
 
 
 namespace {
