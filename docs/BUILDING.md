@@ -62,6 +62,13 @@ vendored through `thirdparty/RmlUi`, `thirdparty/freetype`, and
 and without bzip2, PNG, HarfBuzz, or Brotli; Dear ImGui is compiled from its
 core sources without any of its bundled backends.
 
+[SDL](https://github.com/libsdl-org/SDL) 3 is vendored through `thirdparty/SDL`
+at a tested tag and linked statically. Only its video subsystem, which covers
+the window, its events, and keyboard and mouse input, is built. Its audio,
+rendering, GPU, camera, joystick, haptic, HIDAPI, sensor, power, dialog, and
+tray subsystems are left out, along with its OpenGL, OpenGL ES, and Vulkan
+support.
+
 For a fresh clone, use `git clone --recurse-submodules`. Configuration stops
 with instructions if a submodule is missing. Update a pinned tag in a
 separate change.
@@ -101,6 +108,10 @@ The solution contains only Debug and Release. Each writes its runtime files to
 test harnesses build into `<build directory>/test-bin/<configuration>/`, so
 `bin/` holds only what the game runs. Compiler and linker intermediates stay in
 the selected build directory.
+
+The `sdlwindow` test opens a window and moves the pointer into it, so CTest
+needs a desktop session. Checks that need the keyboard focus or the pointer
+over the window are reported as not run when the window does not get them.
 
 | Configuration | Runtime files |
 | --- | --- |
