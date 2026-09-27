@@ -16,7 +16,9 @@ The game no longer reserves Ctrl+Alt+Shift+M for itself, so other programs can u
 
 While the game window has the focus, the display no longer turns off after the system's idle time. The screen saver was already kept from starting.
 
-When the game window or the renderer cannot start, the message now shows an error icon in place of a warning icon.
+When the game window or the renderer cannot start, or the game cannot use its data or user directory, the message now shows an error icon in place of a warning icon.
+
+The question at startup about critically low disk space now shows a warning icon in place of a question mark. Its Yes and No buttons now use the game's language; they used to use the language of Windows. Pressing Escape in it now answers No, so the game exits, where it used to do nothing.
 
 In-game chat, the high-score name and the older dialogs' text boxes now take the characters the keyboard layout types, including accents typed with a dead key and text from an input method.
 

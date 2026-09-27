@@ -24,6 +24,9 @@
 
 #include <cstdio>
 #include <cstring>
+#include <cwchar>
+#include <functional>
+#include <thread>
 #include <vector>
 
 namespace {
@@ -113,6 +116,81 @@ bool Point_At(SDL_Window * window)
 	SDL_WarpMouseInWindow(window, width / 2.0f, height / 2.0f);
 	Pumped(WINDOW_EVENT_NONE);
 	return(SDL_GetMouseFocus() == window);
+}
+
+
+wchar_t const BoxTitle[] = L"sdlwindow question";
+
+
+struct BoxAnswer
+{
+	enum { YES, NO, ESCAPE } Press;
+	bool YesFirst = false;
+	bool YesDefault = false;
+};
+
+
+struct BoxButtons
+{
+	HWND Yes = NULL;
+	HWND No = NULL;
+};
+
+
+BOOL CALLBACK Find_Box_Button(HWND child, LPARAM lparam)
+{
+	BoxButtons & buttons = *(BoxButtons *)lparam;
+	wchar_t text[8] = {};
+	GetWindowTextW(child, text, 8);
+	if (std::wcscmp(text, L"Yes") == 0) {
+		buttons.Yes = child;
+	} else if (std::wcscmp(text, L"No") == 0) {
+		buttons.No = child;
+	}
+	return(TRUE);
+}
+
+
+// A box that never appears ends the test, since the main thread waits on it.
+void Answer_Box(BoxAnswer & answer)
+{
+	HWND box = NULL;
+	BoxButtons buttons;
+	for (int tries = 0; tries < 500 && (buttons.Yes == NULL || buttons.No == NULL); tries++) {
+		Sleep(20);
+		box = FindWindowW(L"#32770", BoxTitle);
+		if (box != NULL && IsWindowVisible(box)) {
+			EnumChildWindows(box, Find_Box_Button, (LPARAM)&buttons);
+		}
+	}
+	if (box == NULL) {
+		std::printf("the confirm box never appeared\n\nFAILED\n");
+		std::fflush(stdout);
+		std::_Exit(1);
+	}
+
+	if (buttons.Yes == NULL || buttons.No == NULL || answer.Press == BoxAnswer::ESCAPE) {
+		PostMessageW(box, WM_COMMAND, IDCANCEL, 0);
+		return;
+	}
+	HWND const pressed = (answer.Press == BoxAnswer::YES) ? buttons.Yes : buttons.No;
+
+	RECT yes = {};
+	RECT no = {};
+	GetWindowRect(buttons.Yes, &yes);
+	GetWindowRect(buttons.No, &no);
+	answer.YesFirst = yes.left < no.left;
+	answer.YesDefault = (GetWindowLongW(buttons.Yes, GWL_STYLE) & BS_TYPEMASK) == BS_DEFPUSHBUTTON;
+	PostMessageW(box, WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(pressed), BN_CLICKED), (LPARAM)pressed);
+}
+
+
+bool Ask(BoxAnswer & answer)
+{
+	std::thread driver(Answer_Box, std::ref(answer));
+	bool const result = Main_Window_Confirm_Box("sdlwindow question", "Go on?", "Yes", "No");
+	driver.join();
+	return(result);
 }
 
 }
@@ -302,6 +380,15 @@ int main(void)
 		}
 		SetCursorPos(pointer.x, pointer.y);
 	}
+
+	BoxAnswer yes = { BoxAnswer::YES };
+	Check(Ask(yes), "the confirm box's yes button answers yes");
+	Check(yes.YesFirst && yes.YesDefault, "and it is the default, left of no");
+	BoxAnswer no = { BoxAnswer::NO };
+	Check(!Ask(no), "the no button answers no");
+	BoxAnswer escape = { BoxAnswer::ESCAPE };
+	Check(!Ask(escape), "Escape answers no");
+	Pumped(WINDOW_EVENT_NONE);
 
 	Main_Window_Destroy();
 

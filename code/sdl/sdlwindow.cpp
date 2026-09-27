@@ -752,3 +752,30 @@ void Main_Window_Error_Box(char const * title, char const * text)
 	}
 	End_Native_Modal();
 }
+
+
+bool Main_Window_Confirm_Box(char const * title, char const * text, char const * yes, char const * no)
+{
+	SDL_MessageBoxButtonData const buttons[] = {
+		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, yes },
+		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, no },
+	};
+
+	SDL_MessageBoxData box;
+	SDL_zero(box);
+	box.flags = SDL_MESSAGEBOX_WARNING | SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT;
+	box.window = _Window;
+	box.title = title;
+	box.message = text;
+	box.numbuttons = SDL_arraysize(buttons);
+	box.buttons = buttons;
+
+	Begin_Native_Modal();
+	int button = -1;
+	bool const shown = SDL_ShowMessageBox(&box, &button);
+	if (!shown) {
+		DebugString("SDL: the message box was not shown: %s\n", SDL_GetError());
+	}
+	End_Native_Modal();
+	return(!shown || button == 1);
+}

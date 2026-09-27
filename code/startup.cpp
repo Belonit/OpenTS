@@ -467,7 +467,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 	int const lzo_status = lzo_init();
 	if (lzo_status != LZO_E_OK) {
 		DebugString("lzo_init failed with %d.\n", lzo_status);
-		MessageBox(NULL, "The compression library failed its startup check. This build is faulty.", "OpenTS", MB_OK | MB_ICONERROR);
+		Main_Window_Error_Box("OpenTS", "The compression library failed its startup check. This build is faulty.");
 		return(EXIT_FAILURE);
 	}
 
@@ -560,8 +560,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		*/
 		if (Disk_Space_Available() < INIT_FREE_DISK_SPACE) {
 			snprintf(buffer, sizeof(buffer), Fetch_String(TXT_CRITICALLY_LOW), (INIT_FREE_DISK_SPACE) / (1024 * 1024));
-			int reply = MessageBox(NULL, buffer, Fetch_String(TXT_SHORT_TITLE), MB_ICONQUESTION|MB_YESNO);
-			if (reply == IDNO) {
+			if (!Main_Window_Confirm_Box(Fetch_String(TXT_SHORT_TITLE), buffer, Fetch_String(TXT_YES), Fetch_String(TXT_NO))) {
 				return(EXIT_FAILURE);
 			}
 		}
@@ -670,7 +669,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		 * either, so a directory the game cannot use is reported where it will be seen.
 		 */
 		if (*Game_Directory_Error() != '\0') {
-			MessageBox(NULL, Game_Directory_Error(), Fetch_String(TXT_SHORT_TITLE), MB_ICONEXCLAMATION|MB_OK);
+			Main_Window_Error_Box(Fetch_String(TXT_SHORT_TITLE), Game_Directory_Error());
 		}
 
 		// The help and the invalid option message are of no use if the console closes with

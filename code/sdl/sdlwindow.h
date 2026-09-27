@@ -78,3 +78,6 @@ void Main_Window_Set_Clipboard_Text(std::string const & text);
 // Shows an error over the main window, or on its own before the window exists, and waits
 // for the player to dismiss it. The text is UTF-8.
 void Main_Window_Error_Box(char const * title, char const * text);
+
+// Returns false for no or Escape, and true for yes or when the box cannot be shown.
+bool Main_Window_Confirm_Box(char const * title, char const * text, char const * yes, char const * no);

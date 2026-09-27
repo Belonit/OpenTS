@@ -37,6 +37,7 @@
 
 #include "data.h"
 
+#include "sdl/sdlwindow.h"
 #include "utf8.h"
 
 #include <new.h>
@@ -330,12 +331,10 @@ bool Init_Language_Resources(bool show_error)
 		if (LanguageResources == NULL) {
 
 			if (show_error == true) {
-				MessageBox(NULL,
+				Main_Window_Error_Box("Tiberian Sun",
 					"Unable to initialize Language.dll, please reinstall Tiberian Sun.\n"
-					"Keine Initialisierung von Language.DLL m\xF6glich. Bitte installieren Sie Tiberian Sun erneut.\n"
-					"Initialisation de Language.DLL impossible. Veuillez r\xE9installer Tiberian Sun.",
-					"Tiberian Sun",
-					MB_ICONERROR);
+					"Keine Initialisierung von Language.DLL m\xC3\xB6glich. Bitte installieren Sie Tiberian Sun erneut.\n"
+					"Initialisation de Language.DLL impossible. Veuillez r\xC3\xA9installer Tiberian Sun.");
 
 			}
 
