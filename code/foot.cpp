@@ -2350,7 +2350,15 @@ int FootClass::Do_MISSION_ENTER(void)
 		*/
 		if (!Move_To_Object_Nearby()) {
 			if (NavCom == NULL || NavCom->RTTI != RTTI_UNIT && NavCom->RTTI != RTTI_AIRCRAFT) {
-				Enter_Idle_Mode();
+
+				// A harvester that lost its refinery goes back to harvesting, where a player's would stand guard.
+				if (RTTI == RTTI_UNIT && (static_cast<UnitClass *>(this)->Class->IsToHarvest || static_cast<UnitClass *>(this)->Class->IsToVeinHarvest)) {
+					Assign_Target(NULL);
+					Assign_Destination(NULL);
+					Assign_Mission(MISSION_HARVEST);
+				} else {
+					Enter_Idle_Mode();
+				}
 			}
 		}
 		Commence();

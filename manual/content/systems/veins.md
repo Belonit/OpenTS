@@ -214,7 +214,7 @@ A harvested cell that is left with thin vein and belongs to a live monster rejoi
 
 ### Docking and unloading
 
-A weeder unloads only at a BuildingType with [`Weeder=yes`](/keys/weeder/#scope-buildingtype), which needs no [`DockUnload=yes`](/keys/dockunload/). A weeder returning on its own looks only among its own house's buildings whose types are in its `Dock` list, so that list must name at least one weed refinery. A player can also send a weeder into another house's weed refinery, but only when each house is allied with the other.
+A weeder unloads only at a BuildingType with [`Weeder=yes`](/keys/weeder/#scope-buildingtype), which needs no [`DockUnload=yes`](/keys/dockunload/). A weeder returning on its own looks only among its own house's buildings whose types are in its `Dock` list, so that list must name at least one weed refinery. A player can also send a weeder into another house's weed refinery, but only when each house is allied with the other. A weeder whose weed refinery is lost before it docks goes back to harvesting, as [a Tiberium harvester does](/systems/tiberium/#unloading).
 
 The weeder docks on a fixed cell of the building's [`Foundation=WxH`](/keys/foundation/#scope-buildingtype): the third cell along `W` and the second along `H`, counting from the foundation's top corner. Give the building [`Bib=yes`](/keys/bib/) so that vehicles can drive onto that cell:
 

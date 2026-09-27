@@ -224,6 +224,8 @@ A harvester does not always pick a free bay. It compares the nearest free bay wi
 
 The wait counts what the vehicle at that building still has to unload, that vehicle's drive in if it has not arrived yet, and every load already waiting in line there. Waiting reserves nothing: the harvester chooses again when it arrives, by which time the bay may be free or the line longer.
 
+A harvester heading for a bay that is destroyed, sold or captured before it docks goes back to harvesting, whoever owns it. A full harvester looks for another bay at once, and one with room left first fills up. This also applies to a harvester the player ordered into the bay.
+
 A docked harvester turns to face east, and the building west of it plays its pre-production animation. The harvester then hands its house one unit every [`HarvesterDumpRate`](/keys/harvesterdumprate/) minutes of game time, starting with its lowest slot.
 
 Once it is empty, the harvester waits for a [`Refinery=yes`](/keys/refinery/) building west of it to finish its production animation. It then resumes harvesting, unless the player has given it another order.
