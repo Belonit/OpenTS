@@ -54,6 +54,7 @@ class TabClass: public SidebarClass
 		void Redraw_Tab(void) {IsToRedraw = true;Flag_To_Redraw();};
 
 		virtual void Init_For_House(void) override;
+		virtual void Clear_For_House(void) override;
 
 		CreditClass Credits;
 

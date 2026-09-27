@@ -465,6 +465,8 @@ void Main_Game(int argc, char * argv[])
 		//VisiblePage.Clear();
 		Title_Screen_Restore(true);
 
+		Prep_For_No_Side();
+
 		// Un-initialize whatever needs it, for each game played. The network is shut
 		// down rather than left running, so that the next game starts from a fresh
 		// one. Playback never opened it, so that case is skipped.

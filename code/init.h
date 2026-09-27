@@ -54,6 +54,7 @@ void Delete_All_Objects(void);
 
 void Init_Theater(TheaterType theater);
 bool Prep_For_Side(SideType side);
+void Prep_For_No_Side(void);
 bool Prep_Speech_For_Side(SideType side);
 SideType Prep_For_Side_Or_First(SideType side);
 SideType Prep_Speech_For_Side_Or_First(SideType side);

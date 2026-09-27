@@ -39,13 +39,15 @@ A document names every file it uses by bare file name, and the game adds the `ui
 
 If a document, style sheet or font fails to load, the game logs the file name, the screen does not open, and the game carries on as though the player had closed it without choosing.
 
-When a scenario is read or a saved game loads, the game mounts the archives of the player's side and reads the pictures and the dialog font again. A screen opened after that uses any picture or dialog font the side's archives supply; a screen already on show keeps what it was built with. A side's copy is used only for a name that no loose file and no archive mounted at startup holds, so it cannot replace a shipped document or style sheet. [MIX archives](/formats/mix/) covers which archive answers for a name.
+Outside a match the game mounts the no-side archives. When a scenario is read or a saved game loads, it replaces them with the archives of the player's side, and it mounts the no-side archives again when the match ends and the menus return. [MIX archives](/formats/mix/#theater-side-and-speech-archives) names both sets. After each change the game reads the pictures and the dialog font again: a screen opened after it uses the copies the mounted archives supply, and a screen already on show keeps what it was built with. These archives are searched after every loose file and every archive mounted at startup, so their copy of a name is used only when none of those holds it. They cannot replace a shipped document or style sheet.
+
+To give each side its own version of a picture or font, put a copy in each side's `SIDEC<nn>.MIX` or `SIDENC<nn>.MIX`, and a neutral copy for the menus in `SIDEC00.MIX` or `SIDENC00.MIX`. Keep the name out of the `ui` directory and the archives mounted at startup; a copy there is used everywhere instead.
 
 ## Side style sheets
 
 While a side is the player's, every screen also takes the rules in `side-<name>.rcss`, where `<name>` is the side's name from `[Sides]` in lower case. The sheet is applied after the screen's own style sheets, so its rule wins over a shipped rule with an equally specific selector. A side with no such file keeps the shipped look. The game ships `side-gdi.rcss` and `side-nod.rcss`, which color the objectives screen's text green and red.
 
-The player's side is set when a scenario is read or a saved game loads, and stays until another one loads. No side sheet applies before the first.
+The player's side is set when a scenario is read or a saved game loads. It is cleared when the match ends and the menus return, so no side sheet applies in the menus.
 
 The sheet is found like any other file here, so a side's own archive can carry it. A rule in it reaches every screen with a matching element. To limit a rule to one screen, begin its selector with that screen's body, such as `body[data-model="restate"] .line.ink { color: #fc1c1c; }`.
 
