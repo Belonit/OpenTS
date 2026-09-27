@@ -13,6 +13,10 @@ option(OPENTS_OFFICIAL_BUILD "Build as an official release of the declared versi
 
 option(OPENTS_EXPERIMENTAL_CLANG_CL "Build with clang-cl using the MSVC ABI" OFF)
 
+# Registers the tests that take over the desktop: they raise their own window, set the keyboard
+# state and move the pointer, and fail while another window holds the focus.
+option(OPENTS_DESKTOP_TESTS "Register the tests that need an otherwise idle desktop" OFF)
+
 # Lets a target's FOLDER place it in a Visual Studio solution folder. The bgfx submodule sets
 # this as well, so declare it here rather than inherit it from a vendored build.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)

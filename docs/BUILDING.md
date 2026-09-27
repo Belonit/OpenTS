@@ -109,9 +109,12 @@ test harnesses build into `<build directory>/test-bin/<configuration>/`, so
 `bin/` holds only what the game runs. Compiler and linker intermediates stay in
 the selected build directory.
 
-The `sdlwindow` test opens a window and moves the pointer into it, so CTest
-needs a desktop session. Checks that need the keyboard focus or the pointer
-over the window are reported as not run when the window does not get them.
+The `sdlwindow` test is registered only when the build is configured with
+`-DOPENTS_DESKTOP_TESTS=ON`, which continuous integration sets. The test raises
+its own window, sets the keyboard state, and moves the pointer into the window,
+so run it on a desktop nobody is using. It fails while another window, such as
+a running game, keeps the keyboard focus. Checks that need the pointer over the
+window are reported as not run when the pointer cannot be moved there.
 
 | Configuration | Runtime files |
 | --- | --- |
