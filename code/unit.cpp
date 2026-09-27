@@ -2339,12 +2339,18 @@ void UnitClass::Per_Cell_Process(PCPType why)
 		CellClass * cellptr = &Map[(Coord const &)PositionCoord];
 		LandType land = cellptr->Land_Type();
 		if (!Locomotion->Is_Moving() && Can_Enter_Cell(cellptr) == MOVE_NO && (!IsOnBridge || !cellptr->IsUnderBridge) && !IsSinking) {
-			new AnimClass(Combat_Anim(Strength, Rule->C4Warhead, land, PositionCoord), PositionCoord, 0, 1, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ZGRAD), Get_Explosion_Z(PositionCoord));
-			int damage = Strength;
-			Combat_Lighting(Center_Coord(), damage, Rule->C4Warhead, false);
-			Take_Damage(damage, 0, Rule->C4Warhead, NULL, true);
-			BEnd(BENCH_PCP);
-			return;
+
+			// A vehicle blocked by a structure, such as a service depot it lost contact with, is sent off the cell instead.
+			if (cellptr->Cell_Building() != NULL) {
+				Scatter(COORD_NONE, true, true);
+			} else {
+				new AnimClass(Combat_Anim(Strength, Rule->C4Warhead, land, PositionCoord), PositionCoord, 0, 1, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ZGRAD), Get_Explosion_Z(PositionCoord));
+				int damage = Strength;
+				Combat_Lighting(Center_Coord(), damage, Rule->C4Warhead, false);
+				Take_Damage(damage, 0, Rule->C4Warhead, NULL, true);
+				BEnd(BENCH_PCP);
+				return;
+			}
 		}
 	}
 

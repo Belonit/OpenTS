@@ -18,7 +18,7 @@ Most of these events deal forced damage. Forced damage skips the warhead's [`Ver
 - a laser fence section blowing up with its post, and a vehicle, infantryman or aircraft in a laser fence section's cell while the fence energizes;
 - a vehicle, infantryman or aircraft moving into a raised firestorm wall section;
 - a bridge collapsing or losing a section, for the objects on it and those left on a cell they can no longer occupy;
-- an infantryman stopped on rock or water, and a vehicle stopped on a cell it cannot enter;
+- an infantryman stopped on rock or water, and a vehicle stopped on a cell it cannot enter where no structure stands;
 - Tiberium poisoning an infantryman;
 - an aircraft, jumpjet or tunneling unit with nowhere to land or surface, and a jumpjet that moves while off the ground during an ion storm;
 - collecting an explosive crate, for the collector;
@@ -46,7 +46,7 @@ A falling aircraft, a stranded vehicle, a destroyed Tiberium-spawning terrain ob
 Without `C4Warhead`, the game crashes the first time any of these happens:
 
 - an aircraft falls to the ground;
-- a vehicle is stopped on a cell it cannot enter;
+- a vehicle is stopped on a cell it cannot enter where no structure stands;
 - a Tiberium-spawning terrain object is destroyed;
 - a drop pod cannot place its passenger;
 - an explosive crate is collected;
