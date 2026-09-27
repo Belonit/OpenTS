@@ -555,9 +555,12 @@ void UIShellClass::Ensure_Dialog_Font(void)
 
 bool UIShellClass::Advance_Reveal(UIViewClass & view, float full, int start, float & shown)
 {
-	shown = UI_Reveal_Width(full, Context->GetDensityIndependentPixelRatio(), Clock().Milliseconds() - start, shown);
+	float const ratio = Context->GetDensityIndependentPixelRatio();
+	int const elapsed = Clock().Milliseconds() - start;
+	shown = UI_Reveal_Width(full, ratio, elapsed, shown);
 
-	if (shown >= full) {
+	// The side bars stay up through the reveal's final wait.
+	if (shown >= full && UI_Reveal_Finished(full, ratio, elapsed)) {
 		view.Reveal_Done();
 		return(false);
 	}

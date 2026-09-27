@@ -463,6 +463,15 @@ void Test_Reveal(void)
 	Check(UI_Reveal_Width(0.0f, 1.0f, 0, 0.0f) == 0.0f, "a screen with no width is open already");
 	Check(UI_Reveal_Width(full, 0.0f, 40, 24.0f) == 48.0f, "a scale of nothing is read as one to one");
 	Check(UI_Reveal_Width(full, 1.0f, -5, 24.0f) == full, "a clock that went backwards opens the screen rather than hiding it");
+
+	Check(!UI_Reveal_Finished(306.0f, 1.0f, 285) && UI_Reveal_Finished(306.0f, 1.0f, 286),
+		"a screen its last band covers keeps its bars until the original's final wait ends");
+	Check(!UI_Reveal_Finished(full, 1.0f, 275) && UI_Reveal_Finished(full, 1.0f, 276),
+		"which ends with the last band when that band came after it");
+	Check(UI_Reveal_Finished(full * 2.0f, 2.0f, 276) && !UI_Reveal_Finished(full * 2.0f, 2.0f, 275),
+		"a screen drawn at twice the size finishes at the same time");
+	Check(UI_Reveal_Finished(full, 1.0f, -5) && UI_Reveal_Finished(0.0f, 1.0f, 0),
+		"a clock that went backwards, or a screen with no width, is finished at once");
 }
 
 

@@ -11,3 +11,4 @@
 
 
 float UI_Reveal_Width(float full, float scale, int elapsed, float shown);
+bool UI_Reveal_Finished(float full, float scale, int elapsed);
