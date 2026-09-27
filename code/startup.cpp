@@ -162,8 +162,6 @@
 #include "zbuffer.h"
 
 #include <cfloat>
-#include <conio.h>
-#include <io.h>
 #include <lzo/lzoconf.h>
 #include <shellapi.h>
 #include <string>
