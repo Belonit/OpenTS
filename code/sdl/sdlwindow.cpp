@@ -23,6 +23,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <vector>
@@ -536,6 +537,32 @@ int Main_Window_Refresh_Rate(void)
 
 	SDL_DisplayMode const * mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(_Window));
 	return(mode != nullptr ? (int)std::lround(mode->refresh_rate) : 0);
+}
+
+
+std::vector<std::pair<int, int>> Main_Window_Fullscreen_Sizes(void)
+{
+	std::vector<std::pair<int, int>> sizes;
+	if (!_Started) {
+		return(sizes);
+	}
+
+	int count = 0;
+	SDL_DisplayMode ** modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &count);
+	if (modes == nullptr) {
+		DebugString("SDL: the display modes were not listed: %s\n", SDL_GetError());
+		return(sizes);
+	}
+
+	for (int index = 0; index < count; index++) {
+		float const density = modes[index]->pixel_density > 0.0f ? modes[index]->pixel_density : 1.0f;
+		sizes.emplace_back((int)std::lround(modes[index]->w * density), (int)std::lround(modes[index]->h * density));
+	}
+	SDL_free(modes);
+
+	std::sort(sizes.begin(), sizes.end());
+	sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
+	return(sizes);
 }
 
 

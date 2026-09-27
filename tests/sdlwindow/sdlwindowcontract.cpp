@@ -22,6 +22,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_video.h>
 
+#include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <cwchar>
@@ -116,6 +117,33 @@ bool Point_At(SDL_Window * window)
 	SDL_WarpMouseInWindow(window, width / 2.0f, height / 2.0f);
 	Pumped(WINDOW_EVENT_NONE);
 	return(SDL_GetMouseFocus() == window);
+}
+
+
+// The sizes SDL lists: the current mode and every mode of more than 256 colors.
+std::vector<std::pair<int, int>> Windows_Sizes(void)
+{
+	std::vector<std::pair<int, int>> sizes;
+	DEVMODEW mode = {};
+	mode.dmSize = sizeof(mode);
+	if (EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, &mode)) {
+		sizes.emplace_back((int)mode.dmPelsWidth, (int)mode.dmPelsHeight);
+	}
+
+	for (DWORD index = 0; ; index++) {
+		mode = {};
+		mode.dmSize = sizeof(mode);
+		if (!EnumDisplaySettingsW(NULL, index, &mode)) {
+			break;
+		}
+		if (mode.dmBitsPerPel == 15 || mode.dmBitsPerPel == 16 || mode.dmBitsPerPel == 24 || mode.dmBitsPerPel == 32) {
+			sizes.emplace_back((int)mode.dmPelsWidth, (int)mode.dmPelsHeight);
+		}
+	}
+
+	std::sort(sizes.begin(), sizes.end());
+	sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
+	return(sizes);
 }
 
 
@@ -218,6 +246,14 @@ int main(void)
 	Main_Window_Request_Repaint();
 	Main_Window_Request_Repaint();
 	Check(Pumped(WINDOW_EVENT_EXPOSED).size() == 1, "repaints requested before a pump reach the game as one exposure");
+
+	std::vector<std::pair<int, int>> const sizes = Main_Window_Fullscreen_Sizes();
+	DEVMODEW desktop = {};
+	desktop.dmSize = sizeof(desktop);
+	EnumDisplaySettingsW(NULL, ENUM_CURRENT_SETTINGS, &desktop);
+	Check(!sizes.empty() && std::adjacent_find(sizes.begin(), sizes.end(), std::greater_equal<>()) == sizes.end(), "the fullscreen sizes are listed once each, smallest first");
+	Check(std::find(sizes.begin(), sizes.end(), std::make_pair((int)desktop.dmPelsWidth, (int)desktop.dmPelsHeight)) != sizes.end(), "and include the desktop's size");
+	Check(sizes == Windows_Sizes(), "and are Windows' sizes for the display of more than 256 colors");
 
 	Push_Key(true, SDL_SCANCODE_A, SDLK_A);
 	Push_Key(true, SDL_SCANCODE_B, SDLK_B);

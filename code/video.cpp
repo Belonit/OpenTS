@@ -32,6 +32,8 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <utility>
+#include <vector>
 
 
 /*
@@ -427,24 +429,7 @@ std::uint64_t Video_Frame_Upload_Count(void)
 
 
 /// <summary>
-/// Compares two display modes by width and then height.
-/// </summary>
-static int __cdecl Compare_Modes(void const * left, void const * right)
-{
-	int const * lhs = (int const *)left;
-	int const * rhs = (int const *)right;
-
-	if (lhs[0] != rhs[0]) {
-		return(lhs[0] - rhs[0]);
-	}
-	return(lhs[1] - rhs[1]);
-}
-
-
-/// <summary>
-/// Collects the display resolutions that fall within the given bounds.
-/// Only the sizes matter; the desktop decides the color depth, and duplicates that differ
-/// only by refresh rate are reported once.
+/// Collects the primary display's mode sizes within the given bounds, smallest first.
 /// </summary>
 /// <param name="minwidth">The narrowest mode to report.</param>
 /// <param name="minheight">The shortest mode to report.</param>
@@ -454,67 +439,21 @@ static int __cdecl Compare_Modes(void const * left, void const * right)
 /// when nothing matched.</returns>
 int * EnumDisplayModes(int minwidth, int minheight, int maxwidth, int maxheight)
 {
-	DEVMODE devmode;
-	int count = 0;
-	int capacity = 0;
-	int * modes = NULL;
+	std::vector<std::pair<int, int>> sizes = Main_Window_Fullscreen_Sizes();
+	std::erase_if(sizes, [&](std::pair<int, int> const & size) {
+		return(size.first < minwidth || size.first > maxwidth || size.second < minheight || size.second > maxheight);
+	});
 
-	for (int pass = 0; pass < 2; pass++) {
-
-		count = 0;
-
-		for (int index = 0; ; index++) {
-			memset(&devmode, 0, sizeof(devmode));
-			devmode.dmSize = sizeof(devmode);
-
-			if (!EnumDisplaySettings(NULL, index, &devmode)) {
-				break;
-			}
-
-			int width = (int)devmode.dmPelsWidth;
-			int height = (int)devmode.dmPelsHeight;
-
-			if (width < minwidth || width > maxwidth || height < minheight || height > maxheight) {
-				continue;
-			}
-
-			if (modes != NULL) {
-				// The list is being filled from a second enumeration; should it have
-				// grown since the one that sized the array, the extra modes are dropped.
-				if (count >= capacity) {
-					break;
-				}
-				modes[count * 2] = width;
-				modes[count * 2 + 1] = height;
-			}
-			count++;
-		}
-
-		if (modes != NULL) {
-			break;
-		}
-
-		if (count == 0) {
-			return(NULL);
-		}
-
-		capacity = count;
-		modes = new int[(count + 1) * 2];
+	if (sizes.empty()) {
+		return(NULL);
 	}
 
-	qsort(modes, count, sizeof(int) * 2, Compare_Modes);
-
-	// The same size is listed once per refresh rate and color depth it supports.
-	int unique = 0;
-	for (int index = 0; index < count; index++) {
-		if (unique == 0 || modes[unique * 2 - 2] != modes[index * 2] || modes[unique * 2 - 1] != modes[index * 2 + 1]) {
-			modes[unique * 2] = modes[index * 2];
-			modes[unique * 2 + 1] = modes[index * 2 + 1];
-			unique++;
-		}
+	int * modes = new int[(sizes.size() + 1) * 2];
+	for (size_t index = 0; index < sizes.size(); index++) {
+		modes[index * 2] = sizes[index].first;
+		modes[index * 2 + 1] = sizes[index].second;
 	}
-
-	modes[unique * 2] = 0;
-	modes[unique * 2 + 1] = 0;
+	modes[sizes.size() * 2] = 0;
+	modes[sizes.size() * 2 + 1] = 0;
 	return(modes);
 }

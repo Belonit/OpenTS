@@ -13,6 +13,8 @@
 #include "ui/uiinput.h"
 
 #include <string>
+#include <utility>
+#include <vector>
 
 
 struct SDL_Cursor;
@@ -34,6 +36,9 @@ void Main_Window_Resize(int width, int height);
 
 // Returns the refresh rate of the display showing the main window in hertz, or 0 when unknown.
 int Main_Window_Refresh_Rate(void);
+
+// The primary display's mode sizes in pixels, sorted and without repeats.
+std::vector<std::pair<int, int>> Main_Window_Fullscreen_Sizes(void);
 
 void Main_Window_Pump_Events(void);
 

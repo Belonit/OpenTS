@@ -20,6 +20,8 @@ When the game window or the renderer cannot start, or the game cannot use its da
 
 The question at startup about critically low disk space now shows a warning icon in place of a question mark. Its Yes and No buttons now use the game's language; they used to use the language of Windows. Pressing Escape in it now answers No, so the game exits, where it used to do nothing.
 
+The display options screen now lists the desktop's current resolution even when Windows leaves it out of the display's modes, provided it is between 640 by 400 and 4096 by 4096 pixels. A resolution the display offers only with 256 colors or fewer is no longer listed.
+
 In-game chat, the high-score name and the older dialogs' text boxes now take the characters the keyboard layout types, including accents typed with a dead key and text from an input method.
 
 The keyboard options screen names a key by the character the layout prints on it, or by an English name such as `Home` for a key that prints none. It used to show the names Windows gives in its own language.
