@@ -85,7 +85,7 @@ With or without coach mode, a defeated player keeps their row on the score scree
 
 ## When the match ends
 
-A match with at least one person playing ends when only one side is left, or when no person is left playing.
+A match with at least one person playing ends when only one side is left, or when no person is left playing. A house whose country sets [`MultiplayPassive=yes`](/keys/multiplaypassive/), such as `Neutral`, does not count as a side.
 
 A match in which every person watches ends only when an enemy of a surviving house is defeated and only one side is left. Losing an allied house to a scripted event does not end the match, and a match whose houses are all on one side from the start never ends. An observer leaves such a match through the menu.
 

@@ -3407,7 +3407,7 @@ void HouseClass::MPlayer_Defeated(void)
 		**	Get a pointer to this house
 		*/
 		hptr = Houses[i];
-		if (!hptr || hptr->IsDefeated || (Session.Type != GAME_SKIRMISH && hptr->Class->IsMultiplayPassive))
+		if (!hptr || hptr->IsDefeated || hptr->Class->IsMultiplayPassive)
 			continue;
 
 		/*
@@ -3420,7 +3420,7 @@ void HouseClass::MPlayer_Defeated(void)
 				continue;
 			}
 
-			if (!hptr2->IsDefeated && (Session.Type == GAME_SKIRMISH || !hptr2->Class->IsMultiplayPassive) && (!hptr->Is_Ally(hptr2) || !hptr2->Is_Ally(hptr))) {
+			if (!hptr2->IsDefeated && !hptr2->Class->IsMultiplayPassive && (!hptr->Is_Ally(hptr2) || !hptr2->Is_Ally(hptr))) {
 				all_allies = false;
 				break;
 			}

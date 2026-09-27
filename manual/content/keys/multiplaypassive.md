@@ -19,7 +19,7 @@ The structures of a passive country's houses never pay [`ProduceCashAmount`](/ke
 In skirmish and multiplayer games, a passive house is treated as scenery, not as an opponent:
 
 - It is exempt from the defeat check that removes a player who has run out of objects, and its defeat is never announced.
-- It is not counted among the players still alive. The test for whether every remaining player is allied also skips it, except in a skirmish game.
+- It is not counted among the players still alive, and the test for whether every remaining player is allied skips it.
 - A computer house never picks it as the nearest enemy, but damage from its objects can still make it that house's enemy.
 - No house can break an alliance with it or declare war on it.
 - Automatic target scans reject its objects unless the [launch file](/formats/spawn-ini/) sets `AttackNeutralUnits=`.
