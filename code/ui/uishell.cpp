@@ -794,6 +794,12 @@ void UIShellClass::Tick(void)
 		view->Placed();
 	}
 
+	// Positions a view sets while placed are laid out before this pass is drawn.
+	{
+		UIReentryGuardClass updating(InContext);
+		Context->Update();
+	}
+
 	Apply_Cursor_Request();
 
 	bool devactive = UIDev_Active();
