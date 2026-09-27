@@ -31,7 +31,6 @@
 #include "netglobal.h"
 #include "savemgr.h"
 #include "session.h"
-#include "srfcache.h"
 #include "syncreport.h"
 #include "ui/screens/desync/uidesync.h"
 #include "win.h"

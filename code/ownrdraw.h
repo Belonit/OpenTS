@@ -18,18 +18,6 @@
 
 namespace OwnerDraw {
 
-	/*
-	 * Measurements of one of the remap fonts, cached by ODGetFontMetrics.
-	 */
-	struct FontMetrics {
-		int charWidths[256];	/// inked width of each character, indexed by character code
-		int glyphWidth;			/// width of the inked part of a glyph cell
-		int glyphHeight;		/// height of the inked part of a glyph cell
-		int topMargin;			/// blank rows above each row of glyphs
-		int leftMargin;			/// blank columns before each glyph
-	};
-
-	void Initialize(void);
 	void Prepare_Resources(void);
 
 	int Capture_Mouse(void);
@@ -41,25 +29,10 @@ namespace OwnerDraw {
 #define OD_TEXT_ALIGN_CENTER 2
 #define OD_TEXT_ALIGN_MAX 3
 
-int OD_Draw_Text_Remap(Surface & surface, const char * string, Rect const & rect, char const * name, COLORREF color, int flags, int char_spacing);
 int OD_Draw_Text(COLORREF color, HFONT font, Rect const & rect, const char * text, int len, int x_alignment, int y_alignment, Surface * surface);
 HFONT WS_Get_Font(HDC hdc, const char * face_name, int decipt_width, int decipt_height, int attributes);
 
 std::string Build_Hotkey_String(KeyNumType key);
-
-extern COLORREF ODColorText;
-extern COLORREF ODColorTextDim;
-extern COLORREF ODColorDisabled;
-extern COLORREF ODColorFrame;
-extern COLORREF ODListBoxColor;
-extern COLORREF ODColorUnused1;
-
-
-/// Flags for ODDrawCharRemap.
-#define OD_DRAW_CHAR_FLAG_HORIZONTAL_CENTER 1
-#define OD_DRAW_CHAR_ALIGN_FLAG_RIGHT 2
-#define OD_DRAW_CHAR_FLAG_VERTICAL_CENTER 4
-
 
 extern unsigned short ODRComponentMask;
 extern unsigned short ODGComponentMask;

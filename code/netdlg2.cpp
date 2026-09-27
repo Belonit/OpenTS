@@ -40,7 +40,6 @@
 #include "scenario.h"
 #include "sdl/sdlwindow.h"
 #include "sendfile.h"
-#include "srfcache.h"
 #include "stimer.h"
 #include "timer.h"
 #include "ui/screens/msgbox/uimsgbox.h"

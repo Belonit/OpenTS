@@ -22,7 +22,6 @@ class MSAnim;
 class Surface;
 class BSurface;
 class ShapeSet;
-class SurfaceCacheClass;
 struct VQHandle;
 
 typedef DynamicVectorClass<MSAnim *> MS_ANIM_LIST;
@@ -369,76 +368,6 @@ class MSWordAnim : public MSPrintAnim
 		 * backdrop on each pass of the fade, and cleared once the line has fully arrived.
 		 */
 		Rect LineRect;
-};
-
-
-class MSButtonAnim : public MSAnim
-{
-	public:
-		MSButtonAnim(SurfaceCacheClass * image_cache, Rect const & rect, char const * string, int height, int left_cap_width, int right_cap_width);
-		virtual ~MSButtonAnim(void) override;
-
-		virtual bool Advance(Surface * surface, Rect & rect) override;
-		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
-		virtual Rect Get_Rect(void) const override;
-		virtual void Restore(Rect const & rect) override;
-
-		void Set_Enabled(bool enabled);
-		void Set_Pressed(bool pressed);
-
-	private:
-		void Draw_Caption(Surface * surface);
-		void Render(Surface * surface);
-
-	public:
-		/*
-		 * Pointer to the cache the button's artwork pieces are pulled out of. The pieces are
-		 * looked up by name, which encodes the button's height and its current state.
-		 */
-		SurfaceCacheClass * ImageCache;
-
-		/*
-		 * If this button is to draw itself raised, then this flag will be true. The sense runs
-		 * against the name -- it is a false value that selects the depressed artwork.
-		 */
-		bool Pressed;
-
-		/*
-		 * If this button is available for use, then this flag will be true. A disabled button
-		 * draws itself with the grayed artwork whatever its pressed state may be.
-		 */
-		bool Enabled;
-
-		/*
-		 * This is the screen area the button occupies. Its width is what the stretched middle
-		 * piece of the artwork is fitted to.
-		 */
-		Rect Area;
-
-		/*
-		 * This is the height of the button's artwork, expressed in pixels. It also selects
-		 * which set of cached pieces is asked for, since it forms part of their file names.
-		 */
-		int Height;
-
-		/*
-		 * These are the widths of the end pieces of the button's artwork, in pixels. The
-		 * middle piece is stretched across whatever room they leave between them.
-		 */
-		int LeftCapWidth;
-		int RightCapWidth;
-
-		/*
-		 * Pointer to the caption printed on the button. It is not copied, so whatever
-		 * supplied it must outlive the button.
-		 */
-		char const * String;
-
-		/*
-		 * If the button's artwork has to be laid down again, then this flag will be true. The
-		 * drawing happens at the next advance rather than the moment the state changed.
-		 */
-		bool NeedsRedraw;
 };
 
 
