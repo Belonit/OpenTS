@@ -56,9 +56,14 @@ Each time a scenario or saved game loads, the game drops the previous side's arc
 2. `SIDEC<nn>.MIX`, cached. Required.
 3. `E99SNC<nn>.MIX` down to `E00SNC<nn>.MIX`, not cached, only while an expansion is enabled.
 4. `SIDENC<nn>.MIX`, not cached. Optional.
-5. In a campaign only, one CD archive, not cached. Required.
+5. In a campaign only, one CD archive, not cached. Optional.
 
 For the CD archive, a campaign mission first tries `E<xx>SCD<nn>.MIX` while an expansion is enabled, where `<xx>` is the mission's [`RequiredAddOn`](/keys/requiredaddon-scenarios/) number: a Firestorm mission tries `E01SCD01.MIX` or `E01SCD02.MIX`. Without that archive it mounts `SIDECD<nn>.MIX`, so an installation that keeps the expansion's members in the base archive still plays the expansion's campaign.
+
+A campaign that finds neither CD archive still starts. The stock CD archives hold the score screen's picture and movie and the map selection's artwork, palettes and voice lines, so these must then come from another archive or folder:
+
+- A score picture or score movie that is not found is left out.
+- Map selection between missions cannot open without its artwork and palettes. The game reports "Unable to initiate Map Selection!" and replays the mission just won, unless that mission sets [`SkipMapSelect=yes`](/keys/skipmapselect/).
 
 If a required side archive is missing, the game mounts the first side's archives instead. If those are missing too, the scenario or saved game fails to load, and a scenario reports that it cannot be read.
 

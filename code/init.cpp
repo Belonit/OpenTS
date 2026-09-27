@@ -5931,7 +5931,7 @@ void Init_Theater(TheaterType theater)
 /// and then lets the map rebuild whatever it keeps on a per house basis.
 /// </summary>
 /// <param name="side">The side whose archives should be made available.</param>
-/// <returns>bool; Were all of the required archives for the side found?</returns>
+/// <returns>bool; Was the side's SIDEC archive found?</returns>
 bool Prep_For_Side(SideType side)
 {
 	int id;
@@ -6035,8 +6035,7 @@ bool Prep_For_Side(SideType side)
 		}
 
 		if (SideCDMix == NULL) {
-			DebugString("     FAILED!\n");
-			return(false);
+			DebugString("     Not found\n");
 		}
 	}
 
