@@ -912,6 +912,7 @@ class RecordingDisplayServiceClass : public UIDisplayServiceClass
 		std::vector<std::string> Calls;
 
 		virtual void Set_Stretch_Movies(bool on) override { Calls.push_back(on ? "stretch on" : "stretch off"); }
+		virtual void Set_System_Cursor(bool on) override { Calls.push_back(on ? "system cursor on" : "system cursor off"); }
 };
 
 
@@ -940,10 +941,11 @@ void Test_Display_Presenter(void)
 		UIDisplayPresenterClass presenter(service, Display_Fixture());
 		Drive(presenter, "select", 2);
 		Drive(presenter, "stretch", 1);
-		Check(presenter.State.Selected == 2 && presenter.State.StretchMovies && service.Calls.empty() && !presenter.Picked.has_value(), "display edits are held until the player accepts");
+		Drive(presenter, "systemcursor", 1);
+		Check(presenter.State.Selected == 2 && presenter.State.StretchMovies && presenter.State.SystemCursor && service.Calls.empty() && !presenter.Picked.has_value(), "display edits are held until the player accepts");
 
 		Drive(presenter, "ok");
-		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && service.Calls.size() == 1 && service.Calls[0] == "stretch on", "accepting the display options applies the movie switch");
+		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && service.Calls == std::vector<std::string>{ "stretch on", "system cursor on" }, "accepting the display options applies both switches");
 		Check(presenter.Picked.has_value() && presenter.Picked->Width == 1920 && presenter.Picked->Height == 1080, "accepting with a new row hands the caller that mode to try");
 	}
 
@@ -953,7 +955,7 @@ void Test_Display_Presenter(void)
 		Drive(presenter, "select", 2);
 		Drive(presenter, "select", 1);
 		Drive(presenter, "ok");
-		Check(presenter.Result.has_value() && !presenter.Picked.has_value() && service.Calls.size() == 1 && service.Calls[0] == "stretch off", "accepting on the starting row applies the switch and tries no mode");
+		Check(presenter.Result.has_value() && !presenter.Picked.has_value() && service.Calls == std::vector<std::string>{ "stretch off", "system cursor off" }, "accepting on the starting row applies the switches and tries no mode");
 	}
 
 	{
@@ -961,6 +963,7 @@ void Test_Display_Presenter(void)
 		UIDisplayPresenterClass presenter(service, Display_Fixture());
 		Drive(presenter, "select", 0);
 		Drive(presenter, "stretch", 1);
+		Drive(presenter, "systemcursor", 1);
 		Drive(presenter, "cancel");
 		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_CANCELLED && service.Calls.empty() && !presenter.Picked.has_value(), "cancelling the display options applies nothing");
 	}
@@ -2329,14 +2332,31 @@ void Test_Display_Screen(Rml::Context & context, CountingSystemInterfaceClass & 
 			Check(presenter.State.StretchMovies && stretch->HasAttribute("checked") && service.Calls.empty(), "the movie switch turns on and shows it without applying");
 		}
 
+		Rml::Element * cursor = document->GetElementById("system-cursor");
+		Check(cursor != nullptr, "the display screen has the system pointer switch");
+		if (cursor != nullptr) {
+			Click(context, cursor);
+			presenter.Drain();
+			view->Sync();
+			context.Update();
+			Check(presenter.State.SystemCursor && cursor->HasAttribute("checked") && service.Calls.empty(), "the pointer switch turns on and shows it without applying");
+		}
+
 		Rml::Element * ok = document->GetElementById("ok");
 		Rml::Element * cancel = document->GetElementById("cancel");
 		Check(ok != nullptr && cancel != nullptr && ok->GetAbsoluteOffset(Rml::BoxArea::Border).x < cancel->GetAbsoluteOffset(Rml::BoxArea::Border).x, "OK sits left of Cancel");
 
+		Rml::Element * reveal = document->GetElementById("reveal");
+		if (ok != nullptr && reveal != nullptr) {
+			float bottom = ok->GetAbsoluteOffset(Rml::BoxArea::Border).y + ok->GetBox().GetSize(Rml::BoxArea::Border).y;
+			float frame = reveal->GetAbsoluteOffset(Rml::BoxArea::Border).y + reveal->GetBox().GetSize(Rml::BoxArea::Border).y;
+			Check(bottom <= frame - 19.0f, "the buttons keep the dialog's bottom margin below the pointer switch");
+		}
+
 		if (ok != nullptr) {
 			Click(context, ok);
 			presenter.Drain();
-			Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && service.Calls.size() == 1 && service.Calls[0] == "stretch on", "OK applies the movie switch");
+			Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && service.Calls == std::vector<std::string>{ "stretch on", "system cursor on" }, "OK applies both switches");
 			Check(presenter.Picked.has_value() && presenter.Picked->Width == 1920 && presenter.Picked->Height == 1080, "OK hands the caller the picked mode");
 		}
 
@@ -2598,6 +2618,7 @@ void Test_Keyboard_Navigation(Rml::Context & context, CountingSystemInterfaceCla
 		Rml::ElementDocument * document = Rml(*view).Document();
 		Rml::Element * modes = document->GetElementById("modes");
 		Rml::Element * stretch = document->GetElementById("stretch");
+		Rml::Element * cursor = document->GetElementById("system-cursor");
 		Rml::Element * ok = document->GetElementById("ok");
 		Rml::Element * cancel = document->GetElementById("cancel");
 
@@ -2619,7 +2640,9 @@ void Test_Keyboard_Navigation(Rml::Context & context, CountingSystemInterfaceCla
 		Check(presenter.State.StretchMovies && stretch->HasAttribute("checked"), "a space on the switch turns it on");
 
 		Press(context, Rml::Input::KI_TAB);
-		Check(context.GetFocusElement() == ok, "OK follows the switch");
+		Check(context.GetFocusElement() == cursor, "the pointer switch follows the movie switch");
+		Press(context, Rml::Input::KI_TAB);
+		Check(context.GetFocusElement() == ok, "OK follows the switches");
 		Press(context, Rml::Input::KI_TAB);
 		Check(context.GetFocusElement() == cancel, "and Cancel follows OK");
 

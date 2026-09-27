@@ -13,7 +13,7 @@
 int UITestSheetLookups = 0;
 
 
-UIImageResult UI_Load_Image(char const *, std::vector<unsigned char> & rgba, int & width, int & height)
+UIImageResult UI_Load_Image(char const *, std::vector<unsigned char> & rgba, int & width, int & height, bool)
 {
 	rgba.clear();
 	width = 0;

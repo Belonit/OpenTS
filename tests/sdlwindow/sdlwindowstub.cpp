@@ -7,8 +7,7 @@
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
 
-// Stands in for the game's instance handle and debug log. The executable has no cursor
-// resource, so the SDL layer falls back to the system arrow.
+// Stands in for the game's instance handle and debug log.
 
 #include "dbgprint.h"
 #include "win.h"

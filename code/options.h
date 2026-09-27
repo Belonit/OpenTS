@@ -209,6 +209,11 @@ class OptionsClass {
 		 */
 		int CursorScale;
 
+		/*
+		 * Shows the system's arrow in place of cursor.png.
+		 */
+		bool SystemCursor;
+
 		float SoundVolume;				// Volume for sound effects.
 		float VoiceVolume;				/// Volume for voices.
 		float ScoreVolume;				// Volume for scores.

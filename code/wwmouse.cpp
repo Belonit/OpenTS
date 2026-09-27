@@ -66,6 +66,7 @@
 #include "misc.h"
 #include "sdl/sdlwindow.h"
 #include "shapeset.h"
+#include "ui/rml/rmltexture.h"
 #include "video.h"
 #include "vidscale.h"
 #include "win.h"
@@ -597,4 +598,53 @@ void WWMouseClass::Refresh_Pointer_Scale(void)
 	if (CurrentShape != NULL && Cursor_Scale() != CursorCacheScale) {
 		Select_Cursor(CurrentShape, CurrentFrame, CurrentHotX, CurrentHotY, Is_Captured());
 	}
+}
+
+
+/// <summary>
+/// Makes cursor.png, at the pointer's scale, the window's arrow, or the system's arrow when
+/// Options.SystemCursor is set or the file cannot be read.
+/// </summary>
+void Refresh_Window_Arrow(void)
+{
+	static bool _loaded = false;
+	static std::vector<unsigned int> _art;
+	static int _width = 0;
+	static int _height = 0;
+	static int _scale = 0;
+
+	if (!_loaded) {
+		_loaded = true;
+		std::vector<unsigned char> rgba;
+		if (UI_Load_Image("cursor.png", rgba, _width, _height, false) == UI_IMAGE_LOADED) {
+			_art.resize((size_t)_width * _height);
+			for (size_t index = 0; index < _art.size(); index++) {
+				unsigned char const * pixel = &rgba[index * 4];
+				_art[index] = ((unsigned int)pixel[3] << 24) | ((unsigned int)pixel[0] << 16) | ((unsigned int)pixel[1] << 8) | pixel[2];
+			}
+		} else {
+			DebugString("Mouse: cursor.png could not be read, so the system arrow is used\n");
+		}
+	}
+
+	int scale = (Options.SystemCursor || _art.empty()) ? 0 : Cursor_Scale();
+	if (scale == _scale) {
+		return;
+	}
+	_scale = scale;
+
+	if (scale == 0) {
+		Main_Window_Set_Arrow(NULL);
+		return;
+	}
+
+	int width = _width * scale;
+	int height = _height * scale;
+	std::vector<unsigned int> bits((size_t)width * height);
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			bits[(size_t)y * width + x] = _art[(size_t)(y / scale) * _width + x / scale];
+		}
+	}
+	Main_Window_Set_Arrow(Main_Window_Create_Cursor(bits.data(), width, height, 0, 0));
 }

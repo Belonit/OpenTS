@@ -459,7 +459,7 @@ Rml::TextureHandle UIRmlBgfxRenderClass::LoadTexture(Rml::Vector2i & dimensions,
 	int width = 0;
 	int height = 0;
 
-	UIImageResult result = UI_Load_Image(source.c_str(), rgba, width, height);
+	UIImageResult result = UI_Load_Image(source.c_str(), rgba, width, height, true);
 
 	if (result == UI_IMAGE_MISSING) {
 		const unsigned int clear = 0;

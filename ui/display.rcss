@@ -11,9 +11,9 @@
 #reveal
 {
 	width: 344dp;
-	height: 320dp;
+	height: 342dp;
 	top: 50%;
-	margin-top: -160dp;
+	margin-top: -171dp;
 }
 
 #content
@@ -48,6 +48,11 @@
 #switch-stretch
 {
 	margin-top: 10dp;
+}
+
+#switch-system-cursor
+{
+	margin-top: 3dp;
 }
 
 #buttons

@@ -104,7 +104,7 @@ bool UI_Load_Indexed_Image(char const * name, UIImageIndexed & image)
 }
 
 
-UIImageResult UI_Load_Image(char const * name, std::vector<unsigned char> & rgba, int & width, int & height)
+UIImageResult UI_Load_Image(char const * name, std::vector<unsigned char> & rgba, int & width, int & height, bool premultiply)
 {
 	rgba.clear();
 	width = 0;
@@ -150,7 +150,7 @@ UIImageResult UI_Load_Image(char const * name, std::vector<unsigned char> & rgba
 	rgba.assign(pixels, pixels + (size_t)width * (size_t)height * 4);
 	stbi_image_free(pixels);
 
-	for (size_t index = 0; index < rgba.size(); index += 4) {
+	for (size_t index = 0; premultiply && index < rgba.size(); index += 4) {
 		unsigned int alpha = rgba[index + 3];
 		if (alpha != 255) {
 			rgba[index] = (unsigned char)(rgba[index] * alpha / 255);

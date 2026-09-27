@@ -148,3 +148,6 @@ class WWMouseClass : public Mouse {
 
 		virtual bool Is_Hidden(void) const override {return(MouseState < 0);}
 };
+
+
+void Refresh_Window_Arrow(void);

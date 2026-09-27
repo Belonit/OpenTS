@@ -12,13 +12,11 @@
 // Used by Sun.rc
 //
 #define IDI_SUN                         93
-#define IDC_CURSOR1                     104
 #define IDR_MODE                        160
 #define IDI_CHECKED                     160
 #define IDI_UNCHECKED                   161
 #define IDI_GREYED                      162
 #define IDD_EXCEPTION                   247
-#define IDC_CURSOR2                     248
 #define IDC_EXCEPTION_FOLDER            1160
 #define IDC_EXCEPTION_DETAILS           1161
 #define IDC_EXCEPTION_FULLDUMP          1162

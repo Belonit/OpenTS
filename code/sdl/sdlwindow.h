@@ -73,9 +73,12 @@ void Main_Window_Destroy_Cursor(SDL_Cursor * cursor);
 // Shows the cursor over the main window, or hides the pointer there when cursor is NULL.
 void Main_Window_Set_Cursor(SDL_Cursor * cursor);
 
-// UI_CURSOR_ARROW is the window's own arrow. The SDL layer owns these cursors and frees them in
-// Main_Window_Destroy; do not destroy one.
+// UI_CURSOR_ARROW is the arrow set by Main_Window_Set_Arrow, or the system's. The SDL layer owns
+// these cursors and frees them in Main_Window_Destroy; do not destroy one.
 SDL_Cursor * Main_Window_System_Cursor(UICursor shape);
+
+// Takes ownership of cursor and destroys the previous arrow; NULL restores the system's arrow.
+void Main_Window_Set_Arrow(SDL_Cursor * cursor);
 
 std::string Main_Window_Clipboard_Text(void);
 void Main_Window_Set_Clipboard_Text(std::string const & text);

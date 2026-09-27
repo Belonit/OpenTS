@@ -74,6 +74,7 @@ static std::uint64_t _FrameUploadCount = 0;
 
 static void Refresh_Mouse_Pointer(void)
 {
+	Refresh_Window_Arrow();
 	if (MouseCursor != NULL) {
 		((WWMouseClass *)MouseCursor)->Refresh_Pointer_Scale();
 	}
@@ -191,6 +192,7 @@ bool Video_Init(NativeWindow const & window, int drawablewidth, int drawableheig
 	}
 
 	Update_Scale_Info();
+	Refresh_Mouse_Pointer();
 	Update_Present_Interval(refreshrate);
 	return(true);
 }

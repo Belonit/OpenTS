@@ -255,6 +255,26 @@ int main(void)
 	Check(std::find(sizes.begin(), sizes.end(), std::make_pair((int)desktop.dmPelsWidth, (int)desktop.dmPelsHeight)) != sizes.end(), "and include the desktop's size");
 	Check(sizes == Windows_Sizes(), "and are Windows' sizes for the display of more than 256 colors");
 
+	SDL_Cursor * const system = Main_Window_System_Cursor(UI_CURSOR_ARROW);
+	Check(system != nullptr, "the window has the system's arrow before one is set");
+	Main_Window_Set_Cursor(system);
+	unsigned int const pixels[4] = { 0xFF00FF00, 0xFF00FF00, 0xFF00FF00, 0x00000000 };
+	SDL_Cursor * const custom = Main_Window_Create_Cursor(pixels, 2, 2, 0, 0);
+	Main_Window_Set_Arrow(custom);
+	Check(custom != nullptr && Main_Window_System_Cursor(UI_CURSOR_ARROW) == custom, "a set arrow is the window's arrow");
+	Check(SDL_GetCursor() == custom, "and replaces the system's arrow on screen");
+	Main_Window_Set_Arrow(nullptr);
+	SDL_Cursor * const restored = Main_Window_System_Cursor(UI_CURSOR_ARROW);
+	Check(restored != nullptr && restored != custom && SDL_GetCursor() == restored, "clearing it puts the system's arrow back on screen");
+
+	SDL_Cursor * const pointer = Main_Window_Create_Cursor(pixels, 2, 2, 0, 0);
+	SDL_Cursor * const arrow = Main_Window_Create_Cursor(pixels, 2, 2, 1, 1);
+	Main_Window_Set_Arrow(arrow);
+	Main_Window_Set_Cursor(pointer);
+	Main_Window_Destroy_Cursor(pointer);
+	Check(pointer != nullptr && SDL_GetCursor() == arrow, "destroying the cursor on screen puts the window's arrow up");
+	Main_Window_Set_Arrow(nullptr);
+
 	Push_Key(true, SDL_SCANCODE_A, SDLK_A);
 	Push_Key(true, SDL_SCANCODE_B, SDLK_B);
 	std::vector<Delivered> keys = Pumped(WINDOW_EVENT_KEY_DOWN);

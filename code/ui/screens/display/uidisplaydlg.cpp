@@ -17,6 +17,7 @@
 #include "ui/uishell.h"
 #include "ui/uiview.h"
 #include "video.h"
+#include "wwmouse.h"
 
 #include <cstdio>
 
@@ -39,6 +40,12 @@ class UIDisplayEngineServiceClass : public UIDisplayServiceClass
 		{
 			Options.StretchMovies = on;
 		}
+
+		virtual void Set_System_Cursor(bool on) override
+		{
+			Options.SystemCursor = on;
+			Refresh_Window_Arrow();
+		}
 };
 
 UIDisplayEngineServiceClass _Service;
@@ -56,6 +63,7 @@ void UI_Display_State(UIDisplayState & state)
 {
 	state = UIDisplayState();
 	state.StretchMovies = Options.StretchMovies;
+	state.SystemCursor = Options.SystemCursor;
 
 	int * modes = EnumDisplayModes(MIN_WIDTH, MIN_HEIGHT, MAX_WIDTH, MAX_HEIGHT);
 	if (modes == NULL) {

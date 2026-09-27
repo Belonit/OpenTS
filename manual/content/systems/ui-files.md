@@ -20,6 +20,7 @@ The `ui` directory sits beside the executable and holds everything the screens a
 | `kit.rcss` | The dialog kit, which styles the controls |
 | `side-<name>.rcss` | Rules every screen takes while that side is the player's, such as `side-gdi.rcss` and `side-nod.rcss` |
 | `glow.png` | The glow the template draws around a screen |
+| `cursor.png` | The arrow pointer shown over the screens, with its tip at the top-left pixel. [`SystemCursor`](/keys/systemcursor/) replaces it with the Windows pointer |
 | `Arimo.ttf` | The face a font family uses when its own face is missing, with its license in `OFL.txt` |
 
 ## The dialog kit

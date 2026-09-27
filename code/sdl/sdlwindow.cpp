@@ -227,66 +227,6 @@ bool SDLCALL Watch_Keys(void *, SDL_Event * sdlevent)
 }
 
 
-// The window's class cursor, a monochrome arrow among the game's resources, is the pointer
-// shown wherever neither the game nor the interface chooses one.
-SDL_Cursor * Resource_Arrow(void)
-{
-	HCURSOR handle = LoadCursorW(ProgramInstance, MAKEINTRESOURCEW(IDC_CURSOR1));
-	ICONINFO info;
-	if (handle == NULL || !GetIconInfo(handle, &info)) {
-		return(nullptr);
-	}
-
-	SDL_Cursor * cursor = nullptr;
-	BITMAP bitmap;
-	if (info.hbmColor == NULL && GetObject(info.hbmMask, sizeof(bitmap), &bitmap) != 0 && bitmap.bmWidth % 8 == 0 && bitmap.bmHeight >= 2) {
-
-		// A monochrome cursor stacks its AND mask above its XOR mask.
-		int const width = bitmap.bmWidth;
-		int const height = bitmap.bmHeight / 2;
-		int const pitch = ((width + 31) / 32) * 4;
-
-		struct
-		{
-			BITMAPINFOHEADER Header;
-			RGBQUAD Colors[2];
-		} layout = {};
-		layout.Header.biSize = sizeof(BITMAPINFOHEADER);
-		layout.Header.biWidth = width;
-		layout.Header.biHeight = -(height * 2);
-		layout.Header.biPlanes = 1;
-		layout.Header.biBitCount = 1;
-		layout.Header.biCompression = BI_RGB;
-
-		std::vector<unsigned char> bits((size_t)pitch * height * 2);
-		HDC dc = GetDC(NULL);
-		int const rows = GetDIBits(dc, info.hbmMask, 0, height * 2, bits.data(), (BITMAPINFO *)&layout, DIB_RGB_COLORS);
-		ReleaseDC(NULL, dc);
-
-		if (rows == height * 2) {
-			int const stride = width / 8;
-			std::vector<Uint8> data((size_t)stride * height);
-			std::vector<Uint8> mask((size_t)stride * height);
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < stride; x++) {
-					unsigned char const andbits = bits[(size_t)y * pitch + x];
-					unsigned char const xorbits = bits[(size_t)(y + height) * pitch + x];
-					data[(size_t)y * stride + x] = (Uint8)~(andbits ^ xorbits);
-					mask[(size_t)y * stride + x] = (Uint8)~andbits;
-				}
-			}
-			cursor = SDL_CreateCursor(data.data(), mask.data(), width, height, (int)info.xHotspot, (int)info.yHotspot);
-		}
-	}
-
-	DeleteObject(info.hbmMask);
-	if (info.hbmColor != NULL) {
-		DeleteObject(info.hbmColor);
-	}
-	return(cursor);
-}
-
-
 SDL_SystemCursor System_Cursor_Of(UICursor shape)
 {
 	switch (shape) {
@@ -710,6 +650,10 @@ SDL_Cursor * Main_Window_Create_Cursor(unsigned int const * pixels, int width, i
 void Main_Window_Destroy_Cursor(SDL_Cursor * cursor)
 {
 	if (_Started && cursor != nullptr) {
+		// Otherwise SDL shows its own arrow in place of a destroyed cursor.
+		if (SDL_GetCursor() == cursor) {
+			SDL_SetCursor(Main_Window_System_Cursor(UI_CURSOR_ARROW));
+		}
 		SDL_DestroyCursor(cursor);
 	}
 }
@@ -739,14 +683,34 @@ SDL_Cursor * Main_Window_System_Cursor(UICursor shape)
 
 	SDL_Cursor * & cursor = _SystemCursors[shape];
 	if (cursor == nullptr) {
-		if (shape == UI_CURSOR_ARROW) {
-			cursor = Resource_Arrow();
-		}
-		if (cursor == nullptr) {
-			cursor = SDL_CreateSystemCursor(System_Cursor_Of(shape));
-		}
+		cursor = SDL_CreateSystemCursor(System_Cursor_Of(shape));
 	}
 	return(cursor);
+}
+
+
+void Main_Window_Set_Arrow(SDL_Cursor * cursor)
+{
+	if (!_Started) {
+		if (cursor != nullptr) {
+			SDL_DestroyCursor(cursor);
+		}
+		return;
+	}
+
+	SDL_Cursor * & arrow = _SystemCursors[UI_CURSOR_ARROW];
+	if (arrow == cursor) {
+		return;
+	}
+
+	SDL_Cursor * const previous = arrow;
+	arrow = cursor;
+	if (previous != nullptr && SDL_GetCursor() == previous) {
+		SDL_SetCursor(Main_Window_System_Cursor(UI_CURSOR_ARROW));
+	}
+	if (previous != nullptr) {
+		SDL_DestroyCursor(previous);
+	}
 }
 
 

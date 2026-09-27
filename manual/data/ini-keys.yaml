@@ -22186,6 +22186,24 @@ SwampTile:
       source: code/isotype.cpp
       guard: null
     level: IsometricTileTypeClass
+SystemCursor:
+  key: SystemCursor
+  scopes:
+  - applies_to:
+    - client settings
+    file: sun.ini
+    section:
+      kind: literal
+      name: Video
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'no'
+      declared_in: OptionsClass
+      member: SystemCursor
+      source: code/options.cpp
+      guard: null
+    level: OptionsClass
 SystemError:
   key: SystemError
   scopes:
