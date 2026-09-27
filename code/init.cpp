@@ -6041,7 +6041,7 @@ bool Prep_For_Side(SideType side)
 	}
 
 	UIControls.Read_INI_File(DeploymentConfig.UIFile.c_str(), true);
-	UI_On_Archives_Change();
+	UI_On_Archives_Change(side);
 
 	Map.Init_For_House();
 

@@ -2156,20 +2156,6 @@ fixed_controls:
   _provenance:
     source: code/egos.cpp
     guard: null
-- id: fixed:dismiss-mission-restatement
-  route_id: fixed-dismiss-mission-restatement
-  kind: fixed
-  title: Dismiss mission restatement
-  description: Closes the current mission-restatement page without selecting its video button.
-  audience: player
-  availability: *id001
-  bindings:
-  - Space
-  - Escape
-  context: Mission restatement
-  _provenance:
-    source: code/restate.cpp
-    guard: null
 - id: fixed:skip-vqa
   route_id: fixed-skip-vqa
   kind: fixed

@@ -18,6 +18,7 @@ The `ui` directory sits beside the executable and holds everything the screens a
 | `<screen>.rcss` | That document's own style sheet |
 | `dialog.rml` | The template every document opens inside |
 | `kit.rcss` | The dialog kit, which styles the controls |
+| `side-<name>.rcss` | Rules every screen takes while that side is the player's, such as `side-gdi.rcss` and `side-nod.rcss` |
 | `glow.png` | The glow the template draws around a screen |
 | `Arimo.ttf` | The face a font family uses when its own face is missing, with its license in `OFL.txt` |
 
@@ -39,6 +40,14 @@ If a document, style sheet or font fails to load, the game logs the file name, t
 
 When a scenario is read or a saved game loads, the game mounts the archives of the player's side and reads the pictures and the dialog font again. A screen opened after that uses any picture or dialog font the side's archives supply; a screen already on show keeps what it was built with. A side's copy is used only for a name that no loose file and no archive mounted at startup holds, so it cannot replace a shipped document or style sheet. [MIX archives](/formats/mix/) covers which archive answers for a name.
 
+## Side style sheets
+
+While a side is the player's, every screen also takes the rules in `side-<name>.rcss`, where `<name>` is the side's name from `[Sides]` in lower case. The sheet is applied after the screen's own style sheets, so its rule wins over a shipped rule with an equally specific selector. A side with no such file keeps the shipped look. The game ships `side-gdi.rcss` and `side-nod.rcss`, which color the objectives screen's text green and red.
+
+The player's side is set when a scenario is read or a saved game loads, and stays until another one loads. No side sheet applies before the first.
+
+The sheet is found like any other file here, so a side's own archive can carry it. A rule in it reaches every screen with a matching element. To limit a rule to one screen, begin its selector with that screen's body, such as `body[data-model="restate"] .line.ink { color: #fc1c1c; }`.
+
 ## Strings
 
 Write `[[TXT_NAME]]` in a document for an engine string, using an identifier name that `code/language/language.h` defines, such as `[[TXT_CANCEL]]`. The game substitutes the string as it lays the text out. An unknown name is left as typed, so the mistake shows on screen, and the debug log names it.
@@ -53,8 +62,8 @@ These screens are documents:
 - the skirmish setup, the map chooser and the random map generator
 - the network lobbies
 - the load, save and delete lists
-- the in-game options and the abort question
+- the in-game options, the abort question and the objectives screen
 - the out-of-sync screen and the [reconnect dialog](/systems/reconnect-dialog/)
 - the message boxes, and the notices shown while a game saves or loads
 
-The score screens, the graphical main menu, the mission briefing and the sidebar are drawn by the game's older systems and are not documents. The crash report remains a Windows dialog.
+The score screens, the graphical main menu, the campaign map and the sidebar are drawn by the game's older systems and are not documents. The crash report remains a Windows dialog.

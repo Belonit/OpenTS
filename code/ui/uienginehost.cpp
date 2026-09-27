@@ -29,6 +29,7 @@
 #include "rules.h"
 #include "sdl/sdlwindow.h"
 #include "session.h"
+#include "side.h"
 #include "ui/uishell.h"
 #include "video.h"
 #include "voc.h"
@@ -178,6 +179,15 @@ class UIEngineHostClass : public UIShellHostClass
 			return(path);
 		}
 
+		// Looked up per screen, since a saved game mounts archives before the side list exists.
+		virtual std::string Side_Name(int side) const override
+		{
+			if (side < 0 || side >= Sides.Count() || Sides[side] == NULL) {
+				return(std::string());
+			}
+			return(std::string(Sides[side]->Name()));
+		}
+
 		virtual void Apply_Cursor(UICursor cursor) override
 		{
 			Main_Window_Set_Cursor(Main_Window_System_Cursor(cursor));
@@ -280,7 +290,7 @@ void UI_Serve_Screen(void)
 }
 
 
-void UI_On_Archives_Change(void)
+void UI_On_Archives_Change(int side)
 {
-	UIShell.On_Archives_Change();
+	UIShell.On_Archives_Change(side);
 }

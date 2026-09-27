@@ -21,10 +21,13 @@
 #include <RmlUi/Core/ElementScroll.h>
 #include <RmlUi/Core/ElementText.h>
 #include <RmlUi/Core/Event.h>
+#include <RmlUi/Core/Factory.h>
+#include <RmlUi/Core/FileInterface.h>
 #include <RmlUi/Core/ID.h>
 #include <RmlUi/Core/Input.h>
 #include <RmlUi/Core/Log.h>
 #include <RmlUi/Core/Property.h>
+#include <RmlUi/Core/StyleSheetContainer.h>
 #include <RmlUi/Core/Variant.h>
 #include <cmath>
 #include <cstring>
@@ -107,6 +110,36 @@ bool UIRmlViewClass::Prepare(UIShellClass & shell)
 	}
 
 	Shell = &shell;
+
+	std::string const side = shell.Side_Sheet();
+	if (!side.empty() && UI_Apply_Style_Sheet(*Doc, side)) {
+		Rml::Log::Message(Rml::Log::LT_INFO, "UI: %s styles %s", side.c_str(), DocumentName.c_str());
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// Adds a style sheet after the document's own, so its rules win at equal specificity. A
+/// missing file leaves the document unchanged.
+/// </summary>
+/// <returns>bool; Was the sheet found and added?</returns>
+bool UI_Apply_Style_Sheet(Rml::ElementDocument & document, Rml::String const & name)
+{
+	Rml::FileInterface * files = Rml::GetFileInterface();
+	Rml::FileHandle file = (files != nullptr) ? files->Open(name) : 0;
+	if (file == 0) {
+		return(false);
+	}
+	files->Close(file);
+
+	Rml::SharedPtr<Rml::StyleSheetContainer> sheet = Rml::Factory::InstanceStyleSheetFile(name);
+	if (!sheet) {
+		return(false);
+	}
+
+	Rml::StyleSheetContainer const * own = document.GetStyleSheetContainer();
+	document.SetStyleSheetContainer(own != nullptr ? own->CombineStyleSheetContainer(*sheet) : sheet);
 	return(true);
 }
 

@@ -19,7 +19,7 @@ credit:
 - ZivDero
 ---
 
-The screens the game built from dialog templates in `Language.dll`, including the classic main menu and the options menus, are now drawn from UI documents in the `ui` directory beside the executable. `Language.dll` no longer holds those templates. The score screens, the graphical main menu, the mission briefing and the sidebar are drawn as before.
+The screens the game built from dialog templates in `Language.dll`, including the classic main menu and the options menus, are now drawn from UI documents in the `ui` directory beside the executable. `Language.dll` no longer holds those templates. The score screens, the graphical main menu and the sidebar are drawn as before.
 
 A screen keeps the controls, layout, artwork and sounds of the dialog it replaced, and opens with the same sliding animation. Where a picture is missing, the control draws a plain fill and the screen still opens.
 

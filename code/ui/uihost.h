@@ -50,6 +50,7 @@ class UIShellHostClass
 		virtual bool Key_Down(int virtualkey) const = 0;
 		virtual bool Key_Toggled(int virtualkey) const = 0;
 		virtual std::string System_Font_Path(char const * face) const = 0;
+		virtual std::string Side_Name(int side) const = 0;
 		virtual void Apply_Cursor(UICursor cursor) = 0;
 		virtual void Restore_Game_Cursor(void) = 0;
 		virtual std::string Clipboard_Text(void) const = 0;

@@ -58,7 +58,8 @@ class UIShellClass
 		void Play_Click(void);
 
 		void On_Video_Change(void);
-		void On_Archives_Change(void);
+		void On_Archives_Change(int side);
+		std::string Side_Sheet(void) const;
 		void Tick(void);
 		void Render_Overlay(void);
 
@@ -120,8 +121,10 @@ class UIShellClass
 		bool Ready = false;
 		bool FontLoaded = false;
 		bool DialogFontTried = false;
+		int Side = -1;
 
 		std::vector<unsigned char> SystemFontData;
+		std::vector<unsigned char> PrintFontData;
 
 		void Register_Fonts(void);
 		void Ensure_Dialog_Font(void);

@@ -27,6 +27,7 @@
 #include "ui/screens/msgbox/uimsgbox.h"
 #include "ui/screens/netlobby/uinetlobby.h"
 #include "ui/screens/reconnect/uireconnect.h"
+#include "ui/screens/restate/uirestate.h"
 #include "ui/screens/savegame/uisavegame.h"
 #include "ui/screens/scenario/uiscenario.h"
 #include "ui/screens/skirmish/uiskirmish.h"
@@ -315,6 +316,13 @@ class TestHostClass : public UIShellHostClass
 		virtual std::string System_Font_Path(char const *) const override
 		{
 			return(std::string());
+		}
+
+		std::string SideName;
+
+		virtual std::string Side_Name(int) const override
+		{
+			return(SideName);
 		}
 
 		std::vector<std::string> Samples;
@@ -1403,6 +1411,170 @@ void Test_Reconnect_Presenter(void)
 
 	Drive(presenter, "cancel");
 	Check(presenter.Cancelled, "cancel asks to leave the game");
+}
+
+
+class RecordingRestateServiceClass : public UIRestateServiceClass
+{
+	public:
+		int Bleeps = 0;
+
+		virtual void Bleep(void) override { Bleeps++; }
+};
+
+
+int Ten_Per_Character(std::string const & text)
+{
+	return((int)text.size() * 10);
+}
+
+
+std::vector<int> Restate_Frames(UIRestatePresenterClass const & presenter)
+{
+	std::vector<int> frames;
+	for (int line = 0; line < (int)presenter.Lines().size(); line++) {
+		frames.push_back(presenter.Frame_Of(line));
+	}
+	return(frames);
+}
+
+
+std::string Restate_Lines(int count)
+{
+	std::string text;
+	for (int line = 0; line < count; line++) {
+		text += (line == 0 ? "" : "@") + std::string("Line ") + std::to_string(line + 1);
+	}
+	return(text);
+}
+
+
+void Test_Restate_Presenter(void)
+{
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, "Alpha beta gamma@   Delta@@Epsilon\nZeta Supercalifragilistic@", false);
+		presenter.Lay_Out(Ten_Per_Character, 120, 14);
+		std::vector<std::string> const expected = { "Alpha beta", "gamma", "Delta", "", "Epsilon", "Zeta", "Supercalifr", "agilistic" };
+		Check(presenter.Pages.size() == 1 && presenter.Pages[0] == expected,
+			"the briefing breaks at @ and newlines, drops the spaces after a break, and wraps whole words");
+
+		UIRestatePresenterClass edge(service, clock, "abcd efghi jk", false);
+		edge.Lay_Out(Ten_Per_Character, 100, 14);
+		Check(edge.Pages.size() == 1 && edge.Pages[0] == std::vector<std::string>({ "abcd efghi", "jk" }),
+			"a word stays on its line when only its last letter crosses the width");
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, Restate_Lines(30), false);
+		presenter.Lay_Out(Ten_Per_Character, 400, 14);
+		Check(presenter.Pages.size() == 3 && presenter.Pages[0].size() == 14 && presenter.Pages[1].size() == 14 && presenter.Pages[2].size() == 2,
+			"a long briefing is cut into pages of the lines the box holds");
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, "One@Two", false);
+		Drive(presenter, "next");
+		Check(!presenter.Result.has_value() && !presenter.Typing, "the screen ignores keys until its text is laid out");
+
+		presenter.Lay_Out(Ten_Per_Character, 400, 14);
+		presenter.Refresh();
+		clock.Now = 143;
+		presenter.Refresh();
+		Check(presenter.Typing && Restate_Frames(presenter) == std::vector<int>({ -1, -1 }), "no line shows before the page's opening delay");
+
+		std::vector<std::vector<int>> const stages = { { 0, -1 }, { 1, -1 }, { 2, -1 }, { 2, 0 }, { 2, 1 }, { 2, 2 } };
+		std::vector<int> const bleeps = { 0, 0, 1, 1, 1, 1 };
+		bool timed = true;
+		for (std::size_t step = 0; step < stages.size(); step++) {
+			clock.Now = 144 + 64 * (int)step;
+			presenter.Refresh();
+			timed = timed && Restate_Frames(presenter) == stages[step] && service.Bleeps == bleeps[step] && presenter.Typing;
+		}
+		Check(timed, "each line fades in over three steps of 64 ms and sounds as it settles");
+
+		clock.Now = 144 + 64 * 6;
+		presenter.Refresh();
+		Check(!presenter.Typing && presenter.Done && !presenter.More && service.Bleeps == 2,
+			"the last line sounds one step later, as the page ends and the buttons come up");
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, "One@Two", false);
+		presenter.Lay_Out(Ten_Per_Character, 400, 14);
+		presenter.Refresh();
+		clock.Now = 5000;
+		presenter.Refresh();
+		presenter.Refresh();
+		Check(Restate_Frames(presenter) == std::vector<int>({ 0, -1 }), "a late pass takes one step, not the steps it missed");
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, Restate_Lines(30), false);
+		presenter.Lay_Out(Ten_Per_Character, 400, 14);
+		presenter.Refresh();
+		clock.Now = 144;
+		presenter.Refresh();
+
+		Drive(presenter, "skip");
+		Check(!presenter.Typing && presenter.More && service.Bleeps == 1
+			&& Restate_Frames(presenter) == std::vector<int>(14, 2), "a click during the fade settles the page with one bleep and offers More");
+
+		Drive(presenter, "resume");
+		Check(presenter.More && !presenter.Result.has_value(), "resume does nothing while More is showing");
+
+		Drive(presenter, "next");
+		Check(presenter.Page == 1 && presenter.Typing && Restate_Frames(presenter) == std::vector<int>(14, -1), "Space shows the next page, which fades in afresh");
+
+		presenter.Refresh();
+		clock.Now = 144 + 143;
+		presenter.Refresh();
+		Check(Restate_Frames(presenter)[0] == -1, "and waits its own opening delay");
+
+		Drive(presenter, "ok");
+		Drive(presenter, "more");
+		Check(presenter.Page == 2 && presenter.Typing, "Enter settles a page and More moves on");
+
+		Drive(presenter, "cancel");
+		Check(presenter.Done && !presenter.More, "Escape settles the last page");
+
+		Drive(presenter, "more");
+		Drive(presenter, "video");
+		Check(!presenter.Result.has_value(), "neither More nor a video the mission lacks answers at the end");
+
+		Drive(presenter, "next");
+		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && !presenter.ChoseVideo, "Space at the end resumes the mission");
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, "One", true);
+		presenter.Lay_Out(Ten_Per_Character, 400, 14);
+		Drive(presenter, "next");
+		Drive(presenter, "video");
+		Check(presenter.Result.has_value() && presenter.ChoseVideo, "Video at the end asks for the briefing movie");
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, "", false);
+		presenter.Lay_Out(Ten_Per_Character, 400, 14);
+		Check(presenter.Done && !presenter.Typing && presenter.Pages.empty() && service.Bleeps == 0, "an empty briefing goes straight to the buttons, silently");
+
+		Drive(presenter, "resume");
+		Check(presenter.Result.has_value() && !presenter.ChoseVideo, "and Resume closes it");
+	}
 }
 
 
@@ -3924,6 +4096,141 @@ void Test_Surface_Element(Rml::Context & context, RecordingRenderInterfaceClass 
 }
 
 
+void Restate_Pass(UIRestatePresenterClass & presenter, UIViewClass & view, Rml::Context & context)
+{
+	presenter.Refresh();
+	presenter.Drain();
+	view.Sync();
+	context.Update();
+	view.Placed();
+}
+
+
+void Test_Restate_Screen(Rml::Context & context, CountingSystemInterfaceClass & system, RecordingRenderInterfaceClass & render)
+{
+	int problems = system.Problems;
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, Restate_Lines(16), true);
+		std::unique_ptr<UIViewClass> view = UI_Restate_View(presenter);
+
+		Check(Rml(*view).Prepare(context), "the objectives view prepares against the test context");
+		view->Show(true);
+		context.Update();
+		view->Placed();
+		Check(presenter.LaidOut && presenter.Pages.size() == 2 && presenter.Pages[0].size() == 14, "the screen lays its briefing out once the page's font is known");
+
+		Restate_Pass(presenter, *view, context);
+		Rml::ElementDocument * document = Rml(*view).Document();
+		Rml::Element * page = document->GetElementById("page");
+		Check(page->GetNumChildren() == 14 && page->GetChild(0)->GetComputedValues().visibility() == Rml::Style::Visibility::Hidden,
+			"the page holds a line for each row, hidden until its turn");
+		Check(Visible_Buttons(document).empty() && document->GetElementById("skip")->IsVisible(), "no button shows while the page fades in");
+
+		clock.Now = 144;
+		Restate_Pass(presenter, *view, context);
+		Rml::Element * first = page->GetChild(0);
+		Check(first->GetComputedValues().visibility() == Rml::Style::Visibility::Visible
+			&& first->GetComputedValues().color() == Rml::Colourb(252, 252, 252, 255)
+			&& page->GetChild(1)->GetComputedValues().visibility() == Rml::Style::Visibility::Hidden,
+			"the first line comes up as a white blob");
+
+		int unsupported = render.Unsupported;
+		context.Render();
+		Check(render.Unsupported == unsupported, "a line drawn as a blob stays within the implemented render methods");
+
+		Click(context, document->GetElementById("skip"));
+		Restate_Pass(presenter, *view, context);
+		std::vector<Rml::Element *> buttons = Visible_Buttons(document);
+		Check(presenter.More && page->GetChild(13)->GetComputedValues().color() == Rml::Colourb(32, 212, 96, 255)
+			&& buttons.size() == 1 && buttons[0]->GetId() == "more", "a click settles the page in the side's ink and offers More");
+
+		Press(context, Rml::Input::KI_SPACE);
+		Restate_Pass(presenter, *view, context);
+		Check(presenter.Page == 1 && presenter.Typing && page->GetNumChildren() == 2, "Space puts up the next page");
+
+		Press(context, Rml::Input::KI_RETURN);
+		Restate_Pass(presenter, *view, context);
+		buttons = Visible_Buttons(document);
+		Check(presenter.Done && buttons.size() == 2 && buttons[0]->GetId() == "resume" && buttons[1]->GetId() == "video",
+			"Enter settles the last page, and Resume and Video come up side by side");
+
+		Click(context, document->GetElementById("video"));
+		presenter.Drain();
+		Check(presenter.Result.has_value() && presenter.ChoseVideo, "Video asks for the briefing movie");
+
+		view->Release();
+		context.Update();
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, Restate_Lines(2), false);
+		std::unique_ptr<UIViewClass> view = UI_Restate_View(presenter);
+
+		Rml(*view).Prepare(context);
+		view->Show(true);
+		context.Update();
+		view->Placed();
+		Restate_Pass(presenter, *view, context);
+
+		Rml::ElementDocument * document = Rml(*view).Document();
+		float const box = document->GetElementById("box")->GetAbsoluteOffset(Rml::BoxArea::Border).y;
+		float const page = document->GetElementById("page")->GetAbsoluteOffset(Rml::BoxArea::Border).y;
+		Check(page - box == 120.0f, "a one-page briefing sits in the middle of the text box");
+
+		Press(context, Rml::Input::KI_ESCAPE);
+		Restate_Pass(presenter, *view, context);
+		std::vector<Rml::Element *> buttons = Visible_Buttons(document);
+		Check(presenter.Done && buttons.size() == 1 && buttons[0]->GetId() == "resume", "without a movie Resume stands alone");
+
+		Press(context, Rml::Input::KI_ESCAPE);
+		presenter.Drain();
+		Check(presenter.Result.has_value() && !presenter.ChoseVideo, "Escape at the end resumes the mission");
+
+		view->Release();
+		context.Update();
+	}
+
+	{
+		RecordingRestateServiceClass service;
+		FakeClockClass clock;
+		UIRestatePresenterClass presenter(service, clock, Restate_Lines(2), false);
+		std::unique_ptr<UIViewClass> view = UI_Restate_View(presenter);
+
+		Rml(*view).Prepare(context);
+		Rml::ElementDocument * document = Rml(*view).Document();
+		Check(!UI_Apply_Style_Sheet(*document, "side-none.rcss"), "a side with no style sheet leaves the screen as it was");
+		Check(UI_Apply_Style_Sheet(*document, "side-nod.rcss"), "a side's style sheet is added to a loaded screen");
+
+		view->Show(true);
+		context.Update();
+		view->Placed();
+		Restate_Pass(presenter, *view, context);
+		clock.Now = 144;
+		Restate_Pass(presenter, *view, context);
+		clock.Now = 208;
+		Restate_Pass(presenter, *view, context);
+
+		Rml::Element * page = document->GetElementById("page");
+		Check(page->GetChild(0)->GetComputedValues().color() == Rml::Colourb(252, 180, 176, 255), "Nod's pale stage comes from its style sheet");
+
+		Drive(presenter, "next");
+		Restate_Pass(presenter, *view, context);
+		Check(page->GetChild(0)->GetComputedValues().color() == Rml::Colourb(252, 28, 28, 255)
+			&& page->GetChild(0)->IsVisible(), "and its settled text outranks the screen's own color");
+
+		view->Release();
+		context.Update();
+	}
+
+	Check(system.Problems == problems, "the objectives screen raises no RmlUi warning or error");
+}
+
+
 void Test_Effects_Documents(Rml::Context & context, RecordingRenderInterfaceClass & render, CountingSystemInterfaceClass & system)
 {
 	char const * rotated =
@@ -4000,6 +4307,7 @@ void Test_Documents(void)
 	Check(Rml::LoadFontFace(shipped), "the shipped font loads");
 	Check(Rml::LoadFontFace(shipped, "dlg-sans", Rml::Style::FontStyle::Normal), "and stands in for the dialogs' sans family");
 	Check(Rml::LoadFontFace(shipped, "dlgsys", Rml::Style::FontStyle::Normal), "and for the bitmap family the art would supply");
+	Check(Rml::LoadFontFace(shipped, "fullfnt", Rml::Style::FontStyle::Normal), "and for the family the old menu font's screens use");
 
 	Rml::Context * context = Rml::CreateContext("test", Rml::Vector2i(1280, 800));
 	Check(context != nullptr, "a context is created");
@@ -4093,6 +4401,7 @@ void Test_Documents(void)
 		Test_Menu_Screen(*context, system);
 		Test_Main_Options_Screen(*context, system, render);
 		Test_Wait_Box_Screen(*context, system);
+		Test_Restate_Screen(*context, system, render);
 	}
 
 	if (context != nullptr) {
@@ -4230,6 +4539,42 @@ void Test_Shell(void)
 	}
 
 	{
+		shell.On_Archives_Change(-1);
+		Check(shell.Side_Sheet().empty(), "no side style sheet applies before a side is mounted");
+
+		host.SideName = "Nod";
+		shell.On_Archives_Change(1);
+		Check(shell.Side_Sheet() == "side-nod.rcss", "a mounted side names its style sheet after itself, in lower case");
+
+		RecordingRestateServiceClass service;
+		UIRestatePresenterClass presenter(service, shell.Clock(), "Line", false);
+		std::unique_ptr<UIViewClass> view = UI_Restate_View(presenter);
+		Rml::Colourb ink;
+		int passes = 0;
+
+		shell.Run_Modal(*view, [&](void) {
+			passes++;
+			UIIntent intent;
+			if (presenter.Typing) {
+				intent.Name = "next";
+				presenter.Queue(intent);
+			} else if (presenter.Done) {
+				Rml::Element * page = Rml(*view).Document()->GetElementById("page");
+				if (page != nullptr && page->GetNumChildren() > 0) {
+					ink = page->GetChild(0)->GetComputedValues().color();
+				}
+				intent.Name = "resume";
+				presenter.Queue(intent);
+			}
+			return(passes > 50);
+		});
+		Check(ink == Rml::Colourb(252, 28, 28, 255), "a screen opened while Nod is mounted takes its colors from side-nod.rcss");
+
+		host.SideName.clear();
+		Check(shell.Side_Sheet().empty(), "a side without a name has no style sheet");
+	}
+
+	{
 		UIVersionPresenterClass presenter({ "archives" });
 		std::unique_ptr<UIViewClass> view = UI_Version_View(presenter);
 		int passes = 0;
@@ -4245,7 +4590,7 @@ void Test_Shell(void)
 				released = fixture.Render->ReleasedTextures;
 				fetched = fixture.Render->Loaded + fixture.Render->Generated;
 				lookups = UITestSheetLookups;
-				shell.On_Archives_Change();
+				shell.On_Archives_Change(0);
 				dropped = fixture.Render->ReleasedTextures > released;
 			}
 			if (passes == 2) {
@@ -4287,7 +4632,7 @@ void Test_Shell(void)
 			if (!asked) {
 				asked = true;
 				released = fixture.Render->ReleasedTextures;
-				shell.On_Archives_Change();
+				shell.On_Archives_Change(0);
 				heldInside = fixture.Render->ReleasedTextures == released;
 			}
 		};
@@ -5274,6 +5619,7 @@ int main(void)
 	Test_Sound_Presenter();
 	Test_Map_Generator_Presenter();
 	Test_Reconnect_Presenter();
+	Test_Restate_Presenter();
 	Test_Strings();
 	Test_Documents();
 	Test_Shell();

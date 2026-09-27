@@ -252,16 +252,6 @@ fixed_controls:
     availability: *all
     sites:
       - { file: code/egos.cpp, function: Show_Who_Was_Responsible, expression: KN_ESC }
-  - id: fixed:dismiss-mission-restatement
-    title: Dismiss mission restatement
-    description: Closes the current mission-restatement page without selecting its video button.
-    audience: player
-    bindings: [Space, Escape]
-    context: Mission restatement
-    availability: *all
-    sites:
-      - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_SPACE }
-      - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_ESC }
   - id: fixed:skip-vqa
     title: Skip video
     description: Stops a VQA when the caller permits user breakout; in a game against other machines it casts this machine's vote to stop it.
@@ -439,10 +429,6 @@ fixed_exclusions:
       - { file: code/msglist.cpp, function: MessageListClass::Input, expression: KN_BACKSPACE }
       - { file: code/msglist.cpp, function: MessageListClass::Input, expression: KN_ESC }
     reason: Message editor polling, cursor placement, and text-edit termination.
-  - sites:
-      - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_NONE }
-      - { file: code/restate.cpp, function: RestateMission::User_Input, expression: KN_BUTTON }
-    reason: Input sentinel and encoded button IDs surrounding the documented dismissal keys.
   - sites:
       - { file: code/score.cpp, function: ScoreClass::Input_Name, expression: KN_BACKSPACE }
       - { file: code/score.cpp, function: ScoreClass::Input_Name, expression: KN_KEYPAD_RETURN }

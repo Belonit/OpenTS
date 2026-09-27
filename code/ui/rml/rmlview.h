@@ -104,3 +104,6 @@ class UIRmlViewClass : public Rml::EventListener, public UIViewClass
 		Rml::String DocumentName;
 		Rml::String ModelName;
 };
+
+
+bool UI_Apply_Style_Sheet(Rml::ElementDocument & document, Rml::String const & name);

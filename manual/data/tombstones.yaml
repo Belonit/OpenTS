@@ -16,6 +16,15 @@
   replacement:
     type: format
     id: opents-ini
+- type: command
+  id: fixed:dismiss-mission-restatement
+  route: /commands/fixed-dismiss-mission-restatement/
+  search_aliases:
+    - Dismiss mission restatement
+  summary: Space or Escape showed the objectives screen's next page or closed it. The screen's keys are now described with the briefing movie.
+  replacement:
+    type: key
+    id: Brief
 - type: key
   id: ModemName
   route: /keys/modemname/

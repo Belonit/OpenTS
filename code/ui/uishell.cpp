@@ -29,6 +29,7 @@
 #include <RmlUi/Core.h>
 #include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <cmath>
 #include <cstdarg>
 #include <cstdio>
@@ -440,6 +441,8 @@ static char const * const UI_SANS_RASTER_FILES[] = {
 	"ssee1257.fon",		// Baltic
 };
 static char const * const UI_SANS_FONT_FILE = "micross.ttf";
+static char const * const UI_PRINT_FONT_FAMILY = "fullfnt";
+static char const * const UI_PRINT_FONT_FILE = "arial.ttf";
 static char const * const UI_SHIPPED_FONT_FILE = "Arimo.ttf";
 
 static char const * const UI_REVEAL_SOUND = "EMBLEM.AUD";
@@ -503,6 +506,15 @@ void UIShellClass::Register_Fonts(void)
 		sansloaded = Rml::LoadFontFace(Rml::Span<const Rml::byte>(SystemFontData.data(), SystemFontData.size()), UI_SANS_FONT_FAMILY, Rml::Style::FontStyle::Normal) || sansloaded;
 	}
 
+	// Stands in for FULLFNT3.SHP, which resembles Arial.
+	std::string print = Host.System_Font_Path(UI_PRINT_FONT_FILE);
+	if (!print.empty() && UI_Read_File(print.c_str(), PrintFontData)
+		&& Rml::LoadFontFace(Rml::Span<const Rml::byte>(PrintFontData.data(), PrintFontData.size()), UI_PRINT_FONT_FAMILY, Rml::Style::FontStyle::Normal)) {
+		Log("UI: %s answers for %s\n", UI_PRINT_FONT_FILE, UI_PRINT_FONT_FAMILY);
+	} else {
+		Log("UI: %s is not on this machine, so %s is the shipped face\n", UI_PRINT_FONT_FILE, UI_PRINT_FONT_FAMILY);
+	}
+
 	FontLoaded = Rml::LoadFontFace(UI_SHIPPED_FONT_FILE);
 	if (!FontLoaded) {
 		Log("UI: %s did not load, so no document can be shown\n", UI_SHIPPED_FONT_FILE);
@@ -515,6 +527,8 @@ void UIShellClass::Register_Fonts(void)
 	}
 
 	Rml::LoadFontFace(UI_SHIPPED_FONT_FILE, UI_SANS_FONT_FAMILY, Rml::Style::FontStyle::Normal);
+
+	Rml::LoadFontFace(UI_SHIPPED_FONT_FILE, UI_PRINT_FONT_FAMILY, Rml::Style::FontStyle::Normal);
 
 	Rml::LoadFontFace(UI_SHIPPED_FONT_FILE, UI_SHEET_FONT_FAMILY, Rml::Style::FontStyle::Normal);
 }
@@ -716,8 +730,10 @@ void UIShellClass::On_Video_Change(void)
 /// Drops the pictures, style sheets, templates and dialog font read from the archives. A
 /// screen already shown keeps what it was built with; the next one opened is built anew.
 /// </summary>
-void UIShellClass::On_Archives_Change(void)
+void UIShellClass::On_Archives_Change(int side)
 {
+	Side = side;
+
 	if (!Ready) {
 		return;
 	}
@@ -729,6 +745,21 @@ void UIShellClass::On_Archives_Change(void)
 	}
 
 	Host.Mark_Overlay_Dirty();
+}
+
+
+/// <summary>
+/// The mounted side's style sheet name, empty before a side is mounted; the file may not exist.
+/// </summary>
+std::string UIShellClass::Side_Sheet(void) const
+{
+	std::string name = Host.Side_Name(Side);
+	if (Side < 0 || name.empty()) {
+		return(std::string());
+	}
+
+	std::transform(name.begin(), name.end(), name.begin(), [](unsigned char c) { return((char)std::tolower(c)); });
+	return("side-" + name + ".rcss");
 }
 
 
