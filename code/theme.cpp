@@ -698,7 +698,11 @@ void ThemeClass::Discard_Interruption(void)
 /// fade out time?</param>
 void ThemeClass::Set_Storm_Level(bool storm, bool instant)
 {
-	StormLevel = storm ? IonStormLevel : 1.0f;
+	float level = storm ? IonStormLevel : 1.0f;
+	if (level != StormLevel) {
+		DebugString("Theme::StormLevel(%.2f)\n", level);
+	}
+	StormLevel = level;
 	if (!Current.Is_Finished() && (unsigned)Score < (unsigned)Themes.Count()) {
 		Current.Set_Volume(Level(Score), instant ? 0 : FadeOutMs);
 	}
