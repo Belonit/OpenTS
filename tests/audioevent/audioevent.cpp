@@ -772,6 +772,197 @@ void Test_Stream_Controls(void)
 }
 
 
+void Test_Crossfade_Commands(void)
+{
+	RigClass rig;
+	AudioStreamClass one;
+	AudioStreamClass two;
+	one.Init(RATE * 4, 1, RATE);
+	two.Init(RATE * 4, 1, RATE);
+	std::vector<int16_t> constant((size_t)RATE * 4, (int16_t)(0.5f * 32767.0f));
+	one.Ring.Write(constant.data(), (unsigned)constant.size());
+	two.Ring.Write(constant.data(), (unsigned)constant.size());
+
+	AudioHandle old = rig.Pool.Start_Stream(&one, AUDIO_GROUP_MUSIC, 1.0f, 0.0f);
+	rig.Tick(100);
+	unsigned dropped = rig.Mixer.Dropped_Commands();
+	rig.Pool.Fade(old, 3000);
+	rig.Tick(16);
+	AudioHandle next = rig.Pool.Start_Stream(&two, AUDIO_GROUP_MUSIC, 0.0f, 0.0f);
+	rig.Pool.Set_Volume(next, 0.5f, 3000);
+	for (int i = 0; i < 300; i++) {
+		rig.Tick(16);
+	}
+	Check(rig.Mixer.Dropped_Commands() == dropped, "a crossfade drops no commands");
+	for (int i = 0; i < 100; i++) {
+		rig.Tick(16);
+	}
+	Check(rig.Pool.Is_Finished(old), "a stream faded out finishes");
+	rig.Pool.Fade(next, 1500);
+	for (int i = 0; i < 120; i++) {
+		rig.Tick(16);
+	}
+	Check(rig.Pool.Is_Finished(next), "a stream faded while its volume rose finishes");
+}
+
+
+void Test_Stress_With_Music(void)
+{
+	RigClass rig;
+	rig.Pool.Set_Budget(4);
+	rig.RandomHigh = 0;
+
+	AudioEventTypeClass * types[] = {
+		&rig.Type("S1", 1),
+		&rig.Type("S2", 2, SOUND_CONTROL_RANDOM),
+		&rig.Type("S3", 3, SOUND_CONTROL_LOOP | SOUND_CONTROL_ATTACK | SOUND_CONTROL_DECAY, 1, 1),
+		&rig.Type("S4", 1, SOUND_CONTROL_LOOP),
+		&rig.Type("S5", 1, SOUND_CONTROL_QUEUE),
+		&rig.Type("S6", 1, SOUND_CONTROL_PREDELAY),
+		&rig.Type("S7", 2, SOUND_CONTROL_LOOP | SOUND_CONTROL_INTERRUPT),
+	};
+	types[1]->Limit = 2;
+	types[3]->Loop = 3;
+	types[3]->DelayMin = 30;
+	types[3]->DelayMax = 80;
+	types[4]->Limit = 1;
+	types[5]->DelayMin = 20;
+	types[5]->DelayMax = 60;
+	types[6]->Limit = 1;
+	for (int t = 0; t < 7; t++) {
+		types[t]->Priority = 10 + t * 10;
+	}
+
+	AudioStreamClass rings[3];
+	std::vector<int16_t> constant((size_t)RATE * 8, (int16_t)(0.5f * 32767.0f));
+	for (AudioStreamClass & ring : rings) {
+		ring.Init(RATE * 8, 1, RATE);
+		ring.Ring.Write(constant.data(), (unsigned)constant.size());
+	}
+
+	unsigned seed = 12345u;
+	auto next = [&seed](unsigned range) {
+		seed = seed * 1103515245u + 12345u;
+		return((seed >> 16) % range);
+	};
+
+	std::vector<AudioHandle> handles;
+	int music = 0;
+	AudioHandle current = rig.Pool.Start_Stream(&rings[0], AUDIO_GROUP_MUSIC, 1.0f, 0.0f);
+	AudioHandle fading;
+	unsigned fadedat = 0;
+	bool fadeok = true;
+	unsigned dropped = rig.Mixer.Dropped_Commands();
+
+	for (int tick = 0; tick < 3000; tick++) {
+		for (unsigned n = next(4); n > 0; n--) {
+			AudioHandle h = rig.Pool.Start(*types[next(7)], AUDIO_GROUP_SFX, 0.2f + 0.1f * (float)next(8), 0.0f);
+			if (!h.Is_Null()) {
+				handles.push_back(h);
+			}
+		}
+		for (AudioHandle h : handles) {
+			rig.Pool.Retarget(h, 0.2f + 0.1f * (float)next(8), (float)next(3) - 1.0f);
+		}
+		if (!handles.empty() && next(5) == 0) {
+			AudioHandle h = handles[next((unsigned)handles.size())];
+			switch (next(3)) {
+				case 0: rig.Pool.Stop(h); break;
+				case 1: rig.Pool.End(h); break;
+				default: rig.Pool.Fade(h, 50 + (int)next(500)); break;
+			}
+		}
+		if (handles.size() > 200) {
+			handles.erase(handles.begin(), handles.begin() + 100);
+		}
+
+		// A song change every two seconds: the old one fades over 1.5 s, the next waits for it.
+		if (tick % 125 == 0 && tick > 0 && fading.Is_Null()) {
+			rig.Pool.Fade(current, 1500);
+			fading = current;
+			fadedat = rig.Now;
+			current.Clear();
+		}
+		if (!fading.Is_Null() && rig.Pool.Is_Finished(fading)) {
+			if (rig.Now - fadedat > 1700) {
+				fadeok = false;
+			}
+			fading.Clear();
+			music = (music + 1) % 3;
+			rings[music].Ring.Write(constant.data(), rings[music].Ring.Available_Write());
+			current = rig.Pool.Start_Stream(&rings[music], AUDIO_GROUP_MUSIC, 1.0f, 0.0f);
+		} else if (!fading.Is_Null() && rig.Now - fadedat > 1700) {
+			fadeok = false;
+		}
+		rig.Tick(16);
+	}
+
+	Check(fadeok, "under load, a faded song finishes within its fade");
+	Check(rig.Mixer.Dropped_Commands() == dropped, "under load, no command reaches a voice its event no longer owns");
+}
+
+
+void Test_Unchanged_Retargets(void)
+{
+	RigClass rig;
+	AudioEventTypeClass & loop = rig.Type("AMB", 1, SOUND_CONTROL_LOOP);
+	AudioHandle hum = rig.Pool.Start(loop, AUDIO_GROUP_SFX, 0.5f, 0.25f);
+	rig.Tick(16);
+
+	// Placed sounds are re-aimed on every update, many times between two renders.
+	unsigned dropped = rig.Mixer.Dropped_Commands();
+	for (int i = 0; i < AUDIO_COMMAND_QUEUE_SIZE * 4; i++) {
+		rig.Pool.Retarget(hum, 0.5f, 0.25f);
+		rig.Pool.Set_Volume(hum, 0.5f);
+		rig.Pool.Set_Pan(hum, 0.25f);
+	}
+	rig.Pool.Fade(hum, 100);
+	for (int i = 0; i < 20; i++) {
+		rig.Tick(16);
+	}
+	Check(rig.Mixer.Dropped_Commands() == dropped, "unchanged re-aims send no commands");
+	Check(rig.Pool.Is_Finished(hum), "a stop after many unchanged re-aims still arrives");
+}
+
+
+void Test_Lost_Changes(void)
+{
+	RigClass rig;
+	AudioEventTypeClass & loop = rig.Type("DRONE", 1, SOUND_CONTROL_LOOP, 0, 0, 0.5f);
+	AudioHandle drone = rig.Pool.Start(loop, AUDIO_GROUP_SFX, 1.0f, 0.0f);
+	rig.Tick(20);
+	float full = rig.Last_Sample();
+	Check(full > 0.4f, "the drone plays at full level");
+
+	// A change refused because the ring is full is sent again when it is repeated.
+	AudioCommand filler = {};
+	filler.Type = AudioCommandType::SET_PITCH;
+	filler.Slot = AUDIO_MAX_VOICES - 1;
+	while (rig.Mixer.Push(filler)) {
+	}
+	rig.Pool.Set_Volume(drone, 0.25f);
+	rig.Tick(20);
+	rig.Pool.Set_Volume(drone, 0.25f);
+	rig.Tick(100);
+	Check(Near(rig.Last_Sample(), 0.5f * Audio_Perceptual_Gain(0.25f), 0.01f), "a volume change the ring refused is sent when repeated");
+
+	while (rig.Mixer.Push(filler)) {
+	}
+	rig.Pool.Set_Pan(drone, -1.0f);
+	rig.Tick(20);
+	rig.Pool.Set_Pan(drone, -1.0f);
+	rig.Tick(100);
+	Check(Near(rig.Output[rig.Output.size() - 1], 0.0f, 0.01f), "a pan change the ring refused is sent when repeated");
+
+	// A change with its own time replaces a slower one to the same volume.
+	rig.Pool.Set_Volume(drone, 1.0f, 5000);
+	rig.Tick(20);
+	rig.Pool.Set_Volume(drone, 1.0f, 0);
+	rig.Tick(20);
+	Check(Near(rig.Last_Sample(), 0.5f, 0.01f), "an immediate change is not held to an earlier slow one");
+}
+
+
 void Test_Shutdown_Releases(void)
 {
 	ProviderClass provider;
@@ -811,6 +1002,10 @@ int main(void)
 	Test_Samples_And_Handles();
 	Test_Voice_Ownership();
 	Test_Stream_Controls();
+	Test_Crossfade_Commands();
+	Test_Stress_With_Music();
+	Test_Unchanged_Retargets();
+	Test_Lost_Changes();
 	Test_Shutdown_Releases();
 
 	std::printf("%d checks, %d failures\n", Checked, Failures);

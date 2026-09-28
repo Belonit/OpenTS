@@ -41,7 +41,8 @@ class AudioMixerClass
 
 		// Game thread. A voice must be ALLOCATED before its play command is pushed;
 		// the game marks it so, fills the sequence, then pushes. Push fails when the
-		// ring is full, and the caller must then treat the play as refused.
+		// ring is full, and the caller must then treat the play as refused. A failed
+		// push counts as a dropped command.
 		bool Allocate_Voice(unsigned slot);
 		void Free_Voice(unsigned slot);
 		AudioVoiceState Voice_State(unsigned slot) const;

@@ -211,7 +211,11 @@ bool AudioMixerClass::Push(AudioCommand const & command)
 	if (!Ready) {
 		return(false);
 	}
-	return(State->Commands.Push(command));
+	if (!State->Commands.Push(command)) {
+		Dropped.fetch_add(1, std::memory_order_relaxed);
+		return(false);
+	}
+	return(true);
 }
 
 
@@ -392,7 +396,10 @@ void AudioMixerClass::StateClass::Apply(AudioCommand const & command, std::atomi
 
 	bool live = (state == AudioVoiceState::PLAYING || state == AudioVoiceState::PAUSED || state == AudioVoiceState::STOPPING);
 	if (!live || voice.Generation != command.Generation) {
-		dropped.fetch_add(1, std::memory_order_relaxed);
+		// A command reaching a voice that already finished is harmless, not lost.
+		if (state != AudioVoiceState::DONE || voice.Generation != command.Generation) {
+			dropped.fetch_add(1, std::memory_order_relaxed);
+		}
 		return;
 	}
 

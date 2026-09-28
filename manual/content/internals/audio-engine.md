@@ -53,6 +53,8 @@ The game thread changes a voice only by pushing a command into a single-producer
 - A sound with `PREDELAY` returns its handle before it pushes anything. If its push fails when the silence ends, the sound ends without playing.
 - Any other change, such as a volume change or a stop, is dropped.
 
+A volume or pan change that repeats the value the voice last received sends nothing, because the game re-aims placed and ambient sounds on every update. A change lost to a full ring is not kept as received, so repeating it sends it again, and a volume change given its own fade time is always sent. Lost pushes count toward the dropped commands the debug log reports; a command that reaches a voice after it finished does not.
+
 A voice moves from allocated to playing and can pause and resume. It becomes done when it plays to its end, and passes through stopping first when it is stopped or ended early. A voice whose start the mixer rejects goes from allocated straight to done. The game thread owns a voice while it is free, allocated or done, and the device thread owns it while it is playing, paused or stopping. The game thread frees a voice only when it is done, or when it was allocated and never started.
 
 A pause or a resume can fade over a given time; a voice fading toward a pause still counts as playing, and a resume during that fade turns it back. A stopped voice is done once its stop fade ends, even if a volume change is still running under it. A second stop can make that fade end sooner but never later, and stopping or ending a paused voice ends it at once without sound. Ending a voice during its fade toward a pause cancels the pause, and the voice finishes.

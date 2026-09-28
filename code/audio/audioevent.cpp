@@ -209,10 +209,10 @@ float AudioEventPoolClass::Current_Level(EventClass const & event) const
 }
 
 
-void AudioEventPoolClass::Push_Level(EventClass & event, float ramp)
+bool AudioEventPoolClass::Push_Level(EventClass & event, float ramp)
 {
 	if (event.Voice < 0) {
-		return;
+		return(true);
 	}
 	AudioCommand command = {};
 	command.Type = AudioCommandType::SET_GAIN;
@@ -220,14 +220,14 @@ void AudioEventPoolClass::Push_Level(EventClass & event, float ramp)
 	command.Generation = event.VoiceGeneration;
 	command.A = Current_Level(event);
 	command.B = ramp;
-	Mixer->Push(command);
+	return(Mixer->Push(command));
 }
 
 
-void AudioEventPoolClass::Push_Pan(EventClass & event, float ramp)
+bool AudioEventPoolClass::Push_Pan(EventClass & event, float ramp)
 {
 	if (event.Voice < 0) {
-		return;
+		return(true);
 	}
 	AudioCommand command = {};
 	command.Type = AudioCommandType::SET_PAN;
@@ -235,7 +235,28 @@ void AudioEventPoolClass::Push_Pan(EventClass & event, float ramp)
 	command.Generation = event.VoiceGeneration;
 	command.A = event.Pan;
 	command.B = ramp;
-	Mixer->Push(command);
+	return(Mixer->Push(command));
+}
+
+
+// An unsent change is not recorded, so repeating it sends it again.
+void AudioEventPoolClass::Send_Volume(EventClass & event, float volume, float ramp)
+{
+	float previous = event.RequestVolume;
+	event.RequestVolume = volume;
+	if (!Push_Level(event, ramp)) {
+		event.RequestVolume = previous;
+	}
+}
+
+
+void AudioEventPoolClass::Send_Pan(EventClass & event, float pan, float ramp)
+{
+	float previous = event.Pan;
+	event.Pan = pan;
+	if (!Push_Pan(event, ramp)) {
+		event.Pan = previous;
+	}
 }
 
 
@@ -803,38 +824,42 @@ void AudioEventPoolClass::Retarget(AudioHandle handle, float volume, float pan)
 	if (event == nullptr) {
 		return;
 	}
-	event->RequestVolume = volume;
-	event->Pan = pan;
-	Push_Level(*event, AUDIO_RETARGET_RAMP_SECONDS);
-	Push_Pan(*event, AUDIO_RETARGET_RAMP_SECONDS);
+	// Callers re-aim placed sounds every update, so only a real change is sent;
+	// repeating unchanged values would crowd the command ring.
+	if (event->RequestVolume != volume) {
+		Send_Volume(*event, volume, AUDIO_RETARGET_RAMP_SECONDS);
+	}
+	if (event->Pan != pan) {
+		Send_Pan(*event, pan, AUDIO_RETARGET_RAMP_SECONDS);
+	}
 }
 
 
 void AudioEventPoolClass::Set_Volume(AudioHandle handle, float volume)
 {
-	Set_Volume(handle, volume, (int)(AUDIO_RETARGET_RAMP_SECONDS * 1000.0f));
+	EventClass * event = Lookup(handle);
+	if (event != nullptr && event->RequestVolume != volume) {
+		Send_Volume(*event, volume, AUDIO_RETARGET_RAMP_SECONDS);
+	}
 }
 
 
 void AudioEventPoolClass::Set_Volume(AudioHandle handle, float volume, int ms)
 {
+	// An explicit time is sent even for the same volume; it replaces a change under way.
 	EventClass * event = Lookup(handle);
-	if (event == nullptr) {
-		return;
+	if (event != nullptr) {
+		Send_Volume(*event, volume, ms > 0 ? (float)ms / 1000.0f : 0.0f);
 	}
-	event->RequestVolume = volume;
-	Push_Level(*event, ms > 0 ? (float)ms / 1000.0f : 0.0f);
 }
 
 
 void AudioEventPoolClass::Set_Pan(AudioHandle handle, float pan)
 {
 	EventClass * event = Lookup(handle);
-	if (event == nullptr) {
-		return;
+	if (event != nullptr && event->Pan != pan) {
+		Send_Pan(*event, pan, AUDIO_RETARGET_RAMP_SECONDS);
 	}
-	event->Pan = pan;
-	Push_Pan(*event, AUDIO_RETARGET_RAMP_SECONDS);
 }
 
 
@@ -1000,9 +1025,8 @@ void AudioEventPoolClass::Set_Tag_Volume(void const * tag, float volume)
 	}
 	for (int i = 0; i < AUDIO_MAX_EVENTS; i++) {
 		EventClass & event = Events[i];
-		if (event.Is_Live() && !event.Stolen && event.Tag == tag) {
-			event.RequestVolume = volume;
-			Push_Level(event, AUDIO_RETARGET_RAMP_SECONDS);
+		if (event.Is_Live() && !event.Stolen && event.Tag == tag && event.RequestVolume != volume) {
+			Send_Volume(event, volume, AUDIO_RETARGET_RAMP_SECONDS);
 		}
 	}
 }

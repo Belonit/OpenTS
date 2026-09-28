@@ -541,6 +541,26 @@ void Test_End_While_Paused(void)
 }
 
 
+void Test_Late_Commands(void)
+{
+	RigClass rig;
+
+	// A command that reaches a voice after it finished is not lost.
+	std::unique_ptr<AudioSampleClass> blip = Make_Sine(RATE, 480, 440.0f, 0.5f);
+	AudioSequenceClass once = Single(blip.get());
+	Check(rig.Start(0, Play(0, 3, &once)), "play a short sound");
+	rig.Run(RATE / 10);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "the short sound finished by itself");
+	unsigned dropped = rig.Mixer.Dropped_Commands();
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 3, 0.1f));
+	rig.Run(480);
+	Check(rig.Mixer.Dropped_Commands() == dropped, "a stop that arrives after the sound ended is not counted as dropped");
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 2, 0.1f));
+	rig.Run(480);
+	Check(rig.Mixer.Dropped_Commands() == dropped + 1, "a command for an older use of the voice is counted as dropped");
+}
+
+
 void Test_Ring_And_Token(void)
 {
 	RigClass rig;
@@ -648,6 +668,7 @@ int main(void)
 	Test_Stop_Pause_Generation();
 	Test_Pause_Ramp_And_Stops();
 	Test_End_While_Paused();
+	Test_Late_Commands();
 	Test_Ring_And_Token();
 	Test_Stream();
 	Test_Determinism();

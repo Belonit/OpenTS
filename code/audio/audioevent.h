@@ -187,8 +187,11 @@ class AudioEventPoolClass
 		EventClass * Allocate(void);
 		int Random(int low, int high);
 		float Current_Level(EventClass const & event) const;
-		void Push_Level(EventClass & event, float ramp);
-		void Push_Pan(EventClass & event, float ramp);
+		// True when the mixer got the value, or the event has no voice yet.
+		bool Push_Level(EventClass & event, float ramp);
+		bool Push_Pan(EventClass & event, float ramp);
+		void Send_Volume(EventClass & event, float volume, float ramp);
+		void Send_Pan(EventClass & event, float pan, float ramp);
 		bool Enforce_Limit(EventClass & event);
 		bool Acquire_Voice(EventClass & event);
 		bool Issue(EventClass & event, bool attack, bool body, bool decay);
