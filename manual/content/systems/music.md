@@ -22,7 +22,11 @@ A queued track fades out the current track over [`FadeOut=`](/keys/fadeout/) sec
 
 Only one track can wait at a time, so a request to queue a track is ignored while another track is waiting.
 
-The main menu, map selection and the score screen start their tracks immediately instead. The current track stops at once, with no fade. An ion storm without a storm sound pauses the current track and resumes it when the storm ends; [Ion storms](/systems/ion-storms/#storm-audio) describes both kinds of storm audio. Replaying the briefing video during a mission pauses the current track, and it resumes from the same point when the video ends.
+The main menu, map selection and the score screen start their tracks immediately instead. The current track stops at once, with no fade. The main menu plays `FSMENU` while Firestorm is running, if THEME.INI registers that track, and `INTRO` otherwise.
+
+An ion storm without a storm sound pauses the current track and resumes it when the storm ends. [Ion storms](/systems/ion-storms/#storm-audio) describes both kinds of storm audio.
+
+Replaying the briefing video during a mission pauses the current track, and it resumes from the same point when the video ends.
 
 On the sound options screen, playing a track from the list stops the current track at once and starts the chosen one. The [next track](/commands/nexttheme/) and [previous track](/commands/prevtheme/) commands do the same with the allowed track after or before the current one.
 

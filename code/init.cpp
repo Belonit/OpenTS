@@ -6199,11 +6199,11 @@ SideType Prep_Speech_For_Side_Or_First(SideType side)
 /// <summary>
 /// Fetches the theme to play behind the main menu.
 /// </summary>
-/// <returns>Returns with the theme to play, favoring the expansion's own music whenever the
-/// expansion is installed.</returns>
+/// <returns>Returns with the theme to play, favoring the expansion's own music while the
+/// expansion is running.</returns>
 ThemeType Fetch_Main_Menu_Theme(void)
 {
-	if (Addon_Installed(ADDON_FIRESTORM)) {
+	if (Addon_Enabled(ADDON_FIRESTORM)) {
 		ThemeType theme = Theme.From_Name("FSMENU");
 		if (theme != THEME_NONE) {
 			return(theme);
