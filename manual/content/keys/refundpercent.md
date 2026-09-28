@@ -23,4 +23,6 @@ The fraction applies to four payments:
 - selling a structure's upgrade. A sell order on a structure with an upgrade removes and refunds its newest upgrade, and the structure stays;
 - the compensation paid when a structure undeploys and the vehicle it becomes cannot be created or placed. The payment is based on the structure's price.
 
+A type with a [`Soylent=`](/keys/soylent/) of `0` or more refunds that fixed amount in all four instead.
+
 Canceling something still under construction is different: it [refunds everything paid so far](/systems/production/#paying-for-it).

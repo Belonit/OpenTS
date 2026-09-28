@@ -297,6 +297,9 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		int Cost;
 
+		// Credits a sale refunds in place of the usual share of the price; a negative value keeps the usual refund.
+		int Soylent;
+
 		/*
 		 * This is the height above ground that an object of this type cruises at, expressed
 		 * in leptons. If -1, then the global FlightLevel rule is used instead.

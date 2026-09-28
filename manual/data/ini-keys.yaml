@@ -20592,6 +20592,23 @@ Sounds:
       source: code/vocini.cpp
       guard: null
     level: VocClass
+Soylent:
+  key: Soylent
+  scopes:
+  - applies_to: *id003
+    file: rules.ini
+    section:
+      kind: identifier
+      source: object-type
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: '-1'
+      declared_in: TechnoTypeClass
+      member: Soylent
+      source: code/techtype.cpp
+      guard: null
+    level: TechnoTypeClass
 SparkSpawnFrames:
   key: SparkSpawnFrames
   scopes:

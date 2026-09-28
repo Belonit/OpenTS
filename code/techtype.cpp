@@ -101,6 +101,7 @@ TechnoTypeClass::TechnoTypeClass(char const * ininame, SpeedType speed) :
 	IsVehicleTransport(false),
 	SightRange(0),
 	Cost(0),
+	Soylent(-1),
 	Level(255),
 	Prerequisite(),
 	Risk(0),
@@ -623,6 +624,7 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 			MaxSpeed = MPHType(_Scale_To_256(maxspeed));
 		}
 		Cost = ini.Get_Int(Name(), "Cost", Cost);
+		Soylent = ini.Get_Int(Name(), "Soylent", Soylent);
 		MaxAmmo = ini.Get_Int(Name(), "Ammo", MaxAmmo);
 		Reward = Points = ini.Get_Int(Name(), "Points", Points);
 		Risk = ini.Get_Int(Name(), "ThreatPosed", Risk);
@@ -1002,6 +1004,7 @@ void TechnoTypeClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(IsVehicleTransport);
 	stream.Serialize(SightRange);
 	stream.Serialize(Cost);
+	stream.Serialize(Soylent);
 	stream.Serialize(FlightLevel);
 	stream.Serialize(Level);
 	stream.Serialize(Prerequisite);
@@ -1132,6 +1135,7 @@ void TechnoTypeClass::Compute_CRC(class CRCEngine & crc) const
 	crc(IsVehicleTransport);
 	crc(SightRange);
 	crc(Cost);
+	crc(Soylent);
 	crc(Level);
 	crc(Prerequisite.Count());
 	crc(Risk);
