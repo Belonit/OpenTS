@@ -185,6 +185,8 @@ ThemeClass::ThemeClass(void) :
 	Volume(255),
 	IsRepeat(false),
 	IsShuffle(false),
+	Resume(THEME_NONE),
+	RetryAt(0),
 	FadeInNext(false),
 	FadeOutMs(DEFAULT_FADE_OUT_MS),
 	CrossFadeMs(0)
@@ -229,21 +231,25 @@ void ThemeClass::AI(void)
 			Fading.Clear();
 		}
 
-		// A repeating song only ends here when repeat came on too late for its stream to loop.
+		// A repeating song ends only when repeat came on too late to loop its stream, and plays
+		// again. After a song that nothing follows, the next pick continues from it.
 		if (!Current.Is_Null() && Current.Is_Finished()) {
 			Current.Clear();
 			if (Loops(Score) && (Pending == THEME_NONE || Pending == THEME_PICK_ANOTHER)) {
 				Pending = Score;
+			} else if (Pending == THEME_NONE) {
+				Resume = Score;
+				Score = THEME_NONE;
 			}
 		}
 
-		if (ScoresPresent && Volume > 0 && Current.Is_Finished() && (FadeInNext || Fading.Is_Finished())) {
+		if (ScoresPresent && Volume > 0 && Current.Is_Finished() && (FadeInNext || Fading.Is_Finished()) && (int)(AudioEngine.Now_Ms() - RetryAt) >= 0) {
 			if (Pending != THEME_NONE && Pending != THEME_QUIET && !ScenarioInit) {
 				/*
 				**	If the pending song needs to be picked, then pick it now.
 				*/
 				if (Pending == THEME_PICK_ANOTHER) {
-					Pending = Next_Song(Score);
+					Pending = Next_Song(Score != THEME_NONE ? Score : Resume);
 					DebugString("Theme::AI(Next song = %d)\n", Pending);
 				}
 
@@ -355,8 +361,10 @@ void ThemeClass::Queue_Song(ThemeType theme)
 	**	set the queued theme accordingly.
 	*/
 	if (Pending == THEME_NONE || Pending == THEME_PICK_ANOTHER || theme == THEME_NONE || theme == THEME_QUIET) {
+		if (Pending != theme) {
+			DebugString("Theme::QueueSong(%d)\n", theme);
+		}
 		Pending = theme;
-		DebugString("Theme::QueueSong(%d)\n", theme);
 
 		// Picking another song for a repeating one picks the same song, so it plays on.
 		if (theme == THEME_PICK_ANOTHER && !Current.Is_Finished() && Loops(Score)) {
@@ -418,6 +426,8 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 		DebugString("Theme::PlaySong(%d) - Unavailable\n", theme);
 		Score = THEME_NONE;
 		Pending = THEME_NONE;
+		Resume = theme;
+		RetryAt = AudioEngine.Now_Ms() + RETRY_MS;
 		return(false);
 	}
 	if (fadein) {
@@ -527,6 +537,8 @@ void ThemeClass::Stop(bool fade)
 		Current.Clear();
 		Score = THEME_NONE;
 		Pending = THEME_NONE;
+		Resume = THEME_NONE;
+		RetryAt = AudioEngine.Now_Ms();
 		FadeInNext = false;
 	}
 }

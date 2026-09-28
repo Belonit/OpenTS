@@ -33,7 +33,7 @@ Starting a scenario stops the current track. The game then plays the scenario's 
 1. In a campaign mission with no briefing movie and no action movie, the `Theme=` track starts at once behind the mission briefing screen. When the mission begins, that track fades out and the next allowed track follows, unless the `Theme=` track repeats.
 2. In a scenario with an action movie, the game requests the `Theme=` track only when that movie plays. If the movie does not play, for example when the player restarts a mission after a defeat, the game starts with the next allowed track.
 
-A request for a track whose file cannot be played produces no music. A queued request still fades out the current track, and an immediate one still stops it. During a game, the next allowed track then starts.
+A request for a track whose file cannot be played produces no music. A queued request still fades out the current track, and an immediate one still stops it. During a game, the allowed track after the failed one in the playlist starts about a second later.
 
 ## Choosing the next track
 
@@ -51,7 +51,7 @@ A track with [`Repeat=yes`](/keys/repeat/) starts again from its beginning each 
 
 A repeating track gives way to any queued track, including one queued by a Play music theme action or a Play music team mission, however the repeating track was started. A request for the next allowed track leaves a repeating track playing, as it would pick that track again.
 
-A track that was started immediately does not lead into the next allowed track. When it ends, the music stops unless the track repeats or another track has been queued. In a game, examples are the ion storm track, the track that restarts from the beginning when the storm ends, and the track that restarts after the player replays the briefing video during a mission.
+A track that was started immediately, and that does not repeat, ends without a queued successor. During a game, the next allowed track then follows, chosen as if the ended track had been picked from the playlist. Outside a game, for example on the score screen or in the menus, the music stops unless another track has been queued.
 
 ## Focus and volume
 

@@ -105,6 +105,13 @@ class ThemeClass
 		 */
 		DynamicVectorClass<ThemeControl *> Themes;
 
+		// The score that last played to its end with nothing to follow it; the next pick
+		// continues after it.
+		ThemeType Resume;
+
+		// After a failed start, no score starts before this time.
+		unsigned RetryAt;
+
 		// Set by a queued change that crossfades, so the next score rises from silence.
 		bool FadeInNext;
 
@@ -114,7 +121,8 @@ class ThemeClass
 
 		enum {
 			DEFAULT_FADE_OUT_MS = 1500,	// The 60 maintenance ticks the old driver took to fade.
-			FADE_CUT_MS = 100			// How quickly an older fade is cut when a newer one needs its place.
+			FADE_CUT_MS = 100,			// How quickly an older fade is cut when a newer one needs its place.
+			RETRY_MS = 1000
 		};
 
 	public:
