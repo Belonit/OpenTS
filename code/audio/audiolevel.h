@@ -39,6 +39,8 @@ class AudioLevelClass
 		float Current(void) const { return(Base * Adjust); }
 		float Target(void) const { return(BaseTarget * AdjustTarget); }
 		bool Is_Settled(void) const { return(BaseRemaining <= 0.0f && AdjustRemaining <= 0.0f); }
+		bool Adjust_Settled(void) const { return(AdjustRemaining <= 0.0f); }
+		float Adjust_Remaining(void) const { return(AdjustRemaining); }
 
 	private:
 		static void Step(float & value, float target, float & remaining, float seconds);

@@ -812,12 +812,18 @@ void AudioEventPoolClass::Retarget(AudioHandle handle, float volume, float pan)
 
 void AudioEventPoolClass::Set_Volume(AudioHandle handle, float volume)
 {
+	Set_Volume(handle, volume, (int)(AUDIO_RETARGET_RAMP_SECONDS * 1000.0f));
+}
+
+
+void AudioEventPoolClass::Set_Volume(AudioHandle handle, float volume, int ms)
+{
 	EventClass * event = Lookup(handle);
 	if (event == nullptr) {
 		return;
 	}
 	event->RequestVolume = volume;
-	Push_Level(*event, AUDIO_RETARGET_RAMP_SECONDS);
+	Push_Level(*event, ms > 0 ? (float)ms / 1000.0f : 0.0f);
 }
 
 
@@ -846,6 +852,31 @@ void AudioEventPoolClass::Fade(AudioHandle handle, int ms)
 	EventClass * event = Lookup(handle);
 	if (event != nullptr) {
 		Kill(*event, ms > 0 ? (float)ms / 1000.0f : AUDIO_STOP_RAMP_SECONDS);
+	}
+}
+
+
+void AudioEventPoolClass::Cut(AudioHandle handle, int ms)
+{
+	if (!Ready || handle.Is_Null() || handle.Index() >= AUDIO_MAX_EVENTS) {
+		return;
+	}
+	EventClass & event = Events[handle.Index()];
+	if (event.Generation != handle.Generation() || !event.Is_Live()) {
+		return;
+	}
+	float seconds = ms > 0 ? (float)ms / 1000.0f : AUDIO_STOP_RAMP_SECONDS;
+	if (!event.Stolen) {
+		Kill(event, seconds);
+		return;
+	}
+	if (event.Voice >= 0) {
+		AudioCommand command = {};
+		command.Type = AudioCommandType::STOP;
+		command.Slot = (uint8_t)event.Voice;
+		command.Generation = event.VoiceGeneration;
+		command.A = seconds;
+		Mixer->Push(command);
 	}
 }
 
@@ -903,7 +934,7 @@ void AudioEventPoolClass::End_Looping(AudioHandle handle)
 }
 
 
-void AudioEventPoolClass::Pause(AudioHandle handle)
+void AudioEventPoolClass::Pause(AudioHandle handle, int ms)
 {
 	EventClass * event = Lookup(handle);
 	if (event == nullptr || event->Voice < 0) {
@@ -913,11 +944,12 @@ void AudioEventPoolClass::Pause(AudioHandle handle)
 	command.Type = AudioCommandType::PAUSE;
 	command.Slot = (uint8_t)event->Voice;
 	command.Generation = event->VoiceGeneration;
+	command.A = ms > 0 ? (float)ms / 1000.0f : 0.0f;
 	Mixer->Push(command);
 }
 
 
-void AudioEventPoolClass::Resume(AudioHandle handle)
+void AudioEventPoolClass::Resume(AudioHandle handle, int ms)
 {
 	EventClass * event = Lookup(handle);
 	if (event == nullptr || event->Voice < 0) {
@@ -927,6 +959,7 @@ void AudioEventPoolClass::Resume(AudioHandle handle)
 	command.Type = AudioCommandType::RESUME;
 	command.Slot = (uint8_t)event->Voice;
 	command.Generation = event->VoiceGeneration;
+	command.A = ms > 0 ? (float)ms / 1000.0f : 0.0f;
 	Mixer->Push(command);
 }
 

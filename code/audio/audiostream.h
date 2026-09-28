@@ -92,6 +92,13 @@ class AudioFileStreamProducerClass : public AudioStreamProducerClass
 		unsigned Rate(void) const { return(RateValue); }
 		unsigned Channels(void) const { return(ChannelCount); }
 
+		// Any thread. Applies at the next end of data the producer reaches; a stream
+		// that already ended without looping stays ended.
+		void Set_Loop(bool loop) { Loop.store(loop, std::memory_order_relaxed); }
+
+		// The length of one pass, or zero when the format does not state it.
+		uint64_t Length_Frames(void) const;
+
 		bool Fill(AudioStreamClass & stream) override;
 		void Close(void) override;
 		unsigned Min_Ring_Frames(void) const override;
@@ -102,7 +109,7 @@ class AudioFileStreamProducerClass : public AudioStreamProducerClass
 		bool Rewind(void);
 
 		std::unique_ptr<AudioByteSourceClass> Source;
-		bool Loop = false;
+		std::atomic<bool> Loop{false};
 		bool IsAud = false;
 		bool Ended = false;
 		AUDHeaderType Header = {};

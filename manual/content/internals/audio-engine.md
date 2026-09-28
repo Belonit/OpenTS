@@ -44,7 +44,7 @@ When the device stops without the engine stopping it, the feeder thread renders 
 
 The mixer has 64 voices. A voice plays either a sequence of decoded clips (attack, body loop and decay) or a stream ring. The voice resamples its source to 48 kHz, adjusted by its pitch. A source is never read faster than four times the output rate, so pitch is capped for high-rate sources.
 
-A voice's loudness is the product of five ramped levels: its own, its group's, its group's duck level, the master level, and the focus-pause level. That product passes through one loudness curve, gain = level^(5/3), which is the volume mapping of the original DirectSound driver. Voices add into the output, and output samples above 0.9 in magnitude are soft-clipped.
+A voice's loudness is the product of six ramped levels: its own, its own pause level, its group's, its group's duck level, the master level, and the focus-pause level. That product passes through one loudness curve, gain = level^(5/3), which is the volume mapping of the original DirectSound driver. Voices add into the output, and output samples above 0.9 in magnitude are soft-clipped.
 
 The game thread changes a voice only by pushing a command into a single-producer, single-consumer ring that holds 512 commands. The mixer applies the waiting commands at the start of each render. A command names its voice by slot and generation, so the mixer drops a command aimed at a voice that has since been reused. When the ring is full, a command pushed to it is lost:
 
@@ -54,6 +54,8 @@ The game thread changes a voice only by pushing a command into a single-producer
 
 A voice moves from allocated to playing and can pause and resume. It becomes done when it plays to its end, and passes through stopping first when it is stopped or ended early. A voice whose start the mixer rejects goes from allocated straight to done. The game thread owns a voice while it is free, allocated or done, and the device thread owns it while it is playing, paused or stopping. The game thread frees a voice only when it is done, or when it was allocated and never started.
 
+A pause or a resume can fade over a given time; a voice fading toward a pause still counts as playing, and a resume during that fade turns it back. A stopped voice is done once its stop fade ends, even if a volume change is still running under it. A second stop can make that fade end sooner but never later, and stopping or ending a paused voice ends it at once without sound. Ending a voice during its fade toward a pause cancels the pause, and the voice finishes.
+
 ### Sample cache
 
 The sample cache holds decoded 16-bit PCM. A named sample is keyed by its name, ignoring case. An AUD already in memory is keyed by its address and a hash of its contents, so a buffer refilled with a different sample does not replay the old one.
@@ -62,13 +64,17 @@ A sample is pinned while a voice plays it, and a pinned sample is never evicted.
 
 ### Streams
 
-A stream is a ring of PCM that one producer writes and the mixer reads. The engine has four stream slots, and opening a stream while all four are in use fails.
+A stream is a ring of PCM that one producer writes and the mixer reads. The engine has eight stream slots, and opening a stream while all eight are in use fails. Stopping a stream closes its file at once, but its slot is not reused until its voice has finished reading the ring, which can take until focus returns when the mix is paused. The voice finishes after what was already read even if the stop command itself was lost.
 
 Music and speech play as file streams. The feeder thread decodes them, an AUD one chunk at a time and any other format through miniaudio, into a ring that holds five seconds at the source rate. The game thread decodes the first block when the stream opens, so playback starts without waiting for the feeder.
 
 The movie player takes a stream slot too and writes its PCM blocks into that ring. Its clock is the number of frames the mixer has consumed from the ring, less the audio still buffered in the device and any block the player wrote twice because it ran short of data. When the mixer stops consuming, for example after the sound track ends early, the clock runs on wall-clock time, so the picture does not freeze.
 
 The feeder thread wakes every 16 ms and tops up every open file stream.
+
+A file stream that loops starts again from the beginning of its file with no gap. Looping can be switched on or off while the stream plays and applies the next time the feeder reaches the end of the file, up to five seconds before that point is heard. Once the feeder has reached the end without looping, the stream ends regardless. A looping file that yields no audio after starting again ends as well.
+
+The engine can also report how long a file would play without opening a stream: an AUD from its header, WAV, FLAC and MP3 from miniaudio, and Ogg Vorbis from the position recorded by the last page of its first stream. A file that states a length of more than a day counts as stating none.
 
 ### Event pool
 

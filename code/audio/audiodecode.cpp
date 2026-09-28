@@ -439,6 +439,42 @@ bool Audio_Decode_Other(void const * data, size_t size, std::vector<int16_t> & o
 }
 
 
+uint64_t Audio_Ogg_Length_Frames(AudioByteSourceClass & source)
+{
+	size_t const TAIL = 65536;
+	size_t const PAGE_HEADER = 27;
+	size_t const SERIAL = 14;
+
+	unsigned char first[PAGE_HEADER];
+	if (!source.Seek(0) || source.Read(first, sizeof(first)) != sizeof(first) || std::memcmp(first, "OggS", 4) != 0) {
+		return(0);
+	}
+
+	size_t size = source.Size();
+	size_t start = size > TAIL ? size - TAIL : 0;
+	std::vector<unsigned char> tail(size - start);
+	if (!source.Seek(start) || source.Read(tail.data(), tail.size()) != tail.size()) {
+		return(0);
+	}
+
+	// A page whose granule position is all ones ends no packet, so an earlier one counts.
+	// Pages of the file's other streams are skipped.
+	for (size_t i = tail.size() >= PAGE_HEADER ? tail.size() - PAGE_HEADER + 1 : 0; i-- > 0;) {
+		if (std::memcmp(&tail[i], "OggS", 4) != 0 || tail[i + 4] != 0 || std::memcmp(&tail[i + SERIAL], &first[SERIAL], 4) != 0) {
+			continue;
+		}
+		uint64_t granule = 0;
+		for (int b = 7; b >= 0; b--) {
+			granule = (granule << 8) | tail[i + 6 + b];
+		}
+		if (granule != ~(uint64_t)0) {
+			return(granule);
+		}
+	}
+	return(0);
+}
+
+
 struct AudioOtherStreamDecoderClass::DataClass {
 	ma_decoder Decoder;
 	AudioByteSourceClass * Source;
@@ -551,4 +587,14 @@ unsigned AudioOtherStreamDecoderClass::Read(int16_t * output, unsigned frames)
 bool AudioOtherStreamDecoderClass::Rewind(void)
 {
 	return(Data != nullptr && ma_decoder_seek_to_pcm_frame(&Data->Decoder, 0) == MA_SUCCESS);
+}
+
+
+uint64_t AudioOtherStreamDecoderClass::Length_Frames(void) const
+{
+	ma_uint64 frames = 0;
+	if (Data == nullptr || ma_decoder_get_length_in_pcm_frames(&Data->Decoder, &frames) != MA_SUCCESS) {
+		return(0);
+	}
+	return((uint64_t)frames);
 }

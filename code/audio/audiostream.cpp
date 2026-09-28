@@ -61,7 +61,7 @@ bool AudioFileStreamProducerClass::Open(std::unique_ptr<AudioByteSourceClass> so
 	if (source == nullptr) {
 		return(false);
 	}
-	Loop = loop;
+	Loop.store(loop, std::memory_order_relaxed);
 	Ended = false;
 
 	unsigned char head[sizeof(AUDHeaderType)];
@@ -117,6 +117,22 @@ bool AudioFileStreamProducerClass::Rewind(void)
 }
 
 
+uint64_t AudioFileStreamProducerClass::Length_Frames(void) const
+{
+	if (Source == nullptr) {
+		return(0);
+	}
+	if (!IsAud) {
+		return(Other.Length_Frames());
+	}
+	unsigned framebytes = ChannelCount * (Aud_Bits(Header) / 8);
+	if (Header.UncompSize > 0 && framebytes > 0) {
+		return((uint64_t)Header.UncompSize / framebytes);
+	}
+	return(Aud_Frame_Capacity(Header));
+}
+
+
 unsigned AudioFileStreamProducerClass::Min_Ring_Frames(void) const
 {
 	if (Source == nullptr) {
@@ -144,15 +160,18 @@ bool AudioFileStreamProducerClass::Fill_Aud(AudioStreamClass & stream)
 	unsigned framebytes = ChannelCount * (Aud_Bits(Header) / 8);
 	unsigned chunkframes = Aud.Max_Chunk_Frames();
 	unsigned written = 0;
+	bool rewound = false;
 
 	while (written < MAX_FRAMES_PER_PASS && stream.Ring.Available_Write() >= chunkframes) {
 		unsigned frames = 0;
 
 		if (DataRemaining == 0) {
-			if (!Loop || !Rewind()) {
+			// A looping file that yields nothing after a rewind has ended for good.
+			if (rewound || !Loop.load(std::memory_order_relaxed) || !Rewind()) {
 				Ended = true;
 				return(false);
 			}
+			rewound = true;
 			continue;
 		}
 
@@ -196,6 +215,9 @@ bool AudioFileStreamProducerClass::Fill_Aud(AudioStreamClass & stream)
 			frames = Aud.Convert_Raw(Compressed.data(), got, Pcm.data(), chunkframes);
 		}
 
+		if (frames > 0) {
+			rewound = false;
+		}
 		written += stream.Ring.Write(Pcm.data(), frames);
 	}
 	return(true);
@@ -205,15 +227,18 @@ bool AudioFileStreamProducerClass::Fill_Aud(AudioStreamClass & stream)
 bool AudioFileStreamProducerClass::Fill_Other(AudioStreamClass & stream)
 {
 	unsigned written = 0;
+	bool rewound = false;
 	while (written < MAX_FRAMES_PER_PASS && stream.Ring.Available_Write() >= OTHER_READ_FRAMES) {
 		unsigned frames = Other.Read(Pcm.data(), OTHER_READ_FRAMES);
 		if (frames == 0) {
-			if (!Loop || !Rewind()) {
+			if (rewound || !Loop.load(std::memory_order_relaxed) || !Rewind()) {
 				Ended = true;
 				return(false);
 			}
+			rewound = true;
 			continue;
 		}
+		rewound = false;
 		written += stream.Ring.Write(Pcm.data(), frames);
 	}
 	return(true);

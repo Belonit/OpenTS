@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <string>
 #include <thread>
 
 namespace {
@@ -27,6 +28,9 @@ int const STREAM_STOP_WAIT_MS = 250;
 
 // Dropped commands are reported at most this often.
 unsigned const DROP_REPORT_MS = 1000;
+
+// A stated length over a day means a damaged file.
+double const MAX_STREAM_SECONDS = 86400.0;
 
 
 // A byte source over the game's file layer, so a stream reads loose files and
@@ -341,15 +345,88 @@ void AudioEngineClass::Stop_Stream(AudioHandle handle)
 	if (!Available || handle.Is_Null()) {
 		return;
 	}
-	Pool.Stop(handle);
-	if (!Wait_Finished(handle, STREAM_STOP_WAIT_MS)) {
-		DebugString("Audio: stream did not stop in time\n");
-	}
+	Pool.Cut(handle, 0);
 	for (int i = 0; i < AUDIO_MAX_STREAMS; i++) {
-		if (Streams[i].InUse && !Streams[i].External && Streams[i].Handle == handle) {
+		StreamSlotClass & s = Streams[i];
+		if (!s.InUse || s.External || s.Handle != handle) {
+			continue;
+		}
+
+		// The voice may read the ring a while longer, until focus returns if the
+		// mix is paused, so Reap_Streams frees the slot once the event finishes.
+		Feeder.Detach((unsigned)i);
+		s.Producer.reset();
+		// The voice finishes what was read even if the stop never reached it.
+		s.Stream.EndOfInput.store(true, std::memory_order_release);
+		if (Pool.Is_Finished(handle)) {
 			Close_Stream(i);
 		}
 	}
+}
+
+
+void AudioEngineClass::Set_Stream_Loop(AudioHandle handle, bool loop)
+{
+	if (!Available || handle.Is_Null()) {
+		return;
+	}
+	for (int i = 0; i < AUDIO_MAX_STREAMS; i++) {
+		StreamSlotClass & s = Streams[i];
+		if (s.InUse && !s.External && s.Handle == handle && s.Producer != nullptr) {
+			s.Producer->Set_Loop(loop);
+		}
+	}
+}
+
+
+float AudioEngineClass::Stream_Seconds(char const * filename)
+{
+	if (filename == nullptr || filename[0] == '\0') {
+		return(0.0f);
+	}
+	std::unique_ptr<CCFileByteSourceClass> source(new CCFileByteSourceClass(filename));
+	if (!source->Is_Open()) {
+		return(0.0f);
+	}
+	AudioFileStreamProducerClass producer;
+	if (!producer.Open(std::move(source), false) || producer.Rate() == 0) {
+		return(0.0f);
+	}
+	uint64_t frames = producer.Length_Frames();
+	if (frames == 0) {
+		CCFileByteSourceClass tail(filename);
+		if (tail.Is_Open()) {
+			frames = Audio_Ogg_Length_Frames(tail);
+		}
+	}
+	double seconds = (double)frames / (double)producer.Rate();
+	return(seconds <= MAX_STREAM_SECONDS ? (float)seconds : 0.0f);
+}
+
+
+bool AudioEngineClass::Find_Named_File(char const * basename, char * filename, size_t size)
+{
+	if (filename == nullptr || size == 0) {
+		return(false);
+	}
+	filename[0] = '\0';
+	if (basename == nullptr || basename[0] == '\0') {
+		return(false);
+	}
+	for (int format = 0; format < AudioSampleCacheClass::FORMAT_COUNT; format++) {
+		std::string name(basename);
+		name += AudioSampleCacheClass::FORMAT_EXTENSIONS[format];
+		if (name.size() >= size) {
+			continue;
+		}
+		std::unique_ptr<CCFileByteSourceClass> source(new CCFileByteSourceClass(name.c_str()));
+		AudioFileStreamProducerClass producer;
+		if (source->Is_Open() && producer.Open(std::move(source), false)) {
+			std::memcpy(filename, name.c_str(), name.size() + 1);
+			return(true);
+		}
+	}
+	return(false);
 }
 
 
@@ -617,6 +694,12 @@ void AudioHandle::Set_Volume(float volume)
 }
 
 
+void AudioHandle::Set_Volume(float volume, int ms)
+{
+	AudioEngine.Events().Set_Volume(*this, volume, ms);
+}
+
+
 void AudioHandle::Set_Pan(float pan)
 {
 	AudioEngine.Events().Set_Pan(*this, pan);
@@ -644,4 +727,22 @@ void AudioHandle::End_Looping(void)
 void AudioHandle::Fade(int ms)
 {
 	AudioEngine.Events().Fade(*this, ms);
+}
+
+
+void AudioHandle::Cut(int ms)
+{
+	AudioEngine.Events().Cut(*this, ms);
+}
+
+
+void AudioHandle::Pause(int ms)
+{
+	AudioEngine.Events().Pause(*this, ms);
+}
+
+
+void AudioHandle::Resume(int ms)
+{
+	AudioEngine.Events().Resume(*this, ms);
 }

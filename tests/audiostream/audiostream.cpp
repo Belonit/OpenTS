@@ -246,6 +246,126 @@ void Test_Wav_Stream(void)
 }
 
 
+void Test_Loop_Switch_And_Length(void)
+{
+	std::vector<uint8_t> file = Make_Sos_File(30, 22050);
+	AUDHeaderType header;
+	Aud_Read_Header(file.data(), file.size(), header);
+	std::vector<int16_t> whole(Aud_Frame_Capacity(header));
+	AudioPcmFormat format;
+	unsigned frames = Aud_Decode(file.data(), file.size(), whole.data(), (unsigned)whole.size(), format);
+
+	AudioFileStreamProducerClass aud;
+	aud.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(file)), false);
+	Check(aud.Length_Frames() == frames, "an AUD's length is the frames it decodes to");
+
+	std::vector<uint8_t> wav = Make_Wav(9000, 44100);
+	AudioFileStreamProducerClass wavproducer;
+	wavproducer.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(wav)), false);
+	Check(wavproducer.Length_Frames() == 9000, "a WAV's length comes from its header");
+
+	// Looping switched off before the end plays one pass; switched on, it keeps going.
+	AudioStreamClass stream;
+	stream.Init(16000, 1, 22050);
+	AudioFileStreamProducerClass once;
+	once.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(file)), true);
+	once.Set_Loop(false);
+	Check(Drain(once, stream, frames * 2).size() == frames, "a stream whose looping was switched off ends after one pass");
+
+	stream.Reset();
+	AudioFileStreamProducerClass again;
+	again.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(file)), false);
+	again.Set_Loop(true);
+	Check(Drain(again, stream, frames * 2 + 500).size() >= frames * 2 + 500, "a stream whose looping was switched on starts over");
+
+	// An Ogg file's length is the position its last page records.
+	std::vector<uint8_t> ogg;
+	auto page = [&ogg](uint64_t granule) {
+		Append(ogg, "OggS", 4);
+		ogg.push_back(0);
+		ogg.push_back(0);
+		Append(ogg, &granule, 8);
+		for (int i = 0; i < 13; i++) {
+			ogg.push_back(0);
+		}
+	};
+	page(0);
+	ogg.resize(ogg.size() + 5000, 0x55);
+	page(123456);
+	page(~(uint64_t)0);
+	MemoryByteSourceClass oggsource(ogg);
+	Check(Audio_Ogg_Length_Frames(oggsource) == 123456, "an Ogg length skips a last page that ends no packet");
+	MemoryByteSourceClass wavsource(wav);
+	Check(Audio_Ogg_Length_Frames(wavsource) == 0, "data that is not Ogg has no Ogg length");
+}
+
+
+void Test_Loop_Edges(void)
+{
+	std::vector<uint8_t> file = Make_Sos_File(80, 22050);
+	AUDHeaderType header;
+	Aud_Read_Header(file.data(), file.size(), header);
+	std::vector<int16_t> whole(Aud_Frame_Capacity(header));
+	AudioPcmFormat format;
+	unsigned frames = Aud_Decode(file.data(), file.size(), whole.data(), (unsigned)whole.size(), format);
+	AudioStreamClass stream;
+	stream.Init(8000, 1, 22050);
+
+	// Looping switched on part way through a pass carries on into the next one.
+	AudioFileStreamProducerClass late;
+	late.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(file)), false);
+	std::vector<int16_t> first = Drain(late, stream, frames / 2);
+	late.Set_Loop(true);
+	std::vector<int16_t> rest = Drain(late, stream, frames * 2);
+	Check(first.size() + rest.size() >= frames * 2, "looping switched on during a pass starts the file over");
+
+	// Once the file has ended, switching looping on does not bring it back.
+	stream.Reset();
+	AudioFileStreamProducerClass ended;
+	ended.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(file)), false);
+	Check(Drain(ended, stream, frames * 2).size() == frames, "a stream that does not loop plays one pass");
+	ended.Set_Loop(true);
+	Check(!ended.Fill(stream) && stream.Ring.Available_Read() == 0, "looping switched on after the end adds nothing");
+
+	// A looping file that yields no audio ends rather than being read again forever.
+	std::vector<uint8_t> broken = file;
+	AUDChunkHeaderType chunk;
+	std::memcpy(&chunk, &broken[sizeof(AUDHeaderType)], sizeof(chunk));
+	chunk.Magic = 0;
+	std::memcpy(&broken[sizeof(AUDHeaderType)], &chunk, sizeof(chunk));
+	stream.Reset();
+	AudioFileStreamProducerClass aud;
+	Check(aud.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(broken)), true), "an AUD whose first chunk is damaged opens");
+	Check(!aud.Fill(stream), "a looping AUD that yields nothing ends");
+
+	AudioStreamClass wavstream;
+	wavstream.Init(16000, 1, 44100);
+	std::vector<uint8_t> empty = Make_Wav(0, 44100);
+	AudioFileStreamProducerClass wav;
+	Check(wav.Open(std::unique_ptr<AudioByteSourceClass>(new MemoryByteSourceClass(empty)), true), "a WAV with no frames opens");
+	Check(!wav.Fill(wavstream), "a looping WAV with no frames ends");
+
+	// Only the file's first stream sets its length, even when another stream's page is last.
+	std::vector<uint8_t> ogg;
+	auto page = [&ogg](uint32_t serial, uint64_t granule) {
+		Append(ogg, "OggS", 4);
+		ogg.push_back(0);
+		ogg.push_back(0);
+		Append(ogg, &granule, 8);
+		Append(ogg, &serial, 4);
+		for (int i = 0; i < 9; i++) {
+			ogg.push_back(0);
+		}
+	};
+	page(7, 0);
+	ogg.resize(ogg.size() + 5000, 0x55);
+	page(7, 4321);
+	page(8, 987654);
+	MemoryByteSourceClass oggsource(ogg);
+	Check(Audio_Ogg_Length_Frames(oggsource) == 4321, "an Ogg length ignores another stream's pages");
+}
+
+
 void Test_Push(void)
 {
 	AudioStreamClass stream;
@@ -469,6 +589,8 @@ int main(void)
 {
 	Test_Aud_Stream();
 	Test_Wav_Stream();
+	Test_Loop_Switch_And_Length();
+	Test_Loop_Edges();
 	Test_Push();
 	Test_Feeder();
 	Test_Recovery();

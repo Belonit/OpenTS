@@ -49,6 +49,8 @@ struct VoiceClass {
 	unsigned SourceChannels = 0;
 	float Pitch = 1.0f;
 	AudioLevelClass Level;
+	AudioLevelClass Hold;          // Pause level, ramped apart from the volume and stop fade.
+	bool Pausing = false;
 	float Pan = 0.0f;
 	float PanTarget = 0.0f;
 	float PanRemaining = 0.0f;
@@ -321,8 +323,11 @@ void AudioMixerClass::StateClass::Apply(AudioCommand const & command, std::atomi
 		case AudioCommandType::STOP_ALL:
 			for (VoiceClass & voice : Voices) {
 				AudioVoiceState state = voice.State.load(std::memory_order_relaxed);
-				if (state == AudioVoiceState::PLAYING || state == AudioVoiceState::PAUSED || state == AudioVoiceState::STOPPING) {
+				if (state == AudioVoiceState::PAUSED) {
+					Finish(voice);
+				} else if (state == AudioVoiceState::PLAYING || state == AudioVoiceState::STOPPING) {
 					voice.Level.Adjust_Level(0.0f, command.A > 0.0f ? command.A : AUDIO_STOP_RAMP_SECONDS);
+					voice.Pausing = false;
 					voice.State.store(AudioVoiceState::STOPPING, std::memory_order_relaxed);
 				}
 			}
@@ -353,6 +358,8 @@ void AudioMixerClass::StateClass::Apply(AudioCommand const & command, std::atomi
 		voice.Cursor = 0;
 		voice.Level = AudioLevelClass();
 		voice.Level.Set_Level(command.A, 0.0f);
+		voice.Hold = AudioLevelClass();
+		voice.Pausing = false;
 		voice.Pan = command.B;
 		voice.PanTarget = command.B;
 		voice.PanRemaining = 0.0f;
@@ -390,19 +397,39 @@ void AudioMixerClass::StateClass::Apply(AudioCommand const & command, std::atomi
 	}
 
 	switch (command.Type) {
-		case AudioCommandType::STOP:
-			voice.Level.Adjust_Level(0.0f, command.A > 0.0f ? command.A : AUDIO_STOP_RAMP_SECONDS);
+		case AudioCommandType::STOP: {
+			float seconds = command.A > 0.0f ? command.A : AUDIO_STOP_RAMP_SECONDS;
+			if (state == AudioVoiceState::PAUSED) {
+				Finish(voice);
+				break;
+			}
+			// A second stop can only bring the end of a fade closer.
+			if (state == AudioVoiceState::STOPPING && voice.Level.Adjust_Remaining() <= seconds) {
+				break;
+			}
+			voice.Level.Adjust_Level(0.0f, seconds);
+			voice.Pausing = false;
 			voice.State.store(AudioVoiceState::STOPPING, std::memory_order_relaxed);
 			break;
+		}
 
 		case AudioCommandType::PAUSE:
 			if (state == AudioVoiceState::PLAYING) {
-				voice.State.store(AudioVoiceState::PAUSED, std::memory_order_relaxed);
+				if (command.A > 0.0f) {
+					voice.Hold.Set_Level(0.0f, command.A);
+					voice.Pausing = true;
+				} else {
+					voice.Hold.Set_Level(0.0f, 0.0f);
+					voice.Pausing = false;
+					voice.State.store(AudioVoiceState::PAUSED, std::memory_order_relaxed);
+				}
 			}
 			break;
 
 		case AudioCommandType::RESUME:
-			if (state == AudioVoiceState::PAUSED) {
+			if (state == AudioVoiceState::PAUSED || (state == AudioVoiceState::PLAYING && voice.Pausing)) {
+				voice.Hold.Set_Level(1.0f, command.A > 0.0f ? command.A : 0.0f);
+				voice.Pausing = false;
 				voice.State.store(AudioVoiceState::PLAYING, std::memory_order_relaxed);
 			}
 			break;
@@ -424,12 +451,17 @@ void AudioMixerClass::StateClass::Apply(AudioCommand const & command, std::atomi
 			break;
 
 		case AudioCommandType::END_SEQUENCE:
-			if (voice.IsStream || voice.Sequence == nullptr) {
-				voice.Level.Adjust_Level(0.0f, AUDIO_END_RAMP_SECONDS);
-				voice.State.store(AudioVoiceState::STOPPING, std::memory_order_relaxed);
-			} else if (command.Mode == (uint8_t)AudioEndMode::AFTER_CYCLE) {
+			if (command.Mode == (uint8_t)AudioEndMode::AFTER_CYCLE && !voice.IsStream && voice.Sequence != nullptr) {
 				voice.EndAfterCycle = true;
-			} else if (voice.Segment >= voice.Sequence->LoopEnd) {
+				break;
+			}
+			// An immediate end finishes a paused voice at once and cancels a pause under way.
+			if (state == AudioVoiceState::PAUSED) {
+				Finish(voice);
+				break;
+			}
+			voice.Pausing = false;
+			if (voice.IsStream || voice.Sequence == nullptr || voice.Segment >= voice.Sequence->LoopEnd) {
 				// Already in the decay, or there is none: just fade out.
 				voice.Level.Adjust_Level(0.0f, AUDIO_END_RAMP_SECONDS);
 				voice.State.store(AudioVoiceState::STOPPING, std::memory_order_relaxed);
@@ -612,14 +644,15 @@ void AudioMixerClass::StateClass::Finish(VoiceClass & voice)
 
 void AudioMixerClass::StateClass::Render_Voice(VoiceClass & voice, float * output, unsigned frames, float grouplevel, float master)
 {
-	float level = voice.Level.Advance(frames, Rate);
+	float level = voice.Level.Advance(frames, Rate) * voice.Hold.Advance(frames, Rate);
 
-	if (voice.State.load(std::memory_order_relaxed) == AudioVoiceState::STOPPING && voice.Level.Is_Settled()) {
+	// Only the fade to silence ends a stop; a volume ramp under it does not hold the voice.
+	if (voice.State.load(std::memory_order_relaxed) == AudioVoiceState::STOPPING && voice.Level.Adjust_Settled()) {
 		Finish(voice);
 		return;
 	}
 
-	if (voice.EndNow && voice.Level.Is_Settled()) {
+	if (voice.EndNow && voice.Level.Adjust_Settled()) {
 		voice.EndNow = false;
 		voice.Level.Restore_Level(0.0f);
 		level = voice.Level.Current();
@@ -677,8 +710,13 @@ void AudioMixerClass::StateClass::Render_Voice(VoiceClass & voice, float * outpu
 	if (voice.Draining) {
 		if (voice.DrainBlocks == 0) {
 			Finish(voice);
-		} else {
-			voice.DrainBlocks--;
+			return;
 		}
+		voice.DrainBlocks--;
+	}
+
+	if (voice.Pausing && voice.Hold.Is_Settled()) {
+		voice.Pausing = false;
+		voice.State.store(AudioVoiceState::PAUSED, std::memory_order_relaxed);
 	}
 }

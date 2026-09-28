@@ -447,6 +447,100 @@ void Test_Stop_Pause_Generation(void)
 }
 
 
+void Test_Pause_Ramp_And_Stops(void)
+{
+	RigClass rig;
+	std::unique_ptr<AudioSampleClass> sine = Make_Sine(RATE, RATE, 440.0f, 0.5f);
+	AudioSequenceClass sequence = Single(sine.get(), -1);
+
+	Check(rig.Start(0, Play(0, 1, &sequence)), "play for the pause ramp test");
+	rig.Run(4800);
+	rig.Mixer.Push(Simple(AudioCommandType::PAUSE, 0, 1, 0.05f));
+	size_t mark = rig.Output.size() / 2;
+	rig.Run(RATE / 10);
+	Check(rig.Rms(mark, mark + 480, 0) > 0.2f, "a ramped pause is still audible at its start");
+	Check(rig.Silent(mark + RATE / 20 + 64, mark + RATE / 10), "a ramped pause is silent once its ramp is over");
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::PAUSED, "the voice reports paused after the ramp");
+
+	rig.Mixer.Push(Simple(AudioCommandType::RESUME, 0, 1, 0.05f));
+	mark = rig.Output.size() / 2;
+	rig.Run(RATE / 10);
+	Check(rig.Rms(mark, mark + 480, 0) < rig.Rms(mark + RATE / 20 + 64, mark + RATE / 10, 0), "a ramped resume rises");
+	Check(rig.Rms(mark + RATE / 20 + 64, mark + RATE / 10, 0) > 0.3f, "a ramped resume reaches the full level");
+
+	// A resume during the ramp down turns it around without a pause.
+	rig.Mixer.Push(Simple(AudioCommandType::PAUSE, 0, 1, 0.1f));
+	rig.Run(RATE / 50);
+	rig.Mixer.Push(Simple(AudioCommandType::RESUME, 0, 1, 0.01f));
+	mark = rig.Output.size() / 2;
+	rig.Run(RATE / 10);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::PLAYING, "a resume during a pause ramp keeps the voice playing");
+	Check(rig.Rms(mark + RATE / 50, mark + RATE / 10, 0) > 0.3f, "and brings it back to the full level");
+
+	// Stopping a paused voice ends it without making it audible again.
+	rig.Mixer.Push(Simple(AudioCommandType::PAUSE, 0, 1));
+	rig.Run(480);
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 1, 0.5f));
+	mark = rig.Output.size() / 2;
+	rig.Run(480);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "a stopped paused voice is done at once");
+	Check(rig.Silent(mark, mark + 480), "a stopped paused voice stays silent");
+	rig.Mixer.Free_Voice(0);
+
+	// A stop during a long volume change ends with its own fade.
+	Check(rig.Start(0, Play(0, 2, &sequence, 0.0f)), "play at silence for the ramp test");
+	rig.Mixer.Push(Simple(AudioCommandType::SET_GAIN, 0, 2, 1.0f, 2.0f));
+	rig.Run(RATE / 10);
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 2, 0.01f));
+	rig.Run(RATE / 20);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "a stop during a volume change is done after its fade");
+	rig.Mixer.Free_Voice(0);
+
+	// A second stop brings a long fade's end closer but never moves it later.
+	Check(rig.Start(0, Play(0, 3, &sequence)), "play for the shortened fade");
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 3, 2.0f));
+	rig.Run(RATE / 10);
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 3, 0.01f));
+	rig.Run(RATE / 20);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "a shorter second stop ends a long fade early");
+	rig.Mixer.Free_Voice(0);
+
+	Check(rig.Start(0, Play(0, 4, &sequence)), "play for the kept fade");
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 4, 0.05f));
+	rig.Mixer.Push(Simple(AudioCommandType::STOP, 0, 4, 2.0f));
+	rig.Run(RATE / 10);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "a longer second stop keeps the first fade's end");
+}
+
+
+void Test_End_While_Paused(void)
+{
+	RigClass rig;
+	std::unique_ptr<AudioSampleClass> sine = Make_Sine(RATE, RATE, 440.0f, 0.5f);
+	AudioSequenceClass sequence = Single(sine.get(), -1);
+
+	// An end during a pause ramp finishes the voice rather than leaving it paused.
+	Check(rig.Start(0, Play(0, 1, &sequence)), "play for the end during a pause");
+	rig.Run(480);
+	rig.Mixer.Push(Simple(AudioCommandType::PAUSE, 0, 1, 0.05f));
+	rig.Mixer.Push(Simple(AudioCommandType::END_SEQUENCE, 0, 1, 0.0f, 0.0f, (uint8_t)AudioEndMode::NOW));
+	rig.Run(RATE / 2);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "an end during a pause ramp finishes the voice");
+	rig.Mixer.Free_Voice(0);
+
+	Check(rig.Start(0, Play(0, 2, &sequence)), "play for the end of a paused voice");
+	rig.Run(480);
+	rig.Mixer.Push(Simple(AudioCommandType::PAUSE, 0, 2));
+	rig.Run(480);
+	rig.Mixer.Push(Simple(AudioCommandType::END_SEQUENCE, 0, 2, 0.0f, 0.0f, (uint8_t)AudioEndMode::NOW));
+	size_t mark = rig.Output.size() / 2;
+	rig.Run(480);
+	Check(rig.Mixer.Voice_State(0) == AudioVoiceState::DONE, "an end on a paused voice finishes it at once");
+	Check(rig.Silent(mark, mark + 480), "an ended paused voice stays silent");
+	rig.Mixer.Free_Voice(0);
+}
+
+
 void Test_Ring_And_Token(void)
 {
 	RigClass rig;
@@ -552,6 +646,8 @@ int main(void)
 	Test_Loop_And_Resample();
 	Test_Sequence();
 	Test_Stop_Pause_Generation();
+	Test_Pause_Ramp_And_Stops();
+	Test_End_While_Paused();
 	Test_Ring_And_Token();
 	Test_Stream();
 	Test_Determinism();

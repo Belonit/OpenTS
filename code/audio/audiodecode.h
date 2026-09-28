@@ -140,6 +140,11 @@ class AudioByteSourceClass
 };
 
 
+// The frames of an Ogg file per its first stream's last page, or zero for
+// data that is not Ogg. Streamed Vorbis states no length of its own.
+uint64_t Audio_Ogg_Length_Frames(AudioByteSourceClass & source);
+
+
 // Streams any format miniaudio supports from a byte source, a few frames at a
 // time. The source must outlive the decoder.
 class AudioOtherStreamDecoderClass
@@ -161,6 +166,9 @@ class AudioOtherStreamDecoderClass
 		// Returns the frames read; zero at the end of the data.
 		unsigned Read(int16_t * output, unsigned frames);
 		bool Rewind(void);
+
+		// Zero when the format does not state its length.
+		uint64_t Length_Frames(void) const;
 
 	private:
 		struct DataClass;

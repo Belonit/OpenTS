@@ -77,11 +77,19 @@ class AudioHandle
 
 		void Retarget(float volume, float pan);
 		void Set_Volume(float volume);
+		void Set_Volume(float volume, int ms);
 		void Set_Pan(float pan);
 		void Stop(void);
 		void End(void);
 		void End_Looping(void);
 		void Fade(int ms);
+
+		// Stops the sound within ms, even one already fading out.
+		void Cut(int ms);
+
+		// A paused sound stays silent at its place until resumed or stopped.
+		void Pause(int ms = 0);
+		void Resume(int ms = 0);
 
 	private:
 		uint32_t Value = 0;

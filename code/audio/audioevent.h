@@ -149,13 +149,20 @@ class AudioEventPoolClass
 
 		void Retarget(AudioHandle handle, float volume, float pan);
 		void Set_Volume(AudioHandle handle, float volume);
+		void Set_Volume(AudioHandle handle, float volume, int ms);
 		void Set_Pan(AudioHandle handle, float pan);
 		void Stop(AudioHandle handle);
 		void End(AudioHandle handle);
 		void End_Looping(AudioHandle handle);
 		void Fade(AudioHandle handle, int ms);
-		void Pause(AudioHandle handle);
-		void Resume(AudioHandle handle);
+
+		// Stops the event within ms, even one already fading out; a fade that would
+		// end sooner keeps its own end.
+		void Cut(AudioHandle handle, int ms);
+
+		// A paused event keeps its voice and place, silent, until resumed or stopped.
+		void Pause(AudioHandle handle, int ms = 0);
+		void Resume(AudioHandle handle, int ms = 0);
 
 		// Screens that own their sample data address it by pointer.
 		bool Is_Tag_Playing(void const * tag) const;

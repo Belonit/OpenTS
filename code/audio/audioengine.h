@@ -52,8 +52,21 @@ class AudioEngineClass
 		AudioHandle Open_Stream(char const * filename, AudioGroupType group, float volume, bool loop);
 
 		// Stops a stream and returns once its file is closed, so the archive it
-		// came from may be released afterwards.
+		// came from may be released afterwards. Stops one already fading out as well.
 		void Stop_Stream(AudioHandle handle);
+
+		// Whether a stream starts over at its file's end. Switching it on after the
+		// stream read to the end does not bring the stream back.
+		void Set_Stream_Loop(AudioHandle handle, bool loop);
+
+		// Seconds a file would play, or zero when it is missing, states no length,
+		// or states more than a day.
+		static float Stream_Seconds(char const * filename);
+
+		// Finds the file for an extensionless sound name, trying extensions in the
+		// sample cache's order and skipping files that do not decode. Returns false,
+		// with the name emptied, when none is found.
+		static bool Find_Named_File(char const * basename, char * filename, size_t size);
 
 		// Screens that own their sample data address it by pointer.
 		bool Is_Sample_Playing(void const * aud) const;

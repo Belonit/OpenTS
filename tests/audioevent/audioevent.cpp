@@ -713,6 +713,65 @@ void Test_Voice_Ownership(void)
 }
 
 
+void Test_Stream_Controls(void)
+{
+	RigClass rig;
+	AudioStreamClass stream;
+	Check(stream.Init(RATE * 4, 1, RATE), "stream ring of four seconds");
+	std::vector<int16_t> constant((size_t)RATE * 4, (int16_t)(0.5f * 32767.0f));
+	stream.Ring.Write(constant.data(), (unsigned)constant.size());
+
+	// A fade in: start silent, then ramp the volume up.
+	AudioHandle handle = rig.Pool.Start_Stream(&stream, AUDIO_GROUP_MUSIC, 0.0f, 0.0f);
+	Check(!handle.Is_Null(), "a silent stream starts");
+	rig.Pool.Set_Volume(handle, 1.0f, 200);
+	rig.Tick(100);
+	float middle = std::fabs(rig.Last_Sample());
+	rig.Tick(150);
+	float full = std::fabs(rig.Last_Sample());
+	Check(middle > 0.01f && middle < full, "the volume rises over the requested time");
+	Check(full > 0.45f, "the volume reaches the requested level");
+
+	rig.Pool.Pause(handle, 50);
+	rig.Tick(100);
+	Check(rig.Last_Sample() == 0.0f, "a paused stream is silent");
+	Check(rig.Pool.Is_Playing(handle) && !rig.Pool.Is_Finished(handle), "a paused stream keeps its event");
+	rig.Pool.Resume(handle, 50);
+	rig.Tick(100);
+	Check(std::fabs(rig.Last_Sample()) > 0.45f, "a resumed stream plays at its level again");
+
+	// A long fade out can be cut short, but not lengthened.
+	rig.Pool.Fade(handle, 1000);
+	rig.Tick(100);
+	Check(!rig.Pool.Is_Valid(handle) && !rig.Pool.Is_Finished(handle), "a fading stream is not finished");
+	rig.Pool.Cut(handle, 20);
+	rig.Tick(50);
+	Check(rig.Pool.Is_Finished(handle), "a cut fade finishes early");
+
+	AudioHandle kept = rig.Pool.Start_Stream(&stream, AUDIO_GROUP_MUSIC, 1.0f, 0.0f);
+	rig.Pool.Fade(kept, 20);
+	rig.Pool.Cut(kept, 1000);
+	rig.Tick(50);
+	Check(rig.Pool.Is_Finished(kept), "a cut never lengthens a fade");
+
+	// Stopping a paused stream ends it at once.
+	AudioHandle paused = rig.Pool.Start_Stream(&stream, AUDIO_GROUP_MUSIC, 1.0f, 0.0f);
+	rig.Pool.Pause(paused);
+	rig.Tick(10);
+	rig.Pool.Stop(paused);
+	rig.Tick(10);
+	Check(rig.Pool.Is_Finished(paused), "a stopped paused stream is finished");
+
+	// A stop during a slow fade in ends with the stop's own ramp.
+	AudioHandle rising = rig.Pool.Start_Stream(&stream, AUDIO_GROUP_MUSIC, 0.0f, 0.0f);
+	rig.Pool.Set_Volume(rising, 1.0f, 2000);
+	rig.Tick(100);
+	rig.Pool.Stop(rising);
+	rig.Tick(20);
+	Check(rig.Pool.Is_Finished(rising), "a stop during a fade in finishes at once");
+}
+
+
 void Test_Shutdown_Releases(void)
 {
 	ProviderClass provider;
@@ -751,6 +810,7 @@ int main(void)
 	Test_Levels();
 	Test_Samples_And_Handles();
 	Test_Voice_Ownership();
+	Test_Stream_Controls();
 	Test_Shutdown_Releases();
 
 	std::printf("%d checks, %d failures\n", Checked, Failures);
