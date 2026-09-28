@@ -11,7 +11,7 @@
 
 #include "coord.h"
 
-#include "theme.hh"
+#include "audio/audiohandle.h"
 
 
 class SaveStreamClass;
@@ -37,7 +37,17 @@ class IonStormClass
 		static void AI(void);
 		static void Apply_Secondary_Effect(bool do_static);
 
+		// Ends the storm sound and restores the music's level at once, for a mission
+		// ending mid-storm. Leaves a storm track and the storm running.
+		static void Stop_Audio(void);
+
+		// Starts the audio of a storm in progress again, for music stopped after a load.
+		static void Restart_Audio(void);
+
 	private:
+		static void Start_Audio(bool instant);
+		static void End_Audio(void);
+
 		/*
 		 * If an ion storm is raging over the battlefield, then this flag will be true.
 		 * While it is set, ion sensitive locomotors have no power and the world wears
@@ -73,9 +83,9 @@ class IonStormClass
 		static ShapeSet const * StaticShape;
 
 		/*
-		 * This is the music that was playing when the storm rolled in, remembered so that
-		 * it can be resumed once the storm passes. Between storms it holds
-		 * THEME_PICK_ANOTHER.
+		 * This is the storm sound playing in place of the storm's music track, when
+		 * SOUND.INI lists an IONSTORM sound. It is not saved; a loaded game starts it again.
 		 */
-		static ThemeType PreviousTheme;
+		static AudioHandle StormSound;
+		static bool UsesStormSound;
 };

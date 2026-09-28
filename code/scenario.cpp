@@ -424,8 +424,8 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 	}
 
 	if (Scen->ActionMovie == VQ_NONE && Scen->TransitTheme != THEME_NONE) {
-		// The song the mission opened with is already the transit theme, and queuing it again
-		// would start it over; the scheduler still needs something pending either way.
+		// A transit theme already playing behind the briefing hands over to the playlist
+		// unless it repeats; one not yet playing is queued.
 		Theme.Queue_Song(transit_playing ? THEME_PICK_ANOTHER : Scen->TransitTheme);
 	} else {
 		Theme.Queue_Song(THEME_PICK_ANOTHER);
@@ -1187,6 +1187,7 @@ void Do_Win(void)
 
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Hide_Mouse();
+	IonStormClass::Stop_Audio();
 	Theme.Queue_Song(THEME_QUIET);
 
 	/*
@@ -1349,6 +1350,7 @@ void Do_Lose(void)
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
 	Hide_Mouse();
 
+	IonStormClass::Stop_Audio();
 	Theme.Queue_Song(THEME_QUIET);
 
 	/*
@@ -1446,6 +1448,7 @@ void Do_Restart(void)
 	*/
 	CDTimerClass<SystemTimerClass> timer;
 	timer = TICKS_PER_SECOND * 4;
+	IonStormClass::Stop_Audio();
 	Theme.Queue_Song(THEME_QUIET);
 
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
@@ -1483,6 +1486,7 @@ void Do_Abort(void)
 	Keyboard->Clear();
 
 	Map.Set_Default_Mouse(MOUSE_NORMAL);
+	IonStormClass::Stop_Audio();
 	Theme.Queue_Song(THEME_QUIET);
 
 	Stop_Speaking();

@@ -96,13 +96,22 @@ When the countdown ends, the engine does the following, in order:
 
 1. Cuts the power of every object on the map with an ion-sensitive locomotor, and crashes the airborne aircraft among them. [Grounded locomotors](#grounded-locomotors) lists the objects that keep their power.
 2. Makes [`IonAmbient`](/keys/ionambient/) the target of [the ambient fade](#the-ambient-ramp), and has the player's [radar](#radar) re-evaluated.
-3. Stops the music and remembers which track was playing.
+3. Starts the [storm's audio](#storm-audio).
 4. Tints every terrain palette, and the palette of every color scheme with more than one intensity level, with [`IonRed`](/keys/ionred/), [`IonGreen`](/keys/iongreen/), and [`IonBlue`](/keys/ionblue/). Screen static covers the tactical view while the palettes are rebuilt.
-5. Starts the music track registered as `IONSTORM` and shows an ion storm message for ten seconds. EVA says nothing when the storm breaks; the countdown announcements are the only spoken warning.
+5. Shows an ion storm message for ten seconds. EVA says nothing when the storm breaks; the countdown announcements are the only spoken warning.
+
+### Storm audio
+
+A storm plays either a storm sound over the music or a storm music track in place of it. [SOUND.INI](/formats/sound-ini/) decides which: when its `[SoundList]` names a sound `IONSTORM` and the game finds a file it can play for at least one of that sound's samples, the storm uses that sound. The shipped SOUND.INI files do not, so an unmodified game plays the storm track.
+
+- **Storm sound.** The sound plays for the whole storm and starts again whenever it ends, including when louder sound effects took its voice, so a sound meant to last the storm should have `LOOP` in its [`Control=`](/keys/control/). The music keeps playing, lowered to [`IonStormVolume=`](/keys/ionstormvolume/) over [`FadeOut=`](/keys/fadeout/) seconds. With the sound effect volume at zero the storm is silent, and the music is still lowered.
+- **Storm track.** The music track playing when the storm breaks pauses where it is, and the track registered as `IONSTORM` in [THEME.INI](/formats/theme-ini/) plays in its place, repeating until the storm ends. With [`CrossFade=`](/keys/crossfade/) set, the two tracks crossfade over that time; otherwise the paused track fades out over a quarter of a second while the storm track starts at full volume. The change back at the end of the storm takes the same time.
 
 :::caution[Register the storm music as IONSTORM]
-[THEME.INI](/formats/theme-ini/) must register a track whose section is named `IONSTORM`, in any case. If no section has that name, the engine plays the first track whose `Name=` contains `IONSTORM` in exactly that case. If neither matches, the storm stops the music and plays nothing.
+For the storm track, THEME.INI must register a track whose section is named `IONSTORM`, in any case. If no section has that name, the engine plays the first track whose `Name=` contains `IONSTORM` in exactly that case. If neither matches, or the game finds no file it can play for the track, or the music volume is zero, the storm leaves the music as it is.
 :::
+
+A game saved during a storm starts the storm's audio again when it is loaded: the storm sound, or the storm track from its beginning. Loading any saved game while a storm plays the storm track first brings back the track that storm paused, as the end of a storm does, so the storm track never carries over into a game without a storm. Winning, losing, restarting or leaving the mission during a storm ends the storm sound and restores the music's level at once.
 
 ## Lightning
 
@@ -246,7 +255,7 @@ A storm ends when its duration runs out, or when `Ion Storm stop...` or `Ion sto
 1. Restores power to every object with an ion-sensitive locomotor, including those in [limbo](/glossary/#limbo) that the break skipped.
 2. Makes the scenario's ambient level the target of the ambient fade, so the map fades back instead of snapping. That level is `Ambient`, or the level a `Set ambient light...` action stored during the storm.
 3. Has the player's radar re-evaluated.
-4. Stops the storm music and restarts, from its beginning, the track that was playing when the storm broke.
+4. Ends the storm's audio. The storm sound ends, playing its decay if it has one, and the music rises back to its own level over `FadeOut=` seconds. With a storm track, that track stops and the paused track resumes from where it paused. If the music was changed during the storm, for example by a Play music theme action or the player, the track playing then continues instead and the paused track is dropped.
 5. Removes the ion tint from every terrain palette and color scheme, again behind screen static.
 
 Losses are permanent. Crashed aircraft and destroyed jumpjets do not come back. Nothing schedules another storm; it needs another trigger action or team mission.

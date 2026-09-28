@@ -22,11 +22,13 @@ A queued track fades out the current track over [`FadeOut=`](/keys/fadeout/) sec
 
 Only one track can wait at a time, so a request to queue a track is ignored while another track is waiting.
 
-The main menu, map selection, the score screen and ion storms start their tracks immediately instead. The current track stops at once, with no fade.
+The main menu, map selection and the score screen start their tracks immediately instead. The current track stops at once, with no fade. An ion storm without a storm sound pauses the current track and resumes it when the storm ends; [Ion storms](/systems/ion-storms/#storm-audio) describes both kinds of storm audio. Replaying the briefing video during a mission pauses the current track, and it resumes from the same point when the video ends.
 
-On the sound options screen, playing a track from the list stops the current track at once and starts the chosen one.
+On the sound options screen, playing a track from the list stops the current track at once and starts the chosen one. The [next track](/commands/nexttheme/) and [previous track](/commands/prevtheme/) commands do the same with the allowed track after or before the current one.
 
-The Stop button on the sound options screen fades the current track out. No music plays again until a track starts immediately, the player plays a track from the list, or a new scenario starts. Play music theme actions and Play music team missions are ignored in the meantime.
+The Stop button on the sound options screen fades the current track out. No music plays again until a track starts immediately, the player plays a track from the list or uses the next or previous track command, or a new scenario starts. Play music theme actions and Play music team missions are ignored in the meantime.
+
+An ion storm that plays the storm track still plays it after Stop, and a Play music theme action or Play music team mission during that storm is carried out. Without such a request, the music is silent again once the storm ends.
 
 Starting a scenario stops the current track. The game then plays the scenario's [`Theme=`](/keys/theme/) track if it names one, and otherwise the next allowed track. There are two exceptions:
 

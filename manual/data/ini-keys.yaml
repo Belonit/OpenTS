@@ -12068,6 +12068,24 @@ IonStormDuration:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+IonStormVolume:
+  key: IonStormVolume
+  scopes:
+  - applies_to:
+    - Themes
+    file: theme01.ini
+    section:
+      kind: literal
+      name: General
+    value_type: string
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: ThemeClass
+      member: ionstormvolume
+      source: code/themeini.cpp
+      guard: null
+    level: ThemeClass
 IonStormWarhead:
   key: IonStormWarhead
   scopes:

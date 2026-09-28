@@ -186,12 +186,15 @@ ThemeClass::ThemeClass(void) :
 	Volume(255),
 	IsRepeat(false),
 	IsShuffle(false),
-	Resume(THEME_NONE),
+	LastEnded(THEME_NONE),
 	RetryAt(0),
 	NoneAllowedLogged(false),
 	FadeInNext(false),
 	FadeOutMs(DEFAULT_FADE_OUT_MS),
-	CrossFadeMs(0)
+	CrossFadeMs(0),
+	IonStormLevel(DEFAULT_ION_STORM_LEVEL),
+	StormLevel(1.0f),
+	IsPaused(false)
 {
 }
 
@@ -240,18 +243,18 @@ void ThemeClass::AI(void)
 			if (Loops(Score) && (Pending == THEME_NONE || Pending == THEME_PICK_ANOTHER)) {
 				Pending = Score;
 			} else if (Pending == THEME_NONE) {
-				Resume = Score;
+				LastEnded = Score;
 				Score = THEME_NONE;
 			}
 		}
 
-		if (ScoresPresent && Volume > 0 && Current.Is_Finished() && (FadeInNext || Fading.Is_Finished()) && (int)(AudioEngine.Now_Ms() - RetryAt) >= 0) {
+		if (ScoresPresent && Volume > 0 && Current.Is_Finished() && (FadeInNext || Fading.Is_Finished()) && !IsPaused && (int)(AudioEngine.Now_Ms() - RetryAt) >= 0) {
 			if (Pending != THEME_NONE && Pending != THEME_QUIET && !ScenarioInit) {
 				/*
 				**	If the pending song needs to be picked, then pick it now.
 				*/
 				if (Pending == THEME_PICK_ANOTHER) {
-					Pending = Next_Song(Score != THEME_NONE ? Score : Resume);
+					Pending = Next_Song(Score != THEME_NONE ? Score : LastEnded);
 					if (Pending == THEME_NONE) {
 						Pending = THEME_PICK_ANOTHER;
 						if (!NoneAllowedLogged) {
@@ -368,6 +371,11 @@ void ThemeClass::Queue_Song(ThemeType theme)
 			return;
 		}
 
+		Interrupt.Intact = false;
+		if (theme == THEME_QUIET) {
+			Discard_Interruption();
+		}
+
 		if (!Current.Is_Finished()) {
 			bool crossfade = CrossFadeMs > 0 && theme != THEME_NONE && theme != THEME_QUIET;
 			Retire(crossfade ? CrossFadeMs : FadeOutMs);
@@ -413,7 +421,7 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 	}
 
 	ThemeControl & control = *Themes[theme];
-	float level = Themes[theme]->Volume;
+	float level = Level(theme);
 	Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, fadein ? 0.0f : level, Loops(theme));
 
 	/*
@@ -427,7 +435,7 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 		}
 		Score = THEME_NONE;
 		Pending = THEME_NONE;
-		Resume = theme;
+		LastEnded = theme;
 		RetryAt = AudioEngine.Now_Ms() + RETRY_MS;
 		return(false);
 	}
@@ -447,7 +455,8 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 /// </summary>
 bool ThemeClass::Loops(ThemeType theme) const
 {
-	return((unsigned)theme < (unsigned)Themes.Count() && (IsRepeat || Themes[theme]->Repeat));
+	if ((unsigned)theme >= (unsigned)Themes.Count()) return(false);
+	return(IsRepeat || Themes[theme]->Repeat || (Interrupt.Active && theme == Interrupt.Theme));
 }
 
 
@@ -461,6 +470,9 @@ void ThemeClass::Set_Repeat(bool on)
 	IsRepeat = on;
 	if (!Current.Is_Finished()) {
 		AudioEngine.Set_Stream_Loop(Current, Loops(Score));
+	}
+	if (Interrupt.Active && !Interrupt.Handle.Is_Finished()) {
+		AudioEngine.Set_Stream_Loop(Interrupt.Handle, Loops(Interrupt.Score));
 	}
 }
 
@@ -523,10 +535,13 @@ int ThemeClass::Track_Length(ThemeType theme) const
 /// Stops the current song. No more music plays until a song is started or queued.
 /// </summary>
 /// <param name="fade">Should the song fade out over the fade out time rather than stop at
-/// once? A song already fading out is left to finish either way.</param>
+/// once? A song already fading out finishes either way.</param>
+/// <remarks>Also drops a song Begin_Interruption set aside.</remarks>
 void ThemeClass::Stop(bool fade)
 {
 	if (ScoresPresent && AudioEngine.Is_Available() && !Debug_Quiet) {
+		Discard_Interruption();
+		IsPaused = false;
 		if (!Current.Is_Finished()) {
 			if (fade) {
 				DebugString("Theme::Stop(%d) - Fading\n", Score);
@@ -539,10 +554,165 @@ void ThemeClass::Stop(bool fade)
 		Current.Clear();
 		Score = THEME_NONE;
 		Pending = THEME_NONE;
-		Resume = THEME_NONE;
+		LastEnded = THEME_NONE;
 		RetryAt = AudioEngine.Now_Ms();
 		FadeInNext = false;
 	}
+}
+
+
+/// <summary>
+/// Pauses the current song in place, as for a movie played over it.
+/// </summary>
+/// <remarks>Cuts short a song still fading out. No song starts until Resume or Stop.</remarks>
+void ThemeClass::Pause(void)
+{
+	if (!Fading.Is_Finished()) {
+		Fading.Cut(FADE_CUT_MS);
+	}
+	if (!IsPaused && !Current.Is_Finished()) {
+		DebugString("Theme::Pause(%d)\n", Score);
+		Current.Pause(PAUSE_FADE_MS);
+		IsPaused = true;
+	}
+}
+
+
+/// <summary>
+/// Resumes a song paused by Pause from the point it reached.
+/// </summary>
+void ThemeClass::Resume(void)
+{
+	if (IsPaused) {
+		IsPaused = false;
+		if (!Current.Is_Finished()) {
+			DebugString("Theme::Resume(%d)\n", Score);
+			Current.Resume(PAUSE_FADE_MS);
+		}
+	}
+}
+
+
+/// <summary>
+/// Pauses the current song and plays the specified one looping in its place, as an ion
+/// storm does.
+/// </summary>
+/// <param name="theme">The song to play for the interruption.</param>
+/// <remarks>Does nothing while the music is off or silent, or when the song is not
+/// available.</remarks>
+void ThemeClass::Begin_Interruption(ThemeType theme)
+{
+	if (!ScoresPresent || !AudioEngine.Is_Available() || Debug_Quiet || Volume <= 0) return;
+	if ((unsigned)theme >= (unsigned)Themes.Count() || !Themes[theme]->Available) return;
+
+	// An earlier interruption ends first, so its paused song is the one set aside.
+	End_Interruption();
+	Resume();
+
+	int ms = CrossFadeMs > 0 ? CrossFadeMs : PAUSE_FADE_MS;
+	Interrupt.Handle = Current.Is_Finished() ? AudioHandle() : Current;
+	Interrupt.Score = Score;
+	Interrupt.Pending = Pending;
+	Interrupt.LastEnded = LastEnded;
+	Interrupt.FadeInNext = FadeInNext;
+	if (!Interrupt.Handle.Is_Null()) {
+		Interrupt.Handle.Pause(ms);
+	}
+	DebugString("Theme::BeginInterruption(%d) - Setting %d aside\n", theme, Score);
+
+	Current.Clear();
+	Score = THEME_NONE;
+	Pending = THEME_NONE;
+	Interrupt.Theme = theme;
+	Interrupt.Active = true;
+	Interrupt.Intact = true;
+	if (!Start(theme, CrossFadeMs > 0)) {
+		End_Interruption();
+	}
+}
+
+
+/// <summary>
+/// Ends an interruption: the song set aside resumes where it paused. If the music was
+/// changed meanwhile, the song playing now continues and the set aside one is dropped.
+/// </summary>
+void ThemeClass::End_Interruption(void)
+{
+	if (!Interrupt.Active) return;
+	Interrupt.Active = false;
+
+	if (!Interrupt.Intact) {
+		DebugString("Theme::EndInterruption - Keeping %d\n", Score);
+		if (!Interrupt.Handle.Is_Finished()) {
+			Interrupt.Handle.Stop();
+		}
+		Interrupt.Handle.Clear();
+		return;
+	}
+
+	int ms = CrossFadeMs > 0 ? CrossFadeMs : PAUSE_FADE_MS;
+	if (!Current.Is_Finished()) {
+		Retire(ms);
+	}
+	Current.Clear();
+	Score = Interrupt.Score;
+	Pending = Interrupt.Pending;
+	LastEnded = Interrupt.LastEnded;
+	FadeInNext = Interrupt.FadeInNext;
+	DebugString("Theme::EndInterruption - Resuming %d\n", Score);
+
+	if (!Interrupt.Handle.Is_Finished()) {
+		Current = Interrupt.Handle;
+		if ((unsigned)Score < (unsigned)Themes.Count()) {
+			Current.Set_Volume(Level(Score), 0);
+			AudioEngine.Set_Stream_Loop(Current, Loops(Score));
+		}
+		Current.Resume(ms);
+	} else if (Score != THEME_NONE && Pending == THEME_NONE) {
+		// A set aside song that is gone counts as one that played to its end.
+		LastEnded = Score;
+		Score = THEME_NONE;
+	}
+	Interrupt.Handle.Clear();
+}
+
+
+/// <summary>
+/// Drops the song set aside by an interruption, if any, without playing it again.
+/// </summary>
+void ThemeClass::Discard_Interruption(void)
+{
+	if (Interrupt.Active) {
+		if (!Interrupt.Handle.Is_Finished()) {
+			Interrupt.Handle.Stop();
+		}
+		Interrupt.Handle.Clear();
+		Interrupt.Active = false;
+	}
+}
+
+
+/// <summary>
+/// Scales every song's volume by IonStormVolume= while a storm plays its storm sound, or by 1.
+/// </summary>
+/// <param name="storm">Is the storm sound playing?</param>
+/// <param name="instant">Should the song playing now change at once rather than over the
+/// fade out time?</param>
+void ThemeClass::Set_Storm_Level(bool storm, bool instant)
+{
+	StormLevel = storm ? IonStormLevel : 1.0f;
+	if (!Current.Is_Finished() && (unsigned)Score < (unsigned)Themes.Count()) {
+		Current.Set_Volume(Level(Score), instant ? 0 : FadeOutMs);
+	}
+}
+
+
+/// <summary>
+/// The volume the specified song plays at: its own Volume= under any ion storm lowering.
+/// </summary>
+float ThemeClass::Level(ThemeType theme) const
+{
+	return(Themes[theme]->Volume * StormLevel);
 }
 
 

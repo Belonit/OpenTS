@@ -62,6 +62,8 @@ Entries merge by the name to the left of `=`, as every other key does. An entry 
 
 Sounds are numbered from 0 in the order they are registered. The `SOUND.INI` entries that `SOUND01.INI` does not replace come first, in their order, followed by every `SOUND01.INI` entry in its order. An ID listed twice is registered once, at its first position. A map trigger that plays a sound stores this number, and so does a save game for each endlessly looping sound a trigger left at a waypoint. Adding, removing or moving an entry ahead of a sound changes which sound those triggers and saves play.
 
+A sound registered as `IONSTORM` replaces the storm music during an [ion storm](/systems/ion-storms/#storm-audio) when the game finds a file it can play for at least one of its samples: it plays for the whole storm while the music plays on at a lower level. Give it `LOOP` in `Control=`. The shipped files register no such sound.
+
 ## Samples
 
 Each name in [`Sounds=`](/keys/sounds/) is a sample file name without its extension. A sound without `Sounds=` has one sample, named like its ID. [Sound effects](/systems/sound-effects/#samples) gives the order in which the game tries the extensions, and covers missing samples, the size limit, and how long a decoded sample stays in memory.

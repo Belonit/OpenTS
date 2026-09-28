@@ -8,7 +8,7 @@ when_omitted:
   value: "1.5"
 ---
 
-`FadeOut=` in THEME.INI's `[General]` section sets how many seconds the current music track takes to fade out when it gives way to a queued track, when the player presses Stop on the sound options screen, when a mission is won, lost, restarted or left, and when the game fades the music out on leaving a menu. A queued track starts once the fade has ended.
+`FadeOut=` in THEME.INI's `[General]` section sets how many seconds the current music track takes to fade out when it gives way to a queued track, when the player presses Stop on the sound options screen, when a mission is won, lost, restarted or left, and when the game fades the music out on leaving a menu. A queued track starts once the fade has ended. The music also takes this long to fall to [`IonStormVolume=`](/keys/ionstormvolume/) when an ion storm starts its storm sound, and to rise again when the storm ends.
 
 ```ini title="theme01.ini"
 [General]

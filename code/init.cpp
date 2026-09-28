@@ -123,6 +123,7 @@
 #include "infatype.h"
 #include "inline.h"
 #include "intro.h"
+#include "ion.h"
 #include "ionblast.h"
 #include "ipxmgr.h"
 #include "keyboard.h"
@@ -1016,6 +1017,7 @@ restart:
 				case SEL_LOAD_GAME:
 					if (LoadOptionsClass().Load()) {
 						Theme.Stop();
+						IonStormClass::Restart_Audio();
 						process = false;
 						gameloaded = true;
 					} else {

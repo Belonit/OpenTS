@@ -19,6 +19,7 @@
 #include "_surface.h"
 #include "aircraft.h"
 #include "anim.h"
+#include "audio/audioengine.h"
 #include "building.h"
 #include "ccrand.h"
 #include "cell.h"
@@ -42,6 +43,7 @@
 #include "session.h"
 #include "sun.h"
 #include "theme.h"
+#include "voc.h"
 #include "vox.h"
 
 #include "color.hh"
@@ -57,7 +59,31 @@ int IonStormClass::StartFrame = -1;
 int IonStormClass::Duration = -1;
 int IonStormClass::Deferment = 0;
 ShapeSet const * IonStormClass::StaticShape = NULL;
-ThemeType IonStormClass::PreviousTheme = THEME_PICK_ANOTHER;
+namespace {
+
+char const * const STORM_SOUND_NAME = "IONSTORM";
+char const * const STORM_THEME_NAME = "IONSTORM";
+
+// SOUND.INI lists the storm sound and one of its samples has a playable file.
+bool Storm_Sound_Present(VocClass const * sound)
+{
+	if (sound == NULL || !sound->Can_Play()) {
+		return(false);
+	}
+	AudioEventTypeClass const & type = sound->Type_Data();
+	for (unsigned i = 0; i < type.SoundCount; i++) {
+		char filename[64];
+		if (AudioEngineClass::Find_Named_File(type.Sounds[i], filename, sizeof(filename))) {
+			return(true);
+		}
+	}
+	return(false);
+}
+
+}
+
+AudioHandle IonStormClass::StormSound;
+bool IonStormClass::UsesStormSound = false;
 
 
 /// <summary>
@@ -65,8 +91,12 @@ ThemeType IonStormClass::PreviousTheme = THEME_PICK_ANOTHER;
 /// This routine is called as a scenario is being set up, so that no storm or pending
 /// storm is carried over from the previous mission.
 /// </summary>
+/// <remarks>A load passes through here too, so music a storm paused resumes before the
+/// loaded storm, if any, pauses it again.</remarks>
 void IonStormClass::Init(void)
 {
+	Stop_Audio();
+	Theme.End_Interruption();
 	IsActive = false;
 	StartFrame = -1;
 	Duration = -1;
@@ -110,7 +140,7 @@ void IonStormClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(Duration);
 	stream.Serialize(Deferment);
 	// StaticShape -- artwork fetched by name when it is first needed.
-	// PreviousTheme -- the score resumed after a storm is picked afresh.
+	// StormSound, UsesStormSound -- Apply_Secondary_Effect starts the storm's audio again.
 }
 
 
@@ -198,8 +228,7 @@ void IonStormClass::Ion_Storm_Begin(int duration, int warning)
 			Scen->DesiredAmbientLight = Scen->IonAmbientLight;
 			Set_Ion_Storm_Active(true);
 			PlayerPtr->RecalcRadar = true;
-			PreviousTheme = Theme.What_Is_Playing();
-			Theme.Stop();
+			Start_Audio(false);
 
 			CDTimerClass<SystemTimerClass> static_timer;
 
@@ -233,7 +262,6 @@ void IonStormClass::Ion_Storm_Begin(int duration, int warning)
 			}
 
 			Map.Update_Cell_Colors();
-			Theme.Play_Song(Theme.From_Name("IONSTORM"));
 			Session.Messages.Add_Message(NULL, 0, Fetch_String(TXT_ION_STORM), GREEN, TextPrintType(TPF_USE_GRAD_PAL|TPF_FULLSHADOW|TPF_LED|TPF_8POINT), TICKS_PER_SECOND * 10);
 			Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
 		}
@@ -264,7 +292,7 @@ void IonStormClass::Ion_Storm_End(void)
 		Scen->DesiredAmbientLight = Scen->AmbientLight;
 		Set_Ion_Storm_Active(false);
 		if (PlayerPtr) PlayerPtr->RecalcRadar = true;
-		Theme.Stop();
+		End_Audio();
 
 		CDTimerClass<SystemTimerClass> static_timer;
 
@@ -291,8 +319,6 @@ void IonStormClass::Ion_Storm_End(void)
 		}
 
 		Map.Update_Cell_Colors();
-		Theme.Play_Song(PreviousTheme);
-		PreviousTheme = THEME_PICK_ANOTHER;
 		Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
 	}
 }
@@ -382,6 +408,11 @@ void IonStormClass::AI(void)
 			return;
 		}
 
+		// A storm sound that ended, or lost its voice to louder effects, starts again.
+		if (UsesStormSound && StormSound.Is_Finished()) {
+			StormSound = Sound_Effect(VocClass::From_Name(STORM_SOUND_NAME));
+		}
+
 		if (Random_Pick(0, 1000) < Rule->LightningFrequency) {
 			Cell cell(-1, -1);
 			if (!Percent_Chance(Rule->LightningRandomness)) {
@@ -468,6 +499,7 @@ void IonStormClass::Apply_Secondary_Effect(bool do_static)
 			}
 		}
 
+		Start_Audio(true);
 		Scen->DesiredAmbientLight = Scen->IonAmbientLight;
 		PlayerPtr->RecalcRadar = true;
 
@@ -508,4 +540,59 @@ void IonStormClass::Apply_Secondary_Effect(bool do_static)
 
 		Map.Update_Cell_Colors();
 	}
+}
+
+
+/// <summary>
+/// Starts the storm's audio: the IONSTORM sound over lowered music when SOUND.INI lists it
+/// with a playable sample, else the IONSTORM track in place of the music.
+/// </summary>
+/// <param name="instant">Should the music be lowered at once rather than fade down?</param>
+/// <remarks>The listing decides, so the sound effect volume does not change the choice.</remarks>
+void IonStormClass::Start_Audio(bool instant)
+{
+	VocType voc = VocClass::From_Name(STORM_SOUND_NAME);
+	UsesStormSound = Storm_Sound_Present(VocClass_From_Name(STORM_SOUND_NAME));
+	if (UsesStormSound) {
+		if (StormSound.Is_Finished()) {
+			StormSound = Sound_Effect(voc);
+		}
+		Theme.Set_Storm_Level(true, instant);
+	} else {
+		Theme.Begin_Interruption(Theme.From_Name(STORM_THEME_NAME));
+	}
+}
+
+
+/// <summary>
+/// Ends the storm's audio: the storm sound plays out and the music returns to its level,
+/// or the music the storm paused resumes.
+/// </summary>
+void IonStormClass::End_Audio(void)
+{
+	if (UsesStormSound) {
+		StormSound.End();
+		StormSound.Clear();
+		UsesStormSound = false;
+		Theme.Set_Storm_Level(false, false);
+	} else {
+		Theme.End_Interruption();
+	}
+}
+
+
+void IonStormClass::Restart_Audio(void)
+{
+	if (Is_Ion_Storm_Active()) {
+		Start_Audio(true);
+	}
+}
+
+
+void IonStormClass::Stop_Audio(void)
+{
+	StormSound.Stop();
+	StormSound.Clear();
+	UsesStormSound = false;
+	Theme.Set_Storm_Level(false, true);
 }

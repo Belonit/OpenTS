@@ -92,6 +92,7 @@
 #include "incdec.h"
 #include "infatype.h"
 #include "init.h"
+#include "ion.h"
 #include "ipxmgr.h"
 #include "keyboard.h"
 #include "language/language.h"
@@ -450,6 +451,7 @@ void Main_Game(int argc, char * argv[])
 		}
 #endif
 		Stop_Ingame_Movie();
+		IonStormClass::Stop_Audio();
 
 		if (ToolTips != NULL) {
 			ToolTips->Activate(false);

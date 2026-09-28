@@ -148,4 +148,6 @@ void ThemeClass::Read_General(INIClass const & ini)
 	FadeOutMs = (int)(std::clamp(fadeout, 0.0f, 60.0f) * 1000.0f + 0.5f);
 	float crossfade = ini.Get_Float("General", "CrossFade", 0.0f);
 	CrossFadeMs = (int)(std::clamp(crossfade, 0.0f, 60.0f) * 1000.0f + 0.5f);
+	std::string ionstormvolume = ini.Get_String("General", "IonStormVolume", "");
+	IonStormLevel = Sound_Parse_Volume(ionstormvolume.c_str(), DEFAULT_ION_STORM_LEVEL);
 }

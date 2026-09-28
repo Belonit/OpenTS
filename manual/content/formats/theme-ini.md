@@ -28,7 +28,7 @@ The game reads `THEME.INI` and `THEME01.INI` once at startup and builds the trac
 
 `[Themes]` values register track IDs. Each ID names the track's section and, unless the section sets [`Sound=`](/keys/sound/), the base name of its music file. The text to the left of the `=` is only a label, and the list keeps the order the entries are read in. An ID listed twice appears once, at its first position. [Music](/systems/music/) explains how that order and each track's settings decide what plays.
 
-The `[General]` section holds the settings that apply to every track: the fade and crossfade times.
+The `[General]` section holds the settings that apply to every track: the fade and crossfade times, and the music level under an ion storm's sound.
 
 ```ini title="THEME.INI"
 [Themes]

@@ -14,7 +14,7 @@ Brief=GDI_M02
 
 The movie plays directly after [`Intro`](/keys/intro/) when a mission is started fresh. A restart from the menu or a replay after a loss skips it.
 
-The objectives screen offers the movie again during the mission. When a briefing movie is named, the screen shows a second button beside the resume button. That button stops the current music track, replays the movie, and then starts the same track again. With no briefing movie, the resume button sits alone in the center.
+The objectives screen offers the movie again during the mission. When a briefing movie is named, the screen shows a second button beside the resume button. That button pauses the current music track, replays the movie, and then resumes the track from where it paused. With no briefing movie, the resume button sits alone in the center.
 
 The screen fades the written briefing in a line at a time. A briefing longer than one page shows a More button below each page but the last. Space, Enter, Escape or a click during the fade finishes the page at once. On a finished page, Space, Enter or Escape does what More or the resume button does.
 

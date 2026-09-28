@@ -96,10 +96,9 @@ void Restate_Mission(ScenarioClass * scen)
 	bool save_started = ScenarioActive;
 	ScenarioActive = false;
 	if (UI_Restate_Mission(text, scen->BriefMovie != VQ_NONE)) {
-		ThemeType theme = Theme.What_Is_Playing();
-		Theme.Stop();
+		Theme.Pause();
 		Play_Movie(scen->BriefMovie, THEME_NONE, 1, 1);
-		Theme.Play_Song(theme);
+		Theme.Resume();
 	}
 	ScenarioActive = save_started;
 	Keyboard->Clear();

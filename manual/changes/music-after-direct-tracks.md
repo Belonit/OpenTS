@@ -9,4 +9,4 @@ targets:
 credit: [ZivDero]
 ---
 
-During a game, a track that the game started outside the playlist, such as the ion storm track, is now followed by the next allowed track when it ends. The music used to stop for the rest of the mission. A track whose file cannot be played is now followed by the next allowed track instead of being retried every frame.
+During a game, a track that the game started outside the playlist is now followed by the next allowed track when it ends. The music used to stop for the rest of the mission. A track whose file cannot be played is now followed by the next allowed track instead of being retried every frame.

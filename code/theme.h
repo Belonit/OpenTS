@@ -74,6 +74,8 @@ class ThemeClass
 		char const * Theme_File_Name(ThemeType theme);
 		bool Start(ThemeType theme, bool fadein);
 		bool Loops(ThemeType theme) const;
+		float Level(ThemeType theme) const;
+		void Discard_Interruption(void);
 		void Retire(int ms);
 
 		AudioHandle Current;		// The current score, never one fading out.
@@ -96,7 +98,7 @@ class ThemeClass
 
 		/*
 		 * If the next score is to be picked at random rather than in order, then this flag
-		 * will be true. The score just played is never picked again immediately.
+		 * will be true. The score just played is only picked again when no other is allowed.
 		 */
 		bool IsShuffle;
 
@@ -106,9 +108,8 @@ class ThemeClass
 		 */
 		DynamicVectorClass<ThemeControl *> Themes;
 
-		// The score that last played to its end with nothing to follow it; the next pick
-		// continues after it.
-		ThemeType Resume;
+		// The score that last ended with nothing after it; the next pick continues from it.
+		ThemeType LastEnded;
 
 		// After a failed start, no score starts before this time.
 		unsigned RetryAt;
@@ -123,10 +124,34 @@ class ThemeClass
 		int FadeOutMs;
 		int CrossFadeMs;
 
+		// THEME.INI [General] IonStormVolume=, and the scale on every score's volume: that
+		// value while a storm plays its storm sound, else 1.
+		float IonStormLevel;
+		float StormLevel;
+
+		// The current score is paused until Resume.
+		bool IsPaused;
+
+		// The score Begin_Interruption paused and the state to restore; not intact once
+		// another request changes the music.
+		struct InterruptionClass {
+			bool Active = false;
+			bool Intact = false;
+			ThemeType Theme = THEME_NONE;
+			AudioHandle Handle;
+			ThemeType Score = THEME_NONE;
+			ThemeType Pending = THEME_NONE;
+			ThemeType LastEnded = THEME_NONE;
+			bool FadeInNext = false;
+		} Interrupt;
+
+		static constexpr float DEFAULT_ION_STORM_LEVEL = 0.33f;
+
 		enum {
 			DEFAULT_FADE_OUT_MS = 1500,	// The 60 maintenance ticks the old driver took to fade.
-			FADE_CUT_MS = 100,			// How quickly an older fade is cut when a newer one needs its place.
-			RETRY_MS = 1000
+			FADE_CUT_MS = 100,			// How quickly a newer fade cuts an older one short.
+			RETRY_MS = 1000,
+			PAUSE_FADE_MS = 250			// Pauses and resumes without a crossfade take this long.
 		};
 
 	public:
@@ -148,6 +173,11 @@ class ThemeClass
 		void Fade_Out(void) {Queue_Song(THEME_QUIET);}
 		void Queue_Song(ThemeType index);
 		void Stop(bool fade = false);
+		void Pause(void);
+		void Resume(void);
+		void Begin_Interruption(ThemeType theme);
+		void End_Interruption(void);
+		void Set_Storm_Level(bool storm, bool instant);
 		void Set_Shuffle(bool on) {IsShuffle = on;}
 		void Set_Repeat(bool on);
 		bool Is_Shuffle(void) const {return(IsShuffle);}
