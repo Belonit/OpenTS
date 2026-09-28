@@ -134,6 +134,7 @@ void ThemeClass::Scan(void)
 			char const * base = (control.Sound[0] != '\0') ? control.Sound : control.Name;
 			control.StartFailed = false;
 			control.Available = AudioEngineClass::Find_Named_File(base, control.File, sizeof(control.File));
+			control.Measured = -1.0f;
 		}
 	}
 }
@@ -506,26 +507,23 @@ char const * ThemeClass::Theme_File_Name(ThemeType theme)
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Track_Length -- Calculates the length of the song (in seconds).                 *
- *                                                                                             *
- *    Use this routine to calculate the length of the song. The length is determined by        *
- *    reading the header of the song and dividing the sample rate into the sample length.      *
- *                                                                                             *
- * INPUT:   theme -- The song number to examine to find its length.                            *
- *                                                                                             *
- * OUTPUT:  Returns with the length of the specified theme. This length is in the form of      *
- *          seconds.                                                                           *
- *                                                                                             *
- * WARNINGS:   This routine goes to disk to fetch this information. Don't call frivolously.    *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/16/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Fetches the length of the specified song, in whole seconds.
+/// </summary>
+/// <returns>Returns with the length the file states, else Length=; zero for an invalid
+/// song.</returns>
+/// <remarks>The first call opens the file; the result is kept until the next Scan.</remarks>
 int ThemeClass::Track_Length(ThemeType theme) const
 {
 	if ((unsigned)theme < (unsigned)Themes.Count()) {
-		return(Themes[theme]->Duration * 60);
+		ThemeControl & control = *Themes[theme];
+		if (control.Measured < 0.0f) {
+			control.Measured = control.Available ? AudioEngineClass::Stream_Seconds(control.File) : 0.0f;
+		}
+		if (control.Measured > 0.0f) {
+			return((int)control.Measured);
+		}
+		return(control.Duration * 60);
 	}
 	return(0);
 }

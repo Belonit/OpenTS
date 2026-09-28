@@ -62,7 +62,8 @@ struct ThemeControl {
 	bool Repeat;			// Always repeat this score?
 	bool StartFailed = false;	// The last attempt to open the file failed.
 	bool Available;			// Is the score available?
-	std::vector<SideType> Owners;	// Sides allowed to hear this score; empty for every side.
+	float Measured;			// Seconds the file states; 0 if none, -1 until measured.
+	std::vector<SideType> Owners;	// Sides that may hear this score; empty for all.
 
 	private:
 		void Read_Sides(char const * text);

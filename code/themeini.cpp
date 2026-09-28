@@ -39,7 +39,8 @@ ThemeControl::ThemeControl(void) :
 	RequiredAddon(0),
 	Normal(true),
 	Repeat(false),
-	Available(false)
+	Available(false),
+	Measured(-1.0f)
 {
 	Name[0] = '\0';
 	Fullname[0] = '\0';
