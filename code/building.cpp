@@ -3769,7 +3769,7 @@ void BuildingClass::Grand_Opening(bool captured)
 		**	Tiberium Refineries get a free harvester. Add a harvester to the
 		**	reinforcement list at this time.
 		*/
-		if (Class->FreeUnit != NULL && !ScenarioInit && !captured && !Debug_Map && (!House->Is_Human_Player() || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
+		if (Class->FreeUnit != NULL && !ScenarioInit && !captured && !Debug_Map) {
 			Place_Free_Unit();
 		}
 

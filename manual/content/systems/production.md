@@ -298,7 +298,7 @@ A newly placed structure plays its construction animation before it opens. It te
 
 A structure hands over what comes with it only when it opens. A [`FreeUnit`](/keys/freeunit/) vehicle or infantryman appears beside the structure, and a free aircraft appears on the structure itself. If a free object cannot be placed anywhere, the house gets its price back instead.
 
-A structure present at scenario start hands over no `FreeUnit`. A player's structure hands it over only if the price paid for the structure exceeds its `Cost=` minus the free unit's `Cost=`. A low enough price multiplier can therefore withhold the free unit. A structure the player did not pay for still hands it over.
+A structure present at scenario start hands over no `FreeUnit`.
 
 A [`HoverPad=yes`](/keys/hoverpad/) structure also receives the first [`PadAircraft`](/keys/padaircraft/) entry, unless [`SeparateAircraft=yes`](/keys/separateaircraft/) is set or the structure's [`FreeUnit`](/keys/freeunit/) is an aircraft. A captured structure hands over neither.
 

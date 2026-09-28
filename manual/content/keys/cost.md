@@ -20,10 +20,9 @@ The full price adds the deductions back. A factory charges it, selling refunds i
 
 The exception is a structure with a `FreeUnit=` whose deductions exceed its `Cost=`. Its reduced price stops at `0`, so its full price is the total of the deductions, which is more than its `Cost=`.
 
-The reduced price is used in three places:
+The reduced price is used in two places:
 
 - **Repair.** Each [repair step](/systems/repair/#the-cost-of-one-step) is priced from it, so a structure that comes with something costs less to repair than its `Cost=` suggests. A pad dock with a negative reduced price pays 1 credit per step.
-- **The free-unit test.** A human owner receives the `FreeUnit=` only when the price paid for the structure exceeds the reduced price. [`FreeUnit=`](/keys/freeunit/) explains the test.
 - **Anger.** Damage to the structure raises its owner's [anger](/systems/base-attacked/#anger-and-the-declared-enemy) toward the attacker in proportion to the reduced price. Hitting a refinery that gives a harvester therefore raises less anger than its `Cost=` suggests, and hitting a pad dock with a negative reduced price lowers anger.
 
 ## What a house pays
