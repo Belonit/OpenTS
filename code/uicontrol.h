@@ -10,7 +10,9 @@
 
 #pragma once
 
+#include "point.h"
 #include "rgb.h"
+#include "rtti.hh"
 #include "stimer.h"
 
 class CCINIClass;
@@ -44,6 +46,7 @@ class UIControlsClass
 		UILineStyleType Target_Line_Style(void) const;
 		UILineStyleType Target_Laser_Style(void) const;
 		UILineStyleType Navigation_Queue_Line_Style(void) const;
+		Point2D Group_Number_Offset(RTTIType rtti, bool has_pips) const;
 
 		bool IsAlwaysShowActionLines = false;
 
@@ -72,4 +75,13 @@ class UIControlsClass
 		bool IsNavComQueueLineThick = false;
 		RGBClass NavComQueueLineColor = RGBClass(74, 77, 255);
 		RGBClass NavComQueueLineDropShadowColor = RGBClass(0, 0, 0);
+
+		Point2D UnitGroupNumberOffset = Point2D(-4, -4);
+		Point2D InfantryGroupNumberOffset = Point2D(-4, -4);
+		Point2D BuildingGroupNumberOffset = Point2D(-4, -4);
+		Point2D AircraftGroupNumberOffset = Point2D(-4, -4);
+		Point2D UnitWithPipGroupNumberOffset = Point2D(-4, -8);
+		Point2D InfantryWithPipGroupNumberOffset = Point2D(-4, -8);
+		Point2D BuildingWithPipGroupNumberOffset = Point2D(-4, -8);
+		Point2D AircraftWithPipGroupNumberOffset = Point2D(-4, -8);
 };

@@ -1491,6 +1491,42 @@ AircraftFogReveal:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+AircraftGroupNumberOffset:
+  key: AircraftGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: AircraftGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
+AircraftWithPipGroupNumberOffset:
+  key: AircraftWithPipGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: AircraftWithPipGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 Airspeed:
   key: Airspeed
   scopes:
@@ -3979,6 +4015,24 @@ BuildingDrop:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+BuildingGroupNumberOffset:
+  key: BuildingGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: BuildingGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 BuildingSlam:
   key: BuildingSlam
   scopes:
@@ -3997,6 +4051,24 @@ BuildingSlam:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+BuildingWithPipGroupNumberOffset:
+  key: BuildingWithPipGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: BuildingWithPipGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 Buildup:
   key: Buildup
   scopes:
@@ -11269,6 +11341,24 @@ InfantryExplode:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+InfantryGroupNumberOffset:
+  key: InfantryGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: InfantryGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 InfantryReserve:
   key: InfantryReserve
   scopes:
@@ -11287,6 +11377,24 @@ InfantryReserve:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+InfantryWithPipGroupNumberOffset:
+  key: InfantryWithPipGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: InfantryWithPipGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 Infiltrate:
   key: Infiltrate
   scopes:
@@ -24608,6 +24716,24 @@ UnitCrateType:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+UnitGroupNumberOffset:
+  key: UnitGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: UnitGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 UnitReload:
   key: UnitReload
   scopes:
@@ -24642,6 +24768,24 @@ UnitRepair:
       source: code/builtype.cpp
       guard: null
     level: BuildingTypeClass
+UnitWithPipGroupNumberOffset:
+  key: UnitWithPipGroupNumberOffset
+  scopes:
+  - applies_to:
+    - UI controls
+    file: ui.ini
+    section:
+      kind: literal
+      name: Pips
+    value_type: point (x,y)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: UIControlsClass
+      member: UnitWithPipGroupNumberOffset
+      source: code/uicontrol.cpp
+      guard: null
+    level: UIControlsClass
 UnloadingClass:
   key: UnloadingClass
   scopes:

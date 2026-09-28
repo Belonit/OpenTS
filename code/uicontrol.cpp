@@ -18,6 +18,7 @@
 namespace {
 
 char const * const INGAME = "Ingame";
+char const * const PIPS = "Pips";
 
 }
 
@@ -54,6 +55,15 @@ bool UIControlsClass::Read_INI(CCINIClass const & ini)
 	IsNavComQueueLineThick = ini.Get_Bool(INGAME, "NavComQueueLineThick", IsNavComQueueLineThick);
 	NavComQueueLineColor = ini.Get_RGBClass(INGAME, "NavComQueueLineColor", NavComQueueLineColor);
 	NavComQueueLineDropShadowColor = ini.Get_RGBClass(INGAME, "NavComQueueLineDropShadowColor", NavComQueueLineDropShadowColor);
+
+	UnitGroupNumberOffset = ini.Get_Point(PIPS, "UnitGroupNumberOffset", UnitGroupNumberOffset);
+	InfantryGroupNumberOffset = ini.Get_Point(PIPS, "InfantryGroupNumberOffset", InfantryGroupNumberOffset);
+	BuildingGroupNumberOffset = ini.Get_Point(PIPS, "BuildingGroupNumberOffset", BuildingGroupNumberOffset);
+	AircraftGroupNumberOffset = ini.Get_Point(PIPS, "AircraftGroupNumberOffset", AircraftGroupNumberOffset);
+	UnitWithPipGroupNumberOffset = ini.Get_Point(PIPS, "UnitWithPipGroupNumberOffset", UnitWithPipGroupNumberOffset);
+	InfantryWithPipGroupNumberOffset = ini.Get_Point(PIPS, "InfantryWithPipGroupNumberOffset", InfantryWithPipGroupNumberOffset);
+	BuildingWithPipGroupNumberOffset = ini.Get_Point(PIPS, "BuildingWithPipGroupNumberOffset", BuildingWithPipGroupNumberOffset);
+	AircraftWithPipGroupNumberOffset = ini.Get_Point(PIPS, "AircraftWithPipGroupNumberOffset", AircraftWithPipGroupNumberOffset);
 
 	return(true);
 }
@@ -105,4 +115,28 @@ UILineStyleType UIControlsClass::Target_Laser_Style(void) const
 UILineStyleType UIControlsClass::Navigation_Queue_Line_Style(void) const
 {
 	return(UILineStyleType{IsNavComQueueLineDashed, IsNavComQueueLineThick, IsNavComQueueLineDropShadow, NavComQueueLineColor, NavComQueueLineDropShadowColor});
+}
+
+
+/// <summary>
+/// Returns where an object's control group number is printed, relative to the corner its
+/// pips start from. Any kind other than infantry, a structure or an aircraft uses the
+/// vehicle offsets.
+/// </summary>
+/// <param name="has_pips">Does the object's type draw pips?</param>
+Point2D UIControlsClass::Group_Number_Offset(RTTIType rtti, bool has_pips) const
+{
+	switch (rtti) {
+		case RTTI_INFANTRY:
+			return(has_pips ? InfantryWithPipGroupNumberOffset : InfantryGroupNumberOffset);
+
+		case RTTI_BUILDING:
+			return(has_pips ? BuildingWithPipGroupNumberOffset : BuildingGroupNumberOffset);
+
+		case RTTI_AIRCRAFT:
+			return(has_pips ? AircraftWithPipGroupNumberOffset : AircraftGroupNumberOffset);
+
+		default:
+			return(has_pips ? UnitWithPipGroupNumberOffset : UnitGroupNumberOffset);
+	}
 }

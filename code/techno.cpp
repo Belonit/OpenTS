@@ -7706,16 +7706,15 @@ void TechnoClass::Draw_Pips(Point2D const & bottomleft, Point2D const & center, 
 	**	number assigned with the <CTRL> key.
 	*/
 	if (Group >= 0 && Group < 10) {
-		int yval = -1;
 		int group = Group+1;
 
-		if (Class_Of()->Max_Pips()) yval -= 4;
 		if (group == 10) group = 0;
 
 		char group_text[12];
 		sprintf(group_text, "%d", group < 10 ? group : 0);
 
-		Plain_Text_Print(group_text, *LogicalSurface, rect, bottomleft + Point2D(-4, yval-3), WHITE, TBLACK, TextPrintType(TPF_FULLSHADOW|TPF_EFNT), 0, 1);
+		Point2D offset = UIControls.Group_Number_Offset(RTTI, Class_Of()->Max_Pips() != 0);
+		Plain_Text_Print(group_text, *LogicalSurface, rect, bottomleft + offset, WHITE, TBLACK, TextPrintType(TPF_FULLSHADOW|TPF_EFNT), 0, 1);
 	}
 }
 
