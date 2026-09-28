@@ -17,4 +17,4 @@ Three events can start the animation again during a shortage, and it then runs u
 
 - A repair step starts it if the slot is empty, unless an exclusive turret is charging or charged.
 - An [upgrade](/keys/upgrades/) installed on a structure below maximum strength starts it if the slot is empty.
-- On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure, the turret dropping its charge starts it. A turret that is charging or charged drops its charge when its house falls short of power.
+- On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure, the turret dropping its charge starts it.

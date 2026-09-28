@@ -15,4 +15,4 @@ The frozen animation stays on screen and normally resumes when power returns. Th
 
 - Switching the structure back on, or the structure recovering from an EMP pulse, resumes the animation.
 - A damage or repair step that switches the structure between its healthy and damaged forms replaces the frozen animation with a new one, which plays. [The damaged form](/systems/building-animations/#the-damaged-form) covers when the form switches.
-- On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure, the turret dropping its charge starts a new animation in the slot. A turret that is charging or charged drops its charge when its house falls short of power.
+- On a [`TurretAnimIsExclusive=yes`](/keys/turretanimisexclusive/) structure, the turret dropping its charge starts a new animation in the slot.

@@ -9,7 +9,7 @@ when_omitted:
 
 While its house is short of power, a structure stops firing if its type is both `Powered=yes` and has a negative [`Power=`](/keys/power/#scope-buildingtype). If its type also keeps the default [`TogglePower=yes`](/keys/togglepower/), the structure goes out of service as well. Its spotlight and laser fence go down, its cloak field shrinks away, and its powered animations pause. Setting only one of the two keys spares the structure from these shutdowns.
 
-Other effects of a shortfall, such as the loss of radar and of weapon charge, do not read `Powered=`. [What low power costs](/systems/power/#what-low-power-costs) lists each effect and the keys it reads.
+Other effects of a shortfall, such as the loss of radar and the pause in superweapon charging, do not read `Powered=`. [What low power costs](/systems/power/#what-low-power-costs) lists each effect and the keys it reads.
 
 ```ini title="rules.ini"
 [MYOBELISK] ; example laser defense that goes dark at low power

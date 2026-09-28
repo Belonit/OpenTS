@@ -7426,7 +7426,7 @@ void BuildingClass::Factory_AI(void)
 void BuildingClass::Charging_AI(void)
 {
 	if (PrimaryWeapon != NULL && PrimaryWeapon->IsElectric && BState != BSTATE_CONSTRUCTION) {
-		if (TarCom != NULL && House->Power_Fraction() >= 1 && IsOn) {
+		if (TarCom != NULL && IsOn) {
 			if (!IsCharged) {
 				if (IsCharging) {
 					BuildingStage.Graphic_Logic();

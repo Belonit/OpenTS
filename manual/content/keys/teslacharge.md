@@ -27,4 +27,4 @@ A structure whose [`Ammo`](/keys/ammo/) has run out still starts a charge and pl
 
 Every charging structure plays the sound, whoever owns it. Its volume depends on its distance from the view, like any sound placed on the map.
 
-A structure that loses power, is switched off or loses its target drops its charge without a sound. The next charge plays the sound again. [`Charges`](/keys/charges/) covers when firing spends the charge.
+A structure that is switched off or loses its target drops its charge without a sound. The next charge plays the sound again. [`Charges`](/keys/charges/) covers when firing spends the charge.

@@ -239,7 +239,7 @@ When a suspended [`UseChargeDrain=yes`](/keys/usechargedrain/) weapon resumes, i
 
 ### Defenses
 
-Four separate tests decide whether low power stops a defense, and they treat `TogglePower` differently.
+Three separate tests decide whether low power stops a defense, and they treat `TogglePower` differently.
 
 1. **Out of service.** A structure is **operational** unless any of these holds:
 
@@ -254,7 +254,7 @@ Four separate tests decide whether low power stops a defense, and they treat `To
 
 3. **SAM tracking.** A [`SAM=yes`](/keys/sam/) launcher that is `Powered=yes` with drain stays in its ready state while its house is short of power, so it never turns toward its target.
 
-4. **Charging.** A structure whose primary weapon has [`Charges=yes`](/keys/charges/) charges only while it has a target, its house is not short of power, and it is switched on. This test ignores `Powered` and `TogglePower`, so such a defense cannot charge during a shortfall even if it draws no power. When any of those conditions fails, the weapon loses the charge it held. An uncharged weapon of this kind cannot fire.
+The second test also stops a [`Charges=yes`](/keys/charges/) defense from starting a charge.
 
 ### Fields, fences and lights
 
