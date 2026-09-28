@@ -25,7 +25,7 @@ The game finds every `.AUD` file by name through the normal file search. A loose
 Sound effects, music and speech name their files differently:
 
 - A sound effect's samples are named in [SOUND.INI](/formats/sound-ini/) without an extension. The game tries `.WAV`, `.OGG`, `.FLAC` and `.MP3` under each name before `.AUD`, and plays the first file that decodes. [Sound effects](/systems/sound-effects/#samples) covers the size limit and how long a decoded sample stays in memory.
-- A music track plays from the `.AUD` file named after its [THEME.INI](/formats/theme-ini/) ID, and a [speech](/systems/eva-speech/) line from the `.AUD` file with its name. The game reads these files while they play and keeps nothing of them in memory afterward. [Music](/systems/music/) covers what happens when a track's file is missing.
+- A music track's file is named by its [`Sound=`](/keys/sound/), or by its [THEME.INI](/formats/theme-ini/) ID without that key. The game tries the same extensions in the same order as for a sound effect and plays the first file that decodes. A [speech](/systems/eva-speech/) line plays from the `.AUD` file with its name. The game reads music and speech files while they play and keeps nothing of them in memory afterward. [Music](/systems/music/) covers what happens when a track's file is missing.
 
 A file with the `.AUD` extension that holds WAV, OGG, FLAC or MP3 data also plays, as a sound effect, music track or speech line. The game reads such a file by its content when it does not start with a valid AUD header.
 

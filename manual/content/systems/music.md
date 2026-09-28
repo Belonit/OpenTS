@@ -5,7 +5,7 @@ category: audio-speech
 keys: [ScoreVolume, IsScoreRepeat, IsScoreShuffle]
 ---
 
-The game plays one music track at a time. [THEME.INI](/formats/theme-ini/) declares the tracks, and each track streams from the `.AUD` file named after its ID. [AUD audio](/formats/aud/) explains where the game looks for that file.
+The game plays one music track at a time. [THEME.INI](/formats/theme-ini/) declares the tracks, and each track streams from the file its [`Sound=`](/keys/sound/) names, or from the file named after its ID. The file can be a `.WAV`, `.OGG`, `.FLAC`, `.MP3` or `.AUD` file; [AUD audio](/formats/aud/) explains where the game looks for it. A track's [`Volume=`](/keys/volume/#scope-themes) sets its loudness relative to the other tracks.
 
 The player's music settings are stored in `sun.ini` under `[Audio]`, and the sound options screen changes them. [`ScoreVolume`](/keys/scorevolume/) sets the music volume. [`IsScoreShuffle`](/keys/isscoreshuffle/) picks the next track at random, and [`IsScoreRepeat`](/keys/isscorerepeat/) plays every track again when it ends. The values below are examples; the key pages give the defaults.
 
@@ -41,10 +41,11 @@ When a track ends, the game chooses the next one from the allowed tracks. With s
 
 A track is allowed when all of these hold:
 
-1. The game found its `.AUD` file.
+1. The game found a file for it that it can play.
 2. It has [`Normal=yes`](/keys/normal/).
-3. Its [`Side=`](/keys/side/#scope-themes) is unset or matches the side of the player's country.
-4. In a campaign mission, the current mission number has reached its [`Scenario=`](/keys/scenario/#scope-themes).
+3. Its [`Side=`](/keys/side/#scope-themes) is unset or lists the side of the player's country.
+4. Its [`RequiredAddon=`](/keys/requiredaddon-campaign/#scope-themes) is unset or `0`, names the expansion that is running, or is `-1` while any expansion is running.
+5. In a campaign mission, the current mission number has reached its [`Scenario=`](/keys/scenario/#scope-themes).
 
 A track with [`Repeat=yes`](/keys/repeat/) plays again each time it ends, whatever the shuffle setting. The repeat option does the same for every track.
 

@@ -241,6 +241,10 @@ Priority:
   "TeamTypeClass::RecruitPriority": {verdict: distinct}
   "VocClass::priority": {verdict: distinct}
 
+RequiredAddon:
+  "CampaignClass::RequiredAddon": {verdict: distinct}
+  "ThemeControl::RequiredAddon": {verdict: distinct}
+
 ROF:
   "HouseTypeClass::ROFBias": {verdict: distinct}
   "WeaponTypeClass::ROF": {verdict: distinct}
@@ -264,7 +268,7 @@ Scenario:
 Side:
   "HouseTypeClass::Side": {verdict: distinct}
   "SessionClass::House": {verdict: distinct}
-  "ThemeControl::Owner": {verdict: distinct}
+  "ThemeControl::side": {verdict: distinct}
 
 SmallVisceroid:
   "UnitTypeClass::IsSmallVisceroid": {verdict: distinct}
@@ -361,6 +365,10 @@ TurboBoost:
 Type:
   "SuperWeaponTypeClass::buffer": {verdict: distinct}
   "SessionClass::None": {verdict: distinct}
+
+Volume:
+  "VocClass::volume": {verdict: distinct}
+  "ThemeControl::volume": {verdict: distinct}
 
 Wall:
   "BuildingTypeClass::IsWall": {verdict: distinct}

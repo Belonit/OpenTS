@@ -70,7 +70,7 @@ A refused sound does not play. If its `Control=` includes `QUEUE`, a sound refus
 
 ## Loudness
 
-A sound's level is its [`Volume=`](/keys/volume/) multiplied by its `VShift=` draw and by one more factor. For a placed sound, that factor is the distance fade. For a sound without a place, it is the loudness the game asks for. The result is capped at full loudness.
+A sound's level is its [`Volume=`](/keys/volume/#scope-sounds) multiplied by its `VShift=` draw and by one more factor. For a placed sound, that factor is the distance fade. For a sound without a place, it is the loudness the game asks for. The result is capped at full loudness.
 
 The [`SoundVolume`](/keys/soundvolume/) option then scales every sound effect, including those already playing.
 

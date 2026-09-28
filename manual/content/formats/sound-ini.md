@@ -97,4 +97,4 @@ Sections copied from a Yuri's Revenge file also read, with two differences:
 - `Volume=1` is full volume, where Yuri's Revenge reads it as one percent.
 - A `Delay=` number without a decimal point is in milliseconds. Write a delay in seconds with a decimal point, such as `Delay=5.0 15.0`.
 
-A `Volume=` above 1 written for an earlier OpenTS release now reads as a percentage; [`Volume=`](/keys/volume/) explains what to change.
+A `Volume=` above 1 written for an earlier OpenTS release now reads as a percentage; [`Volume=`](/keys/volume/#scope-sounds) explains what to change.

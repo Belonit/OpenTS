@@ -12,6 +12,7 @@ targets:
 - type: key
   id: Volume
   effect: changed
+  scope: sounds
 - type: key
   id: Priority
   effect: changed

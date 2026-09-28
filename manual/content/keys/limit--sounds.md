@@ -10,7 +10,7 @@ when_omitted:
 
 How many copies of this sound can play at once; `0` allows any number. A copy counts from the moment the game plays it, including while it waits out a `PREDELAY` silence, waits for a voice under `QUEUE`, or sits in the silence between cycles of a loop with a [`Delay=`](/keys/delay/).
 
-When the limit is reached, the new copy is compared in loudness with the quietest copy already counted. A copy's loudness is its [`Volume=`](/keys/volume/), times its distance fade or the loudness the game asked for, times its [`VShift=`](/keys/vshift/) draw.
+When the limit is reached, the new copy is compared in loudness with the quietest copy already counted. A copy's loudness is its [`Volume=`](/keys/volume/#scope-sounds), times its distance fade or the loudness the game asked for, times its [`VShift=`](/keys/vshift/) draw.
 
 - If the new copy is louder by more than one percent, the quietest copy stops.
 - If the two are within one percent, the quietest copy stops only with `INTERRUPT` in the sound's [`Control=`](/keys/control/). Otherwise the new copy is refused.

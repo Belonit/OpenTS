@@ -39,20 +39,32 @@
 #include "side.hh"
 #include "theme.hh"
 
+#include <stdlib.h>
+#include <vector>
+
 class CCINIClass;
+class INIClass;
 
 struct ThemeControl {
 	ThemeControl(void);
-	bool Fill_In(CCINIClass const & ini);
+	bool Fill_In(INIClass const & ini);
+	bool Allows_Side(SideType side) const;
 
-	char Name[256];			// Filename of score.
-	char Fullname[64];		// Text number for full score name.
+	char Name[256];			// Section name; also the file's base name unless Sound is set.
+	char Fullname[64];		// Title shown in the sound options.
+	char Sound[256];		// File base name; empty to use Name.
+	char File[_MAX_FNAME+_MAX_EXT];	// The file Scan found, extension included.
 	int Scenario;			// Scenario when it first becomes available.
-	float Duration;			// Duration of theme in seconds.
+	float Duration;			// Length= in minutes.
+	float Volume;			// Share of the music volume.
+	int RequiredAddon;		// Expansion that must be running; 0 for none.
 	bool Normal;			// Allowed in normal game play?
 	bool Repeat;			// Always repeat this score?
 	bool Available;			// Is the score available?
-	int Owner;				// What houses are allowed to play this theme (bit field)?
+	std::vector<SideType> Owners;	// Sides allowed to hear this score; empty for every side.
+
+	private:
+		void Read_Sides(char const * text);
 };
 
 class ThemeClass

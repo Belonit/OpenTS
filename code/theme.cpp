@@ -49,7 +49,7 @@
 
 #include "theme.h"
 
-#include "ccfile.h"
+#include "addon.h"
 #include "ccini.h"
 #include "ccrand.h"
 #include "audio/audioengine.h"
@@ -126,12 +126,11 @@ void ThemeClass::Free_Themes(void)
  *=============================================================================================*/
 void ThemeClass::Scan(void)
 {
-	char name[_MAX_FNAME+_MAX_EXT];
-
 	if (ScoresPresent && AudioEngine.Is_Available() && !Debug_Quiet) {
 		for (ThemeType theme = THEME_FIRST; theme < Themes.Count(); theme++) {
-			_makepath(name, NULL, NULL, Themes[theme]->Name, ".AUD");
-			Themes[theme]->Available = CCFileClass(name).Is_Available();
+			ThemeControl & control = *Themes[theme];
+			char const * base = (control.Sound[0] != '\0') ? control.Sound : control.Name;
+			control.Available = AudioEngineClass::Find_Named_File(base, control.File, sizeof(control.File));
 		}
 	}
 }
@@ -387,7 +386,7 @@ AudioHandle ThemeClass::Play_Song(ThemeType theme)
 		Stop(false);
 		if (theme != THEME_NONE && theme != THEME_QUIET) {
 			if (theme > THEME_NONE && Volume > 0) {
-				Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, 1.0f, false);
+				Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, Themes[theme]->Volume, false);
 
 				/*
 				 * Stopping a score that never started does nothing, so recording one that
@@ -414,30 +413,15 @@ AudioHandle ThemeClass::Play_Song(ThemeType theme)
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Theme_File_Name -- Constructs a filename for the specified theme.               *
- *                                                                                             *
- *    This routine will construct (into a static buffer) a filename that matches the theme     *
- *    number specified. This constructed filename is returned as a pointer. The filename will  *
- *    remain valid until the next call to this routine.                                        *
- *                                                                                             *
- * INPUT:   theme -- The theme number to convert to a filename.                                *
- *                                                                                             *
- * OUTPUT:  Returns with a pointer to the constructed filename for the specified theme number. *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/16/1995 JLB : Created.                                                                 *
- *   05/09/1995 JLB : Theme variation support.                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Fetches the file Scan found for the specified theme, extension included.
+/// </summary>
+/// <returns>Returns with the file name, or an empty string for an invalid theme or one
+/// whose file was not found.</returns>
 char const * ThemeClass::Theme_File_Name(ThemeType theme)
 {
-	static char name[_MAX_FNAME+_MAX_EXT];
-
 	if ((unsigned)theme < (unsigned)Themes.Count()) {
-		_makepath(name, NULL, NULL, Themes[theme]->Name, ".AUD");
-		return((char const *)(&name[0]));
+		return(Themes[theme]->File);
 	}
 
 	return("");
@@ -565,7 +549,11 @@ bool ThemeClass::Is_Allowed(ThemeType index) const
 	**	it. If the player's house hasn't yet been determined, then presume this test
 	**	passes.
 	*/
-	if (PlayerPtr != NULL && Themes[index]->Owner != -1 && PlayerPtr->Class->Side != Themes[index]->Owner) return(false);
+	if (PlayerPtr != NULL && !Themes[index]->Allows_Side(PlayerPtr->Class->Side)) return(false);
+
+	// An expansion requirement holds only while that expansion runs; one naming none never does.
+	int addon = Themes[index]->RequiredAddon;
+	if (addon != ADDON_BASE_GAME && (addon < ADDON_ANY || addon >= ADDON_COUNT || !Addon_Enabled((AddonType)addon))) return(false);
 
 	/*
 	**	If the scenario doesn't allow this theme yet, then return the failure flag. The

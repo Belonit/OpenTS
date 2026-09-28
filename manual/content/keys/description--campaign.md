@@ -8,7 +8,7 @@ when_omitted:
   note: The campaign's section name, as its `[Battles]` entry writes it, stands in as the row text.
 ---
 
-The text is the campaign's row in the mission selection list, and the only part of a campaign the player sees before choosing it. At most 127 characters are kept; a longer value is cut. A campaign that the running expansion does not allow is left out of the list, so its text is never shown ([`RequiredAddon`](/keys/requiredaddon-campaign/)).
+The text is the campaign's row in the mission selection list, and the only part of a campaign the player sees before choosing it. At most 127 characters are kept; a longer value is cut. A campaign that the running expansion does not allow is left out of the list, so its text is never shown ([`RequiredAddon`](/keys/requiredaddon-campaign/#scope-campaign)).
 
 Each value in a `[Battles]` section names one campaign, and that name is also the section the campaign's settings are read from, this key included. The number to the left of the `=` is ignored.
 

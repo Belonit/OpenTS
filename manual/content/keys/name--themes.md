@@ -19,7 +19,7 @@ Scenario=1
 Side=GDI
 ```
 
-The section name is the track's ID. It names the track's `.AUD` file and is how other settings refer to the track. A value that refers to a track is matched in two steps, so it can also select a track by its display name:
+The section name is the track's ID. It names the track's file unless [`Sound=`](/keys/sound/) names another, and it is how other settings refer to the track. A value that refers to a track is matched in two steps, so it can also select a track by its display name:
 
 1. The value is compared with every track ID, ignoring case. A match selects that track.
 2. If no ID matches, the first track in `[Themes]` order whose display name contains the value, with case respected, is selected.

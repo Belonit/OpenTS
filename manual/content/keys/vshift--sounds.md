@@ -10,7 +10,7 @@ when_omitted:
 
 `VShift=` makes each play of the sound quieter by a random whole percentage. The engine draws the percentage when the play starts and keeps it until the play ends, so a placed sound does not change loudness at random as the view scrolls.
 
-A single value lowers the loudness by up to that percentage. `VShift=10` plays at between 90 and 100 percent of the loudness [`Volume=`](/keys/volume/) sets. The sign of a single value is ignored, so `VShift=-10` means the same thing.
+A single value lowers the loudness by up to that percentage. `VShift=10` plays at between 90 and 100 percent of the loudness [`Volume=`](/keys/volume/#scope-sounds) sets. The sign of a single value is ignored, so `VShift=-10` means the same thing.
 
 Two values give a signed range, in either order. `VShift=-20 -5` lowers the loudness by between 5 and 20 percent.
 

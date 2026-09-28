@@ -18658,7 +18658,7 @@ RequiredAddon:
       kind: identifier
       source: campaign
     value_type: integer
-    status: generated
+    status: reviewed
     _provenance:
       default_candidate: '0'
       declared_in: CampaignClass
@@ -18666,6 +18666,21 @@ RequiredAddon:
       source: code/campaign.cpp
       guard: null
     level: CampaignClass
+  - applies_to:
+    - Themes
+    file: theme01.ini
+    section:
+      kind: identifier
+      source: theme
+    value_type: integer
+    status: reviewed
+    _provenance:
+      default_candidate: '0'
+      declared_in: ThemeControl
+      member: RequiredAddon
+      source: code/themeini.cpp
+      guard: null
+    level: ThemeControl
   case_collides_with:
   - RequiredAddOn
 RequiredForRMG:
@@ -20149,12 +20164,12 @@ Side:
     section:
       kind: identifier
       source: theme
-    value_type: Side
+    value_type: string
     status: reviewed
     _provenance:
-      default_candidate: '-1'
+      default_candidate: null
       declared_in: ThemeControl
-      member: Owner
+      member: side
       source: code/themeini.cpp
       guard: null
     level: ThemeControl
@@ -20574,6 +20589,24 @@ SortCameoAsBaseDefense:
       source: code/builtype.cpp
       guard: null
     level: BuildingTypeClass
+Sound:
+  key: Sound
+  scopes:
+  - applies_to:
+    - Themes
+    file: theme01.ini
+    section:
+      kind: identifier
+      source: theme
+    value_type: string
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: ThemeControl
+      member: null
+      source: code/themeini.cpp
+      guard: null
+    level: ThemeControl
 SoundLatency:
   key: SoundLatency
   scopes:
@@ -25779,7 +25812,7 @@ Volume:
       kind: identifier
       source: sound
     value_type: string
-    status: generated
+    status: reviewed
     _provenance:
       default_candidate: null
       declared_in: VocClass
@@ -25787,6 +25820,21 @@ Volume:
       source: code/vocini.cpp
       guard: null
     level: VocClass
+  - applies_to:
+    - Themes
+    file: theme01.ini
+    section:
+      kind: identifier
+      source: theme
+    value_type: string
+    status: reviewed
+    _provenance:
+      default_candidate: null
+      declared_in: ThemeControl
+      member: volume
+      source: code/themeini.cpp
+      guard: null
+    level: ThemeControl
 Voxel:
   key: Voxel
   scopes:
