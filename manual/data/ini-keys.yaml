@@ -13088,7 +13088,7 @@ Length:
       default_candidate: '0'
       declared_in: ThemeControl
       member: Duration
-      source: code/theme.cpp
+      source: code/themeini.cpp
       guard: null
     level: ThemeControl
 LeptonsPerSightIncrease:
@@ -14952,7 +14952,7 @@ Name:
       default_candidate: null
       declared_in: ThemeControl
       member: null
-      source: code/theme.cpp
+      source: code/themeini.cpp
       guard: null
     level: ThemeControl
 NamedCivilians:
@@ -15507,7 +15507,7 @@ Normal:
       default_candidate: 'yes'
       declared_in: ThemeControl
       member: Normal
-      source: code/theme.cpp
+      source: code/themeini.cpp
       guard: null
     level: ThemeControl
 NormalZAdjust:
@@ -18595,7 +18595,7 @@ Repeat:
       default_candidate: 'no'
       declared_in: ThemeControl
       member: Repeat
-      source: code/theme.cpp
+      source: code/themeini.cpp
       guard: null
     level: ThemeControl
 Report:
@@ -19149,7 +19149,7 @@ Scenario:
       default_candidate: '0'
       declared_in: ThemeControl
       member: Scenario
-      source: code/theme.cpp
+      source: code/themeini.cpp
       guard: null
     level: ThemeControl
 ScoldSound:
@@ -20155,7 +20155,7 @@ Side:
       default_candidate: '-1'
       declared_in: ThemeControl
       member: Owner
-      source: code/theme.cpp
+      source: code/themeini.cpp
       guard: null
     level: ThemeControl
 SidebarCameoText:

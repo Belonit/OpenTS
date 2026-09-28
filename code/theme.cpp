@@ -64,47 +64,6 @@
 
 
 /// <summary>
-/// Constructs a nameless and unavailable theme control.
-/// The control is a blank slate until Fill_In supplies the real settings from the rules
-/// database, so it belongs to no side and will not be considered for play.
-/// </summary>
-ThemeControl::ThemeControl(void) :
-	Scenario(0),
-	Duration(0),
-	Normal(true),
-	Repeat(false),
-	Available(false),
-	Owner(-1)
-{
-	Name[0] = '\0';
-	Fullname[0] = '\0';
-
-}
-
-
-/// <summary>
-/// Fetches this score's settings from the INI database.
-/// This routine is used by Init_Themes to flesh out a theme control from the section
-/// that bears its name. Any setting the section leaves out keeps the value it had.
-/// </summary>
-/// <param name="ini">The INI database to fetch the settings from.</param>
-/// <returns>bool; Was a section for this score found?</returns>
-bool ThemeControl::Fill_In(CCINIClass const & ini)
-{
-	if (ini.Is_Present(Name)) {
-		ini.Get_String(Name, "Name", Fullname, Fullname, sizeof(Fullname));
-		Scenario = ini.Get_Int(Name, "Scenario", Scenario);
-		Duration = ini.Get_Float(Name, "Length", Duration);
-		Normal = ini.Get_Bool(Name, "Normal", Normal);
-		Repeat = ini.Get_Bool(Name, "Repeat", Repeat);
-		Owner = ini.Get_Side(Name, "Side", (SideType)Owner);
-		return(true);
-	}
-	return(false);
-}
-
-
-/// <summary>
 /// Builds the theme list from the INI database.
 /// This routine is used when the rules are read. A theme that is already known is
 /// updated rather than duplicated, so a later rules file may amend the scores that an

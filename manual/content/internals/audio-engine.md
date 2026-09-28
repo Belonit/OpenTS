@@ -20,6 +20,7 @@ source_files:
   - code/voc.cpp
   - code/vox.cpp
   - code/theme.cpp
+  - code/themeini.cpp
 ---
 
 The audio engine lives under `code/audio/`, and one global, `AudioEngine`, owns it. Three threads use it:

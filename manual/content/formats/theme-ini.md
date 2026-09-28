@@ -17,6 +17,7 @@ related:
 source_files:
   - code/init.cpp
   - code/theme.cpp
+  - code/themeini.cpp
 ---
 
 The game reads `THEME.INI` and `THEME01.INI` once at startup and builds the track list from them. Whether Firestorm is installed does not matter: each file that is present is read, and either one alone is enough. When neither can be read, the game shows an initialization error and closes. [OPENTS.INI](/formats/opents-ini/#the-files-it-reads) can change both file names.
