@@ -72,6 +72,7 @@ class ThemeClass
 	private:
 		char const * Theme_File_Name(ThemeType theme);
 		bool Start(ThemeType theme, bool fadein);
+		bool Loops(ThemeType theme) const;
 		void Retire(int ms);
 
 		AudioHandle Current;		// The current score, never one fading out.
@@ -136,7 +137,7 @@ class ThemeClass
 		void Queue_Song(ThemeType index);
 		void Stop(bool fade = false);
 		void Set_Shuffle(bool on) {IsShuffle = on;}
-		void Set_Repeat(bool on) {IsRepeat = on;}
+		void Set_Repeat(bool on);
 		bool Is_Shuffle(void) const {return(IsShuffle);}
 
 		void Set_Volume(int volume);

@@ -229,6 +229,14 @@ void ThemeClass::AI(void)
 			Fading.Clear();
 		}
 
+		// A repeating song only ends here when repeat came on too late for its stream to loop.
+		if (!Current.Is_Null() && Current.Is_Finished()) {
+			Current.Clear();
+			if (Loops(Score) && (Pending == THEME_NONE || Pending == THEME_PICK_ANOTHER)) {
+				Pending = Score;
+			}
+		}
+
 		if (ScoresPresent && Volume > 0 && Current.Is_Finished() && (FadeInNext || Fading.Is_Finished())) {
 			if (Pending != THEME_NONE && Pending != THEME_QUIET && !ScenarioInit) {
 				/*
@@ -349,6 +357,12 @@ void ThemeClass::Queue_Song(ThemeType theme)
 	if (Pending == THEME_NONE || Pending == THEME_PICK_ANOTHER || theme == THEME_NONE || theme == THEME_QUIET) {
 		Pending = theme;
 		DebugString("Theme::QueueSong(%d)\n", theme);
+
+		// Picking another song for a repeating one picks the same song, so it plays on.
+		if (theme == THEME_PICK_ANOTHER && !Current.Is_Finished() && Loops(Score)) {
+			return;
+		}
+
 		if (!Current.Is_Finished()) {
 			bool crossfade = CrossFadeMs > 0 && theme != THEME_NONE && theme != THEME_QUIET;
 			Retire(crossfade ? CrossFadeMs : FadeOutMs);
@@ -394,7 +408,7 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 	}
 
 	float level = Themes[theme]->Volume;
-	Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, fadein ? 0.0f : level, false);
+	Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, fadein ? 0.0f : level, Loops(theme));
 
 	/*
 	 * Stopping a score that never started does nothing, so recording one that
@@ -411,11 +425,31 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 	}
 
 	Score = theme;
-	DebugString("Theme::PlaySong(%d) - %s\n", Score, IsRepeat == true || Themes[theme]->Repeat == true ? "Repeating" : "Playing");
-	if (IsRepeat == true || Themes[theme]->Repeat == true) {
-		Pending = theme;
-	}
+	DebugString("Theme::PlaySong(%d) - %s\n", Score, Loops(theme) ? "Repeating" : "Playing");
 	return(true);
+}
+
+
+/// <summary>
+/// Does the song start over at its end, by its own Repeat= or the repeat option?
+/// </summary>
+bool ThemeClass::Loops(ThemeType theme) const
+{
+	return((unsigned)theme < (unsigned)Themes.Count() && (IsRepeat || Themes[theme]->Repeat));
+}
+
+
+/// <summary>
+/// Turns the repeat option on or off. The song playing now follows the new setting.
+/// </summary>
+/// <remarks>In about the last five seconds of a song, turning repeat on lets it restart after
+/// a short gap, and turning it off lets it play once more.</remarks>
+void ThemeClass::Set_Repeat(bool on)
+{
+	IsRepeat = on;
+	if (!Current.Is_Finished()) {
+		AudioEngine.Set_Stream_Loop(Current, Loops(Score));
+	}
 }
 
 

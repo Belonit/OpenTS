@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-`IsScoreRepeat=yes` plays the current music track again each time it ends, until something else changes the music. A track whose theme entry sets [`Repeat=yes`](/keys/repeat/) repeats even with this off. [Choosing the next track](/systems/music/#choosing-the-next-track) describes what can still interrupt a repeating track.
+`IsScoreRepeat=yes` plays the current music track again from its beginning each time it reaches its end, with no gap, until something else changes the music. Changing the option applies to the track already playing. A track whose theme entry sets [`Repeat=yes`](/keys/repeat/) repeats even with this off. [Choosing the next track](/systems/music/#choosing-the-next-track) describes what can still interrupt a repeating track.
 
 While this is on, [`IsScoreShuffle`](/keys/isscoreshuffle/) affects only the first track after silence, because each track that ends plays again.
 

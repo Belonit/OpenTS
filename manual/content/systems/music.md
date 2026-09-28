@@ -47,9 +47,9 @@ A track is allowed when all of these hold:
 4. Its [`RequiredAddon=`](/keys/requiredaddon-campaign/#scope-themes) is unset or `0`, names the expansion that is running, or is `-1` while any expansion is running.
 5. In a campaign mission, the current mission number has reached its [`Scenario=`](/keys/scenario/#scope-themes).
 
-A track with [`Repeat=yes`](/keys/repeat/) plays again each time it ends, whatever the shuffle setting. The repeat option does the same for every track.
+A track with [`Repeat=yes`](/keys/repeat/) starts again from its beginning each time it reaches its end, with no gap, whatever the shuffle setting. The repeat option does the same for every track. Changing the option applies to the track already playing, except in about the last five seconds before its end: switched on then, the track ends and starts again after a short gap; switched off then, it plays once more.
 
-A repeating track that the game chose, or that was queued, gives way to the next queued request. A repeating track that was started immediately ignores queued requests, so Play music theme actions and Play music team missions have no effect while it plays. It keeps playing until another track starts immediately, the player uses the Play or Stop button on the sound options screen, or a new scenario starts. With the repeat option on, this lasts for the rest of the mission after an ion storm.
+A repeating track gives way to any queued track, including one queued by a Play music theme action or a Play music team mission, however the repeating track was started. A request for the next allowed track leaves a repeating track playing, as it would pick that track again.
 
 A track that was started immediately does not lead into the next allowed track. When it ends, the music stops unless the track repeats or another track has been queued. In a game, examples are the ion storm track, the track that restarts from the beginning when the storm ends, and the track that restarts after the player replays the briefing video during a mission.
 
