@@ -33,11 +33,11 @@ Starting a scenario stops the current track. The game then plays the scenario's 
 1. In a campaign mission with no briefing movie and no action movie, the `Theme=` track starts at once behind the mission briefing screen. When the mission begins, that track fades out and the next allowed track follows, unless the `Theme=` track repeats.
 2. In a scenario with an action movie, the game requests the `Theme=` track only when that movie plays. If the movie does not play, for example when the player restarts a mission after a defeat, the game starts with the next allowed track.
 
-A request for a track whose file cannot be played produces no music. A queued request still fades out the current track, and an immediate one still stops it. During a game, the allowed track after the failed one in the playlist starts about a second later.
+A request for a track whose file cannot be played produces no music. A queued request still fades out the current track, and an immediate one still stops it. During a game, the next allowed track is chosen about a second later, as if the failed track had just ended. The failed track is chosen again only when no other track is allowed, even when it repeats.
 
 ## Choosing the next track
 
-When a track ends, the game chooses the next one from the allowed tracks. With shuffle on, it picks at random and avoids the track that just ended. With shuffle off, it takes the next allowed track in THEME.INI order and wraps around at the end of the list.
+When a track ends, the game chooses the next one from the allowed tracks. With shuffle on, it picks at random and avoids the track that just ended unless no other track is allowed. With shuffle off, it takes the next allowed track in THEME.INI order and wraps around at the end of the list. When no track is allowed, no music plays.
 
 A track is allowed when all of these hold:
 

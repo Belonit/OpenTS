@@ -132,6 +132,7 @@ void ThemeClass::Scan(void)
 		for (ThemeType theme = THEME_FIRST; theme < Themes.Count(); theme++) {
 			ThemeControl & control = *Themes[theme];
 			char const * base = (control.Sound[0] != '\0') ? control.Sound : control.Name;
+			control.StartFailed = false;
 			control.Available = AudioEngineClass::Find_Named_File(base, control.File, sizeof(control.File));
 		}
 	}
@@ -187,6 +188,7 @@ ThemeClass::ThemeClass(void) :
 	IsShuffle(false),
 	Resume(THEME_NONE),
 	RetryAt(0),
+	NoneAllowedLogged(false),
 	FadeInNext(false),
 	FadeOutMs(DEFAULT_FADE_OUT_MS),
 	CrossFadeMs(0)
@@ -250,6 +252,16 @@ void ThemeClass::AI(void)
 				*/
 				if (Pending == THEME_PICK_ANOTHER) {
 					Pending = Next_Song(Score != THEME_NONE ? Score : Resume);
+					if (Pending == THEME_NONE) {
+						Pending = THEME_PICK_ANOTHER;
+						if (!NoneAllowedLogged) {
+							DebugString("Theme::AI(No song is allowed)\n");
+							NoneAllowedLogged = true;
+						}
+						RetryAt = AudioEngine.Now_Ms() + RETRY_MS;
+						return;
+					}
+					NoneAllowedLogged = false;
 					DebugString("Theme::AI(Next song = %d)\n", Pending);
 				}
 
@@ -266,66 +278,51 @@ void ThemeClass::AI(void)
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Next_Song -- Calculates the next song number to play.                           *
- *                                                                                             *
- *    use this routine to figure out what song number to play. It examines the option settings *
- *    for repeat and shuffle so that it can return the correct value.                          *
- *                                                                                             *
- * INPUT:   theme -- The origin (last) index. The new value is related to this for all but     *
- *                   the shuffling method of play.                                             *
- *                                                                                             *
- * OUTPUT:  Returns with the song number for the next song to play.                            *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/16/1995 JLB : Created.                                                                 *
- *   01/19/1995 JLB : Will not play the same song twice when in shuffle mode.                  *
- *=============================================================================================*/
+/// <summary>
+/// Chooses the song to play after the specified one.
+/// </summary>
+/// <param name="theme">The song that played last, or THEME_NONE to start from the top of
+/// the list.</param>
+/// <returns>Returns with the same song when it repeats and its last start worked. Otherwise
+/// returns with an allowed song, at random with shuffle on but not the last one while
+/// another is allowed, or else the next allowed one in list order; THEME_NONE if none is
+/// allowed.</returns>
 ThemeType ThemeClass::Next_Song(ThemeType theme) const
 {
-	int i;
+	if ((unsigned)theme < (unsigned)Themes.Count() && Themes[theme]->Available && !Themes[theme]->StartFailed && Loops(theme)) {
+		return(theme);
+	}
 
-	// A score the game does not hold would repeat forever, and nothing else would be picked.
-	if ((unsigned)theme >= (unsigned)Themes.Count() || !Themes[theme]->Available ||
-		(!Themes[theme]->Repeat && !IsRepeat)) {
-		if (IsShuffle == true) {
+	if (IsShuffle) {
 
-			/*
-			**	Shuffle the theme, but never pick the same theme that was just
-			**	playing.
-			*/
-			ThemeType newtheme;
-			i = 0;
-			do {
-				newtheme = (ThemeType)NonCriticalRandomNumber(THEME_FIRST, Themes.Count() - 1);
-				i++;
-			} while (i < 1000 && (newtheme == theme || !Is_Allowed(newtheme)));
-			if (i == 1000) {
-				newtheme = THEME_FIRST;
+		/*
+		**	Shuffle the theme, but never pick the same theme that was just
+		**	playing unless no other is allowed.
+		*/
+		std::vector<ThemeType> choices;
+		for (ThemeType candidate = THEME_FIRST; candidate < Themes.Count(); candidate = ThemeType(candidate + 1)) {
+			if (candidate != theme && Is_Allowed(candidate)) {
+				choices.push_back(candidate);
 			}
-			return(newtheme);
+		}
+		if (choices.empty()) {
+			return(((unsigned)theme < (unsigned)Themes.Count() && Is_Allowed(theme)) ? theme : THEME_NONE);
+		}
+		return(choices[NonCriticalRandomNumber(0, (int)choices.size() - 1)]);
+	}
 
-		} else {
-			i = Themes.Count();
-			i++;
-			/*
-			**	Sequential score playing.
-			*/
-			do {
-				theme = ThemeType(theme + 1);//theme++;
-				if (theme >= Themes.Count()) {
-					theme = THEME_FIRST;
-				}
-				i--;
-				if (i == 0) {
-					return(THEME_FIRST);
-				}
-			} while (!Is_Allowed(theme));
+	/*
+	**	Sequential score playing.
+	*/
+	int count = Themes.Count();
+	int start = ((unsigned)theme < (unsigned)count) ? theme + 1 : THEME_FIRST;
+	for (int step = 0; step < count; step++) {
+		ThemeType candidate = ThemeType((start + step) % count);
+		if (Is_Allowed(candidate)) {
+			return(candidate);
 		}
 	}
-	return(theme);
+	return(THEME_NONE);
 }
 
 
@@ -415,6 +412,7 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 		return(false);
 	}
 
+	ThemeControl & control = *Themes[theme];
 	float level = Themes[theme]->Volume;
 	Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, fadein ? 0.0f : level, Loops(theme));
 
@@ -423,7 +421,10 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 	 * failed to start as the current score would silence the game for good.
 	 */
 	if (Current.Is_Null()) {
-		DebugString("Theme::PlaySong(%d) - Unavailable\n", theme);
+		if (!control.StartFailed) {
+			DebugString("Theme::PlaySong(%d) - Unavailable\n", theme);
+			control.StartFailed = true;
+		}
 		Score = THEME_NONE;
 		Pending = THEME_NONE;
 		Resume = theme;
@@ -434,6 +435,7 @@ bool ThemeClass::Start(ThemeType theme, bool fadein)
 		Current.Set_Volume(level, CrossFadeMs);
 	}
 
+	control.StartFailed = false;
 	Score = theme;
 	DebugString("Theme::PlaySong(%d) - %s\n", Score, Loops(theme) ? "Repeating" : "Playing");
 	return(true);

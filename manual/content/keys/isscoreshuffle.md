@@ -7,7 +7,7 @@ when_omitted:
   value: "no"
 ---
 
-`IsScoreShuffle=yes` picks each next music track at random from the tracks the game currently allows. It never picks the track that just ended. If a thousand random draws find no such track, the first track in the list plays. With shuffle off, the game plays the allowed tracks in list order, starting after the track that just ended and wrapping around at the end.
+`IsScoreShuffle=yes` picks each next music track at random from the tracks the game currently allows. It picks the track that just ended only when no other track is allowed, and plays nothing when no track is allowed at all. With shuffle off, the game plays the allowed tracks in list order, starting after the track that just ended and wrapping around at the end.
 
 [Choosing the next track](/systems/music/#choosing-the-next-track) lists what makes a track allowed.
 

@@ -60,6 +60,7 @@ struct ThemeControl {
 	int RequiredAddon;		// Expansion that must be running; 0 for none.
 	bool Normal;			// Allowed in normal game play?
 	bool Repeat;			// Always repeat this score?
+	bool StartFailed = false;	// The last attempt to open the file failed.
 	bool Available;			// Is the score available?
 	std::vector<SideType> Owners;	// Sides allowed to hear this score; empty for every side.
 
@@ -112,7 +113,10 @@ class ThemeClass
 		// After a failed start, no score starts before this time.
 		unsigned RetryAt;
 
-		// Set by a queued change that crossfades, so the next score rises from silence.
+		// Having no allowed score is already logged.
+		bool NoneAllowedLogged;
+
+		// The next score rises from silence, after a crossfading change.
 		bool FadeInNext;
 
 		// THEME.INI [General] FadeOut= and CrossFade=, in milliseconds.
