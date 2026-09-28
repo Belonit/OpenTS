@@ -883,6 +883,8 @@ GLOBAL_UNITS = [
      [":Read_Sounds", ":Read_Keys", "Read_Channels"],
      {"file": "sound01.ini", "group": "Sounds",
       "section_vars": {"section": section_selectors.identifier("sound")}}),
+    ("themeini.cpp", "ThemeClass", ["Read_General"],
+     {"file": "theme01.ini", "group": "Themes"}),
     ("themeini.cpp", "ThemeControl", ["Fill_In"],
      {"file": "theme01.ini", "group": "Themes",
       "section_vars": {"Name": section_selectors.identifier("theme"),

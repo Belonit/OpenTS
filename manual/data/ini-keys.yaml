@@ -5891,6 +5891,24 @@ Crewed:
       source: code/techtype.cpp
       guard: null
     level: TechnoTypeClass
+CrossFade:
+  key: CrossFade
+  scopes:
+  - applies_to:
+    - Themes
+    file: theme01.ini
+    section:
+      kind: literal
+      name: General
+    value_type: floating point
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: ThemeClass
+      member: crossfade
+      source: code/themeini.cpp
+      guard: null
+    level: ThemeClass
 CruiseHeight:
   key: CruiseHeight
   scopes:
@@ -8466,6 +8484,24 @@ Factory:
       source: code/builtype.cpp
       guard: null
     level: BuildingTypeClass
+FadeOut:
+  key: FadeOut
+  scopes:
+  - applies_to:
+    - Themes
+    file: theme01.ini
+    section:
+      kind: literal
+      name: General
+    value_type: floating point
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: ThemeClass
+      member: fadeout
+      source: code/themeini.cpp
+      guard: null
+    level: ThemeClass
 Fearless:
   key: Fearless
   scopes:

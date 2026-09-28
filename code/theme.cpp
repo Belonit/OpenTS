@@ -72,6 +72,8 @@
 /// <param name="ini">The INI database to fetch the theme list from.</param>
 void ThemeClass::Init_Themes(CCINIClass const & ini)
 {
+	Read_General(ini);
+
 	ThemeControl *ctrl;
 	int count = ini.Entry_Count("Themes");
 	for (int i = 0; i < count; i++) {
@@ -177,11 +179,15 @@ char const * ThemeClass::Base_Name(ThemeType theme) const
  *=============================================================================================*/
 ThemeClass::ThemeClass(void) :
 	Current(),
+	Fading(),
 	Score(THEME_NONE),
 	Pending(THEME_NONE),
 	Volume(255),
 	IsRepeat(false),
-	IsShuffle(false)
+	IsShuffle(false),
+	FadeInNext(false),
+	FadeOutMs(DEFAULT_FADE_OUT_MS),
+	CrossFadeMs(0)
 {
 }
 
@@ -211,26 +217,19 @@ char const * ThemeClass::Full_Name(ThemeType theme) const
 }
 
 
-/***********************************************************************************************
- * ThemeClass::AI -- Process the theme engine and restart songs.                               *
- *                                                                                             *
- *    This is a maintenance function that will restart an appropriate theme if the current one *
- *    has finished. This routine should be called frequently.                                  *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/08/1994 JLB : Created.                                                                 *
- *   01/23/1995 JLB : Picks new song just as it is about to play it.                           *
- *=============================================================================================*/
+/// <summary>
+/// Starts the next score once nothing is playing. Call it often.
+/// </summary>
+/// <remarks>A crossfaded score starts during the previous one's fade; any other waits for
+/// the fade to end.</remarks>
 void ThemeClass::AI(void)
 {
 	if (AudioEngine.Is_Available() && !Debug_Quiet) {
-		if (ScoresPresent && Volume > 0 && !Still_Playing()) {
+		if (!Fading.Is_Null() && Fading.Is_Finished()) {
+			Fading.Clear();
+		}
+
+		if (ScoresPresent && Volume > 0 && Current.Is_Finished() && (FadeInNext || Fading.Is_Finished())) {
 			if (Pending != THEME_NONE && Pending != THEME_QUIET && !ScenarioInit) {
 				/*
 				**	If the pending song needs to be picked, then pick it now.
@@ -244,7 +243,8 @@ void ThemeClass::AI(void)
 				**	Start the song playing and then flag it so that a new song will
 				**	be picked when this one ends.
 				*/
-				Play_Song(Pending);
+				Current.Clear();
+				Start(Pending, FadeInNext);
 				Pending = THEME_PICK_ANOTHER;
 			}
 		}
@@ -315,22 +315,14 @@ ThemeType ThemeClass::Next_Song(ThemeType theme) const
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Queue_Song -- Queues the song to the play queue.                                *
- *                                                                                             *
- *    This routine will cause the current song to fade and the specified song to start. This   *
- *    is the normal and friendly method of changing the current song.                          *
- *                                                                                             *
- * INPUT:   theme -- The song to start playing. If -1 is passed in, then just the current song.*
- *                   is faded.                                                                 *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/16/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Queues the song to play once the current one has faded out. This is the normal and
+/// friendly method of changing the current song.
+/// </summary>
+/// <param name="theme">The song to play next. THEME_NONE or THEME_QUIET only fades the
+/// current song out.</param>
+/// <remarks>Ignored while another song waits, unless it is THEME_NONE or THEME_QUIET. With
+/// a crossfade the next song starts at once and fades in as the current one fades out.</remarks>
 void ThemeClass::Queue_Song(ThemeType theme)
 {
 	/*
@@ -357,59 +349,87 @@ void ThemeClass::Queue_Song(ThemeType theme)
 	if (Pending == THEME_NONE || Pending == THEME_PICK_ANOTHER || theme == THEME_NONE || theme == THEME_QUIET) {
 		Pending = theme;
 		DebugString("Theme::QueueSong(%d)\n", theme);
-		if (Still_Playing() == true) {
-			Current.Fade(THEME_FADE_MS);
+		if (!Current.Is_Finished()) {
+			bool crossfade = CrossFadeMs > 0 && theme != THEME_NONE && theme != THEME_QUIET;
+			Retire(crossfade ? CrossFadeMs : FadeOutMs);
+			FadeInNext = crossfade;
 		}
 	}
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Play_Song -- Starts the specified song play NOW.                                *
- *                                                                                             *
- *    This routine is used to start the specified theme playing right now. If there is already *
- *    a theme playing, it is cut short so that this one may start.                             *
- *                                                                                             *
- * INPUT:   theme -- The theme number to start playing.                                        *
- *                                                                                             *
- * OUTPUT:  Returns with the sample play handle.                                               *
- *                                                                                             *
- * WARNINGS:   This cuts off any current song in a abrupt manner. Only use this routine when   *
- *             necessary.                                                                      *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/16/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Starts the specified song playing now, cutting off any song already playing.
+/// </summary>
+/// <param name="theme">The song to play. THEME_PICK_ANOTHER, or any song while the music
+/// volume is zero, waits for the next pick instead.</param>
+/// <returns>Returns with the handle of the song started, or a null handle.</returns>
 AudioHandle ThemeClass::Play_Song(ThemeType theme)
 {
 	if (ScoresPresent && AudioEngine.Is_Available() && !Debug_Quiet) {
 		Stop(false);
 		if (theme != THEME_NONE && theme != THEME_QUIET) {
 			if (theme > THEME_NONE && Volume > 0) {
-				Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, Themes[theme]->Volume, false);
-
-				/*
-				 * Stopping a score that never started does nothing, so recording one that
-				 * failed to start as the current score would silence the game for good.
-				 */
-				if (Current.Is_Null()) {
-					DebugString("Theme::PlaySong(%d) - Unavailable\n", theme);
-					Score = THEME_NONE;
-					Pending = THEME_NONE;
-					return(Current);
-				}
-
-				Score = theme;
-				DebugString("Theme::PlaySong(%d) - %s\n", Score, IsRepeat == true || Themes[theme]->Repeat == true ? "Repeating" : "Playing");
-				if (IsRepeat == true || Themes[theme]->Repeat == true) {
-					Pending = theme;
-				}
+				Start(theme, false);
 			} else {
 				Pending = theme;
 			}
 		}
 	}
 	return(Current);
+}
+
+
+/// <summary>
+/// Opens the stream for a song and makes it the current one.
+/// </summary>
+/// <param name="theme">The song to start.</param>
+/// <param name="fadein">Should the song rise from silence over the crossfade time?</param>
+/// <returns>bool; Did the song start?</returns>
+bool ThemeClass::Start(ThemeType theme, bool fadein)
+{
+	FadeInNext = false;
+	if ((unsigned)theme >= (unsigned)Themes.Count()) {
+		return(false);
+	}
+
+	float level = Themes[theme]->Volume;
+	Current = AudioEngine.Open_Stream(Theme_File_Name(theme), AUDIO_GROUP_MUSIC, fadein ? 0.0f : level, false);
+
+	/*
+	 * Stopping a score that never started does nothing, so recording one that
+	 * failed to start as the current score would silence the game for good.
+	 */
+	if (Current.Is_Null()) {
+		DebugString("Theme::PlaySong(%d) - Unavailable\n", theme);
+		Score = THEME_NONE;
+		Pending = THEME_NONE;
+		return(false);
+	}
+	if (fadein) {
+		Current.Set_Volume(level, CrossFadeMs);
+	}
+
+	Score = theme;
+	DebugString("Theme::PlaySong(%d) - %s\n", Score, IsRepeat == true || Themes[theme]->Repeat == true ? "Repeating" : "Playing");
+	if (IsRepeat == true || Themes[theme]->Repeat == true) {
+		Pending = theme;
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// Fades the current song out over the time given, cutting short any older fade.
+/// </summary>
+void ThemeClass::Retire(int ms)
+{
+	if (!Fading.Is_Finished()) {
+		Fading.Cut(FADE_CUT_MS);
+	}
+	Fading = Current;
+	Current.Fade(ms);
+	Current.Clear();
 }
 
 
@@ -453,59 +473,38 @@ int ThemeClass::Track_Length(ThemeType theme) const
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Stop -- Stops the current theme from playing.                                   *
- *                                                                                             *
- *    Use this routine to stop the current theme. After this routine is called, no more music  *
- *    will play until the Start() function is called.                                          *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/08/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Stops the current song. No more music plays until a song is started or queued.
+/// </summary>
+/// <param name="fade">Should the song fade out over the fade out time rather than stop at
+/// once? A song already fading out is left to finish either way.</param>
 void ThemeClass::Stop(bool fade)
 {
-	if (ScoresPresent && AudioEngine.Is_Available() && !Debug_Quiet && !Current.Is_Null()) {
-
-		// A score already fading out is left to finish on its own.
-		if (fade && Still_Playing() == true) {
-			DebugString("Theme::Stop(%d) - Fading\n", Score);
-			Current.Fade(THEME_FADE_MS);
-		} else if (Current.Is_Valid()) {
-			DebugString("Theme::Stop(%d)\n", Score);
-			AudioEngine.Stop_Stream(Current);
+	if (ScoresPresent && AudioEngine.Is_Available() && !Debug_Quiet) {
+		if (!Current.Is_Finished()) {
+			if (fade) {
+				DebugString("Theme::Stop(%d) - Fading\n", Score);
+				Retire(FadeOutMs);
+			} else {
+				DebugString("Theme::Stop(%d)\n", Score);
+				Current.Stop();
+			}
 		}
 		Current.Clear();
 		Score = THEME_NONE;
 		Pending = THEME_NONE;
+		FadeInNext = false;
 	}
 }
 
 
-/***********************************************************************************************
- * ThemeClass::Still_Playing -- Determines if music is still playing.                          *
- *                                                                                             *
- *    Use this routine to determine if music is still playing.                                 *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  bool; Is the music still audible?                                                  *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   12/20/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Is music still audible? A song fading out counts until it is silent.
+/// </summary>
 bool ThemeClass::Still_Playing(void) const
 {
 	if (ScoresPresent && AudioEngine.Is_Available() && Volume > 0 && !Debug_Quiet) {
-		// A fading score counts until it is silent, so the next waits for it.
-		return(!Current.Is_Finished());
+		return(!Current.Is_Finished() || !Fading.Is_Finished());
 	}
 	return(false);
 }

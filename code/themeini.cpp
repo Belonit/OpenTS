@@ -22,6 +22,7 @@
 #include "side.h"
 #include "voc.h"
 
+#include <algorithm>
 #include <cstring>
 #include <string>
 
@@ -134,4 +135,17 @@ bool ThemeControl::Allows_Side(SideType side) const
 		}
 	}
 	return(false);
+}
+
+/// <summary>
+/// Reads the settings THEME.INI's [General] section gives every score.
+/// </summary>
+/// <remarks>Times are held to 0-60 seconds; zero fades at once or turns the crossfade
+/// off.</remarks>
+void ThemeClass::Read_General(INIClass const & ini)
+{
+	float fadeout = ini.Get_Float("General", "FadeOut", (float)DEFAULT_FADE_OUT_MS / 1000.0f);
+	FadeOutMs = (int)(std::clamp(fadeout, 0.0f, 60.0f) * 1000.0f + 0.5f);
+	float crossfade = ini.Get_Float("General", "CrossFade", 0.0f);
+	CrossFadeMs = (int)(std::clamp(crossfade, 0.0f, 60.0f) * 1000.0f + 0.5f);
 }

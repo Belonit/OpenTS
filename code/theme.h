@@ -71,8 +71,11 @@ class ThemeClass
 {
 	private:
 		char const * Theme_File_Name(ThemeType theme);
+		bool Start(ThemeType theme, bool fadein);
+		void Retire(int ms);
 
-		AudioHandle Current;		// Handle to current score.
+		AudioHandle Current;		// The current score, never one fading out.
+		AudioHandle Fading;			// The score fading out, if any.
 		ThemeType Score;			// Score number currently being played.
 		ThemeType Pending;			// Score to play next.
 
@@ -101,8 +104,16 @@ class ThemeClass
 		 */
 		DynamicVectorClass<ThemeControl *> Themes;
 
+		// Set by a queued change that crossfades, so the next score rises from silence.
+		bool FadeInNext;
+
+		// THEME.INI [General] FadeOut= and CrossFade=, in milliseconds.
+		int FadeOutMs;
+		int CrossFadeMs;
+
 		enum {
-			THEME_FADE_MS = 1500		// The 60 maintenance ticks the old driver took to fade.
+			DEFAULT_FADE_OUT_MS = 1500,	// The 60 maintenance ticks the old driver took to fade.
+			FADE_CUT_MS = 100			// How quickly an older fade is cut when a newer one needs its place.
 		};
 
 	public:
@@ -131,6 +142,7 @@ class ThemeClass
 		void Set_Volume(int volume);
 
 		void Init_Themes(CCINIClass const & ini);
+		void Read_General(INIClass const & ini);
 		void Free_Themes(void);
 };
 
