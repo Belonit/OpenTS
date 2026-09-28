@@ -88,7 +88,7 @@ Every computer house that runs the expert AI is in the attacked state for the fi
 
 Two decisions read the state:
 
-- A house in the attacked state never orders a fire sale. A fire sale sells the whole base when the house owns structures but none of them can produce anything.
+- A house in the attacked state never orders a fire sale. A fire sale sells the whole base when the house owns structures but none of them can produce anything. In a Short Game it can keep one structure, as [`FireSaleKeepThreshold`](/keys/firesalekeepthreshold/) describes.
 - A computer-owned aircraft on Guard does not look for enemy vehicles caught far from their owner's base.
 
 ## Anger and the declared enemy

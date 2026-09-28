@@ -1095,6 +1095,10 @@ class RulesClass
 		 */
 		bool AIDetectDisguise;
 
+		// A Short Game fire sale keeps one structure while the house's forces count at least the threshold.
+		int FireSaleKeepThreshold;
+		int FireSaleStructureWeight;
+
 		/*
 		 * This caps the anti-air, anti-armor and anti-infantry ratings worked out for a
 		 * base defense, so one exceptional weapon cannot dominate the computer's choice.

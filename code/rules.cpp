@@ -539,6 +539,8 @@ RulesClass::RulesClass(void) :
 	GDIBaseDefenseCoefficient(1),
 	ComputerBaseDefenseResponse(3),
 	AIDetectDisguise(false),
+	FireSaleKeepThreshold(8),
+	FireSaleStructureWeight(2),
 	MaximumBaseDefenseValue(60),
 	BaseUnit(),
 	HarvesterUnit(),
@@ -1863,6 +1865,8 @@ bool RulesClass::AI(CCINIClass const & ini)
 		MaximumBaseDefenseValue = ini.Get_Int(AI, "MaximumBaseDefenseValue", MaximumBaseDefenseValue);
 		ComputerBaseDefenseResponse = ini.Get_Int(AI, "ComputerBaseDefenseResponse", ComputerBaseDefenseResponse);
 		AIDetectDisguise = ini.Get_Bool(AI, "AIDetectDisguise", AIDetectDisguise);
+		FireSaleKeepThreshold = ini.Get_Int(AI, "FireSaleKeepThreshold", FireSaleKeepThreshold);
+		FireSaleStructureWeight = ini.Get_Int(AI, "FireSaleStructureWeight", FireSaleStructureWeight);
 		return(true);
 	}
 	return(false);
@@ -2359,6 +2363,8 @@ void RulesClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(GDIBaseDefenseCoefficient);
 	stream.Serialize(ComputerBaseDefenseResponse);
 	stream.Serialize(AIDetectDisguise);
+	stream.Serialize(FireSaleKeepThreshold);
+	stream.Serialize(FireSaleStructureWeight);
 	stream.Serialize(MaximumBaseDefenseValue);
 	stream.Serialize(BaseUnit);
 	stream.Serialize(HarvesterUnit);

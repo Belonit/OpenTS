@@ -8690,6 +8690,42 @@ FireProne:
       source: code/infatype.cpp
       guard: null
     level: InfantryTypeClass
+FireSaleKeepThreshold:
+  key: FireSaleKeepThreshold
+  scopes:
+  - applies_to:
+    - global rules
+    file: rules.ini
+    section:
+      kind: literal
+      name: AI
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: '8'
+      declared_in: RulesClass
+      member: FireSaleKeepThreshold
+      source: code/rules.cpp
+      guard: null
+    level: RulesClass
+FireSaleStructureWeight:
+  key: FireSaleStructureWeight
+  scopes:
+  - applies_to:
+    - global rules
+    file: rules.ini
+    section:
+      kind: literal
+      name: AI
+    value_type: integer
+    status: generated
+    _provenance:
+      default_candidate: '2'
+      declared_in: RulesClass
+      member: FireSaleStructureWeight
+      source: code/rules.cpp
+      guard: null
+    level: RulesClass
 FireSupress:
   key: FireSupress
   scopes:

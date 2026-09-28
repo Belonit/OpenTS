@@ -5704,6 +5704,67 @@ void HouseClass::Write_INI(CCINIClass & ini)
 }
 
 
+/// <summary>
+/// Picks the structure a Short Game fire sale leaves standing, so that a house with an army
+/// left is not defeated by selling its last structure.
+/// </summary>
+/// <returns>The first of the house's structures that a sale would take down and that keeps the
+/// house in a Short Game, or NULL when this is not a Short Game, the rule is off, the house's
+/// forces fall short, or one of its structures stands after the sale anyway.</returns>
+static BuildingClass const * Fire_Sale_Holdout(HouseClass const * house)
+{
+	if (Session.Type == GAME_NORMAL || !Session.Options.ShortGame || Rule->FireSaleKeepThreshold <= 0) {
+		return(NULL);
+	}
+
+	int forces = 0;
+	for (int index = 0; index < Units.Count(); index++) {
+		UnitClass const * unit = Units[index];
+		if (unit != NULL && !unit->IsInLimbo && unit->House == house) {
+			forces++;
+		}
+	}
+	for (int index = 0; index < Infantry.Count(); index++) {
+		InfantryClass const * inf = Infantry[index];
+		if (inf != NULL && !inf->IsInLimbo && inf->House == house) {
+			forces++;
+		}
+	}
+
+	BuildingClass const * keep = NULL;
+	bool stands = false;
+	for (int index = 0; index < Buildings.Count(); index++) {
+		BuildingClass const * b = Buildings[index];
+		if (b == NULL || b->IsInLimbo || b->House != house || b->Strength <= 0) continue;
+
+		// A deployed vehicle counts as a vehicle and does not keep a Short Game house alive.
+		if (b->Considered_Vehicle()) {
+			forces++;
+			continue;
+		}
+
+		// A structure being sold has already released its crew.
+		if (b->Mission == MISSION_DECONSTRUCTION) continue;
+
+		forces += Rule->FireSaleStructureWeight;
+		if (b->IsGoingToBlow) continue;
+
+		if (!b->HasBuildupData) {
+			if (!b->Class->IsFirestormWall) {
+				stands = true;
+			}
+		} else if (keep == NULL) {
+			keep = b;
+		}
+	}
+
+	if (stands) {
+		return(NULL);
+	}
+	return(forces >= Rule->FireSaleKeepThreshold ? keep : NULL);
+}
+
+
 /***********************************************************************************************
  * HouseClass::Fire_Sale -- Cause all buildings to be sold.                                    *
  *                                                                                             *
@@ -5721,10 +5782,12 @@ void HouseClass::Write_INI(CCINIClass & ini)
 bool HouseClass::Fire_Sale(void)
 {
 	if (CurBuildings > 0) {
+		BuildingClass const * keep = Fire_Sale_Holdout(this);
+
 		for (int index = 0; index < Buildings.Count(); index++) {
 			BuildingClass * b = Buildings[index];
 
-			if (b != NULL && !b->IsInLimbo && b->House == this && b->Strength > 0) {
+			if (b != NULL && b != keep && !b->IsInLimbo && b->House == this && b->Strength > 0) {
 				b->Sell_Back(1);
 			}
 		}
