@@ -184,9 +184,7 @@ int GraphicMenu::Presentation(void)
 	Engine.Restore_And_Advance();
 
 	while (!done) {
-		Hide_Mouse();
 		Engine.Wait_For_Focus();
-		Show_Mouse();
 
 		Point2D mouse(Get_Mouse_X(), Get_Mouse_Y());
 
