@@ -7956,7 +7956,8 @@ void BuildingClass::Create_Anim(char const * name, BAnimType anim, bool damaged,
 			animptr->Set_Stage(Anims[anim]->Fetch_Stage());
 			AnimClass * oldanim = Anims[anim];
 			Anims[anim] = NULL;
-			delete oldanim;
+			// The old animation may be the one whose damage to this building caused the swap, so it is freed after the logic pass.
+			oldanim->Delete_Me();
 		}
 
 		Anims[anim] = animptr;
