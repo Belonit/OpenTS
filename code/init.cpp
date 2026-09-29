@@ -677,10 +677,12 @@ void Prepare_Side_Roster(void)
 bool Campaign_Available(CampaignClass * campaign)
 {
 	if (Addon_Enabled(ADDON_ANY) == true) {
-		if (campaign->RequiredAddon == ADDON_BASE_GAME) {
+		int addon = campaign->RequiredAddon;
+		if (addon == ADDON_BASE_GAME) {
 			return(false);
 		}
-		if (Addon_Enabled((AddonType)campaign->RequiredAddon)) {
+		// Addon_Enabled takes only ADDON_ANY or a real addon, so a campaign with any other number is never listed.
+		if (addon >= ADDON_ANY && addon < ADDON_COUNT && Addon_Enabled((AddonType)addon)) {
 			return(true);
 		}
 		return(false);
