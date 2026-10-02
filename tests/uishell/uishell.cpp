@@ -3465,6 +3465,65 @@ void Test_Save_Game_Screen(Rml::Context & context, CountingSystemInterfaceClass 
 		context.Update();
 	}
 
+	float const originalscale = context.GetDensityIndependentPixelRatio();
+	Rml::Vector2i const originaldimensions = context.GetDimensions();
+	for (float scale : { 1.0f, 2.0f }) {
+		context.SetDensityIndependentPixelRatio(scale);
+		context.SetDimensions(Rml::Vector2i(1280, 800) * (int)scale);
+		for (UISaveGameMode mode : { UI_SAVE_GAME_LOAD, UI_SAVE_GAME_SAVE, UI_SAVE_GAME_DELETE }) {
+			for (int count : { 2, 24 }) {
+				std::printf("  save list mode %d, scale %.0f, rows %d\n", (int)mode, scale, count);
+				UISaveGameState state = fixture;
+				state.Mode = mode;
+				UISaveGameEntry longfile = file;
+				longfile.Description = std::string(79, 'W');
+				longfile.Date = "12/31/2026";
+				longfile.Time = "11:59 PM";
+				state.Entries.assign(count, longfile);
+				state.Entries[0] = slot;
+				UISaveGamePresenterClass presenter(state);
+				std::unique_ptr<UIViewClass> view;
+				Check(open(presenter, view), "the save list prepares for timestamp layout checks");
+				context.Render();
+
+				Rml::ElementDocument * document = Rml(*view).Document();
+				std::vector<Rml::Element *> rows = Visible_Rows(document, "files");
+				Check(rows.size() == (std::size_t)count, "the timestamp fixture lists every entry");
+				if (rows.size() == (std::size_t)count) {
+					Rml::Element * description = rows[1]->QuerySelector(".cell-description");
+					Rml::Element * stamp = rows[1]->QuerySelector(".cell-stamp");
+					Check(description != nullptr && stamp != nullptr, "each saved game has a description and one timestamp field");
+					if (description != nullptr && stamp != nullptr) {
+						Check(stamp->GetInnerRML() == "12/31/2026 11:59 PM", "the timestamp joins the date and time with a space");
+						float const descriptionright = description->GetAbsoluteOffset(Rml::BoxArea::Border).x + description->GetBox().GetSize(Rml::BoxArea::Border).x;
+						float const stampleft = stamp->GetAbsoluteOffset(Rml::BoxArea::Border).x;
+						float const stampright = stampleft + stamp->GetBox().GetSize(Rml::BoxArea::Border).x;
+						float const rowright = rows[1]->GetAbsoluteOffset(Rml::BoxArea::Border).x + rows[1]->GetBox().GetSize(Rml::BoxArea::Border).x;
+						Check(stampleft - descriptionright >= 8.0f * scale - 1.0f, "the description leaves a gap before the timestamp");
+						Check(std::abs(rowright - stampright - 2.0f * scale) <= 1.0f, "the timestamp stays at the row's right inset");
+						Rml::Element * heading = document->GetElementById("heading-stamp");
+						Check(heading != nullptr && heading->GetComputedValues().text_align() == Rml::Style::TextAlign::Center, "the timestamp heading is centered in its area");
+						if (heading != nullptr && count == 2) {
+							float const headingright = heading->GetAbsoluteOffset(Rml::BoxArea::Border).x + heading->GetBox().GetSize(Rml::BoxArea::Border).x;
+							Check(std::abs(headingright - stampright) <= 1.0f, "the timestamp heading area ends at the timestamp's right edge");
+						}
+						Check(description->GetComputedValues().overflow_x() == Rml::Style::Overflow::Hidden, "a long description is clipped before the timestamp");
+						Rml::Element * list = document->GetElementById("files");
+						float const listright = list->GetAbsoluteOffset(Rml::BoxArea::Padding).x + list->GetClientWidth();
+						Check(stampright <= listright, "the timestamp fits beside the list's scrollbar");
+						Check((list->GetScrollHeight() > list->GetClientHeight()) == (count == 24), "the layout fixture covers lists with and without scrolling");
+					}
+				}
+
+				view->Release();
+				context.Update();
+			}
+		}
+	}
+	context.SetDensityIndependentPixelRatio(originalscale);
+	context.SetDimensions(originaldimensions);
+	context.Update();
+	Check(system.Problems == problems, "the save list layouts raise no RmlUi warning or error");
 }
 
 

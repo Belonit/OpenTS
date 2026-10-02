@@ -31,6 +31,7 @@
 
 #headings
 {
+	display: flex;
 	margin-top: 9dp;
 	height: 14dp;
 	line-height: 17dp;
@@ -39,28 +40,14 @@
 
 #heading-description
 {
-	display: inline-block;
-	width: 182dp;
+	flex: 1;
 }
 
 #heading-stamp
 {
-	display: inline-block;
 	width: 108dp;
-	margin-left: 79dp;
-	padding-right: 1dp;
+	margin-right: 3dp;
 	text-align: center;
-}
-
-.save #heading-stamp
-{
-	width: 99dp;
-	margin-left: 83dp;
-}
-
-.delete #heading-stamp
-{
-	width: 106dp;
 }
 
 #files
@@ -84,31 +71,28 @@
 	height: 199dp;
 }
 
-.item
+#files .item
 {
-	position: relative;
+	display: flex;
+	padding-right: 2dp;
 }
 
 .item > span
 {
-	position: absolute;
-	top: 0;
 	white-space: nowrap;
 }
 
 .cell-description
 {
-	left: 2dp;
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
 }
 
-.cell-date
+.cell-stamp
 {
-	left: 255dp;
-}
-
-.cell-time
-{
-	left: 315dp;
+	flex-shrink: 0;
+	margin-left: 8dp;
 }
 
 #description
