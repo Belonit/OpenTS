@@ -27,7 +27,7 @@ The `ui` directory sits beside the executable and holds everything the screens a
 
 `kit.rcss` styles the controls the way the game's dialogs drew them, and `dialog.rml` is the frame around a screen: the wallpaper, the side bars and the glow. A document names `dialog.rml` as its template, which brings in the kit, and also links its own style sheet. The shipped screen sheets only place their controls; how the controls look comes from the kit.
 
-The pictures, and the dialog font that captions and buttons are drawn in, are the game's interface art, read from its mix files. Where a picture is missing, the control draws a plain fill in its place.
+The pictures, and the dialog font used for captions, buttons and message-box text, are the game's interface art, read from its mix files. Where a picture is missing, the control draws a plain fill in its place.
 
 The kit gives every layout size in `dp`, RmlUi's scaled pixel, so a screen matches the dialog it replaced at the game's own resolution and grows with the game picture when that is drawn larger.
 

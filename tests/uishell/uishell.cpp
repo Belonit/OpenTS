@@ -1674,6 +1674,32 @@ class MissingViewClass : public UIRmlViewClass
 };
 
 
+void Test_Reconnect_Screen(Rml::Context & context, CountingSystemInterfaceClass & system)
+{
+	int problems = system.Problems;
+	UIReconnectPresenterClass presenter;
+	presenter.State.TimeRemaining = "Time remaining: 60 seconds";
+	presenter.State.Messages.push_back("Waiting for other players.");
+	std::unique_ptr<UIViewClass> view = UI_Reconnect_View(presenter);
+
+	Check(Rml(*view).Prepare(context), "the reconnect view prepares against the test context");
+	view->Show(true);
+	view->Sync();
+	context.Update();
+	context.Render();
+	Check(system.Problems == problems, "the reconnect screen raises no RmlUi warning or error");
+
+	Rml::ElementDocument * document = Rml(*view).Document();
+	Rml::Element * remaining = document->GetElementById("timeremaining");
+	Check(remaining != nullptr && remaining->GetComputedValues().font_family() == "dlgsys", "reconnect time remaining uses the dialog bitmap font family");
+	Rml::Element * message = document->QuerySelector("#messages .item");
+	Check(message != nullptr && message->GetComputedValues().font_family() == "dlg-sans", "the reconnect message list keeps its sans font family");
+
+	view->Release();
+	context.Update();
+}
+
+
 void Test_Version_Screen(Rml::Context & context, CountingSystemInterfaceClass & system)
 {
 	int problems = system.Problems;
@@ -1807,7 +1833,7 @@ void Test_Message_Box_Screen(Rml::Context & context, CountingSystemInterfaceClas
 	int problems = system.Problems;
 
 	{
-		UIMessageBoxPresenterClass presenter("Do you want to abort the mission?", { "First", "Second", "Third" }, 0);
+		UIMessageBoxPresenterClass presenter("Would you like to replay this mission?", { "First", "Second", "Third" }, 0);
 		Check(presenter.Button_Count() == 3, "three captions make three buttons");
 
 		std::unique_ptr<UIViewClass> view = UI_Message_Box_View(presenter);
@@ -1817,8 +1843,14 @@ void Test_Message_Box_Screen(Rml::Context & context, CountingSystemInterfaceClas
 		context.Render();
 		Check(system.Problems == problems, "the message box raises no RmlUi warning or error");
 
+		Rml::Element * prompt = Rml(*view).Document()->QuerySelector("#text p");
+		Check(prompt != nullptr && prompt->GetComputedValues().font_family() == "dlgsys", "the replay question uses the dialog bitmap font family");
+
 		std::vector<Rml::Element *> buttons = Visible_Buttons(Rml(*view).Document());
 		Check(buttons.size() == 3, "three buttons are visible");
+		Check(std::all_of(buttons.begin(), buttons.end(), [](Rml::Element * button) {
+			return(button->GetComputedValues().font_family() == "dlgsys");
+		}), "message button captions use the dialog bitmap font family");
 		bool ordered = buttons.size() == 3 && buttons[0]->GetInnerRML() == "First" && buttons[1]->GetInnerRML() == "Third" && buttons[2]->GetInnerRML() == "Second";
 		Check(ordered, "the buttons read first, third, second from left to right");
 
@@ -1888,9 +1920,13 @@ void Test_Message_Box_Screen(Rml::Context & context, CountingSystemInterfaceClas
 		Rml::Element * dialog = Rml(*view).Document()->GetElementById("reveal");
 		Check(dialog != nullptr && dialog->GetBox().GetSize(Rml::BoxArea::Border) == Rml::Vector2f(436.0f, 147.0f), "the network box is the size its template comes to");
 
+		Rml::Element * prompt = Rml(*view).Document()->QuerySelector("#text p");
+		Check(prompt != nullptr && prompt->GetComputedValues().font_family() == "dlgsys", "network messages use the dialog bitmap font family");
+
 		std::vector<Rml::Element *> buttons = Visible_Buttons(Rml(*view).Document());
 		Check(buttons.size() == 1, "the network box shows its lone button");
 		if (buttons.size() == 1) {
+			Check(buttons[0]->GetComputedValues().font_family() == "dlgsys", "the network button caption uses the dialog bitmap font family");
 			float panel = Rml(*view).Document()->GetElementById("chrome")->GetAbsoluteOffset(Rml::BoxArea::Border).x;
 			float left = buttons[0]->GetAbsoluteOffset(Rml::BoxArea::Border).x - panel;
 			Check(left == 180.0f, "a lone button stands where the template puts OK");
@@ -1911,6 +1947,29 @@ void Test_Message_Box_Screen(Rml::Context & context, CountingSystemInterfaceClas
 		context.Update();
 		presenter.Drain();
 		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && presenter.Choice == 2, "Enter answers with the default button");
+
+		view->Release();
+		context.Update();
+	}
+
+	for (bool network : { false, true }) {
+		UIMessageBoxPresenterClass presenter("Would you like to replay this mission from the beginning?\nChoose Yes to try again.", { "Yes", "No", "" }, 0);
+		presenter.Network = network;
+		std::unique_ptr<UIViewClass> view = UI_Message_Box_View(presenter);
+		Check(Rml(*view).Prepare(context), "a multiline message box prepares");
+		view->Show(true);
+		context.Update();
+		context.Render();
+
+		Rml::Element * text = Rml(*view).Document()->GetElementById("text");
+		Rml::Element * prompt = Rml(*view).Document()->QuerySelector("#text p");
+		Check(prompt != nullptr && prompt->GetComputedValues().font_family() == "dlgsys", "multiline messages use the dialog bitmap font family");
+		if (text != nullptr && prompt != nullptr) {
+			Rml::Vector2f size = prompt->GetBox().GetSize(Rml::BoxArea::Border);
+			Rml::Vector2f available = text->GetBox().GetSize(Rml::BoxArea::Content);
+			Check(size.y > 30.0f && size.y <= available.y && size.x <= available.x, "wrapped text and an explicit newline fit the message region");
+		}
+		Check(system.Problems == problems, "multiline message boxes raise no RmlUi warning or error");
 
 		view->Release();
 		context.Update();
@@ -2403,8 +2462,11 @@ void Test_Display_Screen(Rml::Context & context, CountingSystemInterfaceClass & 
 		Check(system.Problems == problems, "the confirmation screen raises no RmlUi warning or error");
 
 		Rml::ElementDocument * document = Rml(*view).Document();
+		Rml::Element * prompt = document->GetElementById("text");
+		Check(prompt != nullptr && prompt->GetComputedValues().font_family() == "dlgsys", "the display confirmation uses the dialog bitmap font family");
 		Rml::Element * seconds = document->GetElementById("seconds");
 		Check(seconds != nullptr && seconds->GetInnerRML() == "10", "the confirmation shows the ten seconds left");
+		Check(seconds != nullptr && seconds->GetComputedValues().font_family() == "dlgsys", "the display countdown inherits the dialog bitmap font family");
 
 		clock.Now = 7500;
 		presenter.Refresh();
@@ -4474,6 +4536,7 @@ void Test_Documents(void)
 		Test_Save_Game_Screen(*context, system);
 		Test_Game_Options_Screen(*context, system);
 		Test_Message_Box_Screen(*context, system);
+		Test_Reconnect_Screen(*context, system);
 		Test_Sound_Screen(*context, system);
 		Test_Game_Controls_Screen(*context, system);
 		Test_Display_Screen(*context, system);

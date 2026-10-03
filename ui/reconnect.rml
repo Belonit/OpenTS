@@ -21,7 +21,7 @@
 		</div>
 	</div>
 
-	<span id="timeremaining" class="sans">{{timeremaining}}</span>
+	<span id="timeremaining">{{timeremaining}}</span>
 
 	<div id="messages" class="list log"><div class="rows">
 		<div class="item" data-for="line : messages">{{line}}</div>
