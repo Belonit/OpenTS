@@ -596,6 +596,9 @@ def validate_all(base=None):
             base.get("enums") or {},
             command_delta,
             base_commands,
+            registry=registry,
+            base_changes=base.get("changes"),
+            base_registry=base_registry,
         )
 
     validate_routes(errors)

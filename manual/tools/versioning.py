@@ -706,6 +706,36 @@ def require_target(errors, changes, entity_type, entity_id, effect, scope=None):
             f"add a change target with effect: {effect}{suffix}")
 
 
+def development_additions(changes, registry, base_changes, base_registry):
+    development = (registry or {}).get("development")
+    if not development or development != (base_registry or {}).get("development"):
+        return set()
+    for snapshot in (registry, base_registry):
+        if snapshot.get("by_version", {}).get(development, {}).get("status") != "development":
+            return set()
+
+    current_additions = {
+        target_key(target)
+        for change in changes.values()
+        if change["data"].get("release") == development
+        for target in change["data"].get("targets", [])
+        if target.get("effect") == "added"
+    }
+    base_additions = {
+        target_key(target)
+        for change in (base_changes or {}).values()
+        if change.get("release") == development
+        for target in change.get("targets", [])
+        if target.get("effect") == "added"
+    }
+    return current_additions & base_additions
+
+
+def require_changed_target(errors, changes, entity_type, entity_id, additions):
+    if (entity_type, entity_id, None) not in additions:
+        require_target(errors, changes, entity_type, entity_id, "changed")
+
+
 def key_scope_sets(keys):
     return {key: set(scope_ids(entry)) for key, entry in keys.items()}
 
@@ -714,7 +744,9 @@ def validate_branch_lifecycle(
         errors, current_keys, base_keys, current_scripting, base_scripting,
         current_formats, base_formats, changes, tombstones, key_delta,
         scripting_delta, enum_delta=None, base_enums=None,
-        command_delta=None, base_commands=None):
+        command_delta=None, base_commands=None, registry=None,
+        base_changes=None, base_registry=None):
+    additions = development_additions(changes, registry, base_changes, base_registry)
     tombstone_map = {
         (row.get("type"), row.get("id")): row for row in tombstones
     }
@@ -746,7 +778,7 @@ def validate_branch_lifecycle(
         for entity_id in sorted(changes_for_kind["removed"]):
             require_target(errors, changes, singular, entity_id, "removed")
         for entity_id in sorted(changes_for_kind["shifted"]):
-            require_target(errors, changes, singular, entity_id, "changed")
+            require_changed_target(errors, changes, singular, entity_id, additions)
 
     current_format_ids = set(current_formats)
     base_format_ids = set(base_formats or {})
@@ -769,14 +801,14 @@ def validate_branch_lifecycle(
         # removing a page is a docs decision, not an engine lifecycle event.
         # Only signature drift on a selected domain reflects the engine.
         for entity_id in sorted(enum_delta["changed"]):
-            require_target(errors, changes, "enum", entity_id, "changed")
+            require_changed_target(errors, changes, "enum", entity_id, additions)
 
     if command_delta is not None:
         base_command_records = command_catalog(base_commands)
         for entity_id in sorted(command_delta["added"]):
             require_target(errors, changes, "command", entity_id, "added")
         for entity_id in sorted(command_delta["changed"]):
-            require_target(errors, changes, "command", entity_id, "changed")
+            require_changed_target(errors, changes, "command", entity_id, additions)
         for entity_id in sorted(command_delta["removed"]):
             require_target(errors, changes, "command", entity_id, "removed")
             record = tombstone_map.get(("command", entity_id))

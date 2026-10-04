@@ -1,3 +1,4 @@
+from copy import deepcopy
 from pathlib import Path
 import sys
 import tempfile
@@ -521,6 +522,189 @@ class LifecycleEntityExpansionTests(unittest.TestCase):
         self.assertTrue(any(
             "unknown entity internal:missing-internal" in error
             for error in errors))
+
+
+class DevelopmentAdditionTests(unittest.TestCase):
+    def setUp(self):
+        self.registry = {
+            "development": "0.2.0",
+            "by_version": {
+                "0.1.0": {"status": "released"},
+                "0.2.0": {"status": "development"},
+            },
+        }
+        self.base_changes = {
+            "new-entities": {
+                "release": "0.2.0",
+                "targets": [
+                    {"type": kind, "id": "Sample", "effect": "added"}
+                    for kind in ("command", "enum", "action", "event", "mission")
+                ],
+            },
+        }
+        self.changes = {
+            identifier: {"data": deepcopy(data)}
+            for identifier, data in self.base_changes.items()
+        }
+
+    def validate(self, entity_type="command", **overrides):
+        scripting_delta = LifecycleEntityExpansionTests.empty_scripting_delta()
+        arguments = {
+            "changes": self.changes,
+            "tombstones": [],
+            "registry": self.registry,
+            "base_changes": self.base_changes,
+            "base_registry": self.registry,
+        }
+        if entity_type == "command":
+            arguments["command_delta"] = {
+                "added": set(), "changed": {"Sample"}, "removed": set(),
+            }
+        elif entity_type == "enum":
+            arguments["enum_delta"] = {"changed": {"Sample"}}
+        else:
+            plural = next(
+                plural for plural, (_, singular) in versioning.SCRIPTING_TYPES.items()
+                if singular == entity_type)
+            scripting_delta[plural]["shifted"] = {"Sample": (1, 2)}
+        scripting_delta = overrides.pop("scripting_delta", scripting_delta)
+        arguments.update(overrides)
+        errors = []
+        versioning.validate_branch_lifecycle(
+            errors, {}, {}, {}, {}, {}, {},
+            key_delta=LifecycleEntityExpansionTests.empty_key_delta(),
+            scripting_delta=scripting_delta, **arguments)
+        return errors
+
+    def test_development_additions_cover_each_changed_entity_family(self):
+        for kind in ("command", "enum", "action", "event", "mission"):
+            with self.subTest(kind=kind):
+                self.assertEqual(self.validate(kind), [])
+
+    def test_command_category_change_remains_semantic_and_needs_no_new_record(self):
+        command = LifecycleEntityExpansionTests.command("Sample", "sample", "Message")
+        base = {"registered_commands": [{**command, "category": "Chat"}]}
+        current = {"registered_commands": [{**command, "category": "Interface"}]}
+        delta = validate_manual.classify_command_deltas(current, base)
+        self.assertEqual(delta["changed"], {"Sample"})
+        self.assertEqual(self.validate(command_delta=delta, base_commands=base), [])
+
+    def test_amended_development_note_keeps_addition_coverage(self):
+        self.changes["new-entities"]["data"]["title"] = "Describe the final behavior"
+        self.assertEqual(self.validate(), [])
+
+    def test_development_targets_can_move_between_records(self):
+        self.changes["revised-additions"] = self.changes["new-entities"]
+        self.changes["new-entities"] = {"data": {"release": "0.2.0", "targets": []}}
+        self.assertEqual(self.validate(), [])
+
+    def test_current_only_addition_does_not_cover_existing_behavior(self):
+        self.assertEqual(self.validate(base_changes={}), [
+            "command:Sample: add a change target with effect: changed",
+        ])
+
+    def test_released_additions_still_require_changed_targets(self):
+        self.base_changes["new-entities"]["release"] = "0.1.0"
+        self.changes["new-entities"]["data"]["release"] = "0.1.0"
+        for kind in ("command", "enum", "action", "event", "mission"):
+            with self.subTest(kind=kind):
+                self.assertEqual(self.validate(kind), [
+                    f"{kind}:Sample: add a change target with effect: changed",
+                ])
+
+    def test_opening_next_development_release_ends_the_exception(self):
+        registry = {
+            "development": "0.3.0",
+            "by_version": {
+                "0.1.0": {"status": "released"},
+                "0.2.0": {"status": "released"},
+                "0.3.0": {"status": "development"},
+            },
+        }
+        self.assertEqual(self.validate(registry=registry), [
+            "command:Sample: add a change target with effect: changed",
+        ])
+
+    def test_missing_context_keeps_changed_target_requirements(self):
+        for field in ("registry", "base_changes", "base_registry"):
+            with self.subTest(field=field):
+                self.assertEqual(self.validate(**{field: None}), [
+                    "command:Sample: add a change target with effect: changed",
+                ])
+
+    def test_both_registries_must_mark_the_addition_release_development(self):
+        for field in ("registry", "base_registry"):
+            with self.subTest(field=field):
+                registry = deepcopy(self.registry)
+                registry["by_version"]["0.2.0"]["status"] = "released"
+                self.assertEqual(self.validate(**{field: registry}), [
+                    "command:Sample: add a change target with effect: changed",
+                ])
+
+    def test_current_addition_coverage_must_be_retained(self):
+        for targets in ([], [{"type": "command", "id": "Sample", "effect": "deprecated"}]):
+            with self.subTest(targets=targets):
+                changes = {"new-entities": {"data": {"release": "0.2.0", "targets": targets}}}
+                self.assertEqual(self.validate(changes=changes), [
+                    "command:Sample: add a change target with effect: changed",
+                ])
+
+    def test_base_coverage_matches_exact_type_id_and_scope(self):
+        for field, value in (("type", "enum"), ("id", "Other"), ("scope", "other")):
+            with self.subTest(field=field):
+                base_changes = deepcopy(self.base_changes)
+                base_changes["new-entities"]["targets"][0][field] = value
+                self.assertEqual(self.validate(base_changes=base_changes), [
+                    "command:Sample: add a change target with effect: changed",
+                ])
+
+    def test_scoped_additions_do_not_cover_parent_or_sibling_scopes(self):
+        target = {"type": "key", "id": "Scoped", "scope": "unit", "effect": "added"}
+        base_changes = {"scoped": {"release": "0.2.0", "targets": [target]}}
+        current = {"scoped": {"data": {
+            "release": "0.2.0", "targets": [target, {**target, "scope": None}],
+        }}}
+        self.assertEqual(versioning.development_additions(
+            current, self.registry, base_changes, self.registry), {("key", "Scoped", "unit")})
+        current["scoped"]["data"]["targets"] = [{**target, "scope": "aircraft"}]
+        self.assertEqual(versioning.development_additions(
+            current, self.registry, base_changes, self.registry), set())
+
+    def test_shifted_released_entity_still_needs_its_own_changed_target(self):
+        delta = LifecycleEntityExpansionTests.empty_scripting_delta()
+        delta["actions"]["shifted"] = {"Sample": (1, 2), "Released": (2, 3)}
+        self.assertEqual(self.validate("action", scripting_delta=delta), [
+            "action:Released: add a change target with effect: changed",
+        ])
+
+    def test_explicit_changed_target_still_works_without_addition_context(self):
+        changes = {"change": {"data": {"targets": [
+            {"type": "command", "id": "Sample", "effect": "changed"},
+        ]}}}
+        self.assertEqual(self.validate(changes=changes, base_changes=None), [])
+
+    def test_development_addition_does_not_cover_a_removal(self):
+        delta = {"added": set(), "changed": set(), "removed": {"Sample"}}
+        tombstones = [{"type": "command", "id": "Sample", "route": "/commands/sample/"}]
+        self.assertEqual(self.validate(command_delta=delta, tombstones=tombstones), [
+            "command:Sample: add a change target with effect: removed",
+        ])
+
+    def test_new_entity_still_requires_an_addition_target(self):
+        delta = {"added": {"Other"}, "changed": set(), "removed": set()}
+        self.assertEqual(self.validate(command_delta=delta), [
+            "command:Other: add a change target with effect: added",
+        ])
+        changes = deepcopy(self.changes)
+        changes["new-entities"]["data"]["targets"].append(
+            {"type": "command", "id": "Other", "effect": "added"})
+        self.assertEqual(self.validate(command_delta=delta, changes=changes), [])
+
+    def test_duplicate_addition_history_still_fails_validation(self):
+        self.changes["duplicate"] = deepcopy(self.changes["new-entities"])
+        errors = []
+        versioning.validate_history(errors, self.registry, self.changes, [])
+        self.assertIn("command:Sample: lifecycle may contain at most one added event", errors)
 
 
 if __name__ == "__main__":

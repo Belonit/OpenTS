@@ -76,6 +76,8 @@ handler and launch-parser branch needs exactly one public adapter or one
 reasoned exclusion. Command IDs are case-sensitive. Do not infer default
 bindings from a declaration or nearby code.
 
+The branch check accepts an existing development-release addition record for later changes to a command, enum signature, or scripting index. The addition target must match the entity and scope in both the Git base and the current tree, and its release must still be the active development release in both snapshots. A current-only addition target does not satisfy a required `changed` target. Follow the [authoring rules](AUTHORING.md#lifecycle-records) when updating addition prose.
+
 Enums are authored selections backed by explicit source adapters. Documenting
 an existing fixed domain is documentation work, not an engine change. Its
 adapter must preserve constants, stored values, public tokens, and order.
