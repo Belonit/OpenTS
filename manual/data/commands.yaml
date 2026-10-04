@@ -1748,7 +1748,7 @@ registered_commands:
   kind: registered
   title: Message to All
   description: Starts a message to every player.
-  category: Chat
+  category: Interface
   audience: player
   availability:
     builds:
@@ -1763,7 +1763,7 @@ registered_commands:
   kind: registered
   title: Message to Team
   description: Starts a message to your allies, or to the other observers while you watch.
-  category: Chat
+  category: Interface
   audience: player
   availability:
     builds:

@@ -29,6 +29,12 @@ class RegisteredCommandTests(unittest.TestCase):
             and record["category"].strip()
             for record in self.registered))
 
+    def test_message_commands_use_interface_category(self):
+        by_id = {record["id"]: record for record in self.registered}
+        for identifier in ("ChatToAll", "ChatToAllies"):
+            self.assertEqual(by_id[identifier]["category"], "Interface")
+        self.assertNotIn("Chat", {record["category"] for record in self.registered})
+
     def test_numbered_team_families_expand_through_ten(self):
         ids = {record["id"] for record in self.registered}
         for prefix in ("TeamCreate", "TeamSelect", "TeamAddSelect", "TeamAddTo", "TeamCenter"):

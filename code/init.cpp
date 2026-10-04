@@ -5201,7 +5201,7 @@ class ChatToAllCommandClass : public CommandClass
 			return(Fetch_String(TXT_CHAT_TO_ALL));
 		}
 		virtual char const * Get_Category(void) const {
-			return(Fetch_String(TXT_CHAT));
+			return(Fetch_String(TXT_INTERFACE));
 		}
 		virtual char const * Get_Description(void) const {
 			return(Fetch_String(TXT_CHAT_TO_ALL_DESC));
@@ -5223,7 +5223,7 @@ class ChatToAlliesCommandClass : public CommandClass
 			return(Fetch_String(TXT_CHAT_TO_ALLIES));
 		}
 		virtual char const * Get_Category(void) const {
-			return(Fetch_String(TXT_CHAT));
+			return(Fetch_String(TXT_INTERFACE));
 		}
 		virtual char const * Get_Description(void) const {
 			return(Fetch_String(TXT_CHAT_TO_ALLIES_DESC));
