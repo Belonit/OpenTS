@@ -193,6 +193,9 @@ templates to copy.
 - If no documentation changes are needed, state why the existing documentation
   remains accurate.
 - Give each fact one owner and link to it instead of copying it.
+- Check the affected feature's release history before creating a change record.
+  Follow [Lifecycle records](manual/AUTHORING.md#lifecycle-records) to decide
+  whether to add, amend, or leave a record unchanged.
 - Run the narrowest relevant checks first and report exact commands,
   configurations, environments, results, and relevant checks not run.
 - Use `docs/BUILDING.md` as the authority for build support. Never turn a
@@ -207,6 +210,9 @@ templates to copy.
 - Preserve unrelated work in a dirty worktree.
 - Commit, rewrite history, push, publish, or release only on explicit user
   request.
+- For a maintainer's small, single-commit fix, work on the current branch,
+  including `main`; do not create a branch automatically. Use a separate branch
+  when the user requests one or the work needs isolation.
 - Never add `Co-authored-by` trailers or AI-attribution lines.
 - Use an imperative commit subject of at most 72 characters. Omit the body by
   default; add only a brief factual exception when necessary.

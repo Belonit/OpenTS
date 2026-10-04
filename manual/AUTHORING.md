@@ -229,10 +229,11 @@ page already carries.
 
 ## Lifecycle records
 
-Create a record directly under `changes/` for a genuine OpenTS engine addition,
-deliberate behavior change, deprecation, or removal. Valid target types are
-`key`, `action`, `event`, `mission`, `format`, `enum`, `system`, and `command`.
-Valid effects are `added`, `changed`, `deprecated`, and `removed`.
+Check Git history, the release registry, and existing change records before creating a record. Establish whether the affected behavior was present in a released version or first added in the current development release.
+
+For a fix or adjustment to an addition in the current development release, do not create a separate record. Amend its existing addition record if the description no longer matches the final behavior; otherwise leave it unchanged. Update the owning reference pages when needed. Do not rewrite records from released versions.
+
+For a new engine addition or a change to released behavior, create a record directly under `changes/`. Valid target types are `key`, `action`, `event`, `mission`, `format`, `enum`, `system`, and `command`. Valid effects are `added`, `changed`, `deprecated`, and `removed`.
 
 Do not create records for baseline documentation, prose edits, source-location
 fixes, extraction corrections, generated-catalog migrations, or other
