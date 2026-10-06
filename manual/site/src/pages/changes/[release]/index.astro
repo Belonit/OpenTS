@@ -33,45 +33,47 @@ const allChangesHref = withBase(`/changes/#release-${release.version}`);
 		tableOfContents: false,
 	}}
 >
-	<Breadcrumb crumbs={[
-		{ label: UI.navigation.changes, href: '/changes/' },
-		{ label: release.version },
-	]} />
-	<p>
-		{release.status === 'development'
-			? <Badge text="In development" variant="caution" size="small" />
-			: <Badge text="Released" variant="success" size="small" />}
-		{release.date && <> <time datetime={release.date}>{release.date}</time></>}
-	</p>
+	<div class="ots-upgrade">
+		<Breadcrumb crumbs={[
+			{ label: UI.navigation.changes, href: '/changes/' },
+			{ label: release.version },
+		]} />
+		<p>
+			{release.status === 'development'
+				? <Badge text="In development" variant="caution" size="small" />
+				: <Badge text="Released" variant="success" size="small" />}
+			{release.date && <> <time datetime={release.date}>{release.date}</time></>}
+		</p>
 
-	{migrations.length === 0 ? (
-		<p>This version has no recorded migration steps.</p>
-	) : (
-		<>
-			<p>
-				Review these steps if you use the affected content or settings.
-			</p>
-			{migrations.map((entry) => (
-				<section>
-					<h2><a href={withBase(`/changes/${entry.id}/`)}>{entry.data.title}</a></h2>
-					<ol>
-						{entry.data.migration.map((step) => <li>{step}</li>)}
-					</ol>
-					{entry.data.targets.length > 0 && (
-						<p>
-							Affected: {entry.data.targets.map((target, index) => {
-								const href = entityHref(target);
-								return <>{index > 0 && ', '}{href
-									? <a href={withBase(href)}><code>{entityLabel(target)}</code></a>
-									: <code>{entityLabel(target)}</code>}</>;
-							})}
-						</p>
-					)}
-				</section>
-			))}
-		</>
-	)}
+		{migrations.length === 0 ? (
+			<p>This version has no recorded migration steps.</p>
+		) : (
+			<>
+				<p>
+					Review these steps if you use the affected content or settings.
+				</p>
+				{migrations.map((entry) => (
+					<section>
+						<h2><a href={withBase(`/changes/${entry.id}/`)}>{entry.data.title}</a></h2>
+						<ol>
+							{entry.data.migration.map((step) => <li>{step}</li>)}
+						</ol>
+						{entry.data.targets.length > 0 && (
+							<p>
+								Affected: {entry.data.targets.map((target, index) => {
+									const href = entityHref(target);
+									return <>{index > 0 && ', '}{href
+										? <a href={withBase(href)}><code>{entityLabel(target)}</code></a>
+										: <code>{entityLabel(target)}</code>}</>;
+								})}
+							</p>
+						)}
+					</section>
+				))}
+			</>
+		)}
 
-	<p><a href={allChangesHref}>View all changes for {release.version}</a></p>
-	<Feedback title={`Upgrade to ${release.version}`} path={`/changes/${release.version}/`} />
+		<p><a href={allChangesHref}>View all changes for {release.version}</a></p>
+		<Feedback title={`Upgrade to ${release.version}`} path={`/changes/${release.version}/`} />
+	</div>
 </StarlightPage>
