@@ -1483,6 +1483,10 @@ class RulesClass
 		bool IsArmorCrateStacking;
 		bool IsFirepowerCrateStacking;
 
+		// These modes leave repeat eligibility unchanged.
+		bool IsArmorCrateStackingAdditive;
+		bool IsFirepowerCrateStackingAdditive;
+
 		/*
 		 * This is the strength given to a terrain object that declares none of its own
 		 * -- trees, mostly.

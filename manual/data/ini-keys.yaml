@@ -2364,6 +2364,24 @@ ArmorCrateStacks:
       source: code/rules.cpp
       guard: null
     level: RulesClass
+ArmorCrateStacksAdditively:
+  key: ArmorCrateStacksAdditively
+  scopes:
+  - applies_to:
+    - global rules
+    file: rules.ini
+    section:
+      kind: literal
+      name: CrateRules
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'no'
+      declared_in: RulesClass
+      member: IsArmorCrateStackingAdditive
+      source: code/rules.cpp
+      guard: null
+    level: RulesClass
 Armory:
   key: Armory
   scopes:
@@ -8831,6 +8849,24 @@ FirepowerCrateStacks:
       default_candidate: 'no'
       declared_in: RulesClass
       member: IsFirepowerCrateStacking
+      source: code/rules.cpp
+      guard: null
+    level: RulesClass
+FirepowerCrateStacksAdditively:
+  key: FirepowerCrateStacksAdditively
+  scopes:
+  - applies_to:
+    - global rules
+    file: rules.ini
+    section:
+      kind: literal
+      name: CrateRules
+    value_type: boolean
+    status: generated
+    _provenance:
+      default_candidate: 'no'
+      declared_in: RulesClass
+      member: IsFirepowerCrateStackingAdditive
       source: code/rules.cpp
       guard: null
     level: RulesClass

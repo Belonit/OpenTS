@@ -3,14 +3,15 @@ key: FirepowerCrateStacks
 scope: global-rules
 label: Let firepower crates stack
 summary: Lets a firepower crate upgrade an object that an earlier firepower crate already upgraded.
-see_also: [ArmorCrateStacks, "system:crates"]
+see_also: [FirepowerCrateStacksAdditively, ArmorCrateStacks, "system:crates"]
 when_omitted:
   kind: value
   value: "no"
+  note: A later rules file or map that omits this key keeps its current value.
 ---
 
-With `FirepowerCrateStacks=yes`, each firepower crate multiplies the firepower multiplier of every object it reaches by the `Firepower` value in `[Powerups]`, even when an earlier crate already did. Two crates at `2` leave an object dealing four times its ordinary damage. [Results that sweep a radius](/systems/crates/#results-that-sweep-a-radius) covers which objects a crate reaches.
+At `yes`, a firepower crate can upgrade objects whose firepower multiplier is no longer `1`. At `no`, only objects whose firepower multiplier is exactly `1` can receive the upgrade.
 
-With `no`, a firepower crate changes only objects whose firepower multiplier is still exactly `1`.
+Outside a campaign, a drawn firepower result becomes money for an upgraded collector at `no` and stays firepower at `yes`. Either way, it becomes money when the collector has no primary weapon.
 
-Outside a campaign, the setting also decides when a drawn firepower result turns into money. With `no`, it turns into money when the collector's firepower multiplier is no longer `1`. With `yes`, an upgraded collector keeps the firepower result. Either way, it turns into money when the collector has no primary weapon.
+[`FirepowerCrateStacksAdditively`](/keys/firepowercratestacksadditively/) chooses whether each upgrade adds to or multiplies the current firepower multiplier. [Crates](/systems/crates/#results-that-sweep-a-radius) describes which objects a crate reaches and how the upgrade changes damage.

@@ -3,14 +3,15 @@ key: ArmorCrateStacks
 scope: global-rules
 label: Let armor crates stack
 summary: Lets an armor crate upgrade an object that an earlier armor crate already upgraded.
-see_also: [FirepowerCrateStacks, "system:crates"]
+see_also: [ArmorCrateStacksAdditively, FirepowerCrateStacks, "system:crates"]
 when_omitted:
   kind: value
   value: "no"
+  note: A later rules file or map that omits this key keeps its current value.
 ---
 
-An armor crate multiplies the armor multiplier of objects on the ground within [`CrateRadius`](/keys/crateradius/) by the `Armor` value in `[Powerups]`. `ArmorCrateStacks` decides what happens to objects an earlier armor crate already upgraded.
+At `yes`, an armor crate can upgrade objects whose armor multiplier is no longer `1`. Outside a campaign, an upgraded collector keeps an armor result instead of receiving money.
 
-At `no`, an armor crate upgrades only objects whose armor multiplier is still exactly `1`. An armor result drawn by a collector that is already upgraded turns into money instead.
+At `no`, only objects whose armor multiplier is exactly `1` can receive the upgrade. Outside a campaign, a collector whose armor multiplier is no longer `1` converts an armor result to money.
 
-At `yes`, every armor crate multiplies the armor multiplier again, and the armor result is no longer turned into money for an upgraded collector. Three crates at `2` cut the damage the object takes to an eighth, rounded down and never below 1.
+[`ArmorCrateStacksAdditively`](/keys/armorcratestacksadditively/) chooses whether each upgrade adds to or multiplies the current armor multiplier. [Crates](/systems/crates/#results-that-sweep-a-radius) describes which objects a crate reaches and how the upgrade changes incoming damage.

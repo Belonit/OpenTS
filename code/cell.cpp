@@ -138,6 +138,7 @@
 #include "tube.hh"
 
 #include <algorithm>
+#include <cmath>
 
 
 static OverlayType Tiberium_Overlay_Here(CellClass const & cell, TiberiumClass const & tiberium);
@@ -3939,7 +3940,12 @@ crate_money:
 					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
 
 					if (obj != NULL && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && (Rule->IsArmorCrateStacking || ((TechnoClass *)obj)->ArmorBias == 1)) {
-						double val = ((TechnoClass *)obj)->ArmorBias * data;
+						double val = Rule->IsArmorCrateStackingAdditive
+							? ((TechnoClass *)obj)->ArmorBias + data
+							: ((TechnoClass *)obj)->ArmorBias * data;
+						if (Rule->IsArmorCrateStackingAdditive && (!std::isfinite(val) || val <= 0)) {
+							continue;
+						}
 						((TechnoClass *)obj)->ArmorBias = val;
 						if (obj->Owner_HouseClass()->Is_Player_Control()) tospeak = true;
 					}
@@ -3968,7 +3974,12 @@ crate_money:
 
 					if (obj && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && (Rule->IsFirepowerCrateStacking || ((TechnoClass *)obj)->FirepowerBias == 1)) {
 
-						double val = ((TechnoClass *)obj)->FirepowerBias * data;
+						double val = Rule->IsFirepowerCrateStackingAdditive
+							? ((TechnoClass *)obj)->FirepowerBias + data
+							: ((TechnoClass *)obj)->FirepowerBias * data;
+						if (Rule->IsFirepowerCrateStackingAdditive && (!std::isfinite(val) || val <= 0)) {
+							continue;
+						}
 						((TechnoClass *)obj)->FirepowerBias = val;
 						if (obj->Owner_HouseClass()->Is_Player_Control()) tospeak = true;
 					}

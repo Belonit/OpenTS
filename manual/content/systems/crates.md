@@ -4,6 +4,7 @@ summary: "Places pickup crates on the map and gives one result to the infantry o
 category: maps-scenarios
 keys:
   - ArmorCrateStacks
+  - ArmorCrateStacksAdditively
   - CarriesCrate
   - Crate
   - CrateGoodie
@@ -16,6 +17,7 @@ keys:
   - CrateTrigger
   - Crates
   - FirepowerCrateStacks
+  - FirepowerCrateStacksAdditively
   - HealCrateSound
   - SilverCrate
   - SoloCrateMoney
@@ -203,7 +205,7 @@ Six results are then converted to money. The conversions run after the MCV overr
 | `Cloak` | the collector can already cloak |
 
 :::caution[The conversions check only the collector]
-`Armor`, `Speed`, `Firepower` and `Cloak` affect every object inside [`CrateRadius`](/keys/crateradius/), but the conversion checks only the collector. A firepower crate collected by an already-boosted vehicle becomes money, even when a dozen unboosted vehicles stand inside the radius.
+`Armor`, `Speed`, `Firepower` and `Cloak` affect every object inside [`CrateRadius`](/keys/crateradius/), but the conversion checks only the collector. With `FirepowerCrateStacks` disabled, a firepower crate collected by an already-boosted vehicle becomes money even when a dozen unboosted vehicles stand inside the radius.
 :::
 
 ## What each result does
@@ -218,9 +220,9 @@ The third field of a result's `[Powerups]` row is the only per-result number the
 | `Napalm` | Raw damage of the direct hit on the collector and of the blast |
 | `Gas` | Raw damage applied to each of the nine cells |
 | `Veteran` | How many promotion steps each object takes |
-| `Armor` | The armor multiplier |
+| `Armor` | The armor factor or additive amount |
 | `Speed` | The speed multiplier |
-| `Firepower` | The firepower multiplier |
+| `Firepower` | The firepower factor or additive amount |
 | Every other result | Not read |
 
 ### Money and free units
@@ -258,14 +260,32 @@ If the vehicle cannot be placed in either location, the crate pays money instead
 - `Veteran` promotes each object whose type sets `Trainable=yes`, as many steps as its third field says. [Promotion without kills](/systems/veterancy/#promotion-without-kills) describes the steps.
 - `Armor`, `Speed` and `Firepower` each set a multiplier on the affected objects.
 
-The three multiplier results change only objects whose multiplier for that result is still exactly `1`. A second crate of the same kind therefore leaves an already-boosted object unchanged. `Speed` also skips buildings and aircraft.
+[`ArmorCrateStacks=yes`](/keys/armorcratestacks/) allows armor upgrades for objects whose armor multiplier is no longer `1`. [`FirepowerCrateStacks=yes`](/keys/firepowercratestacks/) does the same for firepower. `Speed` always requires a speed multiplier of exactly `1` and also skips buildings and aircraft.
 
-`ArmorCrateStacks=yes` and `FirepowerCrateStacks=yes` in `[CrateRules]` drop that check for their result, so each crate multiplies the multiplier again. `Speed` has no such setting.
+Speed always multiplies the current speed multiplier by its third field. [`ArmorCrateStacksAdditively`](/keys/armorcratestacksadditively/) and [`FirepowerCrateStacksAdditively`](/keys/firepowercratestacksadditively/) choose the calculation for their result:
 
-Each multiplier result stores its third field as written. Speed and firepower are multiplied by it, while incoming damage is divided by the armor value. An `Armor` value of `2` halves ordinary incoming damage, and `0.5` doubles it.
+- At `no`, `new multiplier = current multiplier × third field`.
+- At `yes`, `new multiplier = current multiplier + third field`.
 
-:::caution[Keep the Armor value above zero]
-The `Armor` row's third field is not clamped. A value of `0` makes damage to every affected object divide by zero.
+This calculation applies to the first pickup too. The added amount is the third field as written: `0.5` adds `0.5`. The additive settings do not change the recipient checks or the [conversions to money](#outside-a-campaign).
+
+For example, these armor settings take an object's multiplier from `1` to `1.5`, then `2`, then `2.5` after three armor crates. Keep the rest of your `[Powerups]` entries alongside the example so other results remain in the draw.
+
+```ini title="rules.ini"
+[CrateRules]
+ArmorCrateStacks=yes
+ArmorCrateStacksAdditively=yes
+
+[Powerups]
+Armor=33,ARMOR,0.5
+```
+
+An additive upgrade is skipped for an object if the new multiplier is not finite or is `0` or less. That object keeps its multiplier and does not trigger an upgrade EVA line. The crate is still consumed, and rejecting an upgrade does not suppress its configured animation. Zero and negative amounts are allowed when the resulting multiplier stays finite and above `0`. This check applies only to additive upgrades.
+
+Incoming damage is divided by the armor multiplier. Movement uses the speed multiplier, and firepower scales weapon damage. An armor multiplier of `2` halves ordinary incoming damage, and `0.5` doubles it.
+
+:::caution[Keep multiplicative Armor above zero]
+When `ArmorCrateStacksAdditively` is disabled, the `Armor` row's third field is not clamped. A value of `0` makes damage to every affected object divide by zero.
 :::
 
 ### Results that reach the whole map

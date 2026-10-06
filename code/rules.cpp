@@ -175,6 +175,8 @@ RulesClass::RulesClass(void) :
 	CrateMoneyBonus(900),
 	IsArmorCrateStacking(false),
 	IsFirepowerCrateStacking(false),
+	IsArmorCrateStackingAdditive(false),
+	IsFirepowerCrateStackingAdditive(false),
 	UnitCrateType(NULL),
 	PatrolTime(.016),
 	CloakDelay(0),
@@ -974,6 +976,8 @@ bool RulesClass::Crate_Rules(CCINIClass const & ini)
 		CrateMoneyBonus = ini.Get_Int(CRATERULES, "CrateMoneyBonus", CrateMoneyBonus);
 		IsArmorCrateStacking = ini.Get_Bool(CRATERULES, "ArmorCrateStacks", IsArmorCrateStacking);
 		IsFirepowerCrateStacking = ini.Get_Bool(CRATERULES, "FirepowerCrateStacks", IsFirepowerCrateStacking);
+		IsArmorCrateStackingAdditive = ini.Get_Bool(CRATERULES, "ArmorCrateStacksAdditively", IsArmorCrateStackingAdditive);
+		IsFirepowerCrateStackingAdditive = ini.Get_Bool(CRATERULES, "FirepowerCrateStacksAdditively", IsFirepowerCrateStackingAdditive);
 		SilverCrate = ini.Get_CrateType(CRATERULES, "SilverCrate", SilverCrate);
 		WoodCrate = ini.Get_CrateType(CRATERULES, "WoodCrate", WoodCrate);
 		//WaterCrate = ini.Get_CrateType(CRATERULES, "WaterCrate", WaterCrate);
@@ -2456,6 +2460,8 @@ void RulesClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(CrateMoneyBonus);
 	stream.Serialize(IsArmorCrateStacking);
 	stream.Serialize(IsFirepowerCrateStacking);
+	stream.Serialize(IsArmorCrateStackingAdditive);
+	stream.Serialize(IsFirepowerCrateStackingAdditive);
 	stream.Serialize(TreeStrength);
 	stream.Serialize(UnitCrateType);
 	stream.Serialize(PatrolTime);
