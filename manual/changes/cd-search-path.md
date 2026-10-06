@@ -3,9 +3,6 @@ title: Remove CD-ROM-dependent startup behavior
 category: feature
 release: 0.1.0
 breaking: true
-migration:
-- Check any shortcut carrying `-CD<path>`. It now adds a local data search path rather than selecting a disc.
-- Remove `CD=` from map packet entries and from a loose map's `[Multiplay]` section. A map no longer names the discs it may be played from.
 targets:
 - type: command
   id: launch:cd-path
@@ -32,4 +29,4 @@ credit: [ZivDero]
 
 `[Intro] PlayIntro` replaces the former per-disc intro flags with one startup setting for `EVA.VQA`. When the setting selects the intro, the game writes it back as `no`.
 
-A campaign still sets its `CD` number, but nothing asks for the disc: it now decides only whether the opening cinematic plays and which loading backdrop is shown.
+A campaign's `CD` number now controls only its opening cinematic and loading backdrop; the game no longer asks for a disc. `CD=` in map packets and multiplayer maps is ignored.

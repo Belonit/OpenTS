@@ -3,9 +3,6 @@ title: Present the game through bgfx instead of DirectDraw
 category: feature
 release: 0.1.0
 breaking: true
-migration:
-- Remove `-16` from any shortcut. The option is gone.
-- Delete `AllowHiResModes`, `AllowModeToggle` and `VideoBackBuffer` from `sun.ini`, or leave them to be ignored. Size the window with `Fullscreen`, `WindowWidth` and `WindowHeight` instead.
 targets:
 - type: key
   id: Fullscreen
@@ -46,8 +43,6 @@ targets:
 credit: [ZivDero]
 ---
 
-The finished picture now reaches the screen through bgfx, which draws it with Direct3D, Vulkan or OpenGL depending on the machine, in place of DirectDraw. The game still renders every frame in software, so nothing about how it looks or plays depends on the graphics card.
+OpenTS now presents its software-rendered picture through bgfx instead of DirectDraw. Fullscreen uses a borderless window and scales the picture without changing the desktop resolution. The mouse pointer uses the game artwork as a system cursor.
 
-A full-screen game no longer changes the desktop's resolution. It covers the screen with a borderless window and scales the picture into it, keeping its shape and adding black bars where the shapes differ. Switching away and back no longer disturbs the desktop, and a game that stops responding no longer leaves the display in its resolution. The mouse pointer is a real system cursor built from the game's own artwork rather than drawn into the frame.
-
-The display options screen offers every resolution the display reports between 640 by 400 and 4096 by 4096. `AllowHiResModes` and its `HIRES` cheat used to filter that list. The game no longer switches resolution between the menus and play, so `AllowModeToggle` and its `TOGGLE` cheat are gone as well. `VideoBackBuffer` was already unused.
+The display options list resolutions from 640 by 400 through 4096 by 4096. `AllowHiResModes`, `AllowModeToggle`, `VideoBackBuffer`, the `HIRES` and `TOGGLE` cheats and the `-16` launch option have been removed.

@@ -25,7 +25,7 @@ const release = releaseByVersion(entry.data.release);
 const categoryLabels = UI.changeCategories;
 const pageHeadings = [
 	...headings,
-	...(entry.data.breaking ? [{ depth: 2, slug: 'migration', text: 'Migration' }] : []),
+	...(entry.data.migration.length > 0 ? [{ depth: 2, slug: 'migration', text: 'Migration' }] : []),
 	...(entry.data.targets.length > 0 ? [{ depth: 2, slug: 'affected-entities', text: 'Affected entities' }] : []),
 ];
 ---
@@ -46,11 +46,11 @@ const pageHeadings = [
 		{entry.data.breaking && <span class="ots-badge ots-badge-breaking">Breaking</span>}
 	</div>
 	<Content />
-	{entry.data.breaking && (
+	{entry.data.migration.length > 0 && (
 		<section class="ots-breaking-migration" aria-labelledby="migration">
 			<h2 id="migration">Migration</h2>
 			<div class="ots-aside ots-aside-warn">
-				<div class="ots-aside-title">Existing content must be updated</div>
+				<div class="ots-aside-title">For affected content or setups</div>
 				<ol>{entry.data.migration.map((step) => <li>{step}</li>)}</ol>
 				<p><a href={withBase(`/changes/${entry.data.release}/`)}>View all upgrade steps for {entry.data.release}</a></p>
 			</div>

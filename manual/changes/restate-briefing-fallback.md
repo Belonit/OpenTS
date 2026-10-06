@@ -6,4 +6,4 @@ targets: []
 credit: [ZivDero]
 ---
 
-The briefing the player can ask for again during a mission now comes from the scenario rather than the mission database. Previously the dialog read the database alone and fell back to the scenario only when `MISSION.INI` was missing from the installation. That file always ships, so a mission the database does not list showed an empty page. Every mission written outside the shipped campaign did so, however much briefing text its own map held. The dialog matches the briefing screen the mission opened with, and the text survives a save and reload.
+Restate Briefing now reads the scenario's briefing instead of `MISSION.INI`, matching the briefing shown at mission start. Custom missions previously showed an empty page when they were absent from `MISSION.INI`. The briefing survives saving and loading.

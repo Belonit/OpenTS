@@ -4,7 +4,7 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- Remove the crate overlay from a multiplayer map that should not hand one out. A crate the map draws is now placed in every game type, and the match's Crates option does not remove it.
+- Remove crate overlays from multiplayer maps where you do not want placed crates. Turning off the match's Crates option does not remove them.
 targets:
 - type: system
   id: crates

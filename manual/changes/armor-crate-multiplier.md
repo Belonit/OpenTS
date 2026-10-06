@@ -4,8 +4,8 @@ category: fix
 release: 0.1.0
 breaking: true
 migration:
-- Replace each nonzero `Armor` row's third field with its reciprocal if existing rules or maps intentionally rely on the previous result. For example, change `Armor=33,ARMOR,0.5` to `Armor=33,ARMOR,2` to preserve the same damage reduction.
-- Replace an `Armor` value of `0` with the intended positive armor divisor. Zero has no reciprocal and now leaves ordinary damage calculation dividing by zero.
+- To preserve existing armor crate effects, replace each nonzero `Armor` row's third field in `[Powerups]` with its reciprocal. For example, change `Armor=33,ARMOR,0.5` to `Armor=33,ARMOR,2`.
+- Replace a zero third field with a positive armor divisor; zero now causes division by zero during ordinary damage calculation.
 targets:
 - type: system
   id: crates
@@ -13,4 +13,4 @@ targets:
 credit: [ZivDero, Iran]
 ---
 
-An armor crate now multiplies each eligible object's armor multiplier by the `Armor` row's third field in `[Powerups]`. A value of `2` halves ordinary incoming damage, while `0.5` doubles it. The collector and each object in the crate radius keep their existing one-use checks, so armor crates still do not stack.
+An armor crate now uses the `Armor` row's third field in `[Powerups]` as an armor divisor multiplier. A value of `2` halves ordinary incoming damage; `0.5` doubles it. Previously these effects were reversed.

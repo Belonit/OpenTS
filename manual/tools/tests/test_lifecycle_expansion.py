@@ -26,7 +26,7 @@ class BreakingChangeTests(unittest.TestCase):
             **overrides,
         }
 
-    def test_schema_requires_migration_only_for_breaking_changes(self):
+    def test_schema_allows_breaking_without_migration(self):
         valid = self.change(
             breaking=True,
             migration=["Replace the removed setting with NewSetting=."],
@@ -42,7 +42,14 @@ class BreakingChangeTests(unittest.TestCase):
             "authored-change.schema.json",
             "missing migration",
         )
-        self.assertTrue(any("migration" in error for error in missing))
+        self.assertEqual(missing, [])
+
+        empty = schema_validation.errors_for(
+            self.change(breaking=True, migration=[]),
+            "authored-change.schema.json",
+            "empty migration",
+        )
+        self.assertTrue(any("migration" in error for error in empty))
 
         unexpected = schema_validation.errors_for(
             self.change(migration=["This must not be accepted."]),
@@ -51,7 +58,7 @@ class BreakingChangeTests(unittest.TestCase):
         )
         self.assertTrue(any("migration" in error for error in unexpected))
 
-    def test_python_validation_and_released_migration_immutability(self):
+    def test_python_validation_and_released_editorial_corrections(self):
         registry = {
             "development": "2.0.0",
             "by_version": {
@@ -75,6 +82,7 @@ class BreakingChangeTests(unittest.TestCase):
                 "category: feature\n"
                 "release: 1.0.0\n"
                 "breaking: true\n"
+                "migration: []\n"
                 "targets: []\n"
                 "credit: [Programmer]\n"
                 "---\n",
@@ -85,7 +93,7 @@ class BreakingChangeTests(unittest.TestCase):
                 errors, manual, registry, {}, {}, {}, [],
             )
             self.assertTrue(any(
-                "breaking changes require a non-empty migration array" in error
+                "migration must be a non-empty array of steps" in error
                 for error in errors
             ))
 
@@ -119,10 +127,46 @@ class BreakingChangeTests(unittest.TestCase):
                 },
                 base_registry=base_registry,
             )
-            self.assertTrue(any(
-                "released lifecycle field migration is immutable" in error
-                for error in errors
-            ))
+            self.assertEqual(errors, [])
+
+            base_change = self.change(
+                breaking=True, migration=["Keep the original workflow."],
+            )
+            for field, value in (
+                ("category", "fix"),
+                ("targets", [{"type": "system", "id": "old-system", "effect": "changed"}]),
+                ("breaking", False),
+            ):
+                with self.subTest(field=field):
+                    errors = []
+                    versioning.validate_changes(
+                        errors, manual, registry, {}, {}, {}, [],
+                        base_changes={"compatibility-change": {**base_change, field: value}},
+                        base_registry=base_registry,
+                    )
+                    self.assertTrue(any(
+                        f"released lifecycle field {field} is immutable" in error
+                        for error in errors
+                    ))
+
+            path.write_text(
+                "---\n"
+                "title: Compatibility change\n"
+                "category: feature\n"
+                "release: 1.0.0\n"
+                "breaking: true\n"
+                "targets: []\n"
+                "credit: [Programmer]\n"
+                "---\n",
+                encoding="utf-8",
+            )
+            errors = []
+            versioning.validate_changes(
+                errors, manual, registry, {}, {}, {}, [],
+                base_changes={"compatibility-change": base_change},
+                base_registry=base_registry,
+            )
+            self.assertEqual(errors, [])
     def test_schema_and_validation_require_an_author(self):
         without_author = self.change()
         without_author.pop("credit")

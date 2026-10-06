@@ -4,7 +4,7 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- Tools that waited for `SAVEGAME.NET` to appear must list `SVGM_nnn.NET` instead; the CnCNet client already does.
+- Update tools that look for `SAVEGAME.NET` to use the numbered `SVGM_nnn.NET` files.
 targets:
 - type: system
   id: out-of-sync-recovery

@@ -19,7 +19,8 @@ targets:
   effect: changed
 breaking: true
 migration:
-- List every side under `[Sides]` with its countries written out. A country's `Side=` places it only while no `[Sides]` entry does, and a side name inside a `[Sides]` value is no longer expanded into that side's countries.
+- Declare every side under `[Sides]` in `rules.ini`, listing its countries directly. Expand any side names used in those lists into country names.
+- For a country already listed under `[Sides]`, edit that list to change its side; its own `Side=` no longer overrides the list.
 credit: [ZivDero]
 ---
 

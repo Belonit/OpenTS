@@ -3,8 +3,6 @@ title: Hand out an infantryman or an aircraft as a free unit
 category: feature
 release: 0.2.0
 breaking: true
-migration:
-- Check that every `FreeUnit=` entry names a type the rules define. A name that matches no vehicle, infantry or aircraft type used to create an empty vehicle type and now hands out nothing.
 targets:
 - type: key
   id: FreeUnit

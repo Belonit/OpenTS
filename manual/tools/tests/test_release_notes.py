@@ -16,6 +16,7 @@ def record(name, directory, title, category, release, breaking=False,
              f"release: {release}"]
     if breaking:
         lines.append("breaking: true")
+    if migration:
         lines.append("migration:")
         lines.extend(f"- {step}" for step in migration)
     if credit:
@@ -55,6 +56,19 @@ class ReleaseNotesTests(unittest.TestCase):
             "- Fix the thing (by ZivDero, ts-patches contributors)",
             "",
         ]))
+
+    def test_breaking_without_migration_keeps_the_change(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            manual = Path(temporary)
+            changes = manual / "changes"
+            changes.mkdir()
+            record("removed", changes, "Remove a mode", "feature", "0.1.0",
+                   breaking=True)
+            with mock.patch.object(contributor_engine, "MANUAL", manual):
+                notes = contributor_engine.release_notes("0.1.0")
+
+        self.assertIn("### Breaking changes\n\n- Remove a mode", notes)
+        self.assertNotIn("Migration:", notes)
 
     def test_refuses_a_release_no_record_targets(self):
         with tempfile.TemporaryDirectory() as temporary:

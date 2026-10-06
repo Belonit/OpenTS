@@ -14,7 +14,7 @@ The manual documents the OpenTS engine, the files it reads, and the source that 
 - **Using OpenTS pages** cover setup, configuration, compatibility, migration, and troubleshooting for the current OpenTS version.
 - **Format pages** describe a file's role, how the engine loads it, and the layout of its records.
 - **Engine internals** describe the implementation behind a subsystem and the ownership boundaries it keeps. They assume repository familiarity.
-- **Change records** state one deliberate OpenTS change and, when it is breaking, the migration it requires.
+- **Change records** state one deliberate OpenTS change, flag incompatibilities, and give upgrade steps when there is a useful action to take.
 - **[Glossary](/glossary/) entries** define a word that recurs across the manual without a shorter synonym, and link to the page that explains it in full.
 
 ## Finding a page

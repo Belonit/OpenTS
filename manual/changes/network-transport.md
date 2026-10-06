@@ -4,9 +4,7 @@ category: feature
 release: 0.1.0
 breaking: true
 migration:
-- Remove `-SOCKET` and `-DESTNET` from any shortcut. Both options are gone, and `-DESTNET` has no counterpart because it addressed a bridge only IPX had.
-- Delete `Socket`, `NetCard` and `DestNet` from the `[Network]` section of `sun.ini`, or leave them to be ignored.
-- Check that every player can reach the others on one of the networks their machine is attached to. All players use UDP port 1234, and a router between two of them normally stops the broadcast that finds a game.
+- Allow UDP port 1234 between players on the same broadcast network. IPX network settings no longer apply.
 targets:
 - type: key
   id: Socket
@@ -26,6 +24,4 @@ targets:
 credit: [ZivDero, tomsons26]
 ---
 
-Network games are played over UDP. Tiberian Sun reached the other machines on a local network through IPX, which Windows no longer ships, so network play had stopped working entirely. It now uses the same UDP that internet play always used. Games are found by broadcasting on every network the machine is attached to, and each player answering is recorded at the address the answer came from. Internet, skirmish and campaign play are unaffected.
-
-One machine can host only one game at a time, and the network options screen is gone along with the adapter, socket and destination network it set. Network messages, save games and recordings changed shape, so different OpenTS release-cycle versions refuse one another.
+LAN games now use UDP instead of IPX and discover games by broadcasting on each attached network. The IPX network options and the `-SOCKET` and `-DESTNET` launch options have been removed. One machine can host only one LAN game at a time.

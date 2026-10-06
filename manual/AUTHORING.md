@@ -231,7 +231,7 @@ page already carries.
 
 Check Git history, the release registry, and existing change records before creating a record. Establish whether the affected behavior was present in a released version or first added in the current development release.
 
-For a fix or adjustment to an addition in the current development release, do not create a separate record. Amend its existing addition record if the description no longer matches the final behavior; otherwise leave it unchanged. Update the owning reference pages when needed. Do not rewrite records from released versions.
+For a fix or adjustment to an addition in the current development release, do not create a separate record. Amend its existing addition record if the description no longer matches the final behavior; otherwise leave it unchanged. Update the owning reference pages when needed. Editorial corrections may clarify released prose and migration steps without changing the recorded engine history.
 
 For a new engine addition or a change to released behavior, create a record directly under `changes/`. Valid target types are `key`, `action`, `event`, `mission`, `format`, `enum`, `system`, and `command`. Valid effects are `added`, `changed`, `deprecated`, and `removed`.
 
@@ -241,22 +241,22 @@ documentation-only work. A scripting index shift is an engine change because
 the index is serialized. Documenting an existing enum is documentation work;
 changing its accepted values or representation is an engine change.
 
-A breaking record requires `breaking: true` and a non-empty, ordered
-`migration` list. A non-breaking record must not contain migration steps. A
-removed entity needs a matching tombstone. Removing one scope of an active key
-needs a scoped removal target, but no tombstone for the parent.
+A breaking record requires `breaking: true`. Add a non-empty, ordered `migration` list when users have a concrete upgrade action. A non-breaking record must not contain migration steps.
+
+A removed entity needs a matching tombstone. Removing one scope of an active key needs a scoped removal target, but no tombstone for the parent.
 
 Every record's `credit` list names its author first, followed by anyone else
 credited for the change; it cannot be empty. The published change page renders
 the list.
 
-New records target the current development release. Released lifecycle data is
-immutable, as is any change ID present in the base revision used by the check.
+New records target the current development release. Released records keep their release, category, targets and breaking state. Prose and migration steps may receive editorial corrections. Any change ID present in the base revision used by the check is immutable.
 Records still local to a branch may be reorganized until merge; verify them
 with `--base-ref` against that branch's own base. See
 [Maintaining](MAINTAINING.md) for release and route work.
 
 ### What a record says
+
+Migration steps name the affected setup and the edit needed to keep it working or preserve its behavior. Omit optional deletion of ignored settings, generic advice to check the new behavior, and advice to use another mode after a feature is removed. A breaking change without a useful upgrade action stays in the changelog but has no migration list. Adding a setting alone does not require migration.
 
 Write for someone comparing released builds. An addition states only the new
 behavior: what the reader can now do. Everything else is a pair: what the

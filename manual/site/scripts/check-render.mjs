@@ -69,9 +69,9 @@ const cases = [
 	['commands/fixed-map-zoom/index.html', ['Map zoom', 'Fixed control', 'Fixed controls', 'ots-breadcrumb']],
 	['formats/mix/index.html', ['MIX archives', 'Binary format', '<dt>Role</dt>', 'code/ccfile.cpp', 'Source files', 'code/mixfile.h']],
 	['changes/opents-manual/index.html', ['OpenTS manual', 'Released in', '0.1.0', 'reference pages for every']],
-	['changes/fastmath-runtime/index.html', ['Replace the fastmath lookup tables', 'numerical results may differ', 'same OpenTS version']],
+	['changes/fastmath-runtime/index.html', ['Replace the fastmath lookup tables', 'Numerical results may differ', 'network synchronization']],
 	['changes/cd-search-path/index.html', ['Remove CD-ROM-dependent startup behavior', 'local data search path', 'PlayIntro']],
-	['changes/modem-play/index.html', ['Remove modem and null-modem play', 'SerialDefaults', 'keep their stored values']],
+	['changes/modem-play/index.html', ['Remove modem and null-modem play', 'phone book have been removed', 'settings are ignored']],
 ];
 
 const renderedMain = (relative) => {
@@ -190,7 +190,7 @@ const indexContracts = [
 		['>Changes</h1>', 'Versioned behavior and compatibility changes, newest release first.', 'ots-release-badge', 'sl-badge', '0.1.0', 'Upgrade to 0.1.0', 'data-change-list'],
 		["What's new", 'A permanent, versioned record of deliberate OpenTS changes.']],
 	['changes/0.1.0/index.html',
-		['Upgrade to 0.1.0', 'Released', 'migration before existing content is used with this version.', 'Serialize save games member by member', 'View all changes for 0.1.0'],
+		['Upgrade to 0.1.0', 'Released', 'Review these steps if you use the affected content or settings.', 'Serialize save games member by member', 'View all changes for 0.1.0'],
 		['no recorded migration steps']],
 ];
 
@@ -718,6 +718,21 @@ for (const [relative, rootMarker] of [
    agree with what the page rendered, including its plural. */
 const changesIndex = readFileSync(resolve('dist/changes/index.html'), 'utf8');
 for (const release of releaseExpectations(base)) {
+	const upgrade = renderedMain(`changes/${release.version}/index.html`);
+	for (const change of release.breaking) {
+		const hasMigration = Boolean(change.migration?.length);
+		const href = `href="${base}/changes/${change.id}/"`;
+		if (upgrade.includes(href) !== hasMigration) {
+			throw new Error(`Upgrade guide ${release.version} has incorrect migration inclusion for ${change.id}`);
+		}
+		const detail = renderedMain(`changes/${change.id}/index.html`);
+		if (!detail.includes('ots-badge-breaking')) {
+			throw new Error(`Breaking badge is missing from ${change.id}`);
+		}
+		if (detail.includes('id="migration"') !== hasMigration) {
+			throw new Error(`Change ${change.id} has an incorrect migration section`);
+		}
+	}
 	const required = [
 		release.version,
 		release.anchor,

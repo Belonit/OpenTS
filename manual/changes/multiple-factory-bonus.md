@@ -4,7 +4,7 @@ category: balance
 release: 0.2.0
 breaking: true
 migration:
-- Rules that set `MultipleFactory` above `0`, or leave it unset, now get the new result. Set it to the build-time multiplier each extra factory should apply, such as `0.8` for 20% shorter builds per factory.
+- If `MultipleFactory` under `[General]` in `rules.ini` is positive or omitted, set it to the intended build-time multiplier per extra factory. For example, `0.8` gives about 20% shorter builds per extra factory; `0` disables the bonus.
 targets:
 - type: key
   id: MultipleFactory

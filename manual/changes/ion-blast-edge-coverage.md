@@ -6,4 +6,4 @@ targets: []
 credit: [ZivDero]
 ---
 
-An ion cannon blast against the bottom of the view left an undisturbed band there: the warp kept a seven-row margin above the bottom. The older code needed that margin to keep its fetches inside the view. Fetches are now held inside the view where they are taken, so the margin is gone and the warp reaches the edge. In the lowest rows a fetch from below would leave the view, so fewer of those pixels are displaced.
+An ion cannon shockwave now reaches the bottom of the view instead of leaving a seven-row band undisturbed. Pixels near the bottom move less when their replacement would come from outside the view.

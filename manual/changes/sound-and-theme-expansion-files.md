@@ -11,7 +11,7 @@ targets:
   effect: changed
 breaking: true
 migration:
-- 'Check a deployment that ships both a base file and its expansion counterpart: both are now read.'
+- Remove unintended overrides from `SOUND01.INI` and `THEME01.INI`, or remove those files if they should not be loaded. Both now apply even without Firestorm.
 credit:
 - ZivDero
 ---

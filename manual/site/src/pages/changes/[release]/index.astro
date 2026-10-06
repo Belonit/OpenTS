@@ -22,7 +22,7 @@ export async function getStaticPaths() {
 }
 
 const { release, items } = Astro.props;
-const breaking = items.filter((entry) => entry.data.breaking);
+const migrations = items.filter((entry) => entry.data.migration.length > 0);
 const allChangesHref = withBase(`/changes/#release-${release.version}`);
 ---
 
@@ -44,15 +44,14 @@ const allChangesHref = withBase(`/changes/#release-${release.version}`);
 		{release.date && <> <time datetime={release.date}>{release.date}</time></>}
 	</p>
 
-	{breaking.length === 0 ? (
+	{migrations.length === 0 ? (
 		<p>This version has no recorded migration steps.</p>
 	) : (
 		<>
 			<p>
-				{breaking.length} {breaking.length === 1 ? 'change requires' : 'changes require'}{' '}
-				migration before existing content is used with this version.
+				Review these steps if you use the affected content or settings.
 			</p>
-			{breaking.map((entry) => (
+			{migrations.map((entry) => (
 				<section>
 					<h2><a href={withBase(`/changes/${entry.id}/`)}>{entry.data.title}</a></h2>
 					<ol>

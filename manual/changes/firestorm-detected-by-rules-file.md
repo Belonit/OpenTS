@@ -8,8 +8,7 @@ targets:
   effect: changed
 breaking: true
 migration:
-- Rename or remove an expansion rules file (FIRESTRM.INI by default) that a deployment ships without the rest of the expansion. That file
-  alone now switches the expansion on, and the game then does not start without SOUNDS01.MIX.
+- 'If the deployment should run without Firestorm, remove or rename its expansion rules file: `FIRESTRM.INI`, or the file selected by `[Files] RulesExpansion` in `OPENTS.INI`. Enabling Firestorm requires `SOUNDS01.MIX`.'
 credit:
 - ZivDero
 ---

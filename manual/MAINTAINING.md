@@ -137,9 +137,7 @@ To open the next development cycle:
 4. Run `python manual/tools/manage.py check`.
 
 Do not move existing change records into the new cycle; release assignments are
-stable. Once released, a record's category, targets, breaking state, and
-migration steps are immutable. Released registry entries and dates are also
-immutable.
+stable. Once released, a record's category, targets and breaking state are immutable. Prose and migration steps may receive editorial corrections. Released registry entries and dates are also immutable.
 
 The catalog from the start of structured lifecycle tracking is the baseline;
 its entities have no addition event. New engine entities and deliberate

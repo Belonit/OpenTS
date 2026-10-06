@@ -4,7 +4,7 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- Set `AltToRally=yes` under `[Options]` in `sun.ini` to keep the old controls, where the force-move key set the rally point and the plain click moved a deployed factory.
+- Set `AltToRally=yes` under `[Options]` in `sun.ini` to keep the old rally-point and mobile-factory controls.
 targets:
 - type: key
   id: AltToRally

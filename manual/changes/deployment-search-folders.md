@@ -4,8 +4,7 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- Rename an `INI`, `MIX` or `Maps` directory beside the game whose files are not meant to be loaded, or ship an `OPENTS.INI` naming only the game's own directory as `SearchPaths=.`.
-- Check a `Maps` directory in particular, since the maps it holds now appear in the game's own lists.
+- If `INI`, `MIX` or `Maps` folders contain files the game should not load, set `SearchPaths=.` under `[Paths]` in `OPENTS.INI`, or rename those folders.
 targets:
 - type: format
   id: opents-ini

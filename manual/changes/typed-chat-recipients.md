@@ -3,8 +3,6 @@ title: Message your team, or the other observers, and choose who a line reaches
 category: feature
 release: 0.2.0
 breaking: true
-migration:
-- Remove `-MESSAGES` from any shortcut. The option is gone; a chat line is accepted only from a player or observer in the match.
 targets:
 - type: system
   id: chat

@@ -6,4 +6,4 @@ targets: []
 credit: [ZivDero]
 ---
 
-A laser or disruptor-style beam drawn against the edge of the view no longer risks a crash at the highest detail level. The beam brightens the pixels it covers in place. Its drawing walk could run one row below and one column beyond the view, writing past the end of the frame when the view's bottom row was the frame's last. The walk now covers exactly the view. That also lets its fallback path, which handles a wave running past the depth buffer, reach the view's edge instead of stopping two pixels short.
+Laser and disruptor-style beams at the edge of the view no longer risk a crash at the highest detail level. Their fallback drawing also reaches the edge instead of stopping two pixels short.

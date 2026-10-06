@@ -4,9 +4,9 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- Replace `-CD<path>` with `-DATADIR=<path>` where the path holds the game's data.
-- Replace it with `-USERDIR=<path>` where the path held your own files that replace the game's. The game looks in that directory before any other, so those files still take precedence, and it also writes its settings and saved games there.
-- Add the folder to `SearchPaths` under `[Paths]` in the deployment's `OPENTS.INI` where it is one of several folders the game should always search.
+- Replace `-CD<path>` with `-DATADIR=<path>` for the game data directory.
+- For player overrides, use `-USERDIR=<path>`; settings and saves will also be written there.
+- For an additional deployment folder, add the path to `SearchPaths` under `[Paths]` in `OPENTS.INI`.
 targets:
 - type: command
   id: launch:cd-path

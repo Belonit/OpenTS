@@ -537,15 +537,15 @@ def validate_changes(
             errors.append(f"{context}: breaking must be a boolean")
             breaking = False
         migration = data.get("migration")
-        if breaking:
+        if "migration" in data:
             if (not isinstance(migration, list) or not migration
                     or not all(isinstance(step, str) and step.strip()
                                for step in migration)):
                 errors.append(
-                    f"{context}: breaking changes require a non-empty migration array")
-        elif "migration" in data:
-            errors.append(
-                f"{context}: migration is allowed only when breaking is true")
+                    f"{context}: migration must be a non-empty array of steps")
+            if not breaking:
+                errors.append(
+                    f"{context}: migration is allowed only when breaking is true")
         targets = data.get("targets")
         if not isinstance(targets, list):
             errors.append(f"{context}: targets must be an array")
@@ -616,8 +616,8 @@ def validate_changes(
             if ((old_release_row and old_release_row.get("status") == "released")
                     or (current_release_row
                         and current_release_row.get("status") == "released")):
-                for field in ("category", "targets", "breaking", "migration"):
-                    default = False if field == "breaking" else [] if field == "migration" else None
+                for field in ("category", "targets", "breaking"):
+                    default = False if field == "breaking" else None
                     base_value = base_change.get(field, default)
                     # Base snapshots carry raw frontmatter while the current
                     # targets were normalized above, so compare one form.

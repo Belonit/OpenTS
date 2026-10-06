@@ -50,7 +50,6 @@
         "required": ["breaking"],
         "properties": { "breaking": { "const": true } }
       },
-      "then": { "required": ["migration"] },
       "else": { "not": { "required": ["migration"] } }
     }
   ]

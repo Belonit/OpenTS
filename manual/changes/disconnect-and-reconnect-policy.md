@@ -14,7 +14,7 @@ targets:
   effect: changed
 breaking: true
 migration:
-- A client or mod that wants a departed player's base handed to the computer must write `AutoSurrender=No` in the launch file. Without it a client-launched match now destroys the base.
+- Set `AutoSurrender=No` under `[Settings]` in `SPAWN.INI` to hand a departed player's base to the computer instead of destroying it.
 credit:
 - ZivDero
 - Rampastring

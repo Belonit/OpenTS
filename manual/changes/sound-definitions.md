@@ -4,7 +4,7 @@ category: feature
 release: 0.2.0
 breaking: true
 migration:
-- A `Volume=` above 1 is now a percentage, so a value that used to boost a sound beyond its sample now quietens it. Remove such values or write `Volume=100`.
+- Replace sound-section `Volume=` values above `1` in `SOUND.INI` with the intended percentage. Use `Volume=100` for full volume; values above `1` no longer amplify the sample.
 targets:
 - type: format
   id: sound-ini
