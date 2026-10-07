@@ -22,7 +22,7 @@ related:
 
 ```ini title="OPENTS.INI"
 [Paths]
-SearchPaths=INI,MIX,Maps,Addons
+SearchPaths=INI,MIX,Maps
 ```
 
 `SearchPaths` lists extra folders the game searches for its files, in the order written. Separate the names with commas. Do not use semicolons: a semicolon starts a comment, so the rest of the line is ignored. Spaces around a name are ignored, a name may end in a backslash or not, and a folder written twice is searched once. Each folder is relative to the game data directory described [below](#where-the-file-is-looked-for).
