@@ -85,6 +85,7 @@ class UIShellClass
 		};
 
 		void Log(char const * format, ...);
+		void Report_Open_Error(UIViewClass const & view, char const * reason);
 		bool Active(void) const;
 		bool Documents_Visible(void) const;
 		bool Text_Input_Focused(void) const;

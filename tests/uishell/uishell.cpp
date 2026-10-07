@@ -56,6 +56,7 @@
 #undef GetNextSibling
 
 #include <RmlUi/Core.h>
+#include <RmlUi/Core/FileInterface.h>
 #include <RmlUi/Core/Elements/ElementFormControlInput.h>
 #include <RmlUi/Core/Elements/ElementFormControlSelect.h>
 #include <RmlUi/Core/Elements/ElementFormControlTextArea.h>
@@ -456,6 +457,13 @@ class TestHostClass : public UIShellHostClass
 			std::printf("  shell: %s", text);
 		}
 
+		std::vector<std::string> Errors;
+
+		virtual void Show_Error(char const * text) override
+		{
+			Errors.emplace_back(text);
+		}
+
 		virtual int Milliseconds(void) const override
 		{
 			return(Held ? Now : (int)GetTickCount64());
@@ -490,10 +498,10 @@ struct ShellFixtureType
 	CountingSystemClass * System;
 	UIShellClass Shell;
 
-	ShellFixtureType(void) :
+	ShellFixtureType(std::unique_ptr<Rml::FileInterface> files = nullptr) :
 		Render(new RecordingRenderInterfaceClass()),
 		System(new CountingSystemClass(Host)),
-		Shell(Host, std::unique_ptr<UIRmlSystemClass>(System), nullptr, std::unique_ptr<UIRmlRenderClass>(Render))
+		Shell(Host, std::unique_ptr<UIRmlSystemClass>(System), std::move(files), std::unique_ptr<UIRmlRenderClass>(Render))
 	{
 		Host.Shell = &Shell;
 	}
@@ -4560,9 +4568,81 @@ void Test_Documents(void)
 }
 
 
+class MissingFileInterfaceClass : public Rml::FileInterface
+{
+	public:
+		std::string Missing;
+
+		virtual Rml::FileHandle Open(Rml::String const & path) override
+		{
+			if (std::filesystem::path(path).filename().string() == Missing) {
+				return(0);
+			}
+			return(reinterpret_cast<Rml::FileHandle>(std::fopen(path.c_str(), "rb")));
+		}
+
+		virtual void Close(Rml::FileHandle file) override
+		{
+			std::fclose(reinterpret_cast<FILE *>(file));
+		}
+
+		virtual size_t Read(void * buffer, size_t size, Rml::FileHandle file) override
+		{
+			return(std::fread(buffer, 1, size, reinterpret_cast<FILE *>(file)));
+		}
+
+		virtual bool Seek(Rml::FileHandle file, long offset, int origin) override
+		{
+			return(std::fseek(reinterpret_cast<FILE *>(file), offset, origin) == 0);
+		}
+
+		virtual size_t Tell(Rml::FileHandle file) override
+		{
+			return((size_t)std::ftell(reinterpret_cast<FILE *>(file)));
+		}
+};
+
+
+void Test_Missing_UI_Files(ShellFixtureType & fixture, MissingFileInterfaceClass & reader)
+{
+	UIShellClass & shell = fixture.Shell;
+	for (char const * name : { "menu.rml", "dialog.rml", "menu.rcss", "kit.rcss", "Arimo.ttf" }) {
+		reader.Missing = name;
+		std::size_t const errors = fixture.Host.Errors.size();
+		Check(shell.Init(), "the shell starts for a missing-resource test");
+
+		UIMenuState state;
+		state.Items.push_back({ "Exit", 1, true });
+		UIMenuPresenterClass presenter(state);
+		std::unique_ptr<UIViewClass> view = UI_Menu_View(presenter);
+		int passes = 0;
+		UIResult result = shell.Run_Modal(*view, [&]() { passes++; return(true); });
+		Check(result == UI_RESULT_FAILED_TO_OPEN && passes == 0, "a missing required resource refuses the menu before its service runs");
+		Check(fixture.Host.Errors.size() == errors + 1 && fixture.Host.Errors.back().find(name) != std::string::npos,
+			"the visible error names the missing resource");
+		Check(!view->Is_Shown() && shell.Modal_Depth() == 0 && !shell.Rml_Context()->GetDataModel("menu"),
+			"the failed menu leaves no shown view, modal or data model");
+		shell.Rml_Context()->Update();
+		Check(shell.Rml_Context()->GetNumDocuments() == 0, "the failed menu leaves no document after cleanup");
+
+		reader.Missing.clear();
+		if (std::strcmp(name, "Arimo.ttf") == 0) {
+			shell.Shutdown();
+			Check(shell.Init(), "the shell restarts after restoring the font");
+		}
+		result = shell.Run_Modal(*view, [&]() { passes++; return(true); });
+		Check(result == UI_RESULT_SESSION_ENDED && passes == 1 && fixture.Host.Errors.size() == errors + 1,
+			"restoring the resource allows the menu to open without another error");
+		shell.Shutdown();
+	}
+}
+
+
 void Test_Shell(void)
 {
-	ShellFixtureType fixture;
+	auto files = std::make_unique<MissingFileInterfaceClass>();
+	MissingFileInterfaceClass & reader = *files;
+	ShellFixtureType fixture(std::move(files));
 	UIShellClass & shell = fixture.Shell;
 	TestHostClass & host = fixture.Host;
 
@@ -5747,6 +5827,7 @@ void Test_Shell(void)
 	Check(fixture.Render->ReleasedTextures == fixture.Render->Loaded + fixture.Render->Generated, "the shell releases every texture it made");
 	Check(fixture.Render->Invalid == 0, "the shell's screens compile only geometry the renderer accepts");
 	Check(fixture.System->Problems == 0, "the shell's screens raise no RmlUi warning or error");
+	Test_Missing_UI_Files(fixture, reader);
 }
 
 }

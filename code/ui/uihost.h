@@ -58,5 +58,6 @@ class UIShellHostClass
 
 		virtual char const * String(int id) const = 0;
 		virtual void Log(char const * text) = 0;
+		virtual void Show_Error(char const * text) = 0;
 		virtual int Milliseconds(void) const = 0;
 };

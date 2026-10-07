@@ -228,6 +228,11 @@ class UIEngineHostClass : public UIShellHostClass
 		{
 			DebugString("%s", text);
 		}
+
+		virtual void Show_Error(char const * text) override
+		{
+			Main_Window_Error_Box("OpenTS", text);
+		}
 };
 
 

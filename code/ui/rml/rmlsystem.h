@@ -30,6 +30,8 @@ class UIRmlSystemClass : public Rml::SystemInterface
 		virtual void GetClipboardText(Rml::String & text) override;
 
 		int Error_Count(void) const { return(Errors); }
+		Rml::String const & First_Error(void) const { return(FirstError); }
+		void Clear_Error(void) { FirstError.clear(); }
 		UICursor Cursor_Request(void) const { return(Cursor); }
 		void Reset_Cursor_Request(void) { Cursor = UI_CURSOR_ARROW; }
 
@@ -37,5 +39,6 @@ class UIRmlSystemClass : public Rml::SystemInterface
 		UIShellHostClass & Host;
 		std::chrono::steady_clock::time_point Start;
 		int Errors = 0;
+		Rml::String FirstError;
 		UICursor Cursor = UI_CURSOR_ARROW;
 };

@@ -1065,10 +1065,12 @@ UIResult UIShellClass::Run_Modal(UIViewClass & view, UIServiceCallback const & s
 {
 	if (!Ready) {
 		Log("UI: %s cannot open; the interface system did not start\n", view.Name());
+		Report_Open_Error(view, "The interface system did not start.");
 		return(UI_RESULT_FAILED_TO_OPEN);
 	}
 	if (!FontLoaded) {
 		Log("UI: %s needs %s, which did not load\n", view.Name(), UI_SHIPPED_FONT_FILE);
+		Report_Open_Error(view, "Arimo.ttf did not load.");
 		return(UI_RESULT_FAILED_TO_OPEN);
 	}
 
@@ -1083,6 +1085,7 @@ UIResult UIShellClass::Run_Modal(UIViewClass & view, UIServiceCallback const & s
 	Apply_Font_Policy();
 
 	if (!Prepare_View(view)) {
+		Report_Open_Error(view, Render->Error()[0] != '\0' ? Render->Error() : System->First_Error().c_str());
 		return(UI_RESULT_FAILED_TO_OPEN);
 	}
 
@@ -1112,6 +1115,7 @@ UIResult UIShellClass::Run_Modal(UIViewClass & view, UIServiceCallback const & s
 		Modals.pop_back();
 		Services.pop_back();
 		Uncover(covered);
+		Report_Open_Error(view, Render->Error());
 		return(UI_RESULT_FAILED_TO_OPEN);
 	}
 
@@ -1214,6 +1218,7 @@ void UIShellClass::Uncover(UIViewClass * covered)
 bool UIShellClass::Prepare_View(UIViewClass & view)
 {
 	Render->Clear_Error();
+	System->Clear_Error();
 	int errors = System->Error_Count();
 
 	bool ready = view.Prepare(*this) && System->Error_Count() == errors && Render->Error()[0] == '\0';
@@ -1223,6 +1228,16 @@ bool UIShellClass::Prepare_View(UIViewClass & view)
 		view.Release();
 	}
 	return(ready);
+}
+
+
+void UIShellClass::Report_Open_Error(UIViewClass const & view, char const * reason)
+{
+	std::string message = std::string("Cannot open ") + view.Name() + ".\n\n";
+	message += reason[0] != '\0' ? reason : "The screen could not be loaded.";
+	message += "\n\nRestore the ui folder supplied with this build beside the executable."
+		" Check the debug log for details and any replacement UI files in the game data folders.";
+	Host.Show_Error(message.c_str());
 }
 
 

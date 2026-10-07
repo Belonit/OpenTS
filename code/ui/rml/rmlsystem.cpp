@@ -33,6 +33,9 @@ double UIRmlSystemClass::GetElapsedTime(void)
 bool UIRmlSystemClass::LogMessage(Rml::Log::Type type, Rml::String const & message)
 {
 	char const * level = "info";
+	if ((type == Rml::Log::LT_ERROR || type == Rml::Log::LT_ASSERT) && FirstError.empty()) {
+		FirstError = message;
+	}
 
 	switch (type) {
 		case Rml::Log::LT_ERROR:

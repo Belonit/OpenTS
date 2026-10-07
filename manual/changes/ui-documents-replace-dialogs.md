@@ -23,6 +23,10 @@ The screens the game built from dialog templates in `Language.dll`, including th
 
 A screen keeps the controls, layout, artwork and sounds of the dialog it replaced, and opens with the same sliding animation. Where a picture is missing, the control draws a plain fill and the screen still opens.
 
+A menu or modal dialog that cannot load a required UI file shows a native error message. Restore the `ui` folder supplied with the build beside the executable.
+
+The skirmish setup opens even when its map list is empty.
+
 When a screen is driven from the keyboard, the control that holds the focus is highlighted until the next mouse press. The old dialogs drew no focus mark.
 
 Documents, style sheets and pictures are found by bare file name through the game's file system. A file of the same name in a folder the game searches before `ui` replaces the shipped one.

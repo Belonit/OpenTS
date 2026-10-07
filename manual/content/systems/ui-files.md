@@ -37,7 +37,7 @@ A screen opens the way the original dialogs did: it slides out from the middle b
 
 A document names every file it uses by bare file name, and the game adds the `ui` directory to its search folders at startup. Those names then resolve in [the order the game searches](/formats/opents-ini/#the-order-files-are-searched-for-in): a loose copy found earlier in that order wins, and a copy inside a mix archive is used only where no loose file of that name exists. To replace a shipped document, style sheet or picture, put a file of the same name in a folder the game reaches first.
 
-If a document, style sheet or font fails to load, the game logs the file name, the screen does not open, and the game carries on as though the player had closed it without choosing.
+If a required document, template, style sheet or `Arimo.ttf` fails to load, the screen does not open. Opening a menu or modal dialog shows a native error message with the loading failure and instructions to restore the `ui` folder supplied with the build. The debug log records the failure. The classic main menu exits after the message is dismissed; other menus return without a choice.
 
 Outside a match the game mounts the no-side archives. When a scenario is read or a saved game loads, it replaces them with the archives of the player's side, and it mounts the no-side archives again when the match ends and the menus return. [MIX archives](/formats/mix/#theater-side-and-speech-archives) names both sets. After each change the game reads the pictures and the dialog font again: a screen opened after it uses the copies the mounted archives supply, and a screen already on show keeps what it was built with. These archives are searched after every loose file and every archive mounted at startup, so their copy of a name is used only when none of those holds it. They cannot replace a shipped document or style sheet.
 
@@ -70,3 +70,5 @@ These screens are documents:
 - the message boxes, and the notices shown while a game saves or loads
 
 The score screens, the graphical main menu, the campaign map and the sidebar are drawn by the game's older systems and are not documents. The crash report remains a Windows dialog.
+
+The skirmish setup can open with an empty map list. Choose or generate a map before starting a game.
