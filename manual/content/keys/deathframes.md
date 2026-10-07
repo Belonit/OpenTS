@@ -8,6 +8,8 @@ when_omitted:
 ---
 Above `0`, a destroyed vehicle stays on the map as a wreck. The destroying hit leaves it at one point of strength and unable to move. The wreck explodes and is removed once [`MaxDeathCounter`](/keys/maxdeathcounter/) game frames have passed. At `0` the destroying hit removes the vehicle at once.
 
+Further hits during the death animation grant no experience or additional kills and do not repeat destruction effects such as Tiberium drops.
+
 Keep the value between `0` and `127`. The engine stores it in a single signed byte, so values from `128` to `256` wrap to zero or a negative number and turn the wreck off.
 
 A vehicle that leaves a wreck skips the usual effects of destruction, both when it is destroyed and when the wreck later explodes:
