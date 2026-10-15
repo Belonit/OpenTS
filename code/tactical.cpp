@@ -1356,10 +1356,7 @@ void Tactical::Clear_Caption_Text(void)
 
 
 /// <summary>
-/// Draws a line of text across the middle of the tactical view.
-/// This routine paints straight onto the composite surface with GDI, so it does nothing
-/// unless that surface can hand out a device context. It also stays quiet while the map
-/// editor is running.
+/// Draws white caption text with a black shadow across the middle of the tactical view.
 /// </summary>
 /// <param name="text">The text to display. A NULL or empty string draws nothing.</param>
 void Tactical::Draw_Screen_Text(char const * text)
@@ -1375,11 +1372,13 @@ void Tactical::Draw_Screen_Text(char const * text)
 		Rect rect = TacticalRect;
 		HDC hdc = surface->GetDC();
 		if (hdc != NULL) {
-			HFONT font = CreateFont(28, 20, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_RASTER_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_SWISS | DEFAULT_PITCH, NULL);
+			HFONT font = CreateFont(48, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_RASTER_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY, FF_SWISS | DEFAULT_PITCH, NULL);
 			HGDIOBJ h = SelectObject(hdc, font);
 			Point2D point = Point2D(TacticalRect.Width / 2, TacticalRect.Height / 2);
 			SetBkMode(hdc, TRANSPARENT);
 			SetTextAlign(hdc, TA_CENTER);
+			SetTextColor(hdc, RGB(0, 0, 0));
+			TextOut(hdc, rect.X + point.X + 3, rect.Y + point.Y + 3, text, strlen(text));
 			SetTextColor(hdc, RGB(255, 255, 255));
 			TextOut(hdc, rect.X + point.X, rect.Y + point.Y, text, strlen(text));
 			SelectObject(hdc, h);
