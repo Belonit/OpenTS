@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <limits>
 #include <vector>
 
 
@@ -86,6 +87,30 @@ void Set_Hints(void)
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_TIME, (int)GetDoubleClickTime());
 	Set_Hint(SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS, GetSystemMetrics(SM_CXDOUBLECLK) / 2);
 	Set_Hint(SDL_HINT_KEYCODE_OPTIONS, "french_numbers,latin_letters");
+}
+
+
+void Set_Window_Icon(MainWindowIcon const & icon)
+{
+	if (icon.Width <= 0 || icon.Height <= 0 || icon.Width > std::numeric_limits<int>::max() / 4) {
+		return;
+	}
+
+	size_t const pitch = (size_t)icon.Width * 4;
+	if ((size_t)icon.Height > icon.Pixels.size() / pitch) {
+		return;
+	}
+
+	SDL_Surface * surface = SDL_CreateSurfaceFrom(icon.Width, icon.Height, SDL_PIXELFORMAT_RGBA32,
+		(void *)icon.Pixels.data(), (int)pitch);
+	if (surface == nullptr) {
+		DebugString("SDL: the window icon surface was not created: %s\n", SDL_GetError());
+		return;
+	}
+	if (!SDL_SetWindowIcon(_Window, surface)) {
+		DebugString("SDL: the window icon was not set: %s\n", SDL_GetError());
+	}
+	SDL_DestroySurface(surface);
 }
 
 
@@ -339,7 +364,7 @@ void Main_Window_Destroy(void)
 /// left edges; otherwise the window covers the display without changing its mode.
 /// </summary>
 /// <returns>False when SDL could not start or the window could not be created.</returns>
-bool Main_Window_Create(bool windowed, int width, int height)
+bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon const * icon)
 {
 	if (!Start_SDL() || _Window != nullptr) {
 		return(false);
@@ -352,6 +377,10 @@ bool Main_Window_Create(bool windowed, int width, int height)
 	if (_Window == nullptr) {
 		DebugString("SDL: the window was not created: %s\n", SDL_GetError());
 		return(false);
+	}
+
+	if (icon != nullptr) {
+		Set_Window_Icon(*icon);
 	}
 
 	if (windowed) {

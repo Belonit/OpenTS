@@ -27,6 +27,7 @@
 #include <cstring>
 #include <cwchar>
 #include <functional>
+#include <limits>
 #include <thread>
 #include <vector>
 
@@ -42,6 +43,61 @@ void Check(bool condition, char const * what)
 	if (!condition) {
 		Failures++;
 	}
+}
+
+
+struct IconImage
+{
+	int Width = 0;
+	int Height = 0;
+	std::vector<unsigned char> Pixels;
+
+	bool operator==(IconImage const &) const = default;
+};
+
+
+IconImage Window_Icon(WPARAM size)
+{
+	HWND const window = (HWND)Main_Window_Native().Handle;
+	HICON const icon = (HICON)SendMessageW(window, WM_GETICON, size, 0);
+	IconImage image;
+	if (icon == NULL) {
+		return(image);
+	}
+
+	ICONINFO info = {};
+	bool const gotinfo = GetIconInfo(icon, &info) != FALSE;
+	Check(gotinfo, "the window icon's bitmaps can be read");
+	if (!gotinfo) {
+		return(image);
+	}
+
+	BITMAP bitmap = {};
+	bool const gotbitmap = info.hbmColor != NULL && GetObjectW(info.hbmColor, sizeof(bitmap), &bitmap) != 0;
+	Check(gotbitmap, "the window icon has a color bitmap");
+	if (gotbitmap) {
+		image.Width = bitmap.bmWidth;
+		image.Height = bitmap.bmHeight;
+		image.Pixels.resize((size_t)image.Width * image.Height * 4);
+		BITMAPINFO format = {};
+		format.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		format.bmiHeader.biWidth = image.Width;
+		format.bmiHeader.biHeight = -image.Height;
+		format.bmiHeader.biPlanes = 1;
+		format.bmiHeader.biBitCount = 32;
+		format.bmiHeader.biCompression = BI_RGB;
+		HDC const dc = GetDC(NULL);
+		Check(GetDIBits(dc, info.hbmColor, 0, image.Height, image.Pixels.data(), &format, DIB_RGB_COLORS) == image.Height,
+			"the window icon's BGRA pixels can be read");
+		ReleaseDC(NULL, dc);
+	}
+	if (info.hbmColor != NULL) {
+		DeleteObject(info.hbmColor);
+	}
+	if (info.hbmMask != NULL) {
+		DeleteObject(info.hbmMask);
+	}
+	return(image);
 }
 
 
@@ -242,6 +298,8 @@ int main(void)
 		return(1);
 	}
 	Main_Window_Pump_Events();
+	IconImage const defaultsmall = Window_Icon(ICON_SMALL);
+	IconImage const defaultbig = Window_Icon(ICON_BIG);
 
 	Main_Window_Request_Repaint();
 	Main_Window_Request_Repaint();
@@ -446,6 +504,82 @@ int main(void)
 	Check(!Ask(escape), "Escape answers no");
 	Pumped(WINDOW_EVENT_NONE);
 
+	Main_Window_Destroy();
+
+	int const iconwidth = GetSystemMetrics(SM_CXICON);
+	int const iconheight = GetSystemMetrics(SM_CYICON);
+	std::vector<unsigned char> iconpixels((size_t)iconwidth * iconheight * 4);
+	for (size_t pixel = 0; pixel < iconpixels.size(); pixel += 4) {
+		bool const top = pixel < iconpixels.size() / 2;
+		iconpixels[pixel] = top ? 0xE1 : 0xB0;
+		iconpixels[pixel + 1] = top ? 0x52 : 0x60;
+		iconpixels[pixel + 2] = top ? 0x29 : 0x20;
+		iconpixels[pixel + 3] = top ? 0xFF : 0x80;
+	}
+	MainWindowIcon const icon = { iconpixels, iconwidth, iconheight };
+	bool const created = Main_Window_Create(true, 64, 48, &icon);
+	Check(created, "the main window accepts a custom RGBA icon");
+	if (created) {
+		// GetDIBits returns BGRA, while the supplied pixels are RGBA.
+		std::vector<unsigned char> expected = iconpixels;
+		for (size_t pixel = 0; pixel < expected.size(); pixel += 4) {
+			std::swap(expected[pixel], expected[pixel + 2]);
+		}
+		std::fill(iconpixels.begin(), iconpixels.end(), 0);
+		IconImage const small = Window_Icon(ICON_SMALL);
+		IconImage const big = Window_Icon(ICON_BIG);
+		Check(small.Width == iconwidth && small.Height == iconheight && small.Pixels == expected,
+			"the small icon preserves RGBA channels, row order, and straight alpha");
+		Check(big.Width == iconwidth && big.Height == iconheight && big.Pixels == expected,
+			"the large icon retains its pixels after the caller changes the buffer");
+		for (IconImage const * image : { &small, &big }) {
+			if (image->Width != iconwidth || image->Height != iconheight || image->Pixels != expected) {
+				std::printf("%s icon: %dx%d; system icon: %dx%d\n", image == &small ? "small" : "large",
+					image->Width, image->Height, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON));
+				if (image->Width > 0 && image->Height > 0 && image->Pixels.size() >= (size_t)image->Width * image->Height * 4) {
+					unsigned char const * top = image->Pixels.data();
+					unsigned char const * bottom = top + (size_t)(image->Height - 1) * image->Width * 4;
+					std::printf("  BGRA top: %02X %02X %02X %02X; bottom: %02X %02X %02X %02X\n",
+						top[0], top[1], top[2], top[3], bottom[0], bottom[1], bottom[2], bottom[3]);
+				}
+			}
+		}
+	}
+	Main_Window_Destroy();
+
+	Check(Main_Window_Create(true, 64, 48), "the main window can be recreated without a custom icon");
+	Check(Window_Icon(ICON_SMALL) == defaultsmall && Window_Icon(ICON_BIG) == defaultbig,
+		"destroying and recreating the window restores both default icons");
+	Main_Window_Destroy();
+
+	int const max = std::numeric_limits<int>::max();
+	struct InvalidIcon
+	{
+		MainWindowIcon Icon;
+		char const * Name;
+	};
+	InvalidIcon const invalid[] = {
+		{ { {}, 32, 32 }, "an empty pixel buffer keeps both default icons" },
+		{ { std::span<unsigned char const>(iconpixels).first(iconpixels.size() - 1), iconwidth, iconheight }, "a buffer one byte short keeps both default icons" },
+		{ { iconpixels, 0, 32 }, "a zero icon width keeps both default icons" },
+		{ { iconpixels, 32, 0 }, "a zero icon height keeps both default icons" },
+		{ { iconpixels, -1, 32 }, "a negative icon width keeps both default icons" },
+		{ { iconpixels, 32, -1 }, "a negative icon height keeps both default icons" },
+		{ { iconpixels, max / 4 + 1, 1 }, "an overflowing icon pitch keeps both default icons" },
+		{ { iconpixels, max, max }, "maximum icon dimensions keep both default icons" },
+		{ { iconpixels, max / 4, max }, "an excessive icon byte count keeps both default icons" },
+		{ { iconpixels, 1, max }, "an excessive icon height keeps both default icons" },
+	};
+	for (InvalidIcon const & entry : invalid) {
+		bool const validwindow = Main_Window_Create(true, 64, 48, &entry.Icon);
+		Check(validwindow, "an invalid icon does not prevent window creation");
+		Check(validwindow && Window_Icon(ICON_SMALL) == defaultsmall && Window_Icon(ICON_BIG) == defaultbig, entry.Name);
+		Main_Window_Destroy();
+	}
+
+	Check(Main_Window_Create(true, 64, 48, nullptr), "an explicit null icon allows window creation");
+	Check(Window_Icon(ICON_SMALL) == defaultsmall && Window_Icon(ICON_BIG) == defaultbig,
+		"an explicit null icon keeps both default icons");
 	Main_Window_Destroy();
 
 	std::printf("\n%s\n", Failures == 0 ? "PASSED" : "FAILED");

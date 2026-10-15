@@ -12,6 +12,7 @@
 #include "nativewindow.hh"
 #include "ui/uiinput.h"
 
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,9 +21,18 @@
 struct SDL_Cursor;
 
 
+struct MainWindowIcon
+{
+	std::span<unsigned char const> Pixels;
+	int Width;
+	int Height;
+};
+
+
 void Main_Window_Destroy(void);
 
-bool Main_Window_Create(bool windowed, int width, int height);
+// Optional icon pixels are straight-alpha RGBA, top row first, borrowed only for this call.
+bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon const * icon = nullptr);
 NativeWindow Main_Window_Native(void);
 bool Main_Window_Drawable_Size(int & width, int & height);
 bool Main_Window_Minimized(void);

@@ -21,6 +21,7 @@ The `ui` directory sits beside the executable and holds everything the screens a
 | `side-<name>.rcss` | Rules every screen takes while that side is the player's, such as `side-gdi.rcss` and `side-nod.rcss` |
 | `glow.png` | The glow the template draws around a screen |
 | `cursor.png` | The arrow pointer shown over the screens, with its tip at the top-left pixel. [`SystemCursor`](/keys/systemcursor/) replaces it with the Windows pointer |
+| `icon.png` | Optional replacement for the running game's window icon |
 | `Arimo.ttf` | The face a font family uses when its own face is missing, with its license in `OFL.txt` |
 
 ## The dialog kit
@@ -42,6 +43,14 @@ If a required document, template, style sheet or `Arimo.ttf` fails to load, the 
 Outside a match the game mounts the no-side archives. When a scenario is read or a saved game loads, it replaces them with the archives of the player's side, and it mounts the no-side archives again when the match ends and the menus return. [MIX archives](/formats/mix/#theater-side-and-speech-archives) names both sets. After each change the game reads the pictures and the dialog font again: a screen opened after it uses the copies the mounted archives supply, and a screen already on show keeps what it was built with. These archives are searched after every loose file and every archive mounted at startup, so their copy of a name is used only when none of those holds it. They cannot replace a shipped document or style sheet.
 
 To give each side its own version of a picture or font, put a copy in each side's `SIDEC<nn>.MIX` or `SIDENC<nn>.MIX`, and a neutral copy for the menus in `SIDEC00.MIX` or `SIDENC00.MIX`. Keep the name out of the `ui` directory and the archives mounted at startup; a copy there is used everywhere instead.
+
+## Window icon
+
+Put `icon.png` in the `ui` directory beside the executable to replace the running game's window and Alt+Tab icon. Use a square PNG with transparency, such as 256×256 pixels. No image is bundled, and no INI key is needed. The executable's icon in Explorer and pinned shortcut icons stay unchanged. The Debug Console keeps its own icon, and Windows may still show the built-in icon for a grouped taskbar button.
+
+The game uses the first loose `icon.png` found in [its file search order](/formats/opents-ini/#the-order-files-are-searched-for-in), so a copy in a higher-priority folder overrides the one in `ui`. The icon loads before the window is shown and before MIX archives are mounted, so an archive cannot supply it.
+
+A missing, unreadable or corrupt image keeps the embedded icon. A corrupt first match does not cause the game to try a later copy. Restart the game after replacing or removing the image.
 
 ## Side style sheets
 

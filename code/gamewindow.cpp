@@ -28,6 +28,7 @@
 #include "queue.h"
 #include "sdl/sdlwindow.h"
 #include "session.h"
+#include "ui/rml/rmltexture.h"
 #include "ui/uishell.h"
 #include "video.h"
 #include "vidscale.h"
@@ -254,7 +255,12 @@ bool Game_Window_Open(int width, int height)
 		}
 	}
 
-	if (!Main_Window_Create(WindowedMode, clientwidth, clientheight)) {
+	std::vector<unsigned char> pixels;
+	int iconwidth = 0;
+	int iconheight = 0;
+	UIImageResult const loaded = UI_Load_Image("icon.png", pixels, iconwidth, iconheight, false);
+	MainWindowIcon const icon = { pixels, iconwidth, iconheight };
+	if (!Main_Window_Create(WindowedMode, clientwidth, clientheight, loaded == UI_IMAGE_LOADED ? &icon : nullptr)) {
 		return(false);
 	}
 
