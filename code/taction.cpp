@@ -1644,9 +1644,7 @@ bool TActionClass::TAction_FIRE_SALE(HouseClass * , ObjectClass * , TriggerClass
 
 
 /// <summary>
-/// Puts a house on alert.
-/// An alerted house will build and dispatch its autocreate teams, which is how a
-/// computer opponent is woken up part way through a mission.
+/// Sets the named house's legacy alert flag without enabling team creation.
 /// </summary>
 bool TActionClass::TAction_AUTOCREATE(HouseClass * , ObjectClass * , TriggerClass * trig, Cell const & )
 {

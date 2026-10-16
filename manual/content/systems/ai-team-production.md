@@ -81,10 +81,10 @@ Eight more TeamType settings affect the decisions on this page. The table links 
 | [`Recruiter=`](/keys/recruiter/) | Lets [recruitment](#recruitment) take objects from outside the team's group. |
 | [`Group=`](/keys/group/#scope-teamtype) | The group [recruitment](#recruitment) draws from, and the group each member is given when it joins. |
 | [`Priority=`](/keys/priority/#scope-teamtype) | Whether [recruitment](#recruitment) may take a member from another team: only from a team of strictly lower priority. |
-| [`Autocreate=`](/keys/autocreate/) | Sets the autocreate mark [from the start](#from-suggestion-to-team). |
-| [`AreTeamMembersRecruitable=`](/keys/areteammembersrecruitable/) | The value a joining member's autocreate recruitable state is set to. |
+| [`Autocreate=`](/keys/autocreate/) | Which recruitment permission the team checks on each candidate object. |
+| [`AreTeamMembersRecruitable=`](/keys/areteammembersrecruitable/) | The value a joining member's autocreate-recruitable permission is set to. |
 
-**Autocreated** is a mark on a TeamType. It does not make the engine create teams by itself. `Autocreate=yes` sets the mark when the TeamType is read, and an AI trigger drawing the TeamType sets it permanently. The mark only decides which of an object's two recruitable states a team of that type checks; [recruitment](#recruitment) covers the pair.
+A TeamType with `Autocreate=yes` is called **autocreated**. This setting selects which recruitment permission its teams check; it does not enable automatic team creation. The [AI-trigger pass](#from-suggestion-to-team) sets it to `yes` on the TeamTypes it proceeds to create teams from, even if their INI setting was `no`. [Recruitment](#recruitment) describes the two permissions.
 
 An **AI trigger** is one line in [`[AITriggerTypes]`](/mapping/ai-triggers/). It is unrelated to the tags, events and actions a map uses: nothing springs it, and it does nothing except name teams. Each line names a first TeamType and optionally a second, one condition, three weights, and a set of gate fields: difficulty flags, a side, a campaign owner and a skirmish flag. A house never picks a team directly. It draws a trigger and creates the TeamTypes that trigger names.
 
@@ -296,7 +296,9 @@ Outcomes are keyed on the team's TeamType alone. The engine does not check which
 
 Before creating anything, the house checks the teams it already owns. If one of them is reforming or not under way, and its TeamType is either of the drawn trigger's TeamTypes, the house discards the whole draw. Neither TeamType is created.
 
-Each TeamType that survives is marked as autocreated for the rest of the scenario. [`Autocreate=yes`](/keys/autocreate/) sets the same mark from the start. [Recruitment](#recruitment) reads the mark. So does the campaign substitute in gate 12, because it asks whether the team could recruit the object it finds.
+Each surviving TeamType is set to `Autocreate=yes` before the house attempts to create its team. The value stays `yes` for the rest of the scenario, even if creation fails. Because it belongs to the TeamType, the change also affects existing teams of that type and teams later created by map trigger actions.
+
+[`Autocreate`](/keys/autocreate/) selects the permission used during [recruitment](#recruitment) and the campaign substitute in gate 12. Setting it to `yes` in the INI selects that permission from the start.
 
 The house then creates one team from each surviving TeamType. Each creation checks `Max` again, and this check differs from the eligibility gate:
 
@@ -335,14 +337,14 @@ A considered candidate must pass these checks, in this order:
 1. It is not already on this team.
 2. It is alive and on the map, it is not in radio contact, and its house is the team's house.
 3. It has no mission, or its current mission is one that [allows recruitment](/keys/recruitable/).
-4. Its recruitable state for this kind of team is set, as described below.
+4. Its recruitment permission for the TeamType's current `Autocreate` value is enabled, as described below.
 5. If it is on another team, that team's [`Priority`](/keys/priority/#scope-teamtype) is strictly lower than this team's.
 6. It is not an armed aircraft that is out of ammunition.
 7. Its type matches one of the TaskForce's roster lines, and that line still has room.
 
-Every object has two recruitable states: one for ordinary teams and one for autocreated teams. A team whose TeamType is not marked autocreated checks only the ordinary state. A marked team checks only the autocreate state. Both states start set, unless a map's [placed-object record](/formats/scenario-objects/) clears one.
+Each infantry, vehicle, and aircraft has two recruitment permissions. A team checks the ordinary permission when its TeamType currently has [`Autocreate=no`](/keys/autocreate/), or the autocreate-recruitable permission when it has `Autocreate=yes`. The other permission is not checked by that team. How the team was created does not decide which permission it uses.
 
-Joining any team sets the object's autocreate state to that TeamType's [`AreTeamMembersRecruitable`](/keys/areteammembersrecruitable/). A team with `AreTeamMembersRecruitable=no` keeps its members out of autocreated teams, even after the team itself is gone. The lock lasts until the object joins a team whose TeamType sets `AreTeamMembersRecruitable=yes`.
+Both permissions start enabled unless a map's [placed-object record](/formats/scenario-objects/) disables one. Joining any team replaces the object's autocreate-recruitable permission with that TeamType's [`AreTeamMembersRecruitable`](/keys/areteammembersrecruitable/) value, regardless of the team's own `Autocreate` value. With `AreTeamMembersRecruitable=no`, teams whose TeamType currently has `Autocreate=yes` cannot recruit the object, even after it leaves its team. Joining a team with `AreTeamMembersRecruitable=yes` enables that permission again.
 
 A team with no members is deleted in either of these cases:
 
@@ -365,11 +367,11 @@ A computer house normally runs the base planner and all three choosers together.
 
    Each unfilled roster place of a type the chooser builds adds one to that type's demand. For each type, the house also notes the creation time of the oldest team that wants it.
 
-2. **Supply.** Each object of the house that is free to recruit takes one off its type's demand. An object is free when it is on the map, on no team, on a mission that allows recruitment, and its ordinary recruitable state is set.
+2. **Supply.** Each object of the house that is free to recruit takes one off its type's demand. An object is free when it is on the map, on no team, on a mission that allows recruitment, and its ordinary recruitable permission is enabled.
 3. **Candidates.** A type is a candidate while its demand is above zero, the house can build it, and its cost is within the house's available credits.
 4. **Choice.** With a chance of [`FillEarliestTeamProbability`](/keys/fillearliestteamprobability/) percent, the house builds the candidate wanted by the oldest team. Otherwise it picks from the candidate list at random, with equal chances.
 
-Supply does not check the autocreate recruitable state. An object that `AreTeamMembersRecruitable=no` locked away still takes one off demand, although no autocreated team can recruit it.
+Supply does not check the autocreate-recruitable permission. An object with that permission disabled by `AreTeamMembersRecruitable=no` still takes one off demand, although teams whose TeamType currently has `Autocreate=yes` cannot recruit it.
 
 The random pick does not favor the types in greatest demand. The candidate list is emptied only when the house reaches a candidate with more demand than every candidate before it. The list therefore holds that type and every candidate registered after it, including candidates with less demand. Which types those are depends on the order the types are registered in.
 

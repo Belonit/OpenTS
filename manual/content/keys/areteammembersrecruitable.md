@@ -1,14 +1,14 @@
 ---
 key: AreTeamMembersRecruitable
-summary: The autocreate-recruitable state written onto each object as it joins a team of this type.
+summary: Sets each joining object's permission to be recruited by teams with Autocreate=yes.
 see_also: ["system:ai-team-production", Autocreate, Priority]
 when_omitted:
   kind: value
   value: "yes"
 ---
 
-Each object that joins a team of this type takes this value as its autocreate-recruitable state. With `AreTeamMembersRecruitable=no`, no [autocreated team](/systems/ai-team-production/#recruitment) can recruit the object, and a [base defense call-up](/systems/base-attacked/#which-objects-qualify) passes it over. Every TeamType the [AI trigger pass](/systems/ai-team-production/#from-suggestion-to-team) creates teams from is marked as autocreated, so AI trigger teams cannot recruit it either.
+`AreTeamMembersRecruitable=no` prevents teams whose TeamType currently has [`Autocreate=yes`](/keys/autocreate/) from recruiting objects that joined this team. It also excludes those objects from a [base defense call-up](/systems/base-attacked/#which-objects-qualify). With `yes`, this setting permits both, subject to their other requirements.
 
-The state stays after the object leaves the team, and after the team is gone. It changes only when the object joins another team, which sets it to that TeamType's value.
+Each object that joins takes this value as its autocreate-recruitable permission, regardless of this team's own `Autocreate` value. Leaving the team or deleting the team does not reset the permission. Joining another team replaces it with that TeamType's value.
 
-The object's ordinary recruitable state is unaffected. A team whose TeamType is not marked as autocreated can still recruit it.
+The ordinary recruitable permission is unchanged. Teams whose TeamType currently has `Autocreate=no` can still recruit the object if it meets their other requirements. The [AI-trigger pass](/systems/ai-team-production/#from-suggestion-to-team) changes its selected TeamTypes to `Autocreate=yes`, so those teams use the autocreate-recruitable permission.

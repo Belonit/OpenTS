@@ -405,13 +405,9 @@ class TechnoClass :	public RadioClass,
 		 */
 		char SightIncrease;
 
-		/*
-		 * These flags control whether this object may be drafted into a team. Both are true by
-		 * default and both travel with the object in the scenario, so a map can hold a
-		 * particular unit back from teams without changing its type.
-		 */
-		bool IsTeamRecruitable;			/// For teams built from a team type.
-		bool IsAutocreateRecruitable;	/// For teams the computer autocreates.
+		// Both recruitment permissions default to true and can be set per object in the map.
+		bool IsTeamRecruitable;			// Required by teams whose TeamType currently has Autocreate=no.
+		bool IsAutocreateRecruitable;	// Required by teams whose TeamType currently has Autocreate=yes.
 
 		/*
 		 * If this object is currently listed in the radar's tracking table, then this flag will

@@ -162,10 +162,8 @@ class TeamTypeClass : public AbstractTypeClass
 		 */
 		bool IsRecruiter;
 
-		/*
-		**	Is this team type allowed to be created automatically by the computer
-		**	when the appropriate trigger indicates?
-		*/
+		// Teams check IsAutocreateRecruitable when true, or IsTeamRecruitable when false;
+		// AI-trigger selection sets this shared flag to true before creating teams.
 		bool IsAutocreate;
 
 		/*
@@ -298,10 +296,7 @@ class TeamTypeClass : public AbstractTypeClass
 		 */
 		bool TransportsReturnOnUnload;
 
-		/*
-		 * If the members of this team may be poached by autocreate teams forming later, then
-		 * this flag will be true. It is stamped onto each object as it joins the team.
-		 */
+		// Joining objects copy this value into IsAutocreateRecruitable; leaving does not reset it.
 		bool AreTeamMembersRecruitable;
 
 		/*
