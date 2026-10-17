@@ -133,13 +133,13 @@ The [AI triggers](/mapping/ai-triggers/) page covers the fields of the trigger r
 
 Each house raises teams on its own countdown. When the countdown reaches zero, the house draws one AI trigger at random from those whose gates and condition currently hold. Each trigger's chance depends on a weight that tracks how its past teams fared. The house then creates one team from the trigger's first TeamType, and one from its second TeamType if it names one.
 
-The new teams fill themselves from objects the house owns. A computer house [orders the members still missing](#production-demand) through its ordinary production. A human house orders no production for its teams.
+The new teams fill themselves from objects the house owns, and the house [orders the members still missing](#production-demand) through its ordinary production.
 
 ## When the pass runs
 
 The countdown first runs for `175 * <the house's position in the house list> + TeamDelays` [frames](/glossary/#frame), so houses do not all run their pass on the same frame. After every pass it restarts at [`TeamDelays`](/keys/teamdelays/) alone.
 
-Every house runs the pass, computer or human. The pass reaches the AI triggers only while both of these hold:
+Only a computer house raises teams in the pass. A human house raises none, even with its AI-trigger switch on. For a computer house, the pass reaches the AI triggers only while both of these hold:
 
 - a roll from `1` to `100` comes out at or below the house's [`RatioAITriggerTeam`](/keys/ratioaitriggerteam/);
 - the house's AI-trigger switch is on.
@@ -158,8 +158,6 @@ The switch starts off for every house. Four events change it:
 :::caution[Outside a campaign the switch waits for an MCV]
 Outside a campaign game, deploying an MCV into a construction yard is the only way a computer house switches itself on. A computer house that starts a skirmish or multiplayer game with its base already built never draws an AI trigger, unless a map trigger action turns the switch on.
 :::
-
-The begin action works on a human house as well. That house then raises teams from AI triggers like a computer house, but orders no production to fill them.
 
 ## The team budget
 
@@ -212,7 +210,7 @@ In a campaign game, a member type the house cannot build still passes if the hou
 
 ## Difficulty
 
-The three difficulty flags on a trigger mean Easy, Medium and Hard as the player chose them. This holds for every house in a campaign game, and for computer houses outside one.
+The three difficulty flags on a trigger mean Easy, Medium and Hard as the player chose them.
 
 In a campaign game, the house tests the flag that matches the scenario's difficulty. Outside a campaign, the house tests the flag opposite to its [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot). A computer house's slot is already the inverse of the setting the player chose, so the two inversions cancel. The table traces one computer house.
 
@@ -221,8 +219,6 @@ In a campaign game, the house tests the flag that matches the scenario's difficu
 | Easy | 2, the `[Difficult]` section | Easy |
 | Normal | 1, the `[Normal]` section | Medium |
 | Hard | 0, the `[Easy]` section | Hard |
-
-A human house outside a campaign always holds slot 1, so it always tests the Medium flag.
 
 A computer seat's `[HouseHandicaps]` value in a [launch file](/formats/spawn-ini/#who-is-playing) sets its slot directly. It replaces both the inversion and the bonus described below. The flag the house tests then follows the slot column of the table, so a value of `0` tests the Hard flag.
 

@@ -1383,10 +1383,12 @@ void HouseClass::AI(void)
 	*/
 	if (/*!IsAlerted &&*/ !TeamTime) {
 
-		SUGGESTED_TEAM_LIST team = Suggested_New_Team(false);
-		if (team.Count() > 0) {
-			for (int i = 0; i < team.Count(); i++) {
-				team[i]->Create_One_Of(this);
+		if (!Is_Human_Player()) {
+			SUGGESTED_TEAM_LIST team = Suggested_New_Team(false);
+			if (team.Count() > 0) {
+				for (int i = 0; i < team.Count(); i++) {
+					team[i]->Create_One_Of(this);
+				}
 			}
 		}
 
