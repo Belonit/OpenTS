@@ -10232,6 +10232,28 @@ SuperWeaponType BuildingClass::Fetch_Super_Weapon2(void) const
 
 
 /// <summary>
+/// Determines whether this building grants the super weapon, through its own type or
+/// through an upgrade plugged into it.
+/// </summary>
+/// <remarks>An upgrade grants its super weapon without the auxiliary building check that
+/// the building's own type is held to.</remarks>
+bool BuildingClass::Grants_Super_Weapon(SuperWeaponType super) const
+{
+	if (Fetch_Super_Weapon() == super || Fetch_Super_Weapon2() == super) {
+		return(true);
+	}
+
+	for (int index = 0; index < BUILDING_UPGRADE_MAX; index++) {
+		BuildingTypeClass const * upgrade = Upgrades[index];
+		if (upgrade != NULL && (upgrade->SuperWeapon == super || upgrade->SuperWeapon2 == super)) {
+			return(true);
+		}
+	}
+	return(false);
+}
+
+
+/// <summary>
 /// Scatters any infantry that were heading into this building.
 /// This routine is used when the building can no longer take the infantry that were on
 /// their way to it, so that they do not gather on its doorstep.
