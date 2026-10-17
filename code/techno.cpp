@@ -2996,7 +2996,7 @@ void TechnoClass::AI(void)
 		}
 	}
 
-	if (!House->Is_Human_Player() && TarCom != NULL && House->Is_Ally(TarCom)) {
+	if (!House->Is_Human_Player() && TarCom != NULL && House->Is_Ally(TarCom) && Combat_Damage() >= 0) {
 		if (RTTI != RTTI_AIRCRAFT && (RTTI != RTTI_INFANTRY || !((InfantryClass *)this)->Class->IsEngineer)) {
 			Assign_Target(NULL);
 		}
