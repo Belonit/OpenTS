@@ -1482,11 +1482,13 @@ bool TActionClass::TAction_PLAY_SOUND_RANDOM(HouseClass * , ObjectClass * , Trig
 	for (int index = 0; index < WAYPT_COUNT; index++) {
 		if (Scen->Is_Valid_Waypoint(index)) {
 			list[count++] = Scen->Get_Waypoint_Cell(index);
-			if (count == sizeof(list)) break;
+			if (count == ARRAY_SIZE(list)) break;
 		}
 	}
 
-	Sound_Effect(Data.Sound, Coord(list[Random_Pick(0, count-1)]));
+	if (count > 0) {
+		Sound_Effect(Data.Sound, Coord(list[Random_Pick(0, count-1)]));
+	}
 	return(true);
 }
 
