@@ -22,4 +22,4 @@ A computer-controlled vehicle whose [`DeploysInto`](/keys/deploysinto/) names a 
 
 Against infantry, a structure or any other target it fires without deploying. [`DeployToFire=yes`](/keys/deploytofire/) on the vehicle overrides this rule and makes it dig in for every target, whoever owns it.
 
-A tick-tank structure given a target beyond its primary weapon's range drops that target, unless the weapon is anti-aircraft. If the structure is computer-owned and not immobilized, it then packs up at once into its `UndeploysInto` vehicle. One with no `UndeploysInto` is sold instead. [`Artillary=yes`](/keys/artillary/) and [`IsJuggernaut=yes`](/keys/isjuggernaut/) structures follow the same rule.
+A tick-tank structure given a target beyond its primary weapon's range drops that target, unless the weapon is anti-aircraft. If the structure is computer-owned, not immobilized and has an `UndeploysInto` vehicle, it then packs up at once into that vehicle. One with no `UndeploysInto` stays deployed. [`Artillary=yes`](/keys/artillary/) and [`IsJuggernaut=yes`](/keys/isjuggernaut/) structures follow the same rule.

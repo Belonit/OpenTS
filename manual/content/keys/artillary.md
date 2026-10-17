@@ -25,7 +25,7 @@ A structure that draws its turret from a voxel model, [`TurretAnimIsVoxel=yes`](
 
 ## Targets out of range
 
-A computer-owned artillery structure drops a target beyond the range of its primary weapon, unless that weapon is anti-aircraft. Unless the structure is immobilized, it then starts to undeploy if it has an [`UndeploysInto`](/keys/undeploysinto/) vehicle, and is sold if it has none. `TickTank=yes` and `IsJuggernaut=yes` structures do the same.
+A computer-owned artillery structure drops a target beyond the range of its primary weapon, unless that weapon is anti-aircraft. Unless the structure is immobilized, it then starts to undeploy if it has an [`UndeploysInto`](/keys/undeploysinto/) vehicle, and stays deployed if it has none. `TickTank=yes` and `IsJuggernaut=yes` structures do the same.
 
 :::caution[The key is spelled `Artillary`]
 The engine reads only this spelling. A section that writes `Artillery=` leaves the structure unflagged.

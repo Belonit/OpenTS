@@ -16,4 +16,4 @@ Two effects are specific to this flag, and both stow the gun:
 - Before a Juggernaut is sold or packed up, it turns its barrel back to [`StartPitch`](/keys/startpitch/) and its body to [`StartFacing`](/keys/startfacing/). Nothing else in the sequence begins until both arrive.
 - The vehicle created when it packs up starts with its barrel at `StartPitch`.
 
-A computer-owned Juggernaut given a target beyond the range of its primary weapon drops the target and deconstructs, unless it is immobilized. With an `UndeploysInto` type it packs up; without one it is sold. A primary weapon whose projectile is anti-aircraft skips this range test. [`TickTank=yes`](/keys/ticktank/) and [`Artillary=yes`](/keys/artillary/) structures behave the same way.
+A computer-owned Juggernaut given a target beyond the range of its primary weapon drops the target. Unless it is immobilized, it then packs up if it has an `UndeploysInto` type, and stays deployed if it has none. A primary weapon whose projectile is anti-aircraft skips this range test. [`TickTank=yes`](/keys/ticktank/) and [`Artillary=yes`](/keys/artillary/) structures behave the same way.

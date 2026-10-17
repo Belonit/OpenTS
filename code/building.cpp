@@ -2767,7 +2767,7 @@ void BuildingClass::Assign_Target(AbstractClass * target)
 			target = NULL;
 			BASECLASS::Assign_Target(target);
 			if (Class->IsTickTank || Class->IsArtillary || Class->IsJuggernaut) {
-				if (!House->Is_Human_Player() && !Is_Immobilized()) {
+				if (!House->Is_Human_Player() && !Is_Immobilized() && Class->UndeploysInto != NULL) {
 					Assign_Mission(MISSION_DECONSTRUCTION);
 					Commence();
 				}
