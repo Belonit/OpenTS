@@ -8605,6 +8605,12 @@ Coord TechnoClass::Railgun_Beam_Damage(Coord & coord, AbstractClass *abstract, W
 
 	for (int j = 0; j < targets.Count(); j++) {
 		int damage = weapon->AmbientDamage;
+		if (damage > 0) {
+			damage = (int)(House->FirepowerBias * FirepowerBias * damage);
+			if (Has_Ability(ABILITY_FIREPOWER)) {
+				damage = (int)((Rule->VeteranCombat + 1.0) * damage);
+			}
+		}
 		targets[j]->Take_Damage(damage, 0, weapon->WarheadPtr, this);
 	}
 

@@ -13,3 +13,5 @@ The multiplier applies last, after the house's firepower multiplier and any fire
 
 - a sonic weapon or a weapon that fires through the fire particle system, because their damage does not come from the projectile this multiplier scales;
 - a weapon with negative damage, such as a healing weapon.
+
+A railgun's beam damage, its [`AmbientDamage`](/keys/ambientdamage/), is raised the same way.
