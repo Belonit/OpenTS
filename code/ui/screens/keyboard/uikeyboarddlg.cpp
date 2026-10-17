@@ -13,7 +13,6 @@
 #include "_ui.h"
 #include "ccfile.h"
 #include "ccini.h"
-#include "cdfile.h"
 #include "command.h"
 #include "dbgprint.h"
 #include "index.h"
@@ -86,7 +85,7 @@ class UIKeyboardEngineServiceClass : public UIKeyboardServiceClass
 				ini.Put_Int("Hotkey", command->Get_Unique_Name(), HotkeyCommands.Fetch_ID_By_Position(position));
 			}
 
-			CDFileClass file("Keyboard.ini");
+			CCFileClass file("KEYBOARD.INI");
 			ini.Save(file, false);
 		}
 };
