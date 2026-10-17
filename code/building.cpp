@@ -7992,7 +7992,7 @@ void BuildingClass::Detach_Anim(AnimClass * anim)
 				Anims[i] = NULL;
 				if (i == BANIM_SPECIAL_ONE && Class->IsCanUnitRepair) {
 					if (In_Radio_Contact() && Mission == MISSION_REPAIR) {
-						Begin_Anim(BANIM_SPECIAL_TWO, false);
+						Begin_Anim(BANIM_SPECIAL_TWO, HealthRatio <= Rule->ConditionYellow);
 					}
 				}
 				break;
