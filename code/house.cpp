@@ -7810,13 +7810,13 @@ bool HouseClass::AI_Build_Defense(int nodeindex, DynamicVectorClass<Cell> * cell
 		}
 	}
 
+	BuildingTypeClass * choice = NULL;
 	if (success) {
 
 		/*
 		 * Pick the defense to build: cheap buildings and buildings with a high
 		 * value against the chosen category are favored.
 		 */
-		BuildingTypeClass * choice;
 		if (defenses->Count() == 1) {
 			choice = (*defenses)[0];
 		} else {
@@ -7835,6 +7835,11 @@ bool HouseClass::AI_Build_Defense(int nodeindex, DynamicVectorClass<Cell> * cell
 			}
 			choice = distribution.Sample();
 		}
+	}
+
+	if (choice == NULL) {
+		success = false;
+	} else {
 
 		/*
 		 * A tower being armed is built itself, and the picked upgrade is queued at the
