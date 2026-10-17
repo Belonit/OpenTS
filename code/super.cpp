@@ -718,7 +718,7 @@ void SuperClass::Place(Cell const & cell, bool player)
 								launchsite->Assign_Mission(MISSION_MISSILE);
 								launchsite->Commence();
 								House->NukeDest = cell;
-								launchsite->LastSuperWeaponIndex = Class->Type;
+								launchsite->LastSuperWeaponIndex = Class->HeapID;
 							}
 
 							break;

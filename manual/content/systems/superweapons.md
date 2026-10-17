@@ -87,12 +87,6 @@ A listed name with no matching section is still declared, with every default. It
 
 [`Type=`](/keys/type/#scope-superweapontype) selects the behavior. Several sections may use the same behavior, and each still has a separate cameo, countdown and grant condition. A section with no recognized `Type=` charges and shows a cameo like any other, but firing it has no effect.
 
-:::danger[Keep `[SuperWeaponTypes]` in the shipped order]
-A missile silo does not launch the `WeaponType=` of the weapon that ordered the launch. It uses the section whose position matches that weapon's behavior, in this order: `MultiMissile`, `EMPulse`, `Firestorm`, `IonCannon`, `HunterSeeker`, `ChemMissile`, `DropPod`. The first section in the list therefore supplies every `Type=MultiMissile` launch, and the sixth supplies every `Type=ChemMissile` launch. The shipped list follows this order.
-
-If you insert, remove or reorder entries, a silo launches the [`WeaponType=`](/keys/weapontype/) of whichever section now holds that position. Two sections with the same missile behavior always launch the same missile. A list with fewer than six entries makes a chemical missile launch read past the end of the list.
-:::
-
 ## Becoming available
 
 A house updates which superweapons it holds after one of its structures is built, placed, sold, destroyed, captured, switched on or off, or fitted with a plug. On the house's next update, two passes run in order:
@@ -309,7 +303,7 @@ A repeating missile launches from a silo. The engine finds the first BuildingTyp
 
 The house stores a single missile target. A second launch before the first silo has launched its missile therefore redirects that silo. A missile already in flight keeps its target.
 
-The silo opens its door, launches the missile, closes the door and returns to guard. The projectile, warhead, maximum speed and range come from the `WeaponType=` of the section the [declaration warning](#declaring-a-superweapon) describes. The silo ignores that weapon's `Damage=` and gives the projectile a fixed strength of 200. The missile leaves five eighths of a cell (160 leptons) north of the silo's center, pointing straight up. When the launching house is not the local player's, the player hears the launch-detected announcement.
+The silo opens its door, launches the missile, closes the door and returns to guard. The projectile, warhead, maximum speed and range come from the [`WeaponType=`](/keys/weapontype/) of the section that was fired. The silo ignores that weapon's `Damage=` and gives the projectile a fixed strength of 200. The missile leaves five eighths of a cell (160 leptons) north of the silo's center, pointing straight up. When the launching house is not the local player's, the player hears the launch-detected announcement.
 
 A one-time missile needs no silo. It enters from the map edge nearest the target. It is built from the hard-coded weapon `MultiLauncher` or `ChemLauncher`, according to the behavior, and deals that weapon's `Damage=`. It is fired with a range of `100000` leptons, longer than any map is wide.
 
