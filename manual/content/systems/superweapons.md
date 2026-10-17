@@ -117,7 +117,7 @@ SuperWeapon=IonCannonSpecial
 A plug grants its weapon without the `AuxBuilding=` check, and the house keeps the weapon on the same terms. In the shipped rules the ion cannon and the drop pods come only from plugs, so an `AuxBuilding=` on either has no effect. The hunter seeker comes both from a plug and from the Nod temple, and the check applies to the temple's grant.
 :::
 
-A weapon granted while its house is short of power arrives suspended, even with [`IsPowered=no`](/keys/ispowered/), and its `ChargingVoice=` does not play. [Power output and drain](/systems/power/#superweapons) covers suspension by power and what it costs a charge-draining weapon.
+A weapon granted while its house is short of power, or while every structure that grants it is switched off, arrives suspended, even with [`IsPowered=no`](/keys/ispowered/), and its `ChargingVoice=` does not play. [Power output and drain](/systems/power/#superweapons) covers suspension by power and what it costs a charge-draining weapon.
 
 ### One shot at a time
 

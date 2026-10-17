@@ -9089,13 +9089,17 @@ void HouseClass::Enable_Available_Super_Weapons(void)
 		for (int s = 0; s < SuperWeapon.Count(); s++) {
 			if (!SuperWeapon[s]->Is_Present() || SuperWeapon[s]->Is_One_Time()) {
 				bool present = false;
-				for (int j = 0; j < Buildings.Count() && !present; j++) {
+				bool switched_on = false;
+				for (int j = 0; j < Buildings.Count() && !switched_on; j++) {
 					BuildingClass const * b = Buildings[j];
-					present = b->IsActive && b->House == this && !b->IsInLimbo && b->Grants_Super_Weapon(SuperWeaponType(s));
+					if (b->IsActive && b->House == this && !b->IsInLimbo && b->Grants_Super_Weapon(SuperWeaponType(s))) {
+						present = true;
+						switched_on = b->IsOn;
+					}
 				}
 
 				if (present) {
-					SuperWeapon[s]->Enable(false, this == PlayerPtr, Power_Fraction() < 1.0);
+					SuperWeapon[s]->Enable(false, this == PlayerPtr, Power_Fraction() < 1.0 || !switched_on);
 					if (this == PlayerPtr) {
 						Map.Add(RTTI_SPECIAL, s);
 						Map.Column[1].Flag_To_Redraw();
