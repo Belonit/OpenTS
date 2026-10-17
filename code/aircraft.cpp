@@ -626,8 +626,8 @@ void AircraftClass::AI(void)
 	}
 
 	if (Cargo.Is_Something_Attached() && Class->IsCarryall) {
-		Cargo.Attached_Object()->PrimaryFacing = SecondaryFacing;
-		Cargo.Attached_Object()->SecondaryFacing = SecondaryFacing;
+		Cargo.Attached_Object()->PrimaryFacing.Set(SecondaryFacing.Current());
+		Cargo.Attached_Object()->SecondaryFacing.Set(SecondaryFacing.Current());
 		Cargo.Attached_Object()->PositionCoord = PositionCoord;
 	}
 }
