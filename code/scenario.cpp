@@ -1810,6 +1810,7 @@ ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 		Scen->RequiredAddOn = (AddonType)ini.Get_Int(BASIC, "RequiredAddOn", ADDON_BASE_GAME);
 		Set_Required_Addon(Scen->RequiredAddOn);
 		if (!Addon_Installed(Scen->RequiredAddOn)) {
+			ScenarioInit--;
 			return(ScenarioState::NotRead);
 		}
 		Enable_Addon(Scen->RequiredAddOn);
@@ -1858,6 +1859,7 @@ ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	SideType playerside = Side_For_Player();
 	DebugString("Calling Prep_For_Side()\n");
 	if (Prep_For_Side_Or_First(playerside) == SIDE_NONE) {
+		ScenarioInit--;
 		return(ScenarioState::NotRead);
 	}
 	Scen->PlayerSide = playerside;
@@ -1892,6 +1894,7 @@ ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	DebugString("Calling Prep_Speech_For_Side()\n");
 	Scen->SpeechSide = Prep_Speech_For_Side_Or_First(Scen->SpeechSide);
 	if (Scen->SpeechSide == SIDE_NONE) {
+		ScenarioInit--;
 		return(ScenarioState::NotRead);
 	}
 
@@ -1937,6 +1940,7 @@ ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	**
 	*/
 	if (Scen->Read_INI(ini) == false) {
+		ScenarioInit--;
 		return(ScenarioState::NotRead);
 	}
 
@@ -2011,6 +2015,7 @@ ScenarioState Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	**	as well as theater information.
 	*/
 	if (!Map.Read_INI(ini)) {
+		ScenarioInit--;
 		return(ScenarioState::TerrainDamaged);
 	}
 	Call_Back();
