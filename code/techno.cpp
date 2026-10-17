@@ -7933,6 +7933,9 @@ int TechnoClass::Anti_Air(void) const
 	if (Is_Weapon_Equipped()) {
 
 		WeaponTypeClass const * weapon = PrimaryWeapon;
+		if (!weapon->Bullet->IsAntiAircraft && SecondaryWeapon != NULL) {
+			weapon = SecondaryWeapon;
+		}
 		BulletTypeClass const * bullet = weapon->Bullet;
 		WarheadTypeClass const * warhead = weapon->WarheadPtr;
 
