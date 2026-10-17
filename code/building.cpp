@@ -5182,6 +5182,7 @@ int BuildingClass::Do_MISSION_DECONSTRUCTION(void)
 							**	map, then give the player some money to compensate.
 							*/
 							House->Refund_Money(money);
+							delete unit;
 						}
 					} else {
 						House->Refund_Money(Refund_Amount());
