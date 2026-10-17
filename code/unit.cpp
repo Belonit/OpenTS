@@ -6692,7 +6692,7 @@ void UnitClass::Explode(void)
 		**	Very strong units that have an explosion will also rock the
 		**	screen when they are destroyed.
 		*/
-		if (Class->MaxStrength > Rule->ShakeScreen) {
+		if (Rule->ShakeScreen / 2 > 0 && Class->MaxStrength > Rule->ShakeScreen) {
 			int shakes = Class->MaxStrength / (Rule->ShakeScreen / 2) + 3;
 			shakes = std::min(shakes, 6);
 			Shake_The_Screen(shakes);

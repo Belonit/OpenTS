@@ -12,7 +12,7 @@ when_omitted:
 ShakeScreen=400
 ```
 
-No value of this setting shakes the view. The game computes a number of shakes from it when an object is destroyed, but the shake itself does nothing. The value still matters because three values crash the game.
+No value of this setting shakes the view. The game computes a number of shakes from it when an object is destroyed, but the shake itself does nothing.
 
 Two kinds of object compute a shake count:
 
@@ -21,6 +21,4 @@ Two kinds of object compute a shake count:
 
 The only jolt the view still receives is a fixed ten-pixel one when an ion cannon blast lands on screen, and that does not read this setting.
 
-:::danger[Keep ShakeScreen at 2 or above]
-The divisions have no guard against zero. At `0`, the first structure destroyed crashes the game. At `0`, `1` or `-1`, half the value rounds to zero, so the first vehicle destroyed that names an explosion animation crashes the game.
-:::
+A structure computes no count when this value is `0` or less. A vehicle computes none when half the value, rounded toward zero, is `0` or less, which includes `1`.

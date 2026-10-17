@@ -2183,9 +2183,11 @@ void BuildingClass::Do_Destruction(TechnoClass *last_contact, TechnoClass *sourc
 		Map[coord].Place_Tiberium((TiberiumType)slot, 1);
 	}
 
-	shakes = Class->Cost_Of(House) / Rule->ShakeScreen;
-	if (shakes > 0) {
-		Shake_The_Screen(shakes);
+	if (Rule->ShakeScreen > 0) {
+		shakes = Class->Cost_Of(House) / Rule->ShakeScreen;
+		if (shakes > 0) {
+			Shake_The_Screen(shakes);
+		}
 	}
 
 	if (Mission == MISSION_DECONSTRUCTION || Class->IsExploding) {
