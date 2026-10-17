@@ -9,7 +9,7 @@ when_omitted:
 
 This value sets the slowest a power shortfall can make production. A house's build time is divided by a production multiplier that falls as its power drops, and the multiplier is never lower than this value. A multiplier of `.5` doubles build time, and `1` removes the low-power penalty entirely.
 
-[The production ladder](/systems/power/#production) never drops below `.5`, so the default and any smaller value change nothing.
+A value at or below [`WorstLowPowerBuildRateCoefficient`](/keys/worstlowpowerbuildratecoefficient/) changes nothing, because [the production table](/systems/power/#production) never drops below that value.
 
 :::caution[Values above 1 speed up every house]
 The floor also applies at full power. With `MinProductionSpeed=2`, every house builds in half the time, whether or not it is short of power.

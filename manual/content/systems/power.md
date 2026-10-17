@@ -187,15 +187,13 @@ A house short of power builds more slowly. Its build time is divided by a produc
 | Power fraction | Production multiplier |
 | --- | --- |
 | 1 | 1 |
-| 0.75 up to but not including 1 | 0.75 |
-| 0.5 up to but not including 0.75 | the fraction itself |
-| below 0.5 | 0.5 |
+| above `BestLowPowerBuildRateCoefficient`, below 1 | `BestLowPowerBuildRateCoefficient` |
+| from `WorstLowPowerBuildRateCoefficient` to `BestLowPowerBuildRateCoefficient` | the fraction itself |
+| below `WorstLowPowerBuildRateCoefficient` | `WorstLowPowerBuildRateCoefficient` |
 
-If the multiplier is below [`MinProductionSpeed`](/keys/minproductionspeed/), it is raised to that value. A multiplier of 0.75 makes a build take a third longer, and 0.5 doubles it. The bottom row means a house with no output at all still builds at half speed or better.
+If the multiplier is below [`MinProductionSpeed`](/keys/minproductionspeed/), it is raised to that value. A multiplier of 0.75 makes a build take a third longer, and 0.5 doubles it.
 
-:::caution[Only the middle band tracks the shortfall]
-Between 0.5 and 0.75 the multiplier equals the fraction, so a house at 0.6 builds more slowly than one at 0.74. Above and below that band the penalty is flat. At the default `MinProductionSpeed` the floor equals the bottom step and changes nothing. Raising it lifts every step below the new value to that value.
-:::
+[`BestLowPowerBuildRateCoefficient`](/keys/bestlowpowerbuildratecoefficient/) defaults to 0.75, [`WorstLowPowerBuildRateCoefficient`](/keys/worstlowpowerbuildratecoefficient/) to 0.3 and `MinProductionSpeed` to 0.5, all in `[General]`. With those values, a house below half power builds at half speed, a house from half to three-quarter power builds at its power fraction, and a house above three-quarter power builds at 0.75. A `WorstLowPowerBuildRateCoefficient` below `MinProductionSpeed` therefore changes nothing.
 
 The power division is one step in the build-time calculation. [How long it takes](/systems/production/#how-long-it-takes) gives the full order, including [`BuildSpeed`](/keys/buildspeed/), the country and difficulty [`BuildTime`](/keys/buildtime/) multipliers, [`MultipleFactory`](/keys/multiplefactory/), and [`WallBuildSpeedCoefficient`](/keys/wallbuildspeedcoefficient/).
 
@@ -291,7 +289,3 @@ The bar's colors follow the real totals. While the house is short of power, the 
 The [Power Low](/mapping/events/tevent-low-power/) trigger event holds while the named house is short of power.
 
 The [Turn off building](/mapping/actions/taction-turn-off-attached/) and [Turn on building](/mapping/actions/taction-turn-on-attached/) actions use the same switch as the power cursor, for every structure on the map that carries the trigger's tag. Turn off building affects only structures that are on, and Turn on building only those that are off.
-
-## Parsed settings without effect
-
-The production ladder above is fixed in the engine. [`WorstLowPowerBuildRateCoefficient`](/keys/worstlowpowerbuildratecoefficient/) and [`BestLowPowerBuildRateCoefficient`](/keys/bestlowpowerbuildratecoefficient/) in `[General]` are read but never used. Changing either setting has no effect. The ladder's fixed 0.75 step happens to equal the default of `BestLowPowerBuildRateCoefficient`.

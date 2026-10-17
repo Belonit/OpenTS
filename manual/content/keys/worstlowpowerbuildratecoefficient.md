@@ -1,11 +1,10 @@
 ---
 key: WorstLowPowerBuildRateCoefficient
-summary: Parsed worst-case low-power build coefficient that the engine never uses.
-no_effect: true
-see_also: ["system:power"]
+summary: The lowest production multiplier a power shortfall can impose before MinProductionSpeed applies.
+see_also: ["system:power", "BestLowPowerBuildRateCoefficient", "MinProductionSpeed"]
 when_omitted:
   kind: value
   value: ".3"
 ---
 
-The slowest production a power shortfall can cause is fixed in the engine at a multiplier of `0.5`, or at [`MinProductionSpeed`](/keys/minproductionspeed/) when that is higher. [The production table](/systems/power/#production) lists the multipliers that apply.
+A house whose power fraction is below this value builds with this value as its production multiplier. Its build time is divided by the multiplier. [`MinProductionSpeed`](/keys/minproductionspeed/) then raises any multiplier below it, so with the default `MinProductionSpeed=.5` the default `.3` never applies. [The production table](/systems/power/#production) lists every step.

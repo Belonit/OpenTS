@@ -832,8 +832,8 @@ int TechnoClass::Time_To_Build(void) const
 	*/
 	double power = House->Power_Fraction();
 	if (power > 1.0) power = 1.0;
-	if (power < 1.0 && power > 0.75) power = 0.75;
-	if (power < 0.5) power = 0.5;
+	if (power < 1.0 && power > Rule->BestLowPowerBuildRateCoefficient) power = Rule->BestLowPowerBuildRateCoefficient;
+	if (power < Rule->WorstLowPowerBuildRateCoefficient) power = Rule->WorstLowPowerBuildRateCoefficient;
 	power = std::max(power, Rule->MinLowPowerProductionSpeed);
 	val /= power;
 
