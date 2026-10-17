@@ -115,10 +115,9 @@ void CreditClass::Graphic_Logic(bool forced)
 		**	effect was requested.
 		*/
 		if (IsAudible) {
-			if (IsUp) {
-				Sound_Effect(VocType(Rule->CreditTicks[0]), .5);
-			} else  {
-				Sound_Effect(VocType(Rule->CreditTicks[1]), .5);
+			int tick = IsUp ? 0 : 1;
+			if (tick < Rule->CreditTicks.Count()) {
+				Sound_Effect(VocType(Rule->CreditTicks[tick]), .5);
 			}
 		}
 
