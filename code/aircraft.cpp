@@ -257,6 +257,7 @@ void AircraftClass::Init(void)
 		HeightAGL = Class->Flight_Level();
 		Ammo = Class->MaxAmmo;
 		Strength = Class->MaxStrength;
+		IsCloakable = Class->IsCloakable;
 	}
 
 	if (House != NULL) {

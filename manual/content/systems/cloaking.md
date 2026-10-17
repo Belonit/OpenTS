@@ -83,7 +83,7 @@ A fully visible vehicle, infantryman or aircraft tries to start a cloak on each 
   - it holds the `CLOAK` [veteran ability](/systems/veterancy/#abilities);
 - it is not in radio contact with a [`WeaponsFactory=yes`](/keys/weaponsfactory/) structure.
 
-An object is cloakable through its type's [`Cloakable=yes`](/keys/cloakable/), which an aircraft never receives, or through a cloak crate.
+An object is cloakable through its type's [`Cloakable=yes`](/keys/cloakable/) or through a cloak crate.
 
 The ability replaces the whole first group. An object that holds it tries to cloak while immobilized, while moving under `CloakStop=yes`, and without `Cloakable=yes`. The radio test has no such exemption, so a vehicle cannot hide until it has broken contact with the factory that built it.
 
