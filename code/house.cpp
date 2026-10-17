@@ -2225,7 +2225,7 @@ void HouseClass::Make_Ally(HouseClass * house)
 
 			if (Is_Human_Player() && Session.Type != GAME_NORMAL && !house->Class->IsMultiplayPassive) {
 				snprintf(buffer, sizeof(buffer), Fetch_String(TXT_HAS_ALLIED), Session.Shown_Name(this).c_str(), Session.Shown_Name(house).c_str());
-				Session.Messages.Add_Message(NULL, 0, buffer, Class->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), int(TICKS_PER_MINUTE * Rule->MessageDelay));
+				Session.Messages.Add_Message(NULL, 0, buffer, Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), int(TICKS_PER_MINUTE * Rule->MessageDelay));
 
 				if (Is_Player_Control()) {
 					Speak(VOX_ALLIANCE_FORMED);
