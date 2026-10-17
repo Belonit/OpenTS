@@ -2712,7 +2712,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 		if (object->TClass->IsTrain) {
 			return(ACTION_SELECT);
 		}
-		if (((UnitClass *)object)->House != House) {
+		if (!House->Is_Ally(object)) {
 			if (Scen->Special.IsHarvesterImmune && Rule->HarvesterUnit.Is_In_List(((UnitClass *)object)->Class)) {
 				return(ACTION_SELECT);
 			}

@@ -9,7 +9,7 @@ when_omitted:
 
 A `VehicleThief=yes` soldier can be ordered onto another house's vehicle, and it takes the vehicle when it reaches the vehicle's cell. [Stealing a vehicle](/systems/capture/#stealing-a-vehicle) covers the arrival and what changes hands.
 
-For a player-controlled soldier, the enter cursor appears over any vehicle that belongs to a different house, a landed aircraft included. The test compares houses, not alliances, so an allied player's vehicle qualifies too. The setting gives no enter cursor over these:
+For a player-controlled soldier, the enter cursor appears over any vehicle whose owner is not allied with the soldier's house, a landed aircraft included. The setting gives no enter cursor over these:
 
 - any vehicle, when the soldier's weapon heals;
 - a structure, including a deployed vehicle;
