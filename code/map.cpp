@@ -1063,7 +1063,7 @@ void MapClass::Sight_From(Coord const & xcoord, int sightrange, HouseClass * hou
 	**	Units that are off-map cannot sight.
 	*/
 	if (!In_Radar(cell)) return;
-	if (!sightrange) return;
+	if (sightrange <= 0) return;
 	sightrange = std::min(sightrange, 10);
 
 	/*
