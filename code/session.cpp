@@ -69,6 +69,7 @@
 #include "rules.h"
 #include "savestream.h"
 #include "scenario.h"
+#include "scheme.h"
 #include "spawner.h"
 #include "spawnhouse.h"
 #include "special.h"
@@ -1156,33 +1157,52 @@ void SessionClass::Trap_Object(void)
 }
 
 
-/// <summary>
-/// Converts a multiplayer color choice into a color scheme.
-/// This routine turns the color a player picked in the lobby into the scheme their units
-/// are actually drawn with. A choice that is not one of the multiplayer colors is passed
-/// back untouched.
-/// </summary>
-/// <param name="id">The multiplayer color the player has chosen.</param>
-/// <returns>Returns with the color scheme to draw that player with.</returns>
-int SessionClass::Color_Index_To_Scheme(int id)
-{
-	/*
-	 * The list holds each scheme twice, and the odd entry of each pair is the lighting-aware
-	 * one, so the index is doubled and stepped one past the plain copy.
-	 */
-	static char _table[] = {
-		(2 *  1) + 1,
-		(2 * 10) + 1,
-		(2 * 23) + 1,
-		(2 * 36) + 1,
-		(2 * 13) + 1,
-		(2 * 27) + 1,
-		(2 * 19) + 1,
-		(2 * 16) + 1,
-	};
+// The eight menu colors' positions in the rules' [Colors] list.
+static int const ColorChoiceEntries[MAX_MPLAYER_COLORS] = { 1, 10, 23, 36, 13, 27, 19, 16 };
 
-	if (id < sizeof(_table)) {
-		return(_table[id]);
+
+/// <summary>
+/// Returns the number of values a player color can take: the entries in the rules' [Colors]
+/// list for a game a launch file described, and the eight menu colors otherwise.
+/// </summary>
+int SessionClass::Color_Count(void) const
+{
+	if (Spawner_Is_Active()) {
+		return(ColorSchemes.Count() / 2);
+	}
+	return(MAX_MPLAYER_COLORS);
+}
+
+
+/// <summary>
+/// Returns the menu color choice as a player color of this game, for a player nobody
+/// chose a color for.
+/// </summary>
+/// <param name="choice">One of the eight menu colors, 0 through 7.</param>
+int SessionClass::Color_Choice(int choice) const
+{
+	if (Spawner_Is_Active()) {
+		return(ColorChoiceEntries[choice]);
+	}
+	return(choice);
+}
+
+
+/// <summary>
+/// Returns the color scheme a player color draws with. A launch file names a color by its
+/// position in the rules' [Colors] list. The menus number their eight colors 0 through 7, and
+/// any other value is returned unchanged.
+/// </summary>
+/// <param name="id">The player color.</param>
+int SessionClass::Color_Index_To_Scheme(int id) const
+{
+	// The rules build each [Colors] entry twice, and the second copy is the lighting-aware one.
+	if (Spawner_Is_Active()) {
+		return((2 * id) + 1);
+	}
+
+	if (id >= 0 && id < MAX_MPLAYER_COLORS) {
+		return((2 * ColorChoiceEntries[id]) + 1);
 	}
 	return(id);
 }

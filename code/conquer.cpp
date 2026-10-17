@@ -613,6 +613,7 @@ static NetGlobal::ValidationContext Global_Validation_Context(NodeNameType const
 		context.SenderIsMember = true;
 		context.SenderPlayerID = sender->Player.ID;
 		context.SenderPlayerColor = sender->Player.Color;
+		context.ColorCount = Session.Color_Count();
 	}
 	context.MasterPlayerID = Session.Master_Player_ID();
 	return(context);

@@ -814,6 +814,11 @@ void Test_Global_Packets(void)
 	bad_color.SenderPlayerColor = MAX_MPLAYER_COLORS;
 	Check_Global_Error(packet, packet_size, bad_color, NetGlobal::DecodeError::INVALID_COLOR,
 		"chat refuses an invalid canonical session color");
+	NetGlobal::ValidationContext launched_color = member;
+	launched_color.SenderPlayerColor = 36;
+	launched_color.ColorCount = 40;
+	Check_Global_Error(packet, packet_size, launched_color, NetGlobal::DecodeError::NONE,
+		"chat accepts any color the session can hold, such as a launch file's [Colors] position");
 
 	packet = Global_Packet(NET_PROGRESS_REPORT);
 	packet.Progress.Percent = -1;

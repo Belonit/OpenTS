@@ -542,7 +542,9 @@ class SessionClass
 		unsigned int Compute_Unique_ID(void);
 		void Update_Progress(int percent);
 		void Init_Fixed_Alliances(void);
-		int Color_Index_To_Scheme(int id);
+		int Color_Count(void) const;
+		int Color_Choice(int choice) const;
+		int Color_Index_To_Scheme(int id) const;
 		std::string Shown_Name(int house, char const * name) const;
 		std::string Shown_Name(HouseClass const * house) const;
 		std::string Shown_Seat_Name(NodeNameType const * node) const;

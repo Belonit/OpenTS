@@ -148,7 +148,7 @@ namespace NetGlobal
 				if (!Has_Terminator(packet.Message.Buf, sizeof(packet.Message.Buf))) {
 					return(DecodeError::UNTERMINATED_MESSAGE);
 				}
-				if (context.SenderPlayerColor < 0 || context.SenderPlayerColor >= MAX_MPLAYER_COLORS) {
+				if (context.SenderPlayerColor < 0 || context.SenderPlayerColor >= context.ColorCount) {
 					return(DecodeError::INVALID_COLOR);
 				}
 				break;

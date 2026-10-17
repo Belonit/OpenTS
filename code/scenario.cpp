@@ -2368,10 +2368,8 @@ void Assign_Houses(void)
 	//------------------------------------------------------------------------
 	// Initialize
 	//------------------------------------------------------------------------
-	bool color_used[64];
-	for (i = 0; i < ARRAY_SIZE(color_used); i++) {
-		color_used[i] = false;
-	}
+	// The menu colors reach position 36 of the rules' [Colors] list however short it is.
+	std::vector<bool> color_used(std::max(Session.Color_Count(), 64), false);
 
 	bool assigned[MAX_PLAYERS];
 	for (i = 0; i < MAX_PLAYERS; i++) {
@@ -2486,7 +2484,7 @@ void Assign_Houses(void)
 		// Pick a color for this house; keep looping until we find one.
 		int color = -1;
 		for (;;) {
-			color = Random_Pick(0, 7);
+			color = Session.Color_Choice(Random_Pick(0, MAX_MPLAYER_COLORS - 1));
 			if (color_used[color] == false) {
 				break;
 			}

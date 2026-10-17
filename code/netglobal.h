@@ -68,6 +68,7 @@ namespace NetGlobal
 		bool SenderIsMember = false;
 		int SenderPlayerID = -1;
 		int SenderPlayerColor = -1;
+		int ColorCount = MAX_MPLAYER_COLORS;
 		int MasterPlayerID = -1;
 		std::array<bool, MAX_PLAYERS> ActivePlayers = {};
 	};

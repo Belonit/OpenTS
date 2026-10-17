@@ -500,7 +500,7 @@ test('A resume is judged before it is loaded, and the save answers for the rest'
 		'Get_Savefile_Info(SpawnConfig.SaveGameName.c_str(), &info)',
 		'info.Get_Internal_Version() != ExpectedGameVersion',
 		'type == GAME_IPX',
-		'SpawnConfig.Is_Playable(HouseTypes.Count(), MAX_MPLAYER_COLORS, fault)',
+		'SpawnConfig.Is_Playable(HouseTypes.Count(), Session.Color_Count(), fault)',
 		'Spawner_Seat_Humans();',
 		'Spawner_Wire_Network()',
 		'Session.LoadGame = true;',
@@ -656,7 +656,7 @@ test('A match against other machines is assembled whole and wired to its network
 	const spawner = source('code/spawner.cpp');
 
 	assertOrdered(functionBody(spawner, 'bool Spawner_Prepare(bool & gameloaded)'), [
-		'SpawnConfig.Is_Playable(HouseTypes.Count(), MAX_MPLAYER_COLORS, fault)',
+		'SpawnConfig.Is_Playable(HouseTypes.Count(), Session.Color_Count(), fault)',
 		'Spawner_Setup_Session();',
 		'SpawnConfig.Session_Identity_CRC()',
 		'Session.Type == GAME_INTERNET && !Spawner_Wire_Network()',

@@ -150,7 +150,7 @@ Each person has a section: `[Settings]` for the player at this machine, and `[Ot
 
 - `Name` is UTF-8 text. A name longer than 63 bytes is shortened.
 - `Side` is the person's country, numbered from `0` in the order of the rules' `[Houses]` list.
-- `Color` is one of the eight player colors, `0` to `7`. In a game against other machines, no two people may share a color.
+- `Color` is the person's color, numbered from `0` in the order of the rules' `[Colors]` list. An entry that repeats an earlier name is skipped and takes no number. In a game against other machines, no two people may share a color.
 
 A person's section must give a valid `Side` and `Color`; it cannot leave them to the game.
 
@@ -165,13 +165,13 @@ The file positions that no person's section claims are for computer players. The
 
 | Section | Entry | Meaning |
 | --- | --- | --- |
-| `[HouseColors]` | `Multi1`–`Multi8` | The color that seat plays, `0` to `7`, or `-1` for the game's choice. |
+| `[HouseColors]` | `Multi1`–`Multi8` | The color that seat plays, numbered as a person's `Color`, or `-1` for the game's choice. |
 | `[HouseCountries]` | `Multi1`–`Multi8` | The country that seat plays, or `-1` for the game's choice. |
 | `[HouseHandicaps]` | `Multi1`–`Multi8` | The difficulty slot that seat plays at, or `-1` to follow `AIDifficulty`. |
 
 An entry omitted from these three sections means `-1`, and an entry at a person's file position is ignored.
 
-An entry of `-1` leaves the choice to the game, as in a game set up from the menu. The game picks a country the rules offer in multiplayer, and a color not already taken by a person or by an earlier computer player. A color the file writes is used as given, so a computer player can share a color with a person or with another computer player.
+An entry of `-1` leaves the choice to the game, as in a game set up from the menu. The game picks a country the rules offer in multiplayer, and one of the eight colors the menu offers that no person or earlier computer player has taken. A color the file writes is used as given, so a computer player can share a color with a person or with another computer player.
 
 A handicap sets the seat's [difficulty slot](/systems/difficulty/#from-the-setting-to-a-slot) directly: `0` is the hardest opponent and `2` the easiest, and `3` to `6` play as `2`. This runs opposite to `AIDifficulty`: a handicap of `0` and `AIDifficulty=2` both make a hard opponent. A computer player at slot `0` reads the rules' `[Easy]` section and is the opponent a player meets on Hard.
 
@@ -285,7 +285,7 @@ A new skirmish, and any game against other machines, new or resumed, is also ref
 - the file has no `[Settings]` or `[OtherN]` section, so it seats no person;
 - `AIDifficulty` is outside `0` to `2`;
 - `AIPlayers` is negative or more than the seats no person holds;
-- a person's `Side` is not a country the rules have, or their `Color` is outside `0` to `7`; a computer seat's country and color are checked the same way unless they are `-1`;
+- a person's `Side` is not a country the rules have, or their `Color` is not an entry in the rules' `[Colors]` list; a computer seat's country and color are checked the same way unless they are `-1`;
 - a `[HouseHandicaps]` entry is outside `-1` to `6`;
 - an occupied seat's alliance entry is outside `-1` to `7`, or names a seat that is empty;
 - every person watches and no computer plays; this check does not apply to a resumed game.
