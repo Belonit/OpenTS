@@ -153,7 +153,7 @@ Every candidate receives the same raw figure and then reduces it separately, so 
 5. **Minimum of one.** If steps 3 and 4 left less than one point, the figure becomes one point. Armor multipliers cannot reduce a hit to nothing.
 6. **Type immunity.** An object whose type is [`TypeImmune=yes`](/keys/typeimmune/) takes no damage from a credited attacker of the same type owned by the same house.
 7. **Object immunity.** An object whose type is [`Immune=yes`](/keys/immune/#scope-aircrafttype) takes no damage. Neither does an object already at zero strength.
-8. **Armor table.** The figure is multiplied by the warhead's [`Verses`](/keys/verses/) entry for the target's [`Armor=`](/keys/armor/#scope-aircrafttype) class and rounded down. A result of zero becomes one point.
+8. **Armor table.** The figure is multiplied by the warhead's [`Verses`](/keys/verses/) entry for the target's [`Armor=`](/keys/armor/#scope-aircrafttype) class and rounded down. A result of zero becomes one point, unless [`MinDamage`](/keys/mindamage/) is `0` or less, when it stays zero.
 9. **Distance.** The result is divided by the number of distance steps between the blast and the target, as [the next section](#how-distance-thins-the-damage) explains.
 10. **`MinDamage` floor.** When the target is fewer than four distance steps away, the result is raised to at least [`MinDamage`](/keys/mindamage/).
 11. **`MaxDamage` ceiling.** The result is capped at [`MaxDamage`](/keys/maxdamage/). The cap applies to each object separately, not to the blast as a whole.
@@ -168,7 +168,7 @@ A blast never deals forced damage. The engine deals forced damage directly, for 
 Unforced damage with no warhead, or any unforced damage in a scenario with [`Inert=yes`](/keys/inert/), does nothing, because step 8 gives zero. An ordinary blast in either case damages nothing and has none of the ground effects below. A [wide-area blast](#the-wide-area-blast) in an `Inert=yes` scenario can still crater the ground at its center.
 
 :::caution[`Verses=0%` is not immunity]
-At step 8, a result that rounds down to zero becomes one point, so no `Verses` percentage can take a positive figure below one point. A warhead with `0%` against an armor class still deals `MinDamage` to targets of that class near the blast. It stops harming them only from the fourth distance step outward, where the single point divided by the step count rounds down to zero. Small raw figures are barely changed by the table for the same reason: at a raw figure of `1`, every percentage below `200%` gives one point. To make an object type take no damage, set `Immune=yes` on it.
+While `MinDamage` is above zero, a result that rounds down to zero at step 8 becomes one point, so no `Verses` percentage can take a positive figure below one point. A warhead with `0%` against an armor class still deals `MinDamage` to targets of that class near the blast. It stops harming them only from the fourth distance step outward, where the single point divided by the step count rounds down to zero. Small raw figures are barely changed by the table for the same reason: at a raw figure of `1`, every percentage below `200%` gives one point. To make an object type take no damage, set `Immune=yes` on it. With `MinDamage=0`, a `0%` entry does protect its armor class, and small raw figures round down to zero.
 :::
 
 ### How distance thins the damage

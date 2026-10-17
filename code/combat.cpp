@@ -123,7 +123,7 @@ int Modify_Damage(int damage, WarheadTypeClass const * warhead, ArmorType armor,
 	}
 
 	int modified = damage * warhead->Modifier[armor];
-	damage = 1;
+	damage = (Rule->MinDamage > 0) ? 1 : 0;
 	if (modified) {
 		damage = modified;
 	}

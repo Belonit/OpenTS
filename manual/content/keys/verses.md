@@ -17,7 +17,7 @@ A list of one to four entries sets only the classes it reaches. Each class after
 Verses=100%,80%,60%,40%,20% ; none, wood, light, heavy, concrete
 ```
 
-A `0%` entry does not make a class immune. This table never reduces a hit below one point, and targets near a blast still take [`MinDamage`](/keys/mindamage/). [What the target loses](/systems/warheads/#what-the-target-loses) gives the full order.
+A `0%` entry does not make a class immune while [`MinDamage`](/keys/mindamage/) is above zero. This table then never reduces a hit below one point, and targets near a blast still take `MinDamage`. With `MinDamage=0`, a hit this table reduces to zero stays at zero. [What the target loses](/systems/warheads/#what-the-target-loses) gives the full order.
 
 An empty `Verses=` counts as leaving the key out.
 

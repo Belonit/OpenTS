@@ -8,7 +8,7 @@ when_omitted:
 
 A target close to the blast loses at least this much strength from an ordinary hit. "Close" means fewer than four distance steps from the impact, where the warhead's [`Spread`](/keys/spread/#scope-warheadtype) sets the size of a step. Beyond that the damage can fall to zero. [How distance thins the damage](/systems/warheads/#how-distance-thins-the-damage) gives the distances.
 
-The floor applies after the warhead's [`Verses`](/keys/verses/) entry, so even a `Verses` of `0%` deals this much to a close target. [`MaxDamage`](/keys/maxdamage/) caps the result afterward. [What the target loses](/systems/warheads/#what-the-target-loses) lists the full order of steps.
+The floor applies after the warhead's [`Verses`](/keys/verses/) entry, so even a `Verses` of `0%` deals this much to a close target. At `MinDamage=0` or below, a hit that the `Verses` entry reduces to zero stays at zero. [`MaxDamage`](/keys/maxdamage/) caps the result afterward. [What the target loses](/systems/warheads/#what-the-target-loses) lists the full order of steps.
 
 ```ini title="rules.ini"
 [CombatDamage]
