@@ -1405,6 +1405,7 @@ int FootClass::Do_MISSION_GUARD_AREA(void)
 			}
 			Random_Animate();
 		} else {
+			Assign_Destination(NULL);
 			Approach_Target();
 		}
 	}
