@@ -826,8 +826,12 @@ ThemeType ThemeClass::From_Name(char const * name) const
 		**	yield a match, but is not guaranteed to be unique.
 		*/
 		for (theme = THEME_FIRST; theme < Themes.Count(); theme = ThemeType(theme + 1)) {
-			if (strstr(Themes[theme]->Fullname, name) != NULL) {
-				return(theme);
+			char const * fullname = Themes[theme]->Fullname;
+			size_t const length = strlen(name);
+			for (; *fullname != '\0'; fullname++) {
+				if (strnicmp(fullname, name, length) == 0) {
+					return(theme);
+				}
 			}
 		}
 	}

@@ -23,5 +23,5 @@ When the track starts, and whether it plays, depends on how the mission begins:
 - **Without an action movie.** The track is queued as the mission begins, on a restart too, and starts once the mission is under way. A track that started on the briefing page keeps playing only if it repeats, through its [`Repeat`](/keys/repeat/) setting or the repeat option on the sound options screen. Otherwise it fades out as the mission begins and the next track in rotation follows.
 
 :::caution[A partial title can select a different track]
-The name is matched against each track's identifier first, ignoring case. If that fails, it is matched as text within each track's displayed title, with case respected, and the first track whose title contains it wins. A name that matches neither selects no track, which is the same as leaving the key out.
+The name is matched against each track's identifier first, ignoring case. If that fails, it is matched as text within each track's displayed title, also ignoring case, and the first track whose title contains it wins. A name that matches neither selects no track, which is the same as leaving the key out.
 :::
