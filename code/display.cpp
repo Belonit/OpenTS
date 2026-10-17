@@ -1249,6 +1249,7 @@ ObjectClass * DisplayClass::Next_Object(ObjectClass * object) const
 	}
 
 	static LayerType _layers[] = {
+		LAYER_UNDERGROUND,
 		LAYER_GROUND,
 		LAYER_AIR,
 		LAYER_TOP
@@ -1300,7 +1301,8 @@ ObjectClass * DisplayClass::Prev_Object(ObjectClass * object)  const
 	static LayerType _layers[] = {
 		LAYER_TOP,
 		LAYER_AIR,
-		LAYER_GROUND
+		LAYER_GROUND,
+		LAYER_UNDERGROUND
 	};
 
 	for (int lindex = 0; lindex < ARRAY_SIZE(_layers); lindex++) {
