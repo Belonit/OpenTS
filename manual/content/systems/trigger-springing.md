@@ -140,7 +140,7 @@ Without marking, every event must be satisfied during a single offer. Two tempor
 A mark is never cleared. Elapsed time and random delay are standing events and are never marked. Their countdown restarts:
 
 - when the trigger is created;
-- whenever Enable Trigger names it, even if it is already enabled;
+- whenever Enable Trigger names it while it is disabled;
 - when a global or local variable that one of its events names changes value;
 - on every remembering offer that satisfies all of its events.
 

@@ -2187,7 +2187,7 @@ bool TActionClass::TAction_ENABLE_TRIGGER(HouseClass * , ObjectClass * , Trigger
 {
 	if (Trigger != NULL && Trigger->Is_Enabled_At(Scen->Difficulty)) {
 		for (int index = 0; index < Triggers.Count(); index++) {
-			if (Triggers[index]->Class == Trigger) {
+			if (Triggers[index]->Class == Trigger && !Triggers[index]->Is_Enabled()) {
 				Triggers[index]->Enable();
 			}
 		}
