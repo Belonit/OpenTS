@@ -2214,7 +2214,7 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 			**	If an action was detected as possible, then pass this action event
 			**	to all selected objects.
 			*/
-			if (action != ACTION_NONE && action != ACTION_SELECT) {
+			if (action != ACTION_NONE && action != ACTION_SELECT && action != ACTION_TOGGLE_SELECT) {
 
 				/*
 				**	Pass the action to all the selected objects. But first, redetermine
