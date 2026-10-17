@@ -10,6 +10,8 @@ when_omitted:
 
 `Verses` lists five percentages, one for each [armor class](/reference/enums/armor/) in the order `none`, `wood`, `light`, `heavy`, `concrete`. Damage from this warhead is multiplied by the entry for the target type's [`Armor`](/keys/armor/#scope-aircrafttype) class. A plain fraction such as `0.5` is accepted in place of `50%`, and entries after the fifth are ignored.
 
+A list of one to four entries sets only the classes it reaches. Each class after the list keeps the value it had before: `100%`, or the entry an earlier file gave this warhead.
+
 ```ini title="rules.ini"
 [MyShellWH] ; example WarheadType
 Verses=100%,80%,60%,40%,20% ; none, wood, light, heavy, concrete
@@ -27,7 +29,3 @@ The same table also decides how objects armed with this warhead choose and answe
 - When the computer's base is attacked, it does not [call up](/systems/base-attacked/#which-objects-qualify) an object whose primary weapon has `0%` against the attacker's class.
 - A `heavy` entry of exactly `0%` confines infantry whose primary weapon uses this warhead to [infantry targets](/systems/target-selection/#what-each-kind-of-object-considers).
 - A base defense armed with this warhead takes its anti-air and anti-armor [defense values](/systems/ai-base-building/#defense-values) from the `heavy` entry, and its anti-infantry value from the `none` entry.
-
-:::danger[Give `Verses` all five entries]
-A list of one to four entries crashes the game while it reads the rules, before a match begins. Leaving the key out is safe, because the default list is used in its place.
-:::

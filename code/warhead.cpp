@@ -191,7 +191,7 @@ bool WarheadTypeClass::Read_INI(CCINIClass const & ini)
 		char buffer[128];
 		if (ini.Get_String(Name(), "Verses", "100%%,100%%,100%%,100%%,100%%", buffer, sizeof(buffer))) {
 			char * aval = strtok(buffer, ",");
-			for (int armor = ARMOR_FIRST; armor < ARMOR_COUNT; armor++) {
+			for (int armor = ARMOR_FIRST; armor < ARMOR_COUNT && aval != NULL; armor++) {
 				double percent = _Parse_Percentage(aval);
 				Modifier[armor] = percent;
 				aval = strtok(NULL, ",");
