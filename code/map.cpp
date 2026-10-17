@@ -479,13 +479,13 @@ CellClass & MapClass::operator[](Cell const & cell) const
 /// before treating a cell reference as anything more than scratch space, since the
 /// subscript operator will hand out the throwaway cell rather than fail.
 /// </summary>
-/// <returns>bool; Is there a genuine cell at that location?</returns>
-/// <remarks>The location is not range checked. It must lie within the cell array.</remarks>
+/// <returns>bool; Is there a genuine cell at that location? A location outside the cell
+/// array returns false.</returns>
 bool MapClass::Is_Valid(Cell const & cell)
 {
-	int cellnum = cell.X + cell.Y * MAP_CELL_H;
+	int cellnum = Cell_Slot(cell);
 
-	if (Array[cellnum] != NULL) {
+	if (cellnum >= 0 && Array[cellnum] != NULL) {
 		return(true);
 	}
 	return(false);
