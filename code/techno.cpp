@@ -8047,7 +8047,9 @@ int TechnoClass::Anti_Infantry(void) const
  *=============================================================================================*/
 void TechnoClass::Look(bool incremental, bool dontmap)
 {
-	assert(!IsInLimbo);
+	if (IsInLimbo) {
+		return;
+	}
 
 	if (IsLocked && (!House->Class->IsMultiplayPassive || Session.Type == GAME_NORMAL)) {
 		int sight_increase = 10 * (Get_Coord().Z / Rule->LeptonsPerSightIncrease);
