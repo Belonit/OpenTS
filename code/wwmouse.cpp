@@ -170,7 +170,7 @@ static SDL_Cursor * Build_Cursor(ShapeSet const * shape, int frame, int hotx, in
 /// The mouse begins in a non-captured state.
 /// </summary>
 WWMouseClass::WWMouseClass(void) :
-	MouseState(-1),
+	MouseState(0),
 	IsCaptured(false),
 	ReleasedState(0),
 	CursorShape(NULL),
@@ -267,13 +267,13 @@ void WWMouseClass::Set_Cursor(Point2D const & hotspot, ShapeSet const * cursor, 
  *=============================================================================================*/
 void WWMouseClass::Show_Mouse(void)
 {
+	MouseState++;
+	if (MouseState > 0) MouseState = 0;
+	Set_Cursor_Visible(!Is_Hidden());
+
 	if (!Is_Captured()) {
 		ReleasedState++;
 		Show_Released_Pointer();
-	} else {
-		MouseState++;
-		if (MouseState > 0) MouseState = 0;
-		Set_Cursor_Visible(!Is_Hidden());
 	}
 }
 
@@ -295,12 +295,12 @@ void WWMouseClass::Show_Mouse(void)
  *=============================================================================================*/
 void WWMouseClass::Hide_Mouse(void)
 {
+	MouseState--;
+	Set_Cursor_Visible(!Is_Hidden());
+
 	if (!Is_Captured()) {
 		ReleasedState--;
 		Show_Released_Pointer();
-	} else {
-		MouseState--;
-		Set_Cursor_Visible(!Is_Hidden());
 	}
 }
 
@@ -325,14 +325,7 @@ void WWMouseClass::Capture_Mouse(void)
 {
 	if (this != NULL && !Is_Captured()) {
 		DebugString("Capture_Mouse()\n");
-		Hide_Mouse();
 		IsCaptured = true;
-
-		// Hide_Mouse above counted against the released pointer, which starts over for the
-		// next release.
-		if (ReleasedState < 0) {
-			ReleasedState = 0;
-		}
 
 		/*
 		 * There is no exclusive display mode any more, so the pointer is kept inside
@@ -342,7 +335,7 @@ void WWMouseClass::Capture_Mouse(void)
 			Main_Window_Confine_Cursor(true);
 		}
 
-		Show_Mouse();
+		Set_Cursor_Visible(!Is_Hidden());
 	}
 }
 
@@ -372,14 +365,13 @@ void WWMouseClass::Release_Mouse(void)
 {
 	if (this != NULL && Is_Captured()) {
 		DebugString("Release_Mouse()\n");
-		Hide_Mouse();
 		IsCaptured = false;
 		Main_Window_Confine_Cursor(false);
 		Main_Window_Capture_Mouse(false);
-		if (ReleasedState < 0) {
-			ReleasedState = 0;
-		}
-		Show_Mouse();
+
+		// The arrow starts visible on each release, whatever the game has hidden.
+		ReleasedState = 0;
+		Show_Released_Pointer();
 	}
 }
 

@@ -201,6 +201,7 @@ bool Test_Display_Mode_Dialog(int width, int height)
 	Update_Visible_Surface();
 
 	if (!Change_Display_Mode(width, height)) {
+		Show_Mouse();
 		return(false);
 	}
 
