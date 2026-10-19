@@ -108,6 +108,16 @@ InfantryTypeClass::InfantryTypeClass(char const * ininame) :
 	InfantryTypes.Add(this);
 	HeapID = (InfantryType)InfantryTypes.ID(this);
 
+	// A type whose art names no sequence still draws, saves and checksums these blank controls.
+	DoInfoStruct * control = new DoInfoStruct[DO_COUNT];
+	for (int i = 0; i < DO_COUNT; i++) {
+		control[i].Frame = 0;
+		control[i].Count = 0;
+		control[i].Jump = 0;
+		control[i].Facing = FACING_NONE;
+	}
+	DoControls = control;
+
 	/*
 	**	Forced infantry overrides from the default.
 	*/
@@ -129,7 +139,7 @@ InfantryTypeClass::~InfantryTypeClass(void)
 {
 	Detach_This_From_All(this);
 	InfantryTypes.Delete(this);
-	delete (DoInfoStruct *)DoControls;
+	delete [] (DoInfoStruct *)DoControls;
 	DoControls = NULL;
 }
 
@@ -287,16 +297,6 @@ void InfantryTypeClass::Read_Sequence_INI(void)
 
 		DoInfoStruct * control = (DoInfoStruct *)DoControls;
 
-		if (control == NULL) {
-			control = new DoInfoStruct[DO_COUNT];
-			for (int i = 0; i < DO_COUNT; i++) {
-				control[i].Frame = 0;
-				control[i].Count = 0;
-				control[i].Jump = 0;
-				control[i].Facing = FACING_NONE;
-			}
-		}
-
 		for (int i = 0; i < DO_COUNT; i++) {
 			char dostring[32];
 			char facing[10] = {""};
@@ -324,7 +324,6 @@ void InfantryTypeClass::Read_Sequence_INI(void)
 				}
 			}
 		}
-		DoControls = (DoInfoStruct const *)control;
 	}
 }
 
@@ -485,9 +484,6 @@ void InfantryTypeClass::Serialize(SaveStreamClass & stream)
 	 * The animation sequence data hangs off the type rather than living inside it, so the
 	 * pointer means nothing to a save game and the block it names travels instead.
 	 */
-	if (stream.Is_Loading()) {
-		DoControls = new DoInfoStruct[DO_COUNT];
-	}
 	stream.Serialize_Bytes((void *)DoControls, sizeof(*DoControls) * DO_COUNT);
 
 	stream.Serialize(FireLaunch);
