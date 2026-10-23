@@ -745,6 +745,11 @@ class TechnoTypeClass : public ObjectTypeClass
 		int ZFudgeTunnel;
 		int ZFudgeBridge;
 
+		/*
+		 * Optional description for the sidebar tooltip.
+		 */
+		std::string Description;
+
 		//--------------------------------------------------------------------
 		TechnoTypeClass(char const * ininame, SpeedType speed);
 		virtual ~TechnoTypeClass() override;

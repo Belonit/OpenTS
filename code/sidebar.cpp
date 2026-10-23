@@ -126,6 +126,7 @@
 
 #include <algorithm>
 #include <compare>
+#include <format>
 
 ShapeSet const * SidebarClass::SidebarShape = NULL;
 ShapeSet const * SidebarClass::SidebarMiddleShape = NULL;
@@ -1821,14 +1822,22 @@ bool SidebarClass::StripClass::AI(KeyNumType & input, Point2D const & xy)
 /// <returns>Returns with a pointer to the help text, or NULL if that slot is empty.</returns>
 char const * SidebarClass::StripClass::Help_Text(int id)
 {
-	static char _buffer[84];
+	static std::string text = "";
 
 	int i = id + TopIndex;
 
 	if (GameActive) {
 		if (i < BuildableCount) {
 			if (Buildables[i].BuildableType == RTTI_SPECIAL) {
-				return(SuperWeaponTypes[Buildables[i].BuildableID]->Full_Name());
+				auto superweapon = SuperWeaponTypes[Buildables[i].BuildableID];
+
+				if (superweapon->Description.empty()) {
+					return(superweapon->Full_Name());
+				}
+
+				std::string_view fullName = superweapon->Full_Name();
+				text = std::vformat(Fetch_String(TXT_SUPERWEAPON_TOOLTIP), std::make_format_args(fullName, superweapon->Description));
+				return(text.c_str());
 			}
 
 			TechnoTypeClass const * choice = Fetch_Techno_Type(Buildables[i].BuildableType, Buildables[i].BuildableID);
@@ -1836,13 +1845,16 @@ char const * SidebarClass::StripClass::Help_Text(int id)
 				return(NULL);
 			}
 
-			if (Map.IsCameoText) {
-				sprintf(_buffer, Fetch_String(TXT_MONEY_FORMAT_1), choice->Cost_Of(PlayerPtr));
+			std::string_view fullName = choice->Full_Name();
+			int cost = choice->Cost_Of(PlayerPtr);
+
+			if (choice->Description.empty()) {
+				text = std::vformat(Fetch_String(TXT_MONEY_FORMAT_1), std::make_format_args(fullName, cost));
 			} else {
-				sprintf(_buffer, Fetch_String(TXT_MONEY_FORMAT_2), choice->Full_Name(), choice->Cost_Of(PlayerPtr));
+				text = std::vformat(Fetch_String(TXT_MONEY_FORMAT_2), std::make_format_args(fullName, cost, choice->Description));
 			}
 
-			return(_buffer);
+			return(text.c_str());
 		}
 	}
 

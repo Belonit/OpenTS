@@ -131,8 +131,8 @@ BEGIN
     TXT_COPYRIGHT           "© 2000 Electronic Arts, All Rights Reserved"
     TXT_TIME_FORMAT_HOURS   "Time:%02d:%02d:%02d"
     TXT_TIME_FORMAT_NO_HOURS "Time:%02d:%02d"
-    TXT_MONEY_FORMAT_1      "$%d"
-    TXT_MONEY_FORMAT_2      "%s ($%d)"
+    TXT_MONEY_FORMAT_1      "{}\r${}"
+    TXT_MONEY_FORMAT_2      "{}\r${}\r\r{}"
     TXT_READY               "Ready"
     TXT_HOLD                "On Hold"
     TXT_PRIMARY             "Primary"
@@ -1084,6 +1084,7 @@ BEGIN
     TXT_CONNECTION_QUALITY_STATUS "Connection quality target: %s."
     TXT_CONNECTION_QUALITY_RUNG "%s (rung %u)"
     TXT_PLAYER_NUMBER       "Player %d"
+    TXT_SUPERWEAPON_TOOLTIP "{}\r\r{}"
 END
 
 #endif    // English (U.S.) resources

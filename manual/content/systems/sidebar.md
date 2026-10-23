@@ -6,6 +6,7 @@ keys:
   - Cameo
   - CameoSortOrder
   - CreditTicks
+  - Description
   - MaximumQueuedObjects
   - RecheckPrerequisites
   - ScoldSound
@@ -120,7 +121,7 @@ The top-right corner of a cameo shows how many of that type are outstanding: the
 
 With [`SidebarCameoText=yes`](/keys/sidebarcameotext/), each cameo is captioned with its name. A name wider than the cameo is wrapped at spaces and hyphens, with earlier lines stacked above later ones. The caption never shows the price.
 
-The tooltip carries the price. It shows the price alone while captions are on, and the name and price while they are off. A superweapon's tooltip shows only its name.
+The tooltip always shows a buildable type's name and price, whether captions are on or off. [`Description=`](/keys/description/#scope-unittype) adds its text below them for any `TechnoTypeClass` type. A superweapon's tooltip shows its name, and [`Description=`](/keys/description/#scope-superweapontype) adds its text below it.
 
 ## Clicking a build cameo
 

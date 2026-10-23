@@ -76,7 +76,8 @@ SuperWeaponTypeClass::SuperWeaponTypeClass(char const * ininame) :
 	SidebarImage(),
 	UseChargeDrain(false),
 	IsPowered(true),
-	IsManualControl(false)
+	IsManualControl(false),
+	Description("")
 {
 	Create_ID();
 	HeapID = (SuperWeaponType)SuperWeaponTypes.Count();
@@ -144,6 +145,7 @@ void SuperWeaponTypeClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(UseChargeDrain);
 	stream.Serialize(IsPowered);
 	stream.Serialize(IsManualControl);
+	stream.Serialize(Description);
 }
 
 
@@ -176,6 +178,7 @@ void SuperWeaponTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(Type);
 	crc(UseChargeDrain);
 	crc(IsManualControl);
+	crc(Description.c_str());
 }
 
 
@@ -220,6 +223,8 @@ bool SuperWeaponTypeClass::Read_INI(CCINIClass const & ini)
 		AuxBuilding = TGet_Class(ini, IniName, "AuxBuilding", AuxBuilding);
 		UseChargeDrain = ini.Get_Bool(IniName, "UseChargeDrain", UseChargeDrain);
 		IsManualControl = ini.Get_Bool(IniName, "ManualControl", IsManualControl);
+		Description = ini.Get_String(Name(), "Description", Description.c_str());
+
 		CameoSortOrder = ini.Get_Int(IniName, "CameoSortOrder", CameoSortOrder);
 
 		float recharge = ini.Get_Float(IniName, "RechargeTime");

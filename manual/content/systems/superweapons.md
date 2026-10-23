@@ -20,6 +20,7 @@ keys:
   - ChargeToDrainRatio
   - ChargingVoice
   - DamageToFirestormDamageCoefficient
+  - Description
   - FirestormWall
   - FirestormWarhead
   - GDIFirestormGenerator
@@ -205,6 +206,8 @@ Two events outside the cycle also change the wall. Damage aimed at a raised sect
 ### The sidebar cameo
 
 A superweapon's cameo is the shape file named by [`SidebarImage=`](/keys/sidebarimage/), or `XXICON.SHP` when that file cannot be found. The cameo shows no numeric countdown. Its charge appears as a clock and a short caption. [The sidebar](/systems/sidebar/) covers where the cameo sits, how it is announced, how it is captioned, and when it leaves.
+
+The tooltip shows the superweapon's name. [`Description=`](/keys/description/#scope-superweapontype) adds its text below the name.
 
 The caption depends on the weapon's state. A charge-draining weapon has a caption while it charges and a fourth state that ordinary weapons lack.
 

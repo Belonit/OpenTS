@@ -136,6 +136,11 @@ class SuperWeaponTypeClass : public AbstractTypeClass
 		 * after every firing, so something else must decide when it becomes ready.
 		 */
 		bool IsManualControl;
+
+		/*
+		 * Optional description for the sidebar tooltip.
+		 */
+		std::string Description;
 };
 
 SuperWeaponType Special_From_Name(char const * name);

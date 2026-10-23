@@ -6983,6 +6983,34 @@ DeploysInto:
 Description:
   key: Description
   scopes:
+  - applies_to: *id003
+    file: rules.ini
+    section:
+      kind: identifier
+      source: object-type
+    value_type: string
+    status: needs_review
+    _provenance:
+      default_candidate: ''
+      declared_in: TechnoTypeClass
+      member: Description
+      source: code/techtype.cpp
+      guard: null
+    level: TechnoTypeClass
+  - applies_to: *id011
+    file: rules.ini
+    section:
+      kind: identifier
+      source: object-type
+    value_type: string
+    status: needs_review
+    _provenance:
+      default_candidate: ''
+      declared_in: SuperWeaponTypeClass
+      member: Description
+      source: code/suprtype.cpp
+      guard: null
+    level: SuperWeaponTypeClass
   - applies_to: *id021
     file: battle.ini
     section:

@@ -200,7 +200,8 @@ TechnoTypeClass::TechnoTypeClass(char const * ininame, SpeedType speed) :
 	ZFudgeCliff(10),
 	ZFudgeColumn(5),
 	ZFudgeTunnel(10),
-	ZFudgeBridge(0)
+	ZFudgeBridge(0),
+	Description("")
 {
 	IsSentient = true;
 
@@ -674,6 +675,7 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 		TargetStrengthCoefficient = ini.Get_Float(Name(), "TargetStrengthCoefficient", TargetStrengthCoefficient == 0 ? Rule->TargetStrengthCoefficientDefault : TargetStrengthCoefficient);
 		TargetDistanceCoefficient = ini.Get_Float(Name(), "TargetDistanceCoefficient", TargetDistanceCoefficient == 0 ? Rule->TargetDistanceCoefficientDefault : TargetDistanceCoefficient);
 		SpecialThreatValue = ini.Get_Float(Name(), "SpecialThreatValue", SpecialThreatValue);
+		Description = ini.Get_String(Name(), "Description", Description.c_str());
 
 		IsLeader = false;
 		if (Weapons[0].Weapon != NULL && Weapons[0].Weapon->Attack > 0) {
@@ -1081,6 +1083,7 @@ void TechnoTypeClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(ZFudgeColumn);
 	stream.Serialize(ZFudgeTunnel);
 	stream.Serialize(ZFudgeBridge);
+	stream.Serialize(Description);
 }
 
 
@@ -1182,6 +1185,7 @@ void TechnoTypeClass::Compute_CRC(class CRCEngine & crc) const
 	crc(IsManualReload);
 	crc(IsVisibleLoad);
 	crc(IsLightningRod);
+	crc(Description.c_str());
 }
 
 

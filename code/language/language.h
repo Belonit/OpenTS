@@ -1165,6 +1165,7 @@
 #define IDC_DESYNC_CONTINUE             1712
 #define IDC_DESYNC_QUIT                 1713
 #define IDC_EDGE_SCROLL                 1714
+#define TXT_SUPERWEAPON_TOOLTIP			1715
 
 // Next default values for new objects
 //
