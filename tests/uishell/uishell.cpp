@@ -4638,6 +4638,67 @@ void Test_Missing_UI_Files(ShellFixtureType & fixture, MissingFileInterfaceClass
 }
 
 
+void Test_Button_Clicks(UIShellClass & shell, TestHostClass & host)
+{
+	for (float ratio : { 1.0f, 2.0f }) {
+		for (char const * kind : { "", "wide", "tall" }) {
+			for (int point = 0; point < 4; point++) {
+				std::printf("  button clicks: ratio %.0f, kind %s, point %d\n", ratio, *kind != '\0' ? kind : "standard", point);
+				UIVersionPresenterClass presenter({ "button clicks" });
+				std::unique_ptr<UIViewClass> view = UI_Version_View(presenter);
+				int passes = 0;
+				int clicks = host.Clicks;
+				PointType at {};
+				bool stable = false;
+				bool queued = false;
+				bool pressed = false;
+				UIResult result = shell.Run_Modal(*view, [&](void) {
+					passes++;
+					Rml::Element * button = Rml(*view).Document()->GetElementById("ok");
+					if (passes == 1) {
+						host.Rect.ScaleX = ratio;
+						host.Rect.ScaleY = ratio;
+						shell.On_Video_Change();
+						if (*kind != '\0') {
+							button->SetClass(kind, true);
+						}
+						shell.Tick();
+						Rml::Vector2f origin = button->GetAbsoluteOffset(Rml::BoxArea::Border);
+						Rml::Vector2f size = button->GetBox().GetSize(Rml::BoxArea::Border);
+						at = { (int)(origin.x + size.x * 0.5f), (int)std::ceil(origin.y) + 1 };
+						if (point == 1 || point == 3) {
+							at.Y = (int)(origin.y + size.y * 0.5f);
+						} else if (point == 2) {
+							at.Y = (int)(origin.y + size.y) - 1;
+						}
+						Press(shell, WINDOW_BUTTON_LEFT, at);
+						shell.Tick();
+						pressed = button->IsPseudoClassSet("active");
+						stable = button->GetAbsoluteOffset(Rml::BoxArea::Border) == origin
+							&& button->GetBox().GetSize(Rml::BoxArea::Border) == size;
+					} else if (passes == 2) {
+						if (point == 3) {
+							at.Y -= (int)(40.0f * ratio);
+						}
+						Release(shell, WINDOW_BUTTON_LEFT, at);
+						queued = presenter.Has_Pending();
+					}
+					return(passes >= 3);
+				});
+				Check(pressed && host.Clicks == clicks + 1, "a button press shows feedback and sounds once");
+				Check(stable, "pressing a button keeps its hit area in place across a frame");
+				Check(point == 3 ? !queued && result == UI_RESULT_SESSION_ENDED
+					: queued && result == UI_RESULT_ACCEPTED,
+					"releasing inside the original button activates it; dragging outside cancels");
+			}
+		}
+	}
+	host.Rect.ScaleX = 1.0f;
+	host.Rect.ScaleY = 1.0f;
+	shell.On_Video_Change();
+}
+
+
 void Test_Shell(void)
 {
 	auto files = std::make_unique<MissingFileInterfaceClass>();
@@ -4685,6 +4746,8 @@ void Test_Shell(void)
 		Check(host.Focuses == 1, "focus returns to the main window once");
 		Check(!shell.Screen_Shown() && shell.Modal() == nullptr, "the modal stack is empty after the close");
 	}
+
+	Test_Button_Clicks(shell, host);
 
 	{
 		UIVersionPresenterClass presenter({ "escape" });
