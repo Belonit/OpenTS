@@ -66,6 +66,19 @@ class UIFontEngineClass : public Rml::FontEngineInterface
 			std::vector<UIRasterStrike> Strikes;
 		};
 
+		struct Shadow
+		{
+			Rml::Vector2f Offset;
+			Rml::Colourb Colour;
+		};
+
+		struct EffectSet
+		{
+			std::vector<Shadow> Back;
+			std::vector<Shadow> Front;
+			std::vector<std::size_t> Fingerprints;
+		};
+
 		SheetFamily const * Find_Family(Rml::String const & family) const;
 		RasterFamily const * Find_Raster_Family(Rml::String const & family) const;
 		UISheetFaceClass * Find_Face(Rml::FontFaceHandle handle) const;
@@ -79,4 +92,5 @@ class UIFontEngineClass : public Rml::FontEngineInterface
 		std::vector<std::unique_ptr<UISheetFaceClass>> Faces;
 		std::vector<std::unique_ptr<RasterFamily>> RasterFamilies;
 		std::vector<std::unique_ptr<UIRasterFaceClass>> RasterFaces;
+		std::vector<EffectSet> EffectSets;
 };

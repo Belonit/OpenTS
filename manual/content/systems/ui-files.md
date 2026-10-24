@@ -30,6 +30,8 @@ The `ui` directory sits beside the executable and holds everything the screens a
 
 The pictures, and the dialog font used for captions, buttons and message-box text, are the game's interface art, read from its mix files. Where a picture is missing, the control draws a plain fill in its place.
 
+`font-effect: shadow(...)` draws on every font, the dialog font and the dialogs' sans font included, so a style sheet can shadow text that sits over the wallpaper, as in `font-effect: shadow(1dp 1dp #000000);`. The other effects, `outline`, `glow` and `blur`, draw only where a TrueType face such as `Arimo.ttf` supplies the font; on the game's own fonts the text is drawn without them.
+
 The kit gives every layout size in `dp`, RmlUi's scaled pixel, so a screen matches the dialog it replaced at the game's own resolution and grows with the game picture when that is drawn larger.
 
 A screen opens the way the original dialogs did: it slides out from the middle behind a pair of side bars, with the dialog sound once as it starts. Put `reveal="none"` on a document's `<body>` for a screen that should appear at once instead.

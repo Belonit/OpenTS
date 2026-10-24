@@ -9,6 +9,7 @@
 
 #include "ui/uishell.h"
 
+#include "ui/rml/rmlfont.h"
 #include "ui/rml/rmlfontfon.h"
 #include "ui/rml/rmlimage.h"
 #include "ui/rml/rmlkeys.h"
@@ -4020,6 +4021,61 @@ static bool Read_Strike(std::vector<std::uint8_t> const & fnt, UIRasterStrike & 
 }
 
 
+void Test_Font_Shadow(Rml::Context & context)
+{
+	UIRasterStrike strike;
+	Check(Read_Strike(Build_Strike(0, 'M'), strike), "a strike reads for the shadow test");
+
+	UIFontEngineClass engine;
+	engine.Set_Fallback(nullptr);
+	Check(engine.Load_Strikes("T", { strike }), "the engine takes the strike as a face");
+	Rml::FontFaceHandle face = engine.GetFontFaceHandle("T", Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal, 4);
+	Check(face != 0, "the strike's height finds its face");
+
+	Rml::ElementDocument * document = context.LoadDocumentFromMemory(
+		"<rml><body style='font-family: dlg-sans; font-size: 13px;'><p id='shadowed' style='font-effect: shadow(2px 3px #ff0000);'>M</p>"
+		"<p id='outlined' style='font-effect: outline(1px #00ff00);'>M</p></body></rml>");
+	Check(document != nullptr, "the effect document loads");
+	if (document == nullptr || face == 0) {
+		return;
+	}
+
+	Rml::Property const * shadowed = document->GetElementById("shadowed")->GetProperty(Rml::PropertyId::FontEffect);
+	Rml::Property const * outlined = document->GetElementById("outlined")->GetProperty(Rml::PropertyId::FontEffect);
+	Rml::FontEffectsPtr shadow = shadowed != nullptr ? shadowed->Get<Rml::FontEffectsPtr>() : nullptr;
+	Rml::FontEffectsPtr outline = outlined != nullptr ? outlined->Get<Rml::FontEffectsPtr>() : nullptr;
+	Check(shadow != nullptr && outline != nullptr, "both effects parse");
+
+	if (shadow != nullptr && outline != nullptr) {
+		Rml::FontEffectsHandle effects = engine.PrepareFontEffects(face, shadow->list);
+		Check(effects != 0 && engine.PrepareFontEffects(face, shadow->list) == effects, "a shadow prepares on a game face, once for the same effects");
+		Check(engine.PrepareFontEffects(face, outline->list) == 0, "an outline, which needs glyphs of its own, leaves a game face plain");
+
+		Rml::TexturedMeshList meshes;
+		Rml::String const language;
+		Rml::TextShapingContext shaping{ language };
+		Rml::ColourbPremultiplied white(255, 255, 255, 255);
+		int const width = engine.GenerateString(context.GetRenderManager(), face, effects, "M", Rml::Vector2f(10.0f, 20.0f), white, 1.0f, shaping, meshes);
+		Check(width == 3 && meshes.size() == 2, "a shadowed line draws the shadow and the text as two layers");
+		if (meshes.size() == 2 && !meshes[0].mesh.vertices.empty() && !meshes[1].mesh.vertices.empty()) {
+			Rml::Vertex const & under = meshes[0].mesh.vertices[0];
+			Rml::Vertex const & text = meshes[1].mesh.vertices[0];
+			Check(under.position.x == text.position.x + 2.0f && under.position.y == text.position.y + 3.0f,
+				"the shadow sits at its offset from the text");
+			Check(under.colour.red == 255 && under.colour.green == 0 && text.colour.green == 255,
+				"the shadow takes its own color and the text keeps the text color");
+		}
+
+		engine.GenerateString(context.GetRenderManager(), face, effects, "M", Rml::Vector2f(10.0f, 40.0f), white, 1.0f, shaping, meshes);
+		Check(meshes.size() == 2 && meshes[0].mesh.vertices.size() == meshes[1].mesh.vertices.size(),
+			"a second line adds to the same two layers");
+	}
+
+	context.UnloadDocument(document);
+	context.Update();
+}
+
+
 void Test_Raster_Font(void)
 {
 	char32_t const CYRILLIC_A = 0x0410;
@@ -4535,6 +4591,7 @@ void Test_Documents(void)
 	if (context != nullptr) {
 		Test_Effects_Documents(*context, render, system);
 		Test_Raster_Font();
+		Test_Font_Shadow(*context);
 		Test_Surface_Element(*context, render, system);
 		Test_Skirmish_Screen(*context, system);
 		Test_Scenario_Screen(*context, system);

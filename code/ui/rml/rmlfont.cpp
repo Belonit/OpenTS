@@ -13,6 +13,8 @@
 #include "utf8.h"
 
 #include <RmlUi/Core/CallbackTexture.h>
+#include <RmlUi/Core/FontEffect.h>
+#include <RmlUi/Core/FontGlyph.h>
 #include <RmlUi/Core/Mesh.h>
 #include <RmlUi/Core/MeshUtilities.h>
 #include <RmlUi/Core/RenderManager.h>
@@ -63,12 +65,14 @@ class UISheetFaceClass
 			return((int)(width + 0.5f));
 		}
 
-		int Generate(Rml::RenderManager & manager, Rml::StringView string, Rml::Vector2f position, Rml::ColourbPremultiplied color, Rml::TexturedMeshList & meshes)
+		int Generate(Rml::RenderManager & manager, Rml::StringView string, Rml::Vector2f position, Rml::ColourbPremultiplied color, Rml::TexturedMeshList & meshes, std::size_t layer = 0)
 		{
-			meshes.resize(1);
-			meshes[0].texture = Atlas(manager, color);
+			if (meshes.size() <= layer) {
+				meshes.resize(layer + 1);
+			}
+			meshes[layer].texture = Atlas(manager, color);
 
-			Rml::Mesh & mesh = meshes[0].mesh;
+			Rml::Mesh & mesh = meshes[layer].mesh;
 			Rml::Vector2f sheet((float)Index.Width, (float)Index.Height);
 			Rml::Vector2f cell(Sheet.Cell_Width() * Scale, Sheet.Cell_Height() * Scale);
 
@@ -198,12 +202,14 @@ class UIRasterFaceClass
 			return((int)(width + 0.5f));
 		}
 
-		int Generate(Rml::RenderManager & manager, Rml::StringView string, Rml::Vector2f position, Rml::ColourbPremultiplied color, Rml::TexturedMeshList & meshes)
+		int Generate(Rml::RenderManager & manager, Rml::StringView string, Rml::Vector2f position, Rml::ColourbPremultiplied color, Rml::TexturedMeshList & meshes, std::size_t layer = 0)
 		{
-			meshes.resize(1);
-			meshes[0].texture = Atlas(manager);
+			if (meshes.size() <= layer) {
+				meshes.resize(layer + 1);
+			}
+			meshes[layer].texture = Atlas(manager);
 
-			Rml::Mesh & mesh = meshes[0].mesh;
+			Rml::Mesh & mesh = meshes[layer].mesh;
 			float atlas = (float)AtlasWidth;
 			float rows = (float)AtlasHeight;
 
@@ -538,12 +544,44 @@ Rml::FontFaceHandle UIFontEngineClass::GetFontFaceHandle(Rml::String const & fam
 }
 
 
+/// <summary>
+/// Prepares the effects a game face can draw. A shadow, which moves the glyphs and recolors
+/// them, is drawn on every face; an effect that builds glyphs of its own, such as an outline,
+/// glow or blur, is drawn only by a TrueType face and leaves a game face's text plain.
+/// </summary>
 Rml::FontEffectsHandle UIFontEngineClass::PrepareFontEffects(Rml::FontFaceHandle handle, Rml::FontEffectList const & effects)
 {
-	if (Find_Face(handle) != nullptr || Find_Raster_Face(handle) != nullptr) {
+	if (Find_Face(handle) == nullptr && Find_Raster_Face(handle) == nullptr) {
+		return(Fallback != nullptr ? Fallback->PrepareFontEffects(handle, effects) : 0);
+	}
+
+	EffectSet set;
+	for (Rml::SharedPtr<const Rml::FontEffect> const & effect : effects) {
+		Rml::FontGlyph glyph;
+		Rml::Vector2i origin(0, 0);
+		Rml::Vector2i dimensions(1, 1);
+		if (effect == nullptr || effect->HasUniqueTexture() || !effect->GetGlyphMetrics(origin, dimensions, glyph)) {
+			continue;
+		}
+
+		Shadow shadow;
+		shadow.Offset = Rml::Vector2f((float)origin.x, (float)origin.y);
+		shadow.Colour = effect->GetColour();
+		(effect->GetLayer() == Rml::FontEffect::Layer::Back ? set.Back : set.Front).push_back(shadow);
+		set.Fingerprints.push_back(effect->GetFingerprint());
+	}
+
+	if (set.Back.empty() && set.Front.empty()) {
 		return(0);
 	}
-	return(Fallback != nullptr ? Fallback->PrepareFontEffects(handle, effects) : 0);
+
+	for (std::size_t index = 0; index < EffectSets.size(); index++) {
+		if (EffectSets[index].Fingerprints == set.Fingerprints) {
+			return((Rml::FontEffectsHandle)(index + 1));
+		}
+	}
+	EffectSets.push_back(std::move(set));
+	return((Rml::FontEffectsHandle)EffectSets.size());
 }
 
 
@@ -578,14 +616,30 @@ int UIFontEngineClass::GetStringWidth(Rml::FontFaceHandle handle, Rml::StringVie
 int UIFontEngineClass::GenerateString(Rml::RenderManager & manager, Rml::FontFaceHandle handle, Rml::FontEffectsHandle effects, Rml::StringView string, Rml::Vector2f position, Rml::ColourbPremultiplied color, float opacity, Rml::TextShapingContext const & shaping, Rml::TexturedMeshList & meshes)
 {
 	UISheetFaceClass * face = Find_Face(handle);
-	if (face != nullptr) {
-		return(face->Generate(manager, string, position, color, meshes));
-	}
 	UIRasterFaceClass * strike = Find_Raster_Face(handle);
-	if (strike != nullptr) {
-		return(strike->Generate(manager, string, position, color, meshes));
+	if (face == nullptr && strike == nullptr) {
+		return(Fallback != nullptr ? Fallback->GenerateString(manager, handle, effects, string, position, color, opacity, shaping, meshes) : 0);
 	}
-	return(Fallback != nullptr ? Fallback->GenerateString(manager, handle, effects, string, position, color, opacity, shaping, meshes) : 0);
+
+	EffectSet const * set = (effects > 0 && (std::size_t)effects <= EffectSets.size()) ? &EffectSets[(std::size_t)effects - 1] : nullptr;
+	auto draw = [&](Rml::Vector2f at, Rml::ColourbPremultiplied tint, std::size_t layer) {
+		return((face != nullptr) ? face->Generate(manager, string, at, tint, meshes, layer) : strike->Generate(manager, string, at, tint, meshes, layer));
+	};
+
+	// Each layer keeps its own mesh, so every line of a text adds to the same layers in the same order.
+	std::size_t layer = 0;
+	if (set != nullptr) {
+		for (Shadow const & shadow : set->Back) {
+			draw(position + shadow.Offset, shadow.Colour.ToPremultiplied(opacity), layer++);
+		}
+	}
+	int const width = draw(position, color, layer++);
+	if (set != nullptr) {
+		for (Shadow const & shadow : set->Front) {
+			draw(position + shadow.Offset, shadow.Colour.ToPremultiplied(opacity), layer++);
+		}
+	}
+	return(width);
 }
 
 
