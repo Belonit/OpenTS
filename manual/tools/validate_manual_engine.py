@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 
-import yaml
+from io_utils import load_yaml
 import enum_drift
 import catalog_validation
 import formats as format_catalogs
@@ -26,7 +26,7 @@ SCRIPTING_TABLES = {
 
 def read_yaml(path):
     with Path(path).open(encoding="utf-8") as stream:
-        return yaml.safe_load(stream)
+        return load_yaml(stream)
 
 
 def frontmatter(path):
@@ -34,7 +34,7 @@ def frontmatter(path):
     match = re.match(r"^---\r?\n([\s\S]*?)\r?\n---", source)
     if not match:
         raise ValueError(f"{path.relative_to(MANUAL)}: missing YAML frontmatter")
-    return yaml.safe_load(match.group(1)) or {}
+    return load_yaml(match.group(1)) or {}
 
 
 def slugify(text):

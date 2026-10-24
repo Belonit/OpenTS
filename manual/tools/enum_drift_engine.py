@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
-import yaml
+from io_utils import load_yaml
 
 
 @dataclass(frozen=True)
@@ -121,7 +121,7 @@ def frontmatter(path):
     match = re.match(r"^---\r?\n([\s\S]*?)\r?\n---", source)
     if not match:
         raise ValueError(f"{path}: missing YAML frontmatter")
-    return yaml.safe_load(match.group(1)) or {}
+    return load_yaml(match.group(1)) or {}
 
 
 def strip_comments(source):

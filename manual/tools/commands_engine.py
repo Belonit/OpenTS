@@ -7,14 +7,14 @@ supplies the short public explanation that source syntax cannot express.
 """
 
 from dataclasses import dataclass
+import functools
 from pathlib import Path
 import ast
 import re
 
-import yaml
-
 import extract_engine
 import ini_inventory
+from io_utils import load_yaml
 import schema_validation
 
 
@@ -307,62 +307,70 @@ def _key_expression(value):
     return "+".join(dict.fromkeys(tokens)) if tokens else None
 
 
+# A repeated tree scan reuses the sites of every file whose text is unchanged.
+@functools.lru_cache(maxsize=None)
+def _fixed_sites_in(relative, raw):
+    sites = []
+    stripped = extract_engine.strip_comments(raw)
+    guards = _guard_map(raw)
+    source_lines = raw.splitlines()
+    spans = ini_inventory.function_spans(stripped)
+    starts = ini_inventory.line_starts(raw)
+
+    def add(position, value):
+        expression = _key_expression(value)
+        if not expression:
+            return
+        function = ini_inventory.enclosing_function(spans, position)
+        if function is None:
+            return
+        line = ini_inventory.line_at(starts, position)
+        sites.append(Site(relative, function, expression, guards[line], line,
+                          source_lines[line - 1].strip()))
+
+    def add_branches(value, position):
+        cursor = 0
+        delimiters = [*re.finditer(r"\|\||&&", value), None]
+        for delimiter in delimiters:
+            end = len(value) if delimiter is None else delimiter.start()
+            branch = value[cursor:end]
+            key = re.search(r"\b(?:KN|VK)_[A-Z0-9_]+\b", branch)
+            branch_position = position + cursor + (key.start() if key else 0)
+            add(branch_position, branch)
+            cursor = len(value) if delimiter is None else delimiter.end()
+
+    # Switch dispatch is the common input-handler shape. Scan it throughout
+    # the source tree rather than assuming which functions own controls.
+    for match in re.finditer(r"\bcase\s+(.+?)\s*:", stripped):
+        add(match.start(), match.group(1))
+
+    # Walk balanced conditions so truthy bit tests and keys split across
+    # several lines cannot evade the inventory.
+    for match in re.finditer(r"\b(?:if|while|for|switch)\s*\(", stripped):
+        opening = stripped.find("(", match.start(), match.end())
+        closing = matching_parenthesis(stripped, opening)
+        add_branches(stripped[opening + 1:closing], opening + 1)
+
+    # Comparisons in return statements and assignments are direct tests too.
+    for match in re.finditer(r"^.*\b(?:KN|VK)_[A-Z0-9_]+.*$", stripped, re.M):
+        line_text = match.group(0)
+        if re.search(r"(?:==|!=|<=|>=|(?<!-)[<>])", line_text):
+            add_branches(line_text, match.start())
+
+    # State queries and OS registration calls can consume a key without a
+    # comparison. Treat each call as a direct-key site as well.
+    for match in DIRECT_KEY_CALLS.finditer(stripped):
+        add(match.start(), match.group(1))
+    return tuple(sites)
+
+
 def discover_fixed_sites(code_directory=CODE):
     root = Path(code_directory)
     sites = []
     for path in sorted(candidate for candidate in root.rglob("*")
                        if candidate.is_file() and candidate.suffix.lower() in SOURCE_SUFFIXES):
         relative = path.relative_to(root.parent).as_posix()
-        raw = read(path)
-        stripped = extract_engine.strip_comments(raw)
-        guards = _guard_map(raw)
-        source_lines = raw.splitlines()
-        spans = ini_inventory.function_spans(stripped)
-
-        def add(position, value):
-            expression = _key_expression(value)
-            if not expression:
-                return
-            function = ini_inventory.enclosing_function(spans, position)
-            if function is None:
-                return
-            line = line_number(raw, position)
-            sites.append(Site(relative, function, expression, guards[line], line,
-                              source_lines[line - 1].strip()))
-
-        def add_branches(value, position):
-            cursor = 0
-            delimiters = [*re.finditer(r"\|\||&&", value), None]
-            for delimiter in delimiters:
-                end = len(value) if delimiter is None else delimiter.start()
-                branch = value[cursor:end]
-                key = re.search(r"\b(?:KN|VK)_[A-Z0-9_]+\b", branch)
-                branch_position = position + cursor + (key.start() if key else 0)
-                add(branch_position, branch)
-                cursor = len(value) if delimiter is None else delimiter.end()
-
-        # Switch dispatch is the common input-handler shape. Scan it throughout
-        # the source tree rather than assuming which functions own controls.
-        for match in re.finditer(r"\bcase\s+(.+?)\s*:", stripped):
-            add(match.start(), match.group(1))
-
-        # Walk balanced conditions so truthy bit tests and keys split across
-        # several lines cannot evade the inventory.
-        for match in re.finditer(r"\b(?:if|while|for|switch)\s*\(", stripped):
-            opening = stripped.find("(", match.start(), match.end())
-            closing = matching_parenthesis(stripped, opening)
-            add_branches(stripped[opening + 1:closing], opening + 1)
-
-        # Comparisons in return statements and assignments are direct tests too.
-        for match in re.finditer(r"^.*\b(?:KN|VK)_[A-Z0-9_]+.*$", stripped, re.M):
-            line_text = match.group(0)
-            if re.search(r"(?:==|!=|<=|>=|(?<!-)[<>])", line_text):
-                add_branches(line_text, match.start())
-
-        # State queries and OS registration calls can consume a key without a
-        # comparison. Treat each call as a direct-key site as well.
-        for match in DIRECT_KEY_CALLS.finditer(stripped):
-            add(match.start(), match.group(1))
+        sites.extend(_fixed_sites_in(relative, read(path)))
     unique = {}
     for site in sites:
         unique.setdefault(site.identity, site)
@@ -408,7 +416,7 @@ def discover_launch_sites(init_text=None):
 def load_manifest(path=MANIFEST):
     candidate = Path(path)
     with candidate.open(encoding="utf-8") as stream:
-        data = yaml.safe_load(stream) or {}
+        data = load_yaml(stream) or {}
     errors = schema_validation.errors_for(
         data, "command-adapters.schema.json", str(candidate))
     if errors:

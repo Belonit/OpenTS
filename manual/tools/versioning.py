@@ -5,7 +5,8 @@ from pathlib import Path
 import re
 
 from semantic_version import Version
-import yaml
+
+from io_utils import load_yaml
 
 
 CHANGE_CATEGORIES = {"feature", "fix", "balance", "internal", "performance"}
@@ -36,7 +37,7 @@ TOMBSTONE_FIELDS = {
 
 def read_yaml(path):
     with Path(path).open(encoding="utf-8") as stream:
-        return yaml.safe_load(stream)
+        return load_yaml(stream)
 
 
 def frontmatter(path, root):
@@ -44,7 +45,7 @@ def frontmatter(path, root):
     match = re.match(r"^---\r?\n([\s\S]*?)\r?\n---", source)
     if not match:
         raise ValueError(f"{path.relative_to(root)}: missing YAML frontmatter")
-    return yaml.safe_load(match.group(1)) or {}
+    return load_yaml(match.group(1)) or {}
 
 
 def slugify(text):

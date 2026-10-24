@@ -5,6 +5,14 @@ import os
 import tempfile
 
 
+def load_yaml(stream):
+    """Parse like ``yaml.safe_load``, using libyaml when PyYAML was built with it."""
+
+    import yaml
+
+    return yaml.load(stream, Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader))
+
+
 def atomic_write_text(path, text, *, encoding="utf-8"):
     """Replace *path* only after the complete new contents are on disk.
 

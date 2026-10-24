@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 
-from io_utils import atomic_write_text
+from io_utils import atomic_write_text, load_yaml
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -169,7 +169,7 @@ def _write(path, frontmatter, body):
 def _read_yaml(path):
     import yaml
     with path.open(encoding="utf-8") as stream:
-        return yaml.safe_load(stream)
+        return load_yaml(stream)
 
 
 def scaffold_key(identifier, scope=None):

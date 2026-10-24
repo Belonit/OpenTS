@@ -5,6 +5,7 @@ import re
 
 import yaml
 
+from io_utils import load_yaml
 import versioning
 
 
@@ -33,7 +34,7 @@ def frontmatter(path, errors=None, context=None):
         match = _FRONTMATTER.match(source)
         if not match:
             raise ValueError("missing YAML frontmatter")
-        data = yaml.safe_load(match.group(1)) or {}
+        data = load_yaml(match.group(1)) or {}
         if not isinstance(data, dict):
             raise ValueError("frontmatter must be a mapping")
         return data
@@ -49,7 +50,7 @@ def validate_commands(errors, manual):
     path = manual / "data" / "commands.yaml"
     try:
         with path.open(encoding="utf-8") as stream:
-            data = yaml.safe_load(stream) or {}
+            data = load_yaml(stream) or {}
     except (OSError, yaml.YAMLError) as error:
         errors.append(f"manual/data/commands.yaml: cannot load command catalog: {error}")
         return {}

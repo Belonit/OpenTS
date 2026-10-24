@@ -6,13 +6,14 @@ duplicates, and reasoned non-public reads.  Source lines are diagnostic only;
 classifications are stable function/key identities, never fingerprints.
 """
 
+import bisect
 from dataclasses import dataclass
+import functools
 from pathlib import Path
 import re
 
-import yaml
-
 import extract
+from io_utils import load_yaml
 import schema_validation
 
 
@@ -26,6 +27,8 @@ FUNCTION_RE = re.compile(
 READ_INI_RE = re.compile(
     r"\b(?:bool|void|int)\s+(?P<class>[A-Za-z_]\w*)::Read_INI\s*\(")
 CONTROL_NAMES = {"if", "for", "switch", "while", "catch"}
+BRACE_OR_STRING_RE = re.compile(r'"(?:[^"\\]|\\.)*"?|[{}]', re.S)
+NEWLINE_RE = re.compile(r"\n")
 
 
 @dataclass(frozen=True)
@@ -44,24 +47,19 @@ class ReadSite:
 
 def _matching_brace(text, opening):
     depth = 0
-    index = opening
-    while index < len(text):
-        char = text[index]
-        if char == '"':
-            index += 1
-            while index < len(text) and text[index] != '"':
-                index += 2 if text[index] == "\\" else 1
-        elif char == "{":
+    for match in BRACE_OR_STRING_RE.finditer(text, opening):
+        token = match.group()
+        if token == "{":
             depth += 1
-        elif char == "}":
+        elif token == "}":
             depth -= 1
             if depth == 0:
-                return index
-        index += 1
+                return match.start()
     return len(text)
 
 
-def function_spans(text):
+@functools.lru_cache(maxsize=None)
+def _function_spans(text):
     spans = []
     for match in FUNCTION_RE.finditer(text):
         name = match.group("name")
@@ -69,7 +67,21 @@ def function_spans(text):
             continue
         opening = text.find("{", match.start(), match.end())
         spans.append((opening, _matching_brace(text, opening), name))
-    return spans
+    return tuple(spans)
+
+
+def function_spans(text):
+    return list(_function_spans(text))
+
+
+def line_starts(text):
+    """Return the offset of each line's first character, for line_at."""
+
+    return [0, *(match.end() for match in NEWLINE_RE.finditer(text))]
+
+
+def line_at(starts, position):
+    return bisect.bisect_right(starts, position)
 
 
 def enclosing_function(spans, position):
@@ -103,6 +115,7 @@ def sites_in_text(raw, relative):
     text = extract.strip_comments(raw)
     spans = function_spans(text)
     lines = raw.splitlines()
+    starts = line_starts(raw)
     sites = []
     for match in extract.GET_CALL_RE.finditer(text):
         inner, _ = extract.match_call(text, match.end() - 1)
@@ -118,7 +131,7 @@ def sites_in_text(raw, relative):
         key = literal_key(args)
         if key is None or not extract.KEY_NAME_RE.fullmatch(key):
             continue
-        line = raw[:match.start()].count("\n") + 1
+        line = line_at(starts, match.start())
         context = lines[line - 1].strip() if line <= len(lines) else ""
         sites.append(ReadSite(
             path=relative,
@@ -149,7 +162,7 @@ def discover_literal_reads(code_directory):
 def load_manifest(path=MANIFEST):
     candidate = Path(path)
     with candidate.open(encoding="utf-8") as stream:
-        data = yaml.safe_load(stream) or {}
+        data = load_yaml(stream) or {}
     errors = schema_validation.errors_for(
         data, "ini-read-exclusions.schema.json", str(candidate))
     if errors:

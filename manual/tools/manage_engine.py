@@ -19,6 +19,7 @@ except ModuleNotFoundError:
     print("Run: python -m pip install -r manual/tools/requirements.txt")
     raise SystemExit(2)
 
+from io_utils import load_yaml
 import enum_drift
 import formats as format_catalogs
 import validate_manual
@@ -89,10 +90,13 @@ def run_parallel(jobs):
         submitted = [pool.submit(run_capture, *job) for job in jobs]
         results = [future.result() for future in submitted]
 
+    # A redirected stream may use a code page without Astro's symbols.
+    encoding = sys.stdout.encoding or "utf-8"
     failures = []
     for label, code, output, seconds in results:
         print(f"---- {label} ({seconds:.1f}s) ".ljust(64, "-"), flush=True)
-        print((output or "").rstrip(), flush=True)
+        text = (output or "").rstrip()
+        print(text.encode(encoding, errors="replace").decode(encoding), flush=True)
         if code:
             failures.append(f"{label} failed with exit code {code}")
     if failures:
@@ -115,10 +119,15 @@ def generator_runner(script, arguments, output):
 
 def generate_files(directory, runner=generator_runner):
     directory = Path(directory)
+    with concurrent.futures.ThreadPoolExecutor(len(GENERATOR_SPECS)) as pool:
+        runs = [
+            pool.submit(runner, TOOLS / script_name, arguments, directory / data_name)
+            for script_name, arguments, data_name in GENERATOR_SPECS
+        ]
     generated = {}
-    for script_name, arguments, data_name in GENERATOR_SPECS:
+    for run, (script_name, _, data_name) in zip(runs, GENERATOR_SPECS):
+        run.result()
         output = directory / data_name
-        runner(TOOLS / script_name, arguments, output)
         if not output.is_file():
             raise ManualCommandError(f"{script_name} did not create {output}")
         generated[data_name] = output
@@ -205,7 +214,7 @@ def yaml_at_ref(reference, paths, required):
     for path in paths:
         result = git_output("show", f"{reference}:{path}")
         if result.returncode == 0:
-            return yaml.safe_load(result.stdout)
+            return load_yaml(result.stdout)
     if required:
         joined = " or ".join(paths)
         raise ManualCommandError(
@@ -222,58 +231,90 @@ def text_at_ref(reference, path, required=False):
     return None
 
 
-def changes_at_ref(reference):
-    listing = git_output(
-        "ls-tree", "-r", "--name-only", reference, "manual/changes")
-    if listing.returncode != 0:
+def texts_at_ref(reference, paths):
+    """Return each path's text at *reference*, or None where it is absent.
+
+    One ``git cat-file`` process serves every path, and line endings are
+    normalized as ``git show`` read in text mode normalizes them.
+    """
+
+    paths = list(paths)
+    if not paths:
         return {}
-    changes = {}
-    for path in listing.stdout.splitlines():
-        candidate = Path(path)
-        if (candidate.suffix != ".md"
-                or candidate.parent.as_posix() != "manual/changes"):
+    result = subprocess.run(
+        ["git", "cat-file", "--batch"],
+        cwd=ROOT,
+        input="".join(f"{reference}:{path}\n" for path in paths).encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    if result.returncode != 0:
+        raise ManualCommandError(
+            "git cat-file failed: "
+            + result.stderr.decode("utf-8", errors="replace").strip())
+    output = result.stdout
+    texts = {}
+    offset = 0
+    for path in paths:
+        end = output.index(b"\n", offset)
+        header = output[offset:end].split()
+        offset = end + 1
+        texts[path] = None
+        if len(header) != 3 or not header[2].isdigit():
             continue
-        source = text_at_ref(reference, path)
+        size = int(header[2])
+        if header[1] == b"blob":
+            texts[path] = (output[offset:offset + size].decode("utf-8")
+                           .replace("\r\n", "\n").replace("\r", "\n"))
+        offset += size + 1
+    return texts
+
+
+def _markdown_at_ref(reference, directory):
+    """Return {path: text} for the Markdown files directly in *directory*.
+
+    The result is None when git cannot list *reference*.
+    """
+
+    listing = git_output(
+        "ls-tree", "-r", "--name-only", reference, directory)
+    if listing.returncode != 0:
+        return None
+    paths = [
+        path for path in listing.stdout.splitlines()
+        if Path(path).suffix == ".md" and Path(path).parent.as_posix() == directory
+    ]
+    return texts_at_ref(reference, paths)
+
+
+def changes_at_ref(reference):
+    sources = _markdown_at_ref(reference, "manual/changes")
+    changes = {}
+    for path, source in (sources or {}).items():
         match = re.match(r"^---\r?\n([\s\S]*?)\r?\n---", source or "")
         if match:
-            changes[candidate.stem] = yaml.safe_load(match.group(1)) or {}
+            changes[Path(path).stem] = load_yaml(match.group(1)) or {}
     return changes
 
 
 def enums_at_ref(reference):
-    listing = git_output(
-        "ls-tree", "-r", "--name-only", reference, "manual/content/enums")
-    if listing.returncode != 0:
-        return {}
+    sources = _markdown_at_ref(reference, "manual/content/enums")
     records = {}
-    for path in listing.stdout.splitlines():
-        candidate = Path(path)
-        if (candidate.suffix != ".md"
-                or candidate.parent.as_posix() != "manual/content/enums"):
-            continue
-        source = text_at_ref(reference, path)
+    for source in (sources or {}).values():
         match = re.match(r"^---\r?\n([\s\S]*?)\r?\n---", source or "")
         if match:
-            data = yaml.safe_load(match.group(1)) or {}
+            data = load_yaml(match.group(1)) or {}
             if isinstance(data.get("enum_id"), str):
                 records[data["enum_id"]] = data
     return records
 
 
 def formats_at_ref(reference):
-    listing = git_output(
-        "ls-tree", "-r", "--name-only", reference, "manual/content/formats")
-    if listing.returncode != 0:
+    sources = _markdown_at_ref(reference, "manual/content/formats")
+    if sources is None:
         return None
-    documents = []
-    for path in listing.stdout.splitlines():
-        candidate = Path(path)
-        if (candidate.suffix != ".md"
-                or candidate.parent.as_posix() != "manual/content/formats"):
-            continue
-        source = text_at_ref(reference, path)
-        if source is not None:
-            documents.append((path, source))
+    documents = [
+        (path, source) for path, source in sources.items() if source is not None]
     if not documents:
         return None
     return format_catalogs.parse_catalog(documents)
@@ -289,10 +330,7 @@ def load_base(reference=None):
         print("NOTE     HEAD is unavailable; branch-relative checks are skipped")
         return selected, None
 
-    enum_sources = {
-        path: text_at_ref(selected, path)
-        for path in enum_drift.source_paths()
-    }
+    enum_sources = texts_at_ref(selected, enum_drift.source_paths())
 
     return selected, {
         "keys": yaml_at_ref(
@@ -416,9 +454,10 @@ def npm_command():
 def run_site_checks():
     """Run the tests and check the built site.
 
-    The tests, the type check and the repository Markdown checker read sources
-    rather than build output, so they run together ahead of the build and a
-    type error stops the gate before it is paid for.
+    The tests and the repository Markdown checker read sources rather than
+    build output, so they run beside the build.  The type check runs after the
+    build because both regenerate the ``.astro`` type cache, and it runs beside
+    the checks of the built pages.
 
     The build carries the removed-entity fixtures, whose pages are the only
     tombstones the manual has; the artifact checks then cover a superset of the
@@ -438,20 +477,23 @@ def run_site_checks():
     ]
     if not python_tests:
         raise ManualCommandError("no Python test modules were discovered")
-    timed("independent checks", lambda: run_parallel([
-        *python_tests,
-        ("astro check", [npm, "run", "check"], SITE, None),
-        ("node tests", [npm, "test"], SITE, None),
-        ("markdown links", [npm, "run", "check:docs"], SITE, None),
-    ]))
 
     fixture_environment = os.environ.copy()
     fixture_environment["MANUAL_TEST_FIXTURES"] = "1"
-    timed("site build", lambda: run_process(
-        [npm, "run", "build"], cwd=SITE, env=fixture_environment))
-    for command in ("check:render", "check:search", "check:links"):
-        timed(command, lambda command=command: run_process(
-            [npm, "run", command], cwd=SITE, env=fixture_environment))
+    # The longest job goes first so a small worker pool starts it at once.
+    timed("tests and site build", lambda: run_parallel([
+        ("site build", [npm, "run", "build"], SITE, fixture_environment),
+        *python_tests,
+        ("node tests", [npm, "test"], SITE, None),
+        ("markdown links", [npm, "run", "check:docs"], SITE, None),
+    ]))
+    timed("type and built-page checks", lambda: run_parallel([
+        ("astro check", [npm, "run", "check"], SITE, None),
+        *[
+            (command, [npm, "run", command], SITE, fixture_environment)
+            for command in ("check:render", "check:search", "check:links")
+        ],
+    ]))
     print(
         "NOTE     manual/site/dist holds the fixture build; run npm run build "
         "in manual/site for a publishable artifact", flush=True)

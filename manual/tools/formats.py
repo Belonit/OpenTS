@@ -5,6 +5,7 @@ import re
 
 import yaml
 
+from io_utils import load_yaml
 import schema_validation
 
 
@@ -24,7 +25,7 @@ def _frontmatter_text(source, context):
     match = _FRONTMATTER.match(source)
     if not match:
         raise ValueError(f"{context}: missing YAML frontmatter")
-    data = yaml.safe_load(match.group(1)) or {}
+    data = load_yaml(match.group(1)) or {}
     if not isinstance(data, dict):
         raise ValueError(f"{context}: frontmatter must be a mapping")
     return data

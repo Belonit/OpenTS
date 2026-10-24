@@ -14,11 +14,13 @@ Usage:
     python manual/tools/extract.py --out <dir>
 """
 
+import functools
 import os
 import re
 
 import json
 
+from io_utils import load_yaml
 import section_selectors
 
 
@@ -263,33 +265,20 @@ def computed_key_records(path, cls, raw, body, offset):
 # Small C++ helpers
 # ---------------------------------------------------------------------------
 
+_COMMENT_OR_STRING = re.compile(r'"(?:[^"\\]|\\.)*"?|//[^\n]*|/\*.*?(?:\*/|\Z)', re.S)
+_NOT_NEWLINE = re.compile(r"[^\n]")
+
+
+def _blank_comment(match):
+    token = match.group()
+    return token if token[0] == '"' else _NOT_NEWLINE.sub(" ", token)
+
+
+# Every scanner strips the same source files, so one process strips each once.
+@functools.lru_cache(maxsize=None)
 def strip_comments(text):
     """Remove // and /* */ comments without disturbing line numbering."""
-    out = []
-    i = 0
-    n = len(text)
-    while i < n:
-        c = text[i]
-        if c == '"':
-            j = i + 1
-            while j < n and text[j] != '"':
-                j += 2 if text[j] == '\\' else 1
-            out.append(text[i:j + 1])
-            i = j + 1
-        elif text.startswith("//", i):
-            j = text.find("\n", i)
-            j = n if j < 0 else j
-            out.append(" " * (j - i))
-            i = j
-        elif text.startswith("/*", i):
-            j = text.find("*/", i + 2)
-            j = n if j < 0 else j + 2
-            out.append("".join(ch if ch == "\n" else " " for ch in text[i:j]))
-            i = j
-        else:
-            out.append(c)
-            i += 1
-    return "".join(out)
+    return _COMMENT_OR_STRING.sub(_blank_comment, text)
 
 
 def split_args(s):
@@ -1426,7 +1415,7 @@ def load_adjudications():
     if not os.path.exists(ADJUDICATIONS_PATH):
         return {}
     with open(ADJUDICATIONS_PATH, encoding="utf-8") as fh:
-        return _yaml().safe_load(fh) or {}
+        return load_yaml(fh) or {}
 
 
 def apply_adjudications(keys, adjudications):
