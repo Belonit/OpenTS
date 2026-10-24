@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <string>
+
 class SaveStreamClass;
 
 /*************************************************************
@@ -37,6 +39,16 @@ extern char WestwoodOnline_Clan1_Players[];
 extern char WestwoodOnline_Clan2_Players[];
 extern int g_PingsSent;
 extern int g_PingsReceived;
+
+// What the launch file asks of the results file a ladder client collects.
+struct StatisticsSettingsType
+{
+	bool IsWritten = false;
+	int MatchID = 0;
+	std::string MapHash;
+	std::string MapName;
+};
+extern StatisticsSettingsType StatisticsSettings;
 
 void	Register_Game_Start_Time(void);
 void	Register_Game_End_Time(void);

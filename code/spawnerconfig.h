@@ -139,6 +139,11 @@ class SpawnerConfigClass
 		int CustomLoadScreenY = 0;
 		std::string DifficultyName;
 
+		// The results file a ladder client collects once the game exits.
+		bool WriteStatistics = false;
+		int GameID = 0;
+		std::string MapHash;
+
 		// The match's seats, and where in them the machine reading the file sits.
 		std::array<SlotType, SLOT_COUNT> Slots;
 		int HumanCount = 0;

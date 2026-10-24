@@ -37,7 +37,7 @@ An observer's house holds no alliances. The launch file's alliance entries for t
 
 Because the house starts defeated, it never counts among the houses or people still playing when the game decides whether the match is over. It cannot surrender.
 
-An observer does not appear on the [score screen](/systems/multiplayer-score-screen/) or in the statistics report. The [diplomacy panel](/systems/diplomacy/) lists observers apart from the players.
+An observer does not appear on the [score screen](/systems/multiplayer-score-screen/) or in the [match statistics file](/formats/stats-dmp/), which an observer's machine does not write. The [diplomacy panel](/systems/diplomacy/) lists observers apart from the players.
 
 An observer's house is still an observer after a [saved game](/formats/save-games/) is loaded. A launch file that resumes a network game's save must mark the same seats as watching, or the game refuses to load the save.
 
@@ -81,7 +81,7 @@ With coach mode, defeat leaves the player's view and chat as they were:
 - Hidden enemy objects and enemy decorations stay hidden.
 - Team and private messages stay open, so the player can keep talking to their allies.
 
-With or without coach mode, a defeated player keeps their row on the score screen, in the radar pane's name list and in the statistics report.
+With or without coach mode, a defeated player keeps their row on the score screen, in the radar pane's name list and in the [match statistics file](/formats/stats-dmp/).
 
 ## When the match ends
 

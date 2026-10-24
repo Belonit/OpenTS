@@ -202,6 +202,7 @@ A row's link goes to the change record, or where there is none, to the manual pa
 | `spawner/spawner.asm` | With `DifficultyBasedAINames`, named computer players Hard AI through Ultimate AI by their difficulty. | Reworked: three names, Hard AI, Medium AI and Easy AI. [client-driven-launch] |
 | `spawner/spawner.asm` | In DTA, set the scenario's global flags from the launch file's `[GlobalFlags]` at each mission start. | Reworked: every build reads them for a campaign launch. [client-driven-launch] |
 | `spawner/spawner.asm` | Wrote `mpstats.txt` after every game. | Reworked: written after every game against other machines. |
+| `spawner/statistics.asm` | Wrote each network match's statistics to `stats.dmp` for the client, with spectator, alliance, start position and map hash fields. | Reworked: written only when the launch file sets `WriteStatistics`, with observers and the alliance field left out and the start position each player began at. [match-statistics-file] |
 | `spawner/selectable_spawns.asm` | Let players choose start positions. | Reworked. [client-driven-launch] |
 | `spawner/nethack.c` | Sent game traffic to the client's peers and through CnCNet tunnels. | Reworked. [client-driven-launch] |
 | `spawner/auto_ally_by_spawn_loc.c` | Allied every house in each group of start positions, from a preset in the map that the client chose. | Reworked: a map writes `Allies=` in `[Spawn1]`–`[Spawn8]`; the client does not choose a preset. [spawn-house-alliances] |
@@ -335,7 +336,6 @@ yet.
 
 | ts-patches file | What it did | What is needed |
 | --- | --- | --- |
-| `spawner/statistics.asm` | Wrote each network match's statistics to `stats.dmp` for the client, with spectator, alliance, start position and map hash fields. | A file format, privacy policy and consumer for match results. |
 | `score_screen_player_always_on_left.asm` | In DTA, put the player's casualty bars on the left of the campaign score screen whatever their side. | A decision. Vanilla already puts a side 0 player on the left, so the change moves the stock Nod campaign's bars and a third side's. |
 | `ai_target_emp_like_multimissile.asm`, `ai_target_droppods_like_multimissile.asm` | Let the AI aim EMP and drop pod superweapons at enemies. | A superweapon rework. |
 | `extra_difficulty.asm` | In DTA and Rubicon, added four easier difficulties and an AI-only `AINormal`. | Waiting for a request. |
@@ -435,6 +435,7 @@ yet.
 [map-crates-in-every-game-type]: ../manual/changes/map-crates-in-every-game-type.md
 [map-file-random-map]: ../manual/changes/map-file-random-map.md
 [map-local-tutorial-text]: ../manual/changes/map-local-tutorial-text.md
+[match-statistics-file]: ../manual/changes/match-statistics-file.md
 [minimum-weapon-burst]: ../manual/changes/minimum-weapon-burst.md
 [mission-difficulty-message]: ../manual/changes/mission-difficulty-message.md
 [mission-restart-difficulty]: ../manual/changes/mission-restart-difficulty.md

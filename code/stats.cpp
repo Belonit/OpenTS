@@ -45,6 +45,7 @@ int WestwoodOnline_PortNumber = 1234;
 #include "building.h"
 #include "builtype.h"
 #include "dbgprint.h"
+#include "gamedirs.h"
 #include "getcpu.h"
 #include "globals.h"
 #include "goptions.h"
@@ -54,8 +55,10 @@ int WestwoodOnline_PortNumber = 1234;
 #include "misc.h"
 #include "netshare.h"
 #include "packet.h"
+#include "rawfile.h"
 #include "savemgr.h"
 #include "savestream.h"
+#include "scenario.h"
 #include "session.h"
 #include "stats.h"
 #include "stimer.h"
@@ -77,6 +80,7 @@ int WestwoodOnline_PortNumber = 1234;
 #define FIELD_START_UNIT_COUNT					"UNIT"
 #define FIELD_TECH_LEVEL						"TECH"
 #define FIELD_SCENARIO							"SCEN"
+#define FIELD_MAP_HASH							"HASH"
 #define FIELD_START_TIME						"TIME"
 #define FIELD_GAME_DURATION						"DURA"
 #define FIELD_FRAME_RATE						"AFPS"
@@ -139,6 +143,8 @@ char WestwoodOnline_Clan2_Players[136];
 int g_PingsSent;
 int g_PingsReceived;
 
+StatisticsSettingsType StatisticsSettings;
+
 static int Get_Unit_Count(int const *buf, int count);
 
 
@@ -157,6 +163,23 @@ static void Add_Counts_Field(PacketClass & stats, char const * id, int const * c
 static void Add_Counts_Field(PacketClass & stats, char const * id, UnitTrackerClass & tracker)
 {
 	Add_Counts_Field(stats, id, tracker.Get_All_Totals(), tracker.Get_Unit_Count());
+}
+
+
+// Replaces any earlier file, so a client never reads the tail of an older match.
+static void Write_Statistics_File(void const * packet, int size)
+{
+	// The file object keeps the name pointer, so the path must outlive it.
+	std::string const path = User_File_Write_Name("stats.dmp");
+	RawFileClass file(path.c_str());
+	bool const written = file.Open(FileClass::WRITE) && file.Write(packet, size) == size;
+	file.Close();
+
+	if (written) {
+		DebugString("Wrote %d bytes of game results to %s\n", size, path.c_str());
+	} else {
+		DebugString("The game results could not be written to %s\n", path.c_str());
+	}
 }
 
 /***********************************************************************************************
@@ -213,12 +236,12 @@ void Send_Statistics_Packet(void)
 	static char field_player_ip[5]					= { "IPA?" };
 	static char field_player_clan[5]				= { "CID?" };
 	static char field_player_lost_connection[5]		= { "LCN?" };
+	static char field_player_start[5]				= { "BSP?" };
 
 	DebugString("Building game results.  SawCompletion=%d\n", Session.SawGameCompletion);
 
-	// The identifier that tells one match from another, assigned by whoever set the match
-	// up. Nobody does, at present.
-	stats.Add_Field(FIELD_GAME_ID, (unsigned int)WestwoodOnline_GameID);
+	// The identifier that tells one match from another, assigned by whoever set the match up.
+	stats.Add_Field(FIELD_GAME_ID, (unsigned int)StatisticsSettings.MatchID);
 
 	/*
 	**	Product SKU
@@ -300,7 +323,18 @@ void Send_Statistics_Packet(void)
 	/*
 	**	Scenario
 	*/
-	stats.Add_Field(FIELD_SCENARIO, Session.ScenarioFileName);
+	if (!StatisticsSettings.MapName.empty()) {
+		stats.Add_Field(FIELD_SCENARIO, StatisticsSettings.MapName.c_str());
+	} else {
+		stats.Add_Field(FIELD_SCENARIO, Scen->Description);
+	}
+
+	/*
+	 * The map's identity in the client's map list.
+	 */
+	if (!StatisticsSettings.MapHash.empty()) {
+		stats.Add_Field(FIELD_MAP_HASH, StatisticsSettings.MapHash.c_str());
+	}
 
 	/*
 	 * Pings sent
@@ -519,6 +553,12 @@ void Send_Statistics_Packet(void)
 		stats.Add_Field (field_player_color, (unsigned int) (player->Scheme));
 
 		/*
+		 * Player start position.
+		 */
+		field_player_start[3] = '0' + (char)house;
+		stats.Add_Field (field_player_start, (int)player->SpawnWaypoint);
+
+		/*
 		**	Player end credits.
 		*/
 		field_player_credits[3] = '0' + (char)house;
@@ -620,16 +660,14 @@ void Send_Statistics_Packet(void)
 	*/
 	packet = stats.Create_Comms_Packet(packet_size);
 
-	// The results server went with the online client that knew its address, and none has
-	// replaced it, so the packet is built for its fields' sake alone.
-	DebugString("Built a %d byte game results packet with no server to send it to.\n", packet_size);
-
-	/*
-	**	Save it to disk as well so I can see it
-	*/
-//	RawFileClass anotherfile ("packet.net");
-//	anotherfile.Write(packet, packet_size);
-//DebugString( "Wrote out packet.net\n" );
+	// The header holds the size in 16 bits, so a larger packet could not be read back.
+	if (packet_size > 0xFFFF) {
+		DebugString("The %d byte game results packet is too large to write.\n", packet_size);
+	} else if (StatisticsSettings.IsWritten && PlayerPtr != NULL && !PlayerPtr->IsObserver) {
+		Write_Statistics_File(packet, packet_size);
+	} else {
+		DebugString("Built a %d byte game results packet that nothing asked to be written.\n", packet_size);
+	}
 
 	/*
 	**	Tidy up

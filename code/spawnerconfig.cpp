@@ -512,6 +512,10 @@ void SpawnerConfigClass::Read_INI(INIClass const & ini)
 	CustomLoadScreen = Read_Text(ini, SETTINGS, "CustomLoadScreen", CustomLoadScreen);
 	DifficultyName = Read_Text(ini, SETTINGS, "DifficultyName", DifficultyName);
 
+	WriteStatistics = ini.Get_Bool(SETTINGS, "WriteStatistics", WriteStatistics);
+	GameID = ini.Get_Int(SETTINGS, "GameID", GameID);
+	MapHash = Read_Text(ini, SETTINGS, "MapHash", MapHash);
+
 	std::string position = Read_Text(ini, SETTINGS, "CustomLoadScreenPos", "");
 	if (!position.empty()) {
 		int x = 0;

@@ -662,6 +662,37 @@ int main(void)
 	}
 
 	/*
+	 * The results file is written only on request, and what it reports about the match is
+	 * taken as the client wrote it without making the match a different one.
+	 */
+	{
+		char const results[] =
+			"[Settings]\n"
+			"WriteStatistics=Yes\n"
+			"GameID=-123456789\n"
+			"MapHash=0123456789abcdef0123456789abcdef01234567\n"
+			"UIMapName=Tiny Tunnels\n";
+		SpawnerConfigClass config = Read(results, sizeof(results) - 1);
+
+		Check(config.WriteStatistics, "a client may ask for the results file");
+		Check(config.GameID == -123456789, "the match number is read as the client wrote it");
+		Check(config.MapHash == "0123456789abcdef0123456789abcdef01234567",
+			"the map hash is read as the client wrote it");
+
+		char const silent[] = "[Settings]\n";
+		SpawnerConfigClass plain = Read(silent, sizeof(silent) - 1);
+		Check(!plain.WriteStatistics, "an unwritten key writes no results file");
+		Check(plain.GameID == 0 && plain.MapHash.empty(), "and reports no match number or map hash");
+
+		plain.WriteStatistics = config.WriteStatistics;
+		plain.GameID = config.GameID;
+		plain.MapHash = config.MapHash;
+		SpawnerConfigClass bare = Read(silent, sizeof(silent) - 1);
+		Check(plain.Session_Identity_CRC() == bare.Session_Identity_CRC(),
+			"what the results file reports is left out of the identity");
+	}
+
+	/*
 	 * Reading a launch file cannot fail, so whether what it describes can be played is
 	 * judged separately, against the tables the game has loaded by the time it launches.
 	 */
