@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import MobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
 import SidebarPersister from '@astrojs/starlight/components/SidebarPersister.astro';
 import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro';
@@ -9,6 +8,7 @@ import { UI } from '../i18n/en.mjs';
 import { releases } from '../lib/data';
 import { withBase } from '../lib/paths';
 import { SYSTEM_CATEGORIES, SYSTEM_GROUPS } from '../lib/taxonomy';
+import { cachedCollection } from '../lib/collections';
 
 const { sidebar } = (Astro.locals as typeof Astro.locals & { starlightRoute: StarlightRouteData }).starlightRoute;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -172,7 +172,7 @@ const viewSidebar = currentSection
 	? markSection(localSidebar, currentSection).entries
 	: localSidebar;
 const systems = activeView?.id === 'systems'
-	? (await getCollection('systems')).sort((left, right) =>
+	? (await cachedCollection('systems')).sort((left, right) =>
 		left.data.title.localeCompare(right.data.title) || left.id.localeCompare(right.id))
 	: [];
 const systemCategoriesById = new Map(SYSTEM_CATEGORIES.map((category) => [category.id, category]));

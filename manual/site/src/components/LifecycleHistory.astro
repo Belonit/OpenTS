@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import {
 	releaseByVersion,
 	type EntityReference,
@@ -11,6 +10,7 @@ import {
 	lifecycleFor,
 } from '../lib/lifecycle';
 import { withBase } from '../lib/paths';
+import { cachedCollection } from '../lib/collections';
 
 interface Props {
 	reference: EntityReference;
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { reference, showBadges = true, showHistory = true } = Astro.props;
-const events = lifecycleFor(await getCollection('changes'), reference);
+const events = lifecycleFor(await cachedCollection('changes'), reference);
 const introduction = introductionFor(events);
 const latestState = latestStateFor(events);
 const statusBadge = latestState?.effect === 'removed'

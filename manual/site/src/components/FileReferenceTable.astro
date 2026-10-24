@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import ReferenceTable from './ReferenceTable.astro';
 import {
 	allKeys,
@@ -9,6 +8,7 @@ import {
 } from '../lib/data';
 import { withBase } from '../lib/paths';
 import { sectionSelectorKey } from '../lib/section-selector.mjs';
+import { cachedCollection } from '../lib/collections';
 
 interface Props {
 	file: string;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 const { file, section, levelLabels = {} } = Astro.props;
-const prose = await getCollection('keyprose');
+const prose = await cachedCollection('keyprose');
 const summaries = new Map<string, string>(prose.flatMap((entry) =>
 	!entry.data.scope && entry.data.summary ? [[entry.data.key, entry.data.summary]] : [],
 ));

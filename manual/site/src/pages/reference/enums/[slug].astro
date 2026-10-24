@@ -12,6 +12,7 @@ import { historyHeading } from '../../../lib/lifecycle';
 import { withBase } from '../../../lib/paths';
 import { relatedResourcesFor } from '../../../lib/related';
 import { siteConfig, sourceFileUrl } from '../../../lib/site-config.mjs';
+import { cachedCollection } from '../../../lib/collections';
 
 export async function getStaticPaths() {
 	return (await getCollection('enums')).map((entry) => ({
@@ -42,7 +43,7 @@ const pageHeadings = [
 	{ depth: 2, slug: 'used-by', text: 'Used by' },
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
 	{ depth: 2, slug: 'source-files', text: 'Source files' },
-	...historyHeading(await getCollection('changes'), { type: 'enum', id: entry.data.enum_id }),
+	...historyHeading(await cachedCollection('changes'), { type: 'enum', id: entry.data.enum_id }),
 ];
 ---
 

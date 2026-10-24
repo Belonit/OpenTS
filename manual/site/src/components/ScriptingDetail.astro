@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Feedback from './Feedback.astro';
 import LifecycleHistory from './LifecycleHistory.astro';
@@ -14,6 +14,7 @@ import { historyHeading } from '../lib/lifecycle';
 import { withBase } from '../lib/paths';
 import { relatedResourcesFor } from '../lib/related';
 import { UI } from '../i18n/en.mjs';
+import { cachedCollection } from '../lib/collections';
 
 interface Props { record: TriggerRecord }
 const { record } = Astro.props;
@@ -25,7 +26,7 @@ const codeSpans = (text: string) => text.split(/`([^`]+)`/g)
 	.map((part, index) => ({ code: index % 2 === 1, text: part }))
 	.filter((part) => part.text !== '');
 const entityType = record.kind.slice(0, -1) as Extract<LifecycleEntityType, 'action' | 'event' | 'mission'>;
-const authored = (await getCollection('scripting')).find(
+const authored = (await cachedCollection('scripting')).find(
 	(entry) => entry.data.type === entityType && entry.data.id === record.id,
 );
 const rendered = authored ? await render(authored) : null;
@@ -54,7 +55,7 @@ const pageHeadings = [
 	...(rendered?.headings ?? []),
 	...(authored && authored.data.valid_values.length > 0 ? [{ depth: 2, slug: 'valid-values', text: 'Valid values' }] : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
-	...historyHeading(await getCollection('changes'), { type: entityType, id: record.id }),
+	...historyHeading(await cachedCollection('changes'), { type: entityType, id: record.id }),
 ];
 ---
 

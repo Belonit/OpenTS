@@ -6,11 +6,11 @@ import CommandDetail from './CommandDetail.astro';
 import Feedback from './Feedback.astro';
 import LifecycleHistory from './LifecycleHistory.astro';
 import RelatedResources from './RelatedResources.astro';
-import { getCollection } from 'astro:content';
 import { UI } from '../i18n/en.mjs';
 import { commandKindLabel, commandRoute, type CommandRecord } from '../lib/commands';
 import { historyHeading } from '../lib/lifecycle';
 import { relatedResourcesFor } from '../lib/related';
+import { cachedCollection } from '../lib/collections';
 
 interface Props {
 	record: CommandRecord;
@@ -30,7 +30,7 @@ const related = await relatedResourcesFor(
 const pageHeadings = [
 	...(rendered?.headings ?? []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
-	...historyHeading(await getCollection('changes'), { type: 'command', id: record.id }),
+	...historyHeading(await cachedCollection('changes'), { type: 'command', id: record.id }),
 ];
 ---
 

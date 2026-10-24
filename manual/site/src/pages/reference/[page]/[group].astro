@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Breadcrumb from '../../../components/Breadcrumb.astro';
 import Feedback from '../../../components/Feedback.astro';
@@ -12,6 +11,7 @@ import {
 } from '../../../lib/data';
 import { referenceTableRows } from '../../../lib/reference-rows';
 import { sectionSelectorLabel } from '../../../lib/section-selector.mjs';
+import { cachedCollection } from '../../../lib/collections';
 
 export async function getStaticPaths() {
 	const pages = Object.keys(REFERENCE_PAGES) as Array<keyof typeof REFERENCE_PAGES>;
@@ -32,7 +32,7 @@ const firstRow = group.rows[0];
 if (!firstRow) throw new Error(`Reference group ${page}/${group.slug} has no rows`);
 const sectionLabel = sectionSelectorLabel(firstRow.scope.section);
 const breadcrumbLabel = page === 'other' ? sectionLabel : (group.displayTitle ?? group.title);
-const prose = await getCollection('keyprose');
+const prose = await cachedCollection('keyprose');
 const rows = referenceTableRows(group.rows, prose, {
 	context: `Reference group ${page}/${group.slug}`,
 	detail: (row) => row.except?.length ? exceptionSummary(row.except) : undefined,

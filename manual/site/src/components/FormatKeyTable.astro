@@ -1,17 +1,17 @@
 ---
-import { getCollection } from 'astro:content';
 import ReferenceTable from './ReferenceTable.astro';
 import { allKeys, displayWhenOmitted, effectForScope } from '../lib/data';
 import { formatKeyMatches, type FormatRecord } from '../lib/formats';
 import { withBase } from '../lib/paths';
 import { sectionSelectorLabel } from '../lib/section-selector.mjs';
+import { cachedCollection } from '../lib/collections';
 
 interface Props {
 	format: FormatRecord;
 }
 
 const { format } = Astro.props;
-const prose = await getCollection('keyprose');
+const prose = await cachedCollection('keyprose');
 const summaries = new Map<string, string>();
 for (const entry of prose) {
 	if (!entry.data.summary) continue;

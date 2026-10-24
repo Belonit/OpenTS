@@ -1,5 +1,5 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Feedback from './Feedback.astro';
 import LifecycleHistory from './LifecycleHistory.astro';
@@ -16,10 +16,11 @@ import { historyHeading } from '../lib/lifecycle';
 import { withBase } from '../lib/paths';
 import { relatedResourcesFor } from '../lib/related';
 import { UI } from '../i18n/en.mjs';
+import { cachedCollection } from '../lib/collections';
 
 interface Props { record: KeyRecord }
 const { record } = Astro.props;
-const prose = (await getCollection('keyprose')).filter((entry) => entry.data.key === record.key);
+const prose = (await cachedCollection('keyprose')).filter((entry) => entry.data.key === record.key);
 const keyLevel = prose.find((entry) => !entry.data.scope);
 const scopeProse = new Map<string, (typeof prose)[number]>();
 for (const entry of prose) if (entry.data.scope) scopeProse.set(entry.data.scope, entry);
@@ -53,7 +54,7 @@ const related = await relatedResourcesFor(
 const headings = [
 	...(multi ? scopeParts.map((part) => ({ depth: 2, slug: `scope-${part.scope.route_id}`, text: part.heading })) : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: UI.related.title }] : []),
-	...historyHeading(await getCollection('changes'), { type: 'key', id: record.key }),
+	...historyHeading(await cachedCollection('changes'), { type: 'key', id: record.key }),
 ];
 ---
 

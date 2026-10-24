@@ -1,5 +1,5 @@
 ---
-import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { render, type CollectionEntry } from 'astro:content';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Breadcrumb from './Breadcrumb.astro';
 import Feedback from './Feedback.astro';
@@ -13,6 +13,7 @@ import { allFormats, formatKeyMatches } from '../lib/formats';
 import { historyHeading } from '../lib/lifecycle';
 import { relatedResourcesFor } from '../lib/related';
 import { siteConfig, sourceFileUrl } from '../lib/site-config.mjs';
+import { cachedCollection } from '../lib/collections';
 
 interface Props {
 	entry: CollectionEntry<'formats'>;
@@ -39,7 +40,7 @@ const pageHeadings = [
 	...(acceptedSettings.length > 0 ? [{ depth: 2, slug: 'accepted-settings', text: 'Accepted settings' }] : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
 	{ depth: 2, slug: 'source-files', text: 'Source files' },
-	...historyHeading(await getCollection('changes'), { type: 'format', id: format.format_id }),
+	...historyHeading(await cachedCollection('changes'), { type: 'format', id: format.format_id }),
 ];
 ---
 

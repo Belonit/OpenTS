@@ -21,6 +21,7 @@ import { historyHeading } from '../../lib/lifecycle';
 import { requireRouteTail, withBase } from '../../lib/paths';
 import { relatedResourcesFor } from '../../lib/related';
 import { systemCategoryTitle, systemGroupForCategory } from '../../lib/taxonomy';
+import { cachedCollection } from '../../lib/collections';
 
 export async function getStaticPaths() {
 	const systems = await getCollection('systems');
@@ -52,7 +53,7 @@ export async function getStaticPaths() {
 
 async function prepareSystem(system: CollectionEntry<'systems'>) {
 	const { Content, headings } = await render(system);
-	const prose = await getCollection('keyprose');
+	const prose = await cachedCollection('keyprose');
 	const summaries = new Map<string, string>(prose.flatMap((entry) =>
 		!entry.data.scope && entry.data.summary ? [[entry.data.key, entry.data.summary]] : [],
 	));
@@ -83,7 +84,7 @@ async function prepareSystem(system: CollectionEntry<'systems'>) {
 		...headings,
 		...(rows.length > 0 ? [{ depth: 2, slug: 'related-settings', text: 'Related settings' }] : []),
 		...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
-		...historyHeading(await getCollection('changes'), { type: 'system', id: system.id }),
+		...historyHeading(await cachedCollection('changes'), { type: 'system', id: system.id }),
 	];
 	return {
 		system,

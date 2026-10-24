@@ -1,5 +1,4 @@
 ---
-import { getCollection } from 'astro:content';
 import DefaultHead from '@astrojs/starlight/components/Head.astro';
 import { commandByRoute } from '../lib/commands';
 import { effectForKey, keyByRoute, referenceFamily } from '../lib/data';
@@ -10,6 +9,7 @@ import {
 	searchScopesForPath,
 } from '../lib/search-scopes.mjs';
 import { UI } from '../i18n/en.mjs';
+import { cachedCollection } from '../lib/collections';
 
 const base = import.meta.env.BASE_URL;
 const pathname = logicalSearchPath(Astro.url.pathname, base);
@@ -25,7 +25,7 @@ const keyFamilies = key
 	: [];
 /* A key page's search result carries the same inert marker its reference rows
    do, so a reader can tell a dead setting from a live one without opening it. */
-const keyEffect = key ? effectForKey(await getCollection('keyprose'), key) : 'used';
+const keyEffect = key ? effectForKey(await cachedCollection('keyprose'), key) : 'used';
 const keyEffectMarker = keyEffect === 'partial'
 	? UI.noEffect.badgePartial
 	: keyEffect === 'none' ? UI.noEffect.badge : undefined;
@@ -35,10 +35,10 @@ const guideId = detailId('guides');
 const usingId = detailId('using');
 const internalId = detailId('internals');
 const [system, guide, using, internal] = await Promise.all([
-	systemId ? getCollection('systems').then((rows) => rows.find((row) => row.id === systemId)) : undefined,
-	guideId ? getCollection('guides').then((rows) => rows.find((row) => row.id === guideId)) : undefined,
-	usingId ? getCollection('using').then((rows) => rows.find((row) => row.id === usingId)) : undefined,
-	internalId ? getCollection('internals').then((rows) => rows.find((row) => row.id === internalId)) : undefined,
+	systemId ? cachedCollection('systems').then((rows) => rows.find((row) => row.id === systemId)) : undefined,
+	guideId ? cachedCollection('guides').then((rows) => rows.find((row) => row.id === guideId)) : undefined,
+	usingId ? cachedCollection('using').then((rows) => rows.find((row) => row.id === usingId)) : undefined,
+	internalId ? cachedCollection('internals').then((rows) => rows.find((row) => row.id === internalId)) : undefined,
 ]);
 
 /* /commands/fixed-controls/ is an index page, not a command detail route. */
