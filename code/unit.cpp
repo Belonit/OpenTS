@@ -1906,7 +1906,7 @@ bool UnitClass::Try_To_Deploy(void)
 				cell = Adjacent_Cell(ncell, FACING_NW);
 			}
 			if (!Class->DeploysInto->Legal_Placement(cell, NULL)) {
-				if (House->Is_Player_Control()) {
+				if (House->Is_Player_Commanded()) {
 					Speak(VOX_DEPLOY);
 				}
 				if (!House->Is_Human_Player()) {
@@ -4276,7 +4276,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
 	/*
 	**	Special return to friendly refinery action.
 	*/
-	if (House->Is_Player_Control() && techno != NULL && techno->House->Is_Ally(this) && House->Is_Ally(techno->House)) {
+	if (House->Is_Player_Commanded() && techno != NULL && techno->House->Is_Ally(this) && House->Is_Ally(techno->House)) {
 		if (object->RTTI == RTTI_BUILDING && ((UnitClass *)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)object) == RADIO_ROGER) {
 			action = ACTION_ENTER;
 		}
@@ -4285,7 +4285,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
 	/*
 	**	Special return to friendly repair factory action.
 	*/
-	if (House->Is_Player_Control() && action == ACTION_SELECT && object->RTTI == RTTI_BUILDING) {
+	if (House->Is_Player_Commanded() && action == ACTION_SELECT && object->RTTI == RTTI_BUILDING) {
 		BuildingClass * building = (BuildingClass *)object;
 		if (building != NULL && building->House->Is_Ally(this) && House->Is_Ally(building->House)) {
 			if (building->Class->IsCanUnitRepair && ((UnitClass *)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER && !building->In_Radio_Contact() && !building->Cargo.Is_Something_Attached()) {
@@ -4297,7 +4297,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
 	// A repairing vehicle that can deploy keeps its deploy verdict over itself.
 	bool deploying = object == this && (action == ACTION_SELF || action == ACTION_NO_DEPLOY);
 
-	if (Combat_Damage() < 0 && House->Is_Player_Control()) {
+	if (Combat_Damage() < 0 && House->Is_Player_Commanded()) {
 		if (House->Is_Ally(object)) {
 			if (Can_Heal(object) && object != this && object->Not_Underground()) {
 				if ( object->RTTI != RTTI_AIRCRAFT || Map[object->Center_Coord()].Cell_Building() == NULL) {
@@ -4332,7 +4332,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
 	**	If it doesn't know what to do with the object, then just
 	**	say it can't move there.
 	*/
-	if (action == ACTION_NONE && House->Is_Player_Control()) {
+	if (action == ACTION_NONE && House->Is_Player_Commanded()) {
 		action = ACTION_NOMOVE;
 	}
 
@@ -4364,7 +4364,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
  *=============================================================================================*/
 ActionType UnitClass::What_Action(Cell const & cell, bool check_fog, bool disallow_force) const
 {
-	if (!House->Is_Player_Control()) {
+	if (!House->Is_Player_Commanded()) {
 		return(ACTION_NONE);
 	}
 
@@ -4372,7 +4372,7 @@ ActionType UnitClass::What_Action(Cell const & cell, bool check_fog, bool disall
 
 	ActionType action = BASECLASS::What_Action(cell, check_fog, disallow_force);
 
-	if (Combat_Damage() < 0 && House->Is_Player_Control() && action == ACTION_ATTACK) {
+	if (Combat_Damage() < 0 && House->Is_Player_Commanded() && action == ACTION_ATTACK) {
 		action = ACTION_ATTACK_SUPPORT;
 	}
 

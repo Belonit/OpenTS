@@ -1070,7 +1070,7 @@ bool ObjectClass::Select(void)
 	if (CurrentObject.Count() > 0) {
 		HouseClass * tryhptr = Owner_HouseClass();
 		HouseClass * oldhptr = CurrentObject[0]->Owner_HouseClass();
-		if (oldhptr->Is_Player_Control() != tryhptr->Is_Player_Control() || !oldhptr->Is_Player_Control()) {
+		if (oldhptr->Is_Player_Commanded() != tryhptr->Is_Player_Commanded() || !oldhptr->Is_Player_Commanded()) {
 			Unselect_All();
 		}
 	}

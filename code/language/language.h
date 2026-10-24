@@ -1167,6 +1167,10 @@
 #define IDC_DESYNC_QUIT                 1713
 #define IDC_EDGE_SCROLL                 1714
 #define TXT_SUPERWEAPON_TOOLTIP			1715
+#define TXT_GRANT_CONTROL               1716
+#define TXT_GRANT_CONTROL_DESC          1717
+#define TXT_CONTROL_GRANTED             1718
+#define TXT_CONTROL_WITHDRAWN           1719
 
 // Next default values for new objects
 //

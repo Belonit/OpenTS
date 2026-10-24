@@ -2936,7 +2936,7 @@ static void Select_Team_Members(int team)
 {
 	for (int i = 0; i < Technos.Count(); i++) {
 		TechnoClass * obj = Technos[i];
-		if (obj && !obj->IsInLimbo && obj->Group == team - 1 && obj->House->Is_Player_Control()) {
+		if (obj && !obj->IsInLimbo && obj->Group == team - 1 && obj->House->Is_Player_Commanded()) {
 			if (!obj->IsSelected) {
 				obj->Select();
 				AllowVoice = false;
@@ -2950,7 +2950,7 @@ static void Assign_Selection_To_Team(int team)
 {
 	for (int i = 0; i < Technos.Count(); i++) {
 		TechnoClass * obj = Technos[i];
-		if (obj && !obj->IsInLimbo && obj->House->Is_Player_Control()) {
+		if (obj && !obj->IsInLimbo && obj->House->Is_Player_Commanded()) {
 			if (obj->Group == team - 1) {
 				obj->Group = -1;
 			}
@@ -3472,6 +3472,30 @@ class AllianceCommandClass : public CommandClass
 		virtual void Execute(void) const {
 			if (CurrentObject.Count() && PlayerPtr->Can_Change_Alliance(CurrentObject[0]->Owner_HouseClass())) {
 				OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ALLY, CurrentObject[0]->Owner()));
+			}
+		}
+};
+
+
+class GrantControlCommandClass : public CommandClass
+{
+	public:
+		virtual char const * Get_Unique_Name(void) const {
+			return("GrantControl");
+		}
+		virtual char const * Get_Display_Name(void) const {
+			return(Fetch_String(TXT_GRANT_CONTROL));
+		}
+		virtual char const * Get_Category(void) const {
+			return(Fetch_String((TXT_CONTROL)));
+		}
+		virtual char const * Get_Description(void) const {
+			return(Fetch_String(TXT_GRANT_CONTROL_DESC));
+		}
+
+		virtual void Execute(void) const {
+			if (CurrentObject.Count() && PlayerPtr->Can_Grant_Control(CurrentObject[0]->Owner_HouseClass())) {
+				OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::GRANT_CONTROL, CurrentObject[0]->Owner()));
 			}
 		}
 };
@@ -4620,7 +4644,7 @@ class SelectSameTypeCommandClass : public CommandClass
 			SoughtTypes.clear();
 			for (int i = 0; i < CurrentObject.Count(); i++) {
 				ObjectClass * obj = CurrentObject[i];
-				if (!obj->Is_Techno() || !((TechnoClass *)obj)->House->Is_Player_Control()) {
+				if (!obj->Is_Techno() || !((TechnoClass *)obj)->House->Is_Player_Commanded()) {
 					continue;
 				}
 				SoughtTypes.insert(obj->TClass);
@@ -4653,7 +4677,7 @@ class SelectSameTypeCommandClass : public CommandClass
 		/// <remarks>SoughtTypes must hold the desired types before calling this routine.</remarks>
 		static void Select_Callback(ObjectClass * obj)
 		{
-			if (obj != NULL && obj->Is_Techno() && obj->IsDown && !obj->IsSelected && SoughtTypes.contains(obj->TClass) && ((TechnoClass *)obj)->House->Is_Player_Control()) {
+			if (obj != NULL && obj->Is_Techno() && obj->IsDown && !obj->IsSelected && SoughtTypes.contains(obj->TClass) && ((TechnoClass *)obj)->House->Is_Player_Commanded()) {
 				obj->Select();
 			}
 		}
@@ -4706,7 +4730,7 @@ void SelectionFilterClass::Execute(bool add_lower)
 			continue;
 		}
 		TechnoClass * techno = (TechnoClass *)obj;
-		if (!techno->House->Is_Player_Control()) {
+		if (!techno->House->Is_Player_Commanded()) {
 			continue;
 		}
 		int tier = Tier(techno);
@@ -4799,7 +4823,7 @@ SelectionFilterClass::TechnoList SelectionFilterClass::Resolve_Last_Full(void) c
 	TechnoList list;
 	for (TargetClass const & target : LastFull) {
 		TechnoClass * techno = target.As_Techno();
-		if (techno != NULL && techno->IsActive && !techno->IsInLimbo && techno->House->Is_Player_Control()) {
+		if (techno != NULL && techno->IsActive && !techno->IsInLimbo && techno->House->Is_Player_Commanded()) {
 			list.push_back(techno);
 		}
 	}
@@ -5369,6 +5393,7 @@ static void Init_Commands(void)
 	AllCommands.Add(new SelectViewCommandClass);
 
 	AllCommands.Add(new AllianceCommandClass);
+	AllCommands.Add(new GrantControlCommandClass);
 
 	AllCommands.Add(new CenterBaseCommandClass);
 	AllCommands.Add(new CenterViewCommandClass);

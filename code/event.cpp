@@ -126,6 +126,8 @@ namespace {
 		"order against a hidden object",
 		"superweapon target out of range",
 		"alliance the match does not allow",
+		"invalid grant house",
+		"control grant the match does not allow",
 	};
 
 	static_assert(ARRAY_SIZE(RejectReasonNames) == (int)Reason::Count);
@@ -157,6 +159,7 @@ namespace {
 			case Reason::WallNotOwned:
 			case Reason::MissionNotAllowed:
 			case Reason::AllianceNotAllowed:
+			case Reason::InvalidGrantHouse:
 				return(true);
 
 			default:
@@ -790,6 +793,7 @@ void EventClass::Execute(void)
 		case TIMING:        Execute_TIMING(); break;
 		case PROCESS_TIME:  Execute_PROCESS_TIME(); break;
 		case NETWORK_REPORT: Execute_NETWORK_REPORT(); break;
+		case GRANT_CONTROL: Execute_GRANT_CONTROL(); break;
 		default:            break;
 	}
 }
@@ -797,7 +801,8 @@ void EventClass::Execute(void)
 
 /// <summary>
 /// Applies the checks every event must pass before it runs: a known type, an existing sender
-/// and, in a network game, the sender's ownership of the object it commands.
+/// and, in a network game, the sender's ownership of the object it commands, or for an order
+/// a shared control grant from its owner.
 /// </summary>
 bool EventClass::Is_Admitted(void) const
 {
@@ -818,15 +823,17 @@ bool EventClass::Is_Admitted(void) const
 		return(true);
 	}
 
-	bool requires_ownership = false;
-	TechnoClass * subject = Subject(requires_ownership);
-	if (requires_ownership) {
+	SubjectRule rule = SubjectRule::NONE;
+	TechnoClass * subject = Subject(rule);
+	if (rule != SubjectRule::NONE) {
 		if (subject == NULL || !subject->IsActive || subject->Strength <= 0) {
 			return(false);
 		}
-		int const owner = subject->House != NULL ? subject->House->HeapID : -1;
-		if (owner != ID) {
-			Reject(RejectReason::UnauthorizedSubject, owner);
+		HouseClass const * owner = subject->House;
+		bool const allowed = owner != NULL
+			&& (owner->HeapID == ID || (rule == SubjectRule::COMMANDER && owner->Grants_Control_To(Houses[ID])));
+		if (!allowed) {
+			Reject(RejectReason::UnauthorizedSubject, owner != NULL ? owner->HeapID : -1);
 			return(false);
 		}
 	}
@@ -840,30 +847,39 @@ bool EventClass::Is_Admitted(void) const
 }
 
 
-/// <summary>Returns the object an ownership-gated event commands, or NULL for any other event.</summary>
-TechnoClass * EventClass::Subject(bool & requires_ownership) const
+/// <summary>
+/// Returns the object a gated event commands, or NULL for any other event, and sets the rule
+/// its sender must meet. Orders accept a shared control grant; choosing a primary factory,
+/// repair, power and sale stay with the owner.
+/// </summary>
+TechnoClass * EventClass::Subject(SubjectRule & rule) const
 {
-	requires_ownership = true;
 	switch (Type) {
 		case POWERON:
 		case POWEROFF:
 		case REPAIR:
 		case PRIMARY:
+		case SELL:
+			rule = SubjectRule::OWNER;
+			return(Data.Target.Whom.As_Techno());
+
 		case IDLE:
 		case DEPLOY:
 		case SCATTER:
-		case SELL:
+			rule = SubjectRule::COMMANDER;
 			return(Data.Target.Whom.As_Techno());
 
 		case ARCHIVE:
+			rule = SubjectRule::COMMANDER;
 			return(Data.NavCom.Whom.As_Techno());
 
 		case MEGAMISSION:
 		case MEGAMISSION_F:
+			rule = SubjectRule::COMMANDER;
 			return(Data.MegaMission.Whom.As_Techno());
 
 		default:
-			requires_ownership = false;
+			rule = SubjectRule::NONE;
 			return(NULL);
 	}
 }
@@ -1557,6 +1573,35 @@ void EventClass::Announce_Setting_Change(int text) const
 	if (str != NULL && strlen(str) != 0) {
 		char msg[256];
 		sprintf(msg, str, Session.Shown_Name(house).c_str());
+		Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
+	}
+}
+
+
+/// <summary>
+/// Grants the house the event names control of the sender's units, or withdraws the grant,
+/// and tells both players. Outside a network game the event is refused, since no honest game
+/// sends it there.
+/// </summary>
+void EventClass::Execute_GRANT_CONTROL(void)
+{
+	HouseClass * house = Houses[ID];
+	int const index = Data.General.Value;
+	if (index < 0 || index >= Houses.Count() || Houses[index] == NULL) {
+		Reject(RejectReason::InvalidGrantHouse, index);
+		return;
+	}
+	HouseClass * grantee = Houses[index];
+	if (!house->Can_Grant_Control(grantee)) {
+		Reject(RejectReason::ControlGrantNotAllowed, index);
+		return;
+	}
+
+	bool const granted = house->Toggle_Control_Grant(grantee);
+	if (PlayerPtr == house || PlayerPtr == grantee) {
+		char msg[256];
+		snprintf(msg, sizeof(msg), Fetch_String(granted ? TXT_CONTROL_GRANTED : TXT_CONTROL_WITHDRAWN),
+			Session.Shown_Name(house).c_str(), Session.Shown_Name(grantee).c_str());
 		Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
 	}
 }

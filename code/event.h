@@ -111,6 +111,7 @@ class EventClass
 			LATENCYFUDGE,
 			NETWORK_REPORT,
 			ABANDON_COUNT,
+			GRANT_CONTROL,		// Grant or withdraw shared control of the sender's units.
 
 			LAST_EVENT,			// one past the last event
 		};
@@ -309,6 +310,8 @@ class EventClass
 			TargetHidden,
 			SuperWeaponOutOfRange,
 			AllianceNotAllowed,
+			InvalidGrantHouse,
+			ControlGrantNotAllowed,
 			Count,
 		};
 
@@ -325,9 +328,16 @@ class EventClass
 		static char const * EventNames[LAST_EVENT];
 
 	private:
+		// What the sender must hold over the object an event commands.
+		enum class SubjectRule {
+			NONE,
+			OWNER,
+			COMMANDER,	// ownership or a shared control grant
+		};
+
 		bool Is_Admitted(void) const;
 		void Reject(RejectReason reason, int detail) const;
-		TechnoClass * Subject(bool & requires_ownership) const;
+		TechnoClass * Subject(SubjectRule & rule) const;
 		void Announce_Setting_Change(int text) const;
 
 		void Execute_POWER(void);
@@ -361,5 +371,6 @@ class EventClass
 		void Execute_TIMING(void);
 		void Execute_PROCESS_TIME(void);
 		void Execute_NETWORK_REPORT(void);
+		void Execute_GRANT_CONTROL(void);
 };
 #pragma pack(pop)

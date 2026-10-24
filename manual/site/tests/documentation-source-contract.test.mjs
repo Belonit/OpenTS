@@ -255,7 +255,7 @@ test('Every name a match shows passes through the session', () => {
 		'TXT_TO', 'TXT_CONNECTION_LOST', 'TXT_LEFT_GAME', 'TXT_PLAYER_DEFEATED', 'TXT_RECONNECTING_TO',
 		'TXT_HAS_ALLIED', 'TXT_AT_WAR', 'TXT_SPECIAL_WARNING', 'TXT_PLAYER_CHANGED_SPEED',
 		'TXT_PLAYER_CHANGED_LATENCY', 'TXT_CHAT_TAGGED', 'TXT_CHAT_TO_PLAYER', 'TXT_MOVIE_SKIP_ONE',
-		'TXT_RECONNECT_KICK_RECEIVED',
+		'TXT_RECONNECT_KICK_RECEIVED', 'TXT_CONTROL_GRANTED', 'TXT_CONTROL_WITHDRAWN',
 	];
 	const named = new RegExp(String.raw`\b(?:${naming.join('|')})\b`, 'g');
 
@@ -1481,7 +1481,7 @@ test('A repairing vehicle keeps its own deploy cursor', () => {
 		action,
 		[
 			'bool deploying = object == this && (action == ACTION_SELF || action == ACTION_NO_DEPLOY);',
-			'if (Combat_Damage() < 0 && House->Is_Player_Control()) {',
+			'if (Combat_Damage() < 0 && House->Is_Player_Commanded()) {',
 			'} else if ( object->RTTI != RTTI_BUILDING && !deploying ) {',
 		],
 		'the repair rules run after the deploy rules and must not overwrite them',

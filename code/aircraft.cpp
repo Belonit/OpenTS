@@ -1979,7 +1979,7 @@ ActionType AircraftClass::What_Action(ObjectClass const * target, bool disallow_
 {
 	ActionType action = BASECLASS::What_Action(target, disallow_force);
 
-	if (Class->IsCarryall && House->Is_Player_Control()) {
+	if (Class->IsCarryall && House->Is_Player_Commanded()) {
 		if (action == ACTION_SELECT || action == ACTION_NONE) {
 			if (House->Is_Ally(target)) {
 				if (!target->Is_Techno() || target->Owner_HouseClass()->Is_Ally(this)) {
@@ -2010,7 +2010,7 @@ ActionType AircraftClass::What_Action(ObjectClass const * target, bool disallow_
 	/*
 	**	Special return to friendly repair factory action.
 	*/
-	if (House->Is_Player_Control() && (action == ACTION_SELECT || action == ACTION_MOVE) && target->RTTI == RTTI_BUILDING) {
+	if (House->Is_Player_Commanded() && (action == ACTION_SELECT || action == ACTION_MOVE) && target->RTTI == RTTI_BUILDING) {
 		BuildingClass * building = (BuildingClass *)target;
 		if ((building->Class->IsCanUnitRepair || building->Class->IsHelipad) && !building->In_Radio_Contact() && !building->Cargo.Is_Something_Attached()) {
 			if (((AircraftClass *)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER) {
@@ -2053,7 +2053,7 @@ ActionType AircraftClass::What_Action(ObjectClass const * target, bool disallow_
  *=============================================================================================*/
 ActionType AircraftClass::What_Action(Cell const & cell, bool check_fog, bool disallow_force) const
 {
-	if (!House->Is_Player_Control()) {
+	if (!House->Is_Player_Commanded()) {
 		return(ACTION_NONE);
 	}
 

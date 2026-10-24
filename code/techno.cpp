@@ -3472,8 +3472,9 @@ bool TechnoClass::Select(void)
 		/*
 		**	Speak a confirmation of selection.
 		*/
-		if (House->Is_Player_Control() && AllowVoice) {
-			if (Tag != NULL) {
+		if (House->Is_Player_Commanded() && AllowVoice) {
+			// A shared control commander hears the unit, but only its owner springs the trigger.
+			if (Tag != NULL && House->Is_Player_Control()) {
 				Tag->Spring(TEVENT_SELECTED, this);
 			}
 			Response_Select();
@@ -4307,7 +4308,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_fo
 		**	object cannot do anything special with itself, then just return with
 		**	the no action flag.
 		*/
-		if (object == this && CurrentObject.Count() == 1 && House->Is_Player_Control()) {
+		if (object == this && CurrentObject.Count() == 1 && House->Is_Player_Commanded()) {
 			return(ACTION_SELF);
 		}
 
@@ -4330,7 +4331,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_fo
 		**	Special guard area mission is possible if both the control and the
 		**	alt keys are held down.
 		*/
-		if (House->Is_Player_Control() && ctrldown && altdown && Can_Player_Move()) {
+		if (House->Is_Player_Commanded() && ctrldown && altdown && Can_Player_Move()) {
 			return(ACTION_GUARD_AREA);
 		}
 
@@ -4338,7 +4339,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_fo
 		**	Special override to force a move regardless of what is occupying the location.
 		*/
 		if (altdown) {
-			if (House->Is_Player_Control() && Can_Player_Move()) {
+			if (House->Is_Player_Commanded() && Can_Player_Move()) {
 				return(ACTION_MOVE);
 			}
 		}
@@ -4348,7 +4349,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_fo
 		**	is held down.
 		*/
 		if (shiftdown) {
-			if (House->Is_Player_Control() && !IsALoaner) {
+			if (House->Is_Player_Commanded() && !IsALoaner) {
 				return(ACTION_TOGGLE_SELECT);
 			}
 		}
@@ -4357,7 +4358,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_fo
 		**	If firing is possible and legal, then return this action potential.
 		*/
 		TechnoTypeClass const * ttype = TClass;
-		if (object->Not_Underground() && House->Is_Player_Control() && (ctrldown || !House->Is_Ally(object)) && (ctrldown || object->Class_Of()->IsLegalTarget || (Rule->IsTreeTarget && object->RTTI == RTTI_TERRAIN))) {
+		if (object->Not_Underground() && House->Is_Player_Commanded() && (ctrldown || !House->Is_Ally(object)) && (ctrldown || object->Class_Of()->IsLegalTarget || (Rule->IsTreeTarget && object->RTTI == RTTI_TERRAIN))) {
 
 			if (Is_Weapon_Equipped() ||
 					(RTTI == RTTI_INFANTRY &&
@@ -4383,7 +4384,7 @@ ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_fo
 		/*
 		**	Possibly try to select the specified object, if that is warranted.
 		*/
-		if (!Is_Weapon_Equipped() || !House->Is_Player_Control() || object->Owner() == Owner()) {
+		if (!Is_Weapon_Equipped() || !House->Is_Player_Commanded() || object->Owner() == Owner()) {
 			if ((!IsALoaner || !IsOwnedByPlayer) && object->Class_Of()->IsSelectable && !object->IsSelected) {
 				return(ACTION_SELECT);
 			}
@@ -4458,7 +4459,7 @@ ActionType TechnoClass::What_Action(Cell const & cell, bool check_fog, bool disa
 	 * waypoint patrol.
 	 */
 	bool renovator = Is_Renovator();
-	if (House->Is_Player_Control() && ((ctrldown && altdown) || IsOnWaypointPatrol) && Can_Player_Move() && (Can_Player_Fire() || renovator)) {
+	if (House->Is_Player_Commanded() && ((ctrldown && altdown) || IsOnWaypointPatrol) && Can_Player_Move() && (Can_Player_Fire() || renovator)) {
 		if (PlayerPtr->Waypoint_At(cell) != NULL || IsOnWaypointPatrol) {
 			return(ACTION_PATROL_WAYPOINT);
 		}
@@ -4468,7 +4469,7 @@ ActionType TechnoClass::What_Action(Cell const & cell, bool check_fog, bool disa
 	/*
 	**	If firing is possible and legal, then return this action potential.
 	*/
-	if (House->Is_Player_Control() && Get_Class_Weapon_Data(0)->Weapon != NULL) {
+	if (House->Is_Player_Commanded() && Get_Class_Weapon_Data(0)->Weapon != NULL) {
 
 		bool destroyable = Map[cell].Is_Tile_Destroyable_Cliff();
 		if (destroyable) {
@@ -4500,7 +4501,7 @@ ActionType TechnoClass::What_Action(Cell const & cell, bool check_fog, bool disa
 	**	If the object can enter the cell specified, then allow
 	**	movement to it.
 	*/
-	if (House->Is_Player_Control() && (Can_Player_Move() || Is_Move_Override())) {
+	if (House->Is_Player_Commanded() && (Can_Player_Move() || Is_Move_Override())) {
 
 		if (!Map.In_Local_Radar(cell, true)) {
 			return(ACTION_NOMOVE);
@@ -4557,7 +4558,7 @@ ActionType TechnoClass::What_Action(Cell const & cell, bool check_fog, bool disa
  *=============================================================================================*/
 bool TechnoClass::Can_Player_Move(void) const
 {
-	if (House->Is_Player_Control() && !Is_Immobilized()) {
+	if (House->Is_Player_Commanded() && !Is_Immobilized()) {
 		return(true);
 	}
 	return(false);
@@ -4662,7 +4663,7 @@ bool TechnoClass::Can_Deploy_Now(void) const
  *=============================================================================================*/
 bool TechnoClass::Can_Player_Fire(void) const
 {
-	if (House->Is_Player_Control() && PrimaryWeapon != NULL && !Is_Immobilized()) {
+	if (House->Is_Player_Commanded() && PrimaryWeapon != NULL && !Is_Immobilized()) {
 		return(true);
 	}
 	return(false);

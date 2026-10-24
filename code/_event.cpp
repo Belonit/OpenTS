@@ -59,6 +59,7 @@ unsigned char EventClass::EventLength[EventClass::LAST_EVENT] = {
 	size_of(EventClass, Data.General),               // LATENCYFUDGE
 	size_of(EventClass, Data.NetworkReport),         // NETWORK_REPORT
 	size_of(EventClass, Data.AbandonCount),          // ABANDON_COUNT
+	size_of(EventClass, Data.General),               // GRANT_CONTROL
 };
 
 char const * EventClass::EventNames[EventClass::LAST_EVENT] = {
@@ -100,4 +101,5 @@ char const * EventClass::EventNames[EventClass::LAST_EVENT] = {
 	"LATENCYFUDGE",
 	"NETWORK_REPORT",
 	"ABANDON_COUNT",
+	"GRANT_CONTROL",
 };

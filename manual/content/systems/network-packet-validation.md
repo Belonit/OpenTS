@@ -28,10 +28,11 @@ Each command is checked again when it runs. A command that fails is ignored, and
 - A superweapon strike names one of the sender's superweapons.
 - A mission order names a defined mission, or none.
 - An alliance names an existing player.
+- A shared control grant names an existing player.
 - A game speed change names one of the seven game speeds.
 - A change to the legacy latency setting stays within `0` to `3`.
 
-In a network game, a command aimed at one object requires the sender to own that object when the command runs. This covers power on or off, repair, sell, setting a primary factory or a rally point, deploy, scatter, stop, and move, attack, and other mission orders. A command to a missing or destroyed object does nothing. A captured object ignores commands from its former owner.
+In a network game, a command aimed at one object requires the sender to own that object when the command runs. This covers power on or off, repair, sell, setting a primary factory or a rally point, deploy, scatter, stop, and move, attack, and other mission orders. An ally who holds a [shared control](/systems/shared-control/) grant from the owner may also send all of these except power, repair, sell and setting a primary factory. A command to a missing or destroyed object does nothing. A captured object ignores commands from its former owner.
 
 ## Interface rules in network games
 
@@ -58,6 +59,7 @@ Other commands have these rules:
 - A mission order's target and destination objects must not be under the sender's shroud. Objects that belong to the sender or an ally are exempt.
 - A strike from an EM pulse superweapon with [`Action=EMPulse`](/keys/action/#scope-superweapontype) must target a cell in range of the cannon that will fire it, which is the sender's operational pulse cannon nearest the target. A superweapon with `Action=EMPulseRange` still fires at any distance.
 - Making or breaking an alliance requires a match that allows alliances and does not fix them, a sender who has not been defeated, and a human target other than the sender.
+- Granting or withdrawing shared control requires the conditions on the [shared control](/systems/shared-control/#granting-and-withdrawing-control) page.
 
 Some of these commands can fail for a player whose game is not modified, because the match changes between the click and the command running. For example, the anchor for a placement or a prerequisite for production can be destroyed in that time, or a target can move into an area the sender has never seen.
 

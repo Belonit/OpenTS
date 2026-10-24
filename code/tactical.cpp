@@ -1312,7 +1312,7 @@ void Tactical::Render(Surface & surface, bool fullredraw, int drawpass)
 		for (i = 0; i < CurrentObject.Count(); i++) {
 			ObjectClass * object = CurrentObject[i];
 			if (object->Is_Techno() && ((TechnoClass*)object)->IsSelected) {
-				if (TechnoClass::ActionLines == true && ((TechnoClass*)object)->House->Is_Player_Control()) {
+				if (TechnoClass::ActionLines == true && ((TechnoClass*)object)->House->Is_Player_Commanded()) {
 					((TechnoClass*)object)->Draw_Action_Line();
 				}
 			}
@@ -3301,7 +3301,7 @@ void Tactical::Select_These(Rect const & rect, void (*select_callback)(ObjectCla
 				}
 
 				HouseClass * hptr = obj->Owner_HouseClass();
-				if (hptr != NULL && hptr->Is_Player_Control() &&
+				if (hptr != NULL && hptr->Is_Player_Commanded() &&
 					obj->Class_Of()->IsSelectable &&
 					(obj->RTTI != RTTI_BUILDING || force)) {
 					if (obj->Select()) {

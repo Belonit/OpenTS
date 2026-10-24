@@ -2206,7 +2206,7 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 			**	Toggle the select state of the object.
 			*/
 			if (action == ACTION_TOGGLE_SELECT) {
-				if (!object || !CurrentObject.Count() || !CurrentObject[0]->Owner_HouseClass()->Is_Player_Control()) {
+				if (!object || !CurrentObject.Count() || !CurrentObject[0]->Owner_HouseClass()->Is_Player_Commanded()) {
 					action = ACTION_SELECT;
 				} else {
 					if (object->IsSelected) {
@@ -2349,7 +2349,7 @@ void Bandbox_Selection_Callback(ObjectClass *object)
 	HouseClass *house = object->Owner_HouseClass();
 	BuildingClass *bptr = object->RTTI == RTTI_BUILDING ? (BuildingClass *)object : NULL;
 
-	if (house != NULL && house->Is_Player_Control()) {
+	if (house != NULL && house->Is_Player_Commanded()) {
 		if (object->Class_Of()->IsSelectable) {
 			bool selectable = false;
 			if (bptr != NULL) {

@@ -4572,7 +4572,7 @@ ActionType FootClass::What_Action(ObjectClass const * target, bool disallow_forc
 ActionType FootClass::Transport_Enter_Action(ObjectClass const * object, ActionType action) const
 {
 	if (object == NULL || object == this) return(action);
-	if (!House->Is_Ally(object) || !House->Is_Player_Control()) return(action);
+	if (!House->Is_Ally(object) || !House->Is_Player_Commanded()) return(action);
 	if (::Dynamic_Cast<TechnoClass const *>(object) == NULL) return(action);
 
 	TechnoTypeClass const * tclass = object->TClass;

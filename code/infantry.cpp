@@ -2655,7 +2655,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 	**	renovate it.
 	**	However, abort the whole thing if the building is a barrel or mine.
 	*/
-	if (Class->IsEngineer && object->RTTI == RTTI_BUILDING && House->Is_Player_Control()) {
+	if (Class->IsEngineer && object->RTTI == RTTI_BUILDING && House->Is_Player_Commanded()) {
 		BuildingClass const * bldg = (BuildingClass *)object;
 		if (!bldg->Considered_Vehicle() || bldg->Class->IsMobileWar) {
 			if (bldg->Class->IsRepairable || bldg->Class->IsMobileWar) {
@@ -2682,7 +2682,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 	}
 
 	// Force-move outranks a healer's offer over a transport, and is the only way to board one.
-	if (Combat_Damage() < 0 && House->Is_Player_Control()) {
+	if (Combat_Damage() < 0 && House->Is_Player_Commanded()) {
 		if (House->Is_Ally(object)) {
 			if (object == this) {
 				return(ACTION_GUARD_AREA);
@@ -2708,7 +2708,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 	/*
 	**	See if it's a thief attacking an enemy vehicle, let him CAPTURE it.
 	*/
-	if (House->Is_Player_Control() && Class->IsVehicleThief && object->RTTI != RTTI_BUILDING && object->Considered_Vehicle()) {
+	if (House->Is_Player_Commanded() && Class->IsVehicleThief && object->RTTI != RTTI_BUILDING && object->Considered_Vehicle()) {
 		if (object->TClass->IsTrain) {
 			return(ACTION_SELECT);
 		}
@@ -2720,7 +2720,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 		}
 	}
 
-	if (object->RTTI == RTTI_BUILDING && House->Is_Ally(object) && House->Is_Player_Control()) {
+	if (object->RTTI == RTTI_BUILDING && House->Is_Ally(object) && House->Is_Player_Commanded()) {
 		BuildingClass const * bldg = (BuildingClass *)object;
 		if (bldg->Class->IsHospital) {
 			if (Strength < Class->MaxStrength) {
@@ -2739,7 +2739,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 		}
 	}
 
-	if (object->RTTI == RTTI_BUILDING && House->Is_Ally(object) && House->Is_Player_Control()) {
+	if (object->RTTI == RTTI_BUILDING && House->Is_Ally(object) && House->Is_Player_Commanded()) {
 		BuildingClass const * bldg = (BuildingClass *)object;
 		if (bldg->Class->IsArmory) {
 			if (!Veterancy.Is_Elite()) {
@@ -2762,7 +2762,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 	**	See if it's a commando, and if he's attacking a building,
 	**	have him return ACTION_SABOTAGE instead
 	*/
-	if (House->Is_Player_Control() && (Class->IsBomber || Has_Ability(ABILITY_C4)) && action == ACTION_ATTACK && object->RTTI == RTTI_BUILDING && !object->Considered_Vehicle()) {
+	if (House->Is_Player_Commanded() && (Class->IsBomber || Has_Ability(ABILITY_C4)) && action == ACTION_ATTACK && object->RTTI == RTTI_BUILDING && !object->Considered_Vehicle()) {
 		BuildingClass const * obj = (BuildingClass *)object;
 		/*
 		**	Hack: Tanya should shoot barrels, bomb other structures.
@@ -2788,7 +2788,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 		action = Transport_Enter_Action(object, action);
 	}
 
-	if (House->Is_Player_Control() && Class->IsCapture) {
+	if (House->Is_Player_Commanded() && Class->IsCapture) {
 		if (action == ACTION_ATTACK) {
 			if (!House->Is_Ally(object) && (
 				(object->RTTI == RTTI_BUILDING && ((BuildingClass *)object)->Class->IsCaptureable) )
@@ -2842,7 +2842,7 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 	**	If it doesn't know what to do with the object, then just
 	**	say it can't move there.
 	*/
-	if (House->Is_Player_Control() && action == ACTION_NONE) action = ACTION_NOMOVE;
+	if (House->Is_Player_Commanded() && action == ACTION_NONE) action = ACTION_NOMOVE;
 
 	return(action);
 }
@@ -2989,7 +2989,7 @@ int InfantryClass::Do_MISSION_ATTACK(void)
  *=============================================================================================*/
 ActionType InfantryClass::What_Action(Cell const & cell, bool check_fog, bool disallow_force) const
 {
-	if (!House->Is_Player_Control()) {
+	if (!House->Is_Player_Commanded()) {
 		return(ACTION_NONE);
 	}
 
@@ -2999,7 +2999,7 @@ ActionType InfantryClass::What_Action(Cell const & cell, bool check_fog, bool di
 	**	If this is a medic, and the cursor's over a friendly infantryman,
 	**	execute an action-attack.
 	*/
-	if (Combat_Damage() < 0 && House->Is_Player_Control()) {
+	if (Combat_Damage() < 0 && House->Is_Player_Commanded()) {
 		if (action == ACTION_ATTACK) {
 			action = ACTION_GUARD_AREA;
 		}
@@ -3031,7 +3031,7 @@ ActionType InfantryClass::What_Action(Cell const & cell, bool check_fog, bool di
 		}
 	}
 
-	if (Class->IsEngineer && fogged_building != NULL && House->Is_Player_Control()) {
+	if (Class->IsEngineer && fogged_building != NULL && House->Is_Player_Commanded()) {
 
 		/*
 		**	Engineers may repair a destroyed bridge.
@@ -3049,7 +3049,7 @@ ActionType InfantryClass::What_Action(Cell const & cell, bool check_fog, bool di
 		action = ACTION_ATTACK_SUPPORT;
 	}
 
-	if (House->Is_Player_Control() && action == ACTION_NONE && !Class->IsJumpJet) {
+	if (House->Is_Player_Commanded() && action == ACTION_NONE && !Class->IsJumpJet) {
 		action = ACTION_NOMOVE;
 	}
 

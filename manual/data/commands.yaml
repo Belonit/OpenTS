@@ -615,6 +615,21 @@ registered_commands:
     source: code/init.cpp
     class: AllianceCommandClass
     guard: null
+- id: GrantControl
+  route_id: grantcontrol
+  kind: registered
+  title: Grant Control
+  description: Lets the owner of the selected allied object command your units, or takes that back.
+  category: Control
+  audience: player
+  availability:
+    builds:
+    - release
+    - debug
+  _provenance:
+    source: code/init.cpp
+    class: GrantControlCommandClass
+    guard: null
 - id: CenterBase
   route_id: centerbase
   kind: registered

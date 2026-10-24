@@ -208,6 +208,7 @@ A row's link goes to the change record, or where there is none, to the manual pa
 | `spawner/build_off_ally.asm` | Let a player build next to a mutual ally's base. | Ported. [build-off-ally] |
 | `spawner/spectators.asm` | Added spectators who see the whole map. | Reworked as observers. [observer-seats-and-coach-mode] |
 | `coach_mode.c` | Let a defeated player see what their allies see. | Ported. [observer-seats-and-coach-mode] |
+| `shared_control.c` | Was meant to let a player hand control of their units to an ally with a `GrantControl` command, when the launch file set `SharedControl`. It could not be switched on in any build. | Reworked: every machine checks a grant before it runs an order, a saved game keeps grants, and a grant ends when the alliance breaks or either player is defeated or leaves. All of a unit's orders are covered, including the infantry abilities the patch left to the owner. [shared-control] |
 | `spawner/protocol_zero.asm`, `spawner/protocol_zero_c.c` | Adjusted network timing to the connection. | Replaced by OpenTS's own adaptive timing. [adaptive-network-timing] |
 | `gamespeed.asm` | Paced campaigns and skirmishes by the speed setting, as network games are paced. | Ported, with Fastest uncapped. [solo-pacing-matches-network] |
 | `mpdebug.asm` (debug builds only), `hotkeys.c` | Let the `-MPDEBUG` network overlay run at any resolution, with a command to toggle it. | Reworked: the overlay draws along the bottom of the screen at any resolution. There is no toggle command. |
@@ -287,7 +288,6 @@ A row's link goes to the change record, or where there is none, to the manual pa
 | `mumblelink.c`, `spawner/auto_ally_by_spawn_loc.c` | Told Mumble the player's team. | Not planned. |
 | `override_colors.c` | Let a player replace the eight multiplayer colors on their own machine. | Not planned. The `[Colors]` list covers most uses. |
 | `debugging_help.asm` (debug builds only) | Made a LAN game wait without limit for a player who stopped responding. | `ReconnectTimeout` in the launch file sets the wait, up to 9.6 minutes. [disconnect-and-reconnect-policy] |
-| `shared_control.c` | Was meant to let a player hand control of their units to an ally, through a `GrantControl` command. It could not be switched on in any build. | Not planned. |
 | `spawner/spawner.asm` | Let the launch file's `MultipleFactory` override the rules. DTA's lobby sets it for its Multiple Factory Bonus option. | A client sets `[General] MultipleFactory=` in the map it writes, which OpenTS reads like the rules. |
 | `binkmovie/bink_asm_patches.asm` | Stopped a window repaint during a mission from drawing the game over a full-screen or radar movie, VQA included. | Not needed: in an OpenTS windowed mission, a movie pauses while the window is moved or loses focus, and no game view appears over it. Clicking back in shows a brief black frame. |
 | `laser_draw_it_crash.asm` | Drew laser beams with their glow at the lowest detail level, as a side effect of forcing the detail level to avoid a crash. | OpenTS fixed the crash, so the lowest detail level keeps its plain line. [laser-wave-edge-writes] |
@@ -484,6 +484,7 @@ yet.
 [screenshots-folder]: ../manual/changes/screenshots-folder.md
 [selection-filter-commands]: ../manual/changes/selection-filter-commands.md
 [self-healing-settings]: ../manual/changes/self-healing-settings.md
+[shared-control]: ../manual/changes/shared-control.md
 [short-game-fire-sale-keeps-a-structure]: ../manual/changes/short-game-fire-sale-keeps-a-structure.md
 [side-base-building]: ../manual/changes/side-base-building.md
 [side-factory-prerequisite-planning]: ../manual/changes/side-factory-prerequisite-planning.md
