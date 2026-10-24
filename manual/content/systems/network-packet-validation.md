@@ -33,7 +33,14 @@ Each command is checked again when it runs. A command that fails is ignored, and
 
 In a network game, three commands that no copy of the game sends are always ignored: a change to the special game rules, an animation placed by a player, and the old processing-time report.
 
-In a network game, a command aimed at one object requires the sender to own that object when the command runs. This covers power on or off, repair, sell, setting a primary factory or a rally point, deploy, scatter, stop, and move, attack, and other mission orders. A command to a missing or destroyed object does nothing. A captured object ignores commands from its former owner.
+In a network game, placing a building on the map repeats the placement cursor's rules when the command runs:
+
+- The object waiting in the sender's factory is a building. Vehicles, infantry, and aircraft leave their factory and cannot be placed on a chosen cell.
+- The site is inside the playable map.
+- The site passes the [base adjacency](/systems/base-adjacency/) check, or it is a building that accepts the upgrade being placed.
+- No cell of the foundation is under the sender's shroud, unless the building lays its own tile.
+
+A command aimed at one object requires the sender to own that object when the command runs. This covers power on or off, repair, sell, setting a primary factory or a rally point, deploy, scatter, stop, and move, attack, and other mission orders. A command to a missing or destroyed object does nothing. A captured object ignores commands from its former owner.
 
 ## Timing changes
 

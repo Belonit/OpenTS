@@ -15,7 +15,7 @@ A player can place a building only near an **anchor**: a building already on the
 
 The rule applies only to buildings a player places from the sidebar. Computer houses place their buildings without it. An upgrade clicked onto a building that accepts it is also exempt.
 
-Only the placing player's machine runs the check. The other machines in the match accept the placement without repeating it.
+In a network game, every machine repeats the check when the placement runs, using the map as it is on that frame. A placement that fails there is ignored, and the finished building stays ready to place. This can happen when the anchor is destroyed between the click and the placement.
 
 ## Anchor eligibility
 

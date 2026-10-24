@@ -171,6 +171,8 @@ class DisplayClass: public MapClass
 		Cell Calculated_Cell(SourceType dir, Cell const & waypoint=CELL_NONE, Cell const & cell=CELL_NONE, SpeedType loco=SPEED_FOOT, bool zonecheck=true, MZoneType mzone=MZONE_NORMAL) const;
 		bool Passes_Proximity_Check(ObjectTypeClass const * object, HousesType house, Cell const * list, Cell const & trycell) const;
 		bool Passes_Shroud_Check(ObjectTypeClass const * object, HousesType house, Cell const * list, Cell const & trycell) const;
+		static bool Is_Proximate_Placement(BuildingTypeClass const * building, HouseClass const * house, Cell const & trycell);
+		static bool Is_Unshrouded_Placement(BuildingTypeClass const * building, HouseClass const * house, Cell const & trycell);
 		ObjectClass * Cell_Object(Cell const & cell, Point2D const & point) const;
 		ObjectClass * Next_Object(ObjectClass * object) const;
 		ObjectClass * Prev_Object(ObjectClass * object) const;

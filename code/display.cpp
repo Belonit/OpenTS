@@ -546,8 +546,16 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const * object, Houses
 		return(true);
 	}
 
-	BuildingTypeClass const * building = (BuildingTypeClass const *)object;
+	return(Is_Proximate_Placement((BuildingTypeClass const *)object, Houses[house], trycell));
+}
 
+
+/// <summary>
+/// Reports whether a building placed with its top corner at the given cell would stand within
+/// its <c>Adjacent=</c> distance of the house's base. A wall may also join the house's walls.
+/// </summary>
+bool DisplayClass::Is_Proximate_Placement(BuildingTypeClass const * building, HouseClass const * house, Cell const & trycell)
+{
 	int height = building->Height();
 	int width = building->Width();
 
@@ -584,7 +592,7 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const * object, Houses
 				//BG: Modified so only walls can be placed next to walls - buildings can't.
 				if (building->IsWall) {
 
-					if (cellptr->Owner == house) {
+					if (cellptr->Owner == house->HeapID) {
 						retval = true;
 						//break;
 					}
@@ -593,7 +601,7 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const * object, Houses
 				BuildingClass * newbase = cellptr->Cell_Building();
 
 				// we've found a building...
-				if (newbase != NULL && Is_Adjacency_Anchor(newbase, Houses[house])) {
+				if (newbase != NULL && Is_Adjacency_Anchor(newbase, house)) {
 					retval = true;
 					//break;
 				}
@@ -639,8 +647,16 @@ bool DisplayClass::Passes_Shroud_Check(ObjectTypeClass const * object, HousesTyp
 		return(true);
 	}
 
-	BuildingTypeClass const * building = (BuildingTypeClass const *)object;
+	return(Is_Unshrouded_Placement((BuildingTypeClass const *)object, Houses[house], trycell));
+}
 
+
+/// <summary>
+/// Reports whether a building placed with its top corner at the given cell would avoid the
+/// house's shroud. A building that lays its own tile may be placed into the shroud.
+/// </summary>
+bool DisplayClass::Is_Unshrouded_Placement(BuildingTypeClass const * building, HouseClass const * house, Cell const & trycell)
+{
 	int height = building->Height();
 	int width = building->Width();
 
@@ -652,7 +668,7 @@ bool DisplayClass::Passes_Shroud_Check(ObjectTypeClass const * object, HousesTyp
 			Coord coord = Coord(Cell(x, y));
 			coord.Z = Map.Get_Height_GL(coord);
 
-			if (Map.Is_Shrouded(coord)) {
+			if (Map.Is_Shrouded(coord, house)) {
 				if (building->ToTile == NULL) {
 					return(false);
 				}

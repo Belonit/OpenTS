@@ -55,6 +55,8 @@
 #include "coord.h"
 #include "data.h"
 #include "dbgprint.h"
+#include "display.h"
+#include "factory.h"
 #include "foot.h"
 #include "goptions.h"
 #include "house.h"
@@ -105,6 +107,10 @@ namespace {
 		InvalidAbandonCount,
 		UnsentEvent,
 		LiveRemoval,
+		PlacementNotBuilding,
+		PlacementOffMap,
+		PlacementTooFar,
+		PlacementShrouded,
 		Count,
 	};
 
@@ -130,6 +136,10 @@ namespace {
 		"invalid abandon count",
 		"event no client sends",
 		"removal of a connected player",
+		"placement of a non-building",
+		"placement off the map",
+		"placement away from the base",
+		"placement under the shroud",
 	};
 
 	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
@@ -223,6 +233,51 @@ namespace {
 	bool Is_Unsent_Event(unsigned char type)
 	{
 		return(type == EventClass::SPECIAL || type == EventClass::ANIMATION || type == EventClass::PROCESS_TIME);
+	}
+
+
+	/// <summary>
+	/// Applies the placement cursor's rules to a placement on a cell. A placement the house
+	/// cannot make at all passes, because placing it does nothing.
+	/// </summary>
+	bool Placement_Is_Legal(HouseClass * house, RTTIType type, Cell const & cell, EventRejectReason & reason)
+	{
+		if (cell == CELL_NONE || cell == Cell(-1, -1)) {
+			return(true);
+		}
+
+		FactoryClass * factory = house->Fetch_Factory(type);
+		if (factory == NULL || !factory->Has_Completed() || factory->Get_Object() == NULL) {
+			return(true);
+		}
+
+		TechnoClass const * object = factory->Get_Object();
+		if (object->RTTI != RTTI_BUILDING) {
+			reason = EventRejectReason::PlacementNotBuilding;
+			return(false);
+		}
+
+		if (!Map.In_Radar(cell)) {
+			reason = EventRejectReason::PlacementOffMap;
+			return(false);
+		}
+
+		BuildingTypeClass const * building = ((BuildingClass const *)object)->Class;
+		bool proximate = DisplayClass::Is_Proximate_Placement(building, house, cell);
+		if (!proximate && !building->PowersUpBuilding.empty()) {
+			ObjectClass const * host = Map.Cell_Object(cell, Point2D(0, 0));
+			proximate = host != NULL && host->RTTI == RTTI_BUILDING && ((BuildingClass const *)host)->Can_Upgrade(building, house);
+		}
+		if (!proximate) {
+			reason = EventRejectReason::PlacementTooFar;
+			return(false);
+		}
+
+		if (!DisplayClass::Is_Unshrouded_Placement(building, house, cell)) {
+			reason = EventRejectReason::PlacementShrouded;
+			return(false);
+		}
+		return(true);
 	}
 
 
@@ -988,8 +1043,18 @@ void EventClass::Execute(void)
 		**	exact factory and real object pointer to use.
 		*/
 		case PLACE:
-			house->Place_Object(Data.Place.Type, Cell(Data.Place.Where.X, Data.Place.Where.Y));
+		{
+			Cell const cell(Data.Place.Where.X, Data.Place.Where.Y);
+			if (Is_Network_Game()) {
+				EventRejectReason reason;
+				if (!Placement_Is_Legal(house, Data.Place.Type, cell, reason)) {
+					Log_Event_Rejection(reason, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
+					break;
+				}
+			}
+			house->Place_Object(Data.Place.Type, cell);
 			break;
+		}
 
 		/*
 		**	This event starts production of the specified object type. The house can
