@@ -2638,8 +2638,10 @@ static void Stop_Game(bool is_cancelled)
 		ConnectionLost = true;
 		if (!is_cancelled) Session.SawGameCompletion = true;
 		Session.OutOfSync = true;
-		Register_Game_End_Time();
-		Send_Statistics_Packet();
+		if (!GameStatisticsPacketSent) {
+			Register_Game_End_Time();
+			Send_Statistics_Packet();
+		}
 	}
 }	// end of Stop_Game
 
@@ -3412,6 +3414,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 						}
 						if (Session.Type == GAME_INTERNET && !GameStatisticsPacketSent && PlayerPtr != NULL && PlayerPtr == quithptr) {
 							DebugString("Sending game results because I quit, but didn't see completion");
+							Register_Game_End_Time();
 							Send_Statistics_Packet();
 						}
 					}

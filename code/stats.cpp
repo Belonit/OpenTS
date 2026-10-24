@@ -60,7 +60,10 @@ int WestwoodOnline_PortNumber = 1234;
 #include "timer.h"
 #include "unit.h"
 #include "unittype.h"
+#include "utracker.h"
 #include "win.h"
+
+#include <vector>
 
 #define FIELD_GAME_ID							"IDNO"
 #define FIELD_START_CREDITS						"CRED"
@@ -127,17 +130,31 @@ int WestwoodOnline_GameID = 0;
 int WestwoodOnline_GameSKU_TS = 0;
 int WestwoodOnline_GameSKU_FS = 0;
 int WestwoodOnline_GameSKU_WDT = 0;
-char WestwoodOnline_LoginName[36];
 char WestwoodOnline_UserName[16];
 char WestwoodOnline_Clan1_Players[136];
 char WestwoodOnline_Clan2_Players[136];
 int g_PingsSent;
 int g_PingsReceived;
 
-int Get_Unit_Count(int *buf, int count);
+static int Get_Unit_Count(int const *buf, int count);
 
-#define _GET_UNIT_TOTALS(tracker, tracker2) (void*) player->tracker2->Get_All_Totals(), Get_Unit_Count(player->tracker->Get_All_Totals(),player->tracker->Get_Unit_Count())*4
-#define GET_UNIT_TOTALS(tracker) (void*) player->tracker->Get_All_Totals(), Get_Unit_Count(player->tracker->Get_All_Totals(),player->tracker->Get_Unit_Count())*4
+
+// The counts go out as big-endian 32-bit values, without the zero entries at the end.
+static void Add_Counts_Field(PacketClass & stats, char const * id, int const * counts, int count)
+{
+	int used = Get_Unit_Count(counts, count);
+	std::vector<unsigned int> data(used);
+	for (int index = 0; index < used; index++) {
+		data[index] = htonl((unsigned int)counts[index]);
+	}
+	stats.Add_Field(id, (void *)data.data(), used * (int)sizeof(unsigned int));
+}
+
+
+static void Add_Counts_Field(PacketClass & stats, char const * id, UnitTrackerClass & tracker)
+{
+	Add_Counts_Field(stats, id, tracker.Get_All_Totals(), tracker.Get_Unit_Count());
+}
 
 /***********************************************************************************************
  * Send_Statistics_To_Server -- sends internet game statistics to the Westeood server          *
@@ -341,8 +358,7 @@ void Send_Statistics_Packet(void)
 	**
 	*/
 	for (i = 0; i < playercount; i++) {
-		HouseClass *ptr = houses[i];
-		if (strcmpi(ptr->IniName, WestwoodOnline_LoginName) == 0) {
+		if (houses[i] == PlayerPtr) {
 			statsid = i;
 			break;
 		}
@@ -513,106 +529,81 @@ void Send_Statistics_Packet(void)
 		field_player_planes_bought[3] = '0' + (char)house;
 		field_player_buildings_bought[3] = '0' + (char)house;
 
-		player->InfantryTotals->To_Network_Format();
-		player->UnitTotals->To_Network_Format();
-		player->AircraftTotals->To_Network_Format();
-		player->BuildingTotals->To_Network_Format();
-
-		stats.Add_Field (field_player_infantry_bought, GET_UNIT_TOTALS(InfantryTotals));
-		stats.Add_Field (field_player_units_bought, GET_UNIT_TOTALS(UnitTotals));
-		stats.Add_Field (field_player_planes_bought, GET_UNIT_TOTALS(AircraftTotals));
-		stats.Add_Field (field_player_buildings_bought, GET_UNIT_TOTALS(BuildingTotals));
-
-		player->InfantryTotals->To_PC_Format();
-		player->UnitTotals->To_PC_Format();
-		player->AircraftTotals->To_PC_Format();
-		player->BuildingTotals->To_PC_Format();
-
-		/*
-		**	Clear out the counts and use the space to count up the current number of units/buildings
-		*/
-		player->InfantryTotals->Clear_Unit_Total();
-		player->AircraftTotals->Clear_Unit_Total();
-		player->UnitTotals->Clear_Unit_Total();
-		player->BuildingTotals->Clear_Unit_Total();
+		Add_Counts_Field(stats, field_player_infantry_bought, *player->InfantryTotals);
+		Add_Counts_Field(stats, field_player_units_bought, *player->UnitTotals);
+		Add_Counts_Field(stats, field_player_planes_bought, *player->AircraftTotals);
+		Add_Counts_Field(stats, field_player_buildings_bought, *player->BuildingTotals);
 
 		/*
 		**	Number of units remaining to player
 		*/
+		std::vector<int> units_left(UnitTypes.Count());
+		std::vector<int> infantry_left(InfantryTypes.Count());
+		std::vector<int> aircraft_left(AircraftTypes.Count());
+		std::vector<int> buildings_left(BuildingTypes.Count());
+
 		for (index = 0; index < Units.Count(); index++) {
 			UnitClass const * unit = Units[index];
 			if (player == unit->House) {
-				player->UnitTotals->Increment_Unit_Total (unit->Class->HeapID);
+				units_left[unit->Class->HeapID]++;
 			}
 		}
 
 		for (index = 0; index < Infantry.Count(); index++) {
 			InfantryClass const * infantry = Infantry[index];
 			if (player == infantry->House && !infantry->Class->IsCivilian) {
-				player->InfantryTotals->Increment_Unit_Total (infantry->Class->HeapID);
+				infantry_left[infantry->Class->HeapID]++;
 			}
 		}
 
 		for (index = 0; index < Aircraft.Count(); index++) {
 			AircraftClass const * aircraft = Aircraft[index];
 			if (player == aircraft->House) {
-				player->AircraftTotals->Increment_Unit_Total (aircraft->Class->HeapID);
+				aircraft_left[aircraft->Class->HeapID]++;
 			}
 		}
 
 		for (index = 0; index < Buildings.Count(); index++) {
 			BuildingClass const * building = Buildings[index];
 			if (player == building->House) {
-				player->BuildingTotals->Increment_Unit_Total (building->Class->HeapID);
+				buildings_left[building->Class->HeapID]++;
 			}
 		}
-
-		player->InfantryTotals->To_Network_Format();
-		player->UnitTotals->To_Network_Format();
-		player->AircraftTotals->To_Network_Format();
-		player->BuildingTotals->To_Network_Format();
 
 		field_player_infantry_left[3] = '0' + (char)house;
 		field_player_units_left[3] = '0' + (char)house;
 		field_player_planes_left[3] = '0' + (char)house;
 		field_player_buildings_left[3] = '0' + (char)house;
 
-		stats.Add_Field (field_player_infantry_left, GET_UNIT_TOTALS(InfantryTotals));
-		stats.Add_Field (field_player_units_left,GET_UNIT_TOTALS(UnitTotals));
-		stats.Add_Field (field_player_planes_left, GET_UNIT_TOTALS(AircraftTotals));
-		stats.Add_Field (field_player_buildings_left, GET_UNIT_TOTALS(BuildingTotals));
+		Add_Counts_Field(stats, field_player_infantry_left, infantry_left.data(), (int)infantry_left.size());
+		Add_Counts_Field(stats, field_player_units_left, units_left.data(), (int)units_left.size());
+		Add_Counts_Field(stats, field_player_planes_left, aircraft_left.data(), (int)aircraft_left.size());
+		Add_Counts_Field(stats, field_player_buildings_left, buildings_left.data(), (int)buildings_left.size());
 
 		/*
 		**	Number of enemy units/buildings of each type destroyed.
 		*/
-		player->DestroyedInfantry->To_Network_Format();
-		player->DestroyedUnits->To_Network_Format();
-		player->DestroyedAircraft->To_Network_Format();
-		player->DestroyedBuildings->To_Network_Format();
-
 		field_player_infantry_killed[3] = '0' + (char)house;
 		field_player_units_killed[3] = '0' + (char)house;
 		field_player_planes_killed[3] = '0' + (char)house;
 		field_player_buildings_killed[3] = '0' + (char)house;
 
-		stats.Add_Field (field_player_infantry_killed, _GET_UNIT_TOTALS(DestroyedInfantry, InfantryTotals));
-		stats.Add_Field (field_player_units_killed,_GET_UNIT_TOTALS(DestroyedUnits, UnitTotals));
-		stats.Add_Field (field_player_planes_killed, _GET_UNIT_TOTALS(DestroyedAircraft, AircraftTotals));
-		stats.Add_Field (field_player_buildings_killed, _GET_UNIT_TOTALS(DestroyedBuildings, BuildingTotals));
+		Add_Counts_Field(stats, field_player_infantry_killed, *player->DestroyedInfantry);
+		Add_Counts_Field(stats, field_player_units_killed, *player->DestroyedUnits);
+		Add_Counts_Field(stats, field_player_planes_killed, *player->DestroyedAircraft);
+		Add_Counts_Field(stats, field_player_buildings_killed, *player->DestroyedBuildings);
 
 		/*
 		**	Number and type of enemy buildings captured
 		*/
 		field_player_buildings_captured[3] = '0' + (char)house;
-		player->CapturedBuildings->To_Network_Format();
-		stats.Add_Field (field_player_buildings_captured, GET_UNIT_TOTALS(CapturedBuildings));
+		Add_Counts_Field(stats, field_player_buildings_captured, *player->CapturedBuildings);
 
 		/*
 		**	Number of crates discovered and their contents
 		*/
 		field_player_crates_found[3] = '0' + (char)house;
-		player->TotalCrates->To_Network_Format();
-		stats.Add_Field (field_player_crates_found, GET_UNIT_TOTALS(TotalCrates));
+		Add_Counts_Field(stats, field_player_crates_found, *player->TotalCrates);
 
 		/*
 		**	Amount of tiberium turned into credits
@@ -657,7 +648,7 @@ void Send_Statistics_Packet(void)
 /// <param name="count">The number of entries held in the tracker totals.</param>
 /// <returns>Returns with the entry count up to and including the last non-zero total.
 /// Zero is returned if the tracker recorded nothing at all.</returns>
-int Get_Unit_Count(int *buf, int count)
+static int Get_Unit_Count(int const *buf, int count)
 {
 	int n = 0;
 	for (int i = 0; i < count; i++) {

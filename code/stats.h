@@ -30,7 +30,6 @@ extern int WestwoodOnline_GameID;
 extern int WestwoodOnline_GameSKU_TS;
 extern int WestwoodOnline_GameSKU_FS;
 extern int WestwoodOnline_GameSKU_WDT;
-extern char WestwoodOnline_LoginName[];
 extern char WestwoodOnline_UserName[];
 extern char WestwoodOnline_Clan1_Players[];
 extern char WestwoodOnline_Clan2_Players[];
