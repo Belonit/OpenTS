@@ -34,6 +34,8 @@
 
 #pragma once
 
+class SaveStreamClass;
+
 
 /*
 **	UnitTracker Class
@@ -55,6 +57,8 @@ class UnitTrackerClass
 
 		void To_Network_Format(void);
 		void To_PC_Format(void);
+
+		void Serialize(SaveStreamClass & stream);
 
 	private:
 		int * UnitTotals;

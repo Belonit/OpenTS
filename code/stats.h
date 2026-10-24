@@ -13,6 +13,8 @@
 
 #pragma once
 
+class SaveStreamClass;
+
 /*************************************************************
 **	Internet specific externs
 */
@@ -38,4 +40,5 @@ extern int g_PingsReceived;
 
 void	Register_Game_Start_Time(void);
 void	Register_Game_End_Time(void);
+void	Serialize_Game_Time(SaveStreamClass & stream);
 void	Send_Statistics_Packet(void);

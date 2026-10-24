@@ -54,6 +54,8 @@ int WestwoodOnline_PortNumber = 1234;
 #include "misc.h"
 #include "netshare.h"
 #include "packet.h"
+#include "savemgr.h"
+#include "savestream.h"
 #include "session.h"
 #include "stats.h"
 #include "stimer.h"
@@ -116,6 +118,7 @@ bool								ConnectionLost;			//Flag that the connection to the other player was
 bool								GameTimerInUse = false;
 BasicTimerClass<SystemTimerClass>	GameTimer;
 int								GameEndTime;
+static int							ResumedGameTime = -1;	// Elapsed time a load left for the next match start.
 void								*PacketLater = NULL;
 bool								GameStatisticsPacketSent;
 
@@ -661,13 +664,13 @@ static int Get_Unit_Count(int const *buf, int count)
 
 
 /// <summary>
-/// Starts the game duration timer.
-/// This routine is called as the game begins so that the statistics gathering code has a
-/// running clock to measure the game against.
+/// Starts the game duration timer as the game begins. A match resumed from a save starts from
+/// the time the save recorded.
 /// </summary>
 void Register_Game_Start_Time(void)
 {
-	GameTimer = 0;
+	GameTimer = ResumedGameTime >= 0 ? ResumedGameTime : 0;
+	ResumedGameTime = -1;
 	GameTimerInUse = true;
 }
 
@@ -681,4 +684,24 @@ void Register_Game_End_Time(void)
 {
 	GameEndTime = GameTimer;
 	GameTimerInUse = false;
+}
+
+
+/// <summary>
+/// Saves or restores how long the match has run, so that a resumed match reports its whole
+/// duration. A load in place of a running match sets the timer at once; any other load of an
+/// internet game hands the time to the next Register_Game_Start_Time.
+/// </summary>
+void Serialize_Game_Time(SaveStreamClass & stream)
+{
+	int elapsed = GameTimerInUse ? (int)GameTimer : 0;
+	stream.Serialize(elapsed);
+
+	if (stream.Is_Loading() && !stream.Was_Error()) {
+		if (SaveManager.Multiplayer_Load_Is_In_Progress()) {
+			GameTimer = elapsed;
+		} else if (Session.Type == GAME_INTERNET) {
+			ResumedGameTime = elapsed;
+		}
+	}
 }

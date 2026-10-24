@@ -107,6 +107,7 @@
 #include "side.h"
 #include "sidebar.h"
 #include "smudtype.h"
+#include "stats.h"
 #include "stimer.h"
 #include "sun.h"
 #include "super.h"
@@ -1255,6 +1256,8 @@ static void Serialize_Misc_Values(SaveStreamClass & stream)
 	// sound tick; the playing sounds themselves are not saved.
 	Static_Sounds_Serialize(stream);
 	AmbientSounds.Serialize(stream);
+
+	Serialize_Game_Time(stream);
 }
 
 

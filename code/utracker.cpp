@@ -44,6 +44,8 @@
 
 #include "utracker.h"
 
+#include "savestream.h"
+
 #include <cstring>
 #include <winsock.h>
 
@@ -87,7 +89,7 @@ UnitTrackerClass::UnitTrackerClass (int unit_count)
  *=============================================================================================*/
 UnitTrackerClass::~UnitTrackerClass (void)
 {
-	delete UnitTotals;
+	delete [] UnitTotals;
 }
 
 
@@ -225,3 +227,27 @@ void UnitTrackerClass::To_PC_Format (void)
 }
 
 
+/// <summary>
+/// Saves or restores the totals in host order. A load takes the number of entries from the
+/// save, since a house is rebuilt before the type lists its trackers are sized from.
+/// </summary>
+void UnitTrackerClass::Serialize(SaveStreamClass & stream)
+{
+	To_PC_Format();
+
+	int count = UnitCount;
+	stream.Serialize(count);
+	if (stream.Is_Loading()) {
+		if (!stream.Fits(count, sizeof(int))) {
+			return;
+		}
+		if (count != UnitCount) {
+			delete [] UnitTotals;
+			UnitTotals = new int [count];
+			UnitCount = count;
+			Clear_Unit_Total();
+		}
+	}
+
+	stream.Serialize_Bytes(UnitTotals, UnitCount * (int)sizeof(int));
+}

@@ -6643,16 +6643,27 @@ void HouseClass::Serialize(SaveStreamClass & stream)
 	stream.Serialize(Capacity);
 	stream.Serialize(Weed);
 	stream.Serialize(field_1BC);
-	// AircraftTotals -- internet game tallies owned by this house, built by the constructor.
-	// InfantryTotals
-	// UnitTotals
-	// BuildingTotals
-	// DestroyedAircraft
-	// DestroyedInfantry
-	// DestroyedUnits
-	// DestroyedBuildings
-	// CapturedBuildings
-	// TotalCrates
+
+	// The constructor builds the tallies only in internet games, and a load restores the saved
+	// game type before any house, so a record with tallies loads only into a house with them.
+	bool tallies = AircraftTotals != NULL;
+	bool saved_tallies = tallies;
+	stream.Serialize(saved_tallies);
+	if (stream.Is_Loading() && saved_tallies != tallies) {
+		stream.Fail();
+	} else if (tallies) {
+		stream.Serialize(*AircraftTotals);
+		stream.Serialize(*InfantryTotals);
+		stream.Serialize(*UnitTotals);
+		stream.Serialize(*BuildingTotals);
+		stream.Serialize(*DestroyedAircraft);
+		stream.Serialize(*DestroyedInfantry);
+		stream.Serialize(*DestroyedUnits);
+		stream.Serialize(*DestroyedBuildings);
+		stream.Serialize(*CapturedBuildings);
+		stream.Serialize(*TotalCrates);
+	}
+
 	stream.Serialize(AircraftFactories);
 	stream.Serialize(InfantryFactories);
 	stream.Serialize(UnitFactories);
