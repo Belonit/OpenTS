@@ -2337,18 +2337,6 @@ launch_options:
   _provenance:
     source: code/init.cpp
     guard: null
-- id: launch:height-480
-  route_id: height-480
-  kind: launch
-  title: 480-pixel width
-  description: Sets the initial screen width to 480 pixels and leaves the height alone; the resolution
-    branch claims the argument before the case named after it is reached.
-  audience: player
-  availability: *id001
-  syntax: '-480'
-  _provenance:
-    source: code/init.cpp
-    guard: null
 - id: launch:windowed
   route_id: windowed
   kind: launch

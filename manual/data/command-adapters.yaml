@@ -564,14 +564,6 @@ launch_options:
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'pattern:-<width>X<height>' }
-  - id: launch:height-480
-    title: 480-pixel width
-    syntax: "-480"
-    description: Sets the initial screen width to 480 pixels and leaves the height alone; the resolution branch claims the argument before the case named after it is reached.
-    audience: player
-    availability: *all
-    sites:
-      - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-480' }
   - id: launch:windowed
     title: Windowed mode
     syntax: -WIN

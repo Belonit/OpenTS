@@ -35,6 +35,16 @@
     type: format
     id: opents-ini
 - type: command
+  id: launch:height-480
+  route: /using/command-line/height-480/
+  search_aliases:
+    - 480-pixel width
+    - "-480"
+  summary: Set the initial screen width to 480 pixels. The resolution option reads -480 the same way.
+  replacement:
+    type: command
+    id: launch:resolution
+- type: command
   id: fixed:dismiss-mission-restatement
   route: /commands/fixed-dismiss-mission-restatement/
   search_aliases:

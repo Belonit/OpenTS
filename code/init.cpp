@@ -1557,14 +1557,6 @@ bool Parse_Command_Line(int argc, char * argv[])
 			continue;
 		}
 
-		/*
-		**	Set screen to 640x480 instead of 640x400
-		*/
-		if (strcmp(string, "-480") == 0) {
-			Options.ScreenHeight = 480;
-			continue;
-		}
-
 		if (stricmp(string, "-WIN") == 0) {
 			WindowedMode = true;
 			continue;
