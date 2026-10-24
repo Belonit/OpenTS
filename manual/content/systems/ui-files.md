@@ -34,7 +34,7 @@ The pictures, and the dialog font used for captions, buttons and message-box tex
 
 The kit gives every layout size in `dp`, RmlUi's scaled pixel, so a screen matches the dialog it replaced at the game's own resolution and grows with the game picture when that is drawn larger.
 
-A screen opens the way the original dialogs did: it slides out from the middle behind a pair of side bars, with the dialog sound once as it starts. Put `reveal="none"` on a document's `<body>` for a screen that should appear at once instead.
+A screen opens the way the original dialogs did: it slides out from the middle behind a pair of side bars, with the dialog sound once as it starts. Put `reveal="none"` on a document's `<body>` for a screen that should appear at once instead. Of the screens shown beside a running game, only the [diplomacy panel](/systems/diplomacy/) slides in; the reconnect dialog and the save and load notices appear at once.
 
 ## How a file is found
 
@@ -77,7 +77,7 @@ These screens are documents:
 - the network lobbies
 - the load, save and delete lists
 - the in-game options, the abort question and the objectives screen
-- the out-of-sync screen and the [reconnect dialog](/systems/reconnect-dialog/)
+- the out-of-sync screen, the [reconnect dialog](/systems/reconnect-dialog/) and the [diplomacy panel](/systems/diplomacy/)
 - the message boxes, and the notices shown while a game saves or loads
 
 The score screens, the graphical main menu, the campaign map and the sidebar are drawn by the game's older systems and are not documents. The crash report remains a Windows dialog.

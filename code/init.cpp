@@ -182,6 +182,7 @@
 #include "tube.h"
 #include "tutorial.h"
 #include "ui/screens/campaign/uicampaign.h"
+#include "ui/screens/diplomacy/uidiplomacy.h"
 #include "ui/screens/menu/uimenu.h"
 #include "ui/screens/version/uiversion.h"
 #include "ui/uienginehost.h"
@@ -3653,24 +3654,24 @@ class CenterREventCommandClass : public CommandClass
 };
 
 
-class ToggleRadarCommandClass : public CommandClass
+class DiplomacyCommandClass : public CommandClass
 {
 	public:
 		virtual char const * Get_Unique_Name(void) const {
-			return("ToggleRadar");
+			return("Diplomacy");
 		}
 		virtual char const * Get_Display_Name(void) const {
-			return(Fetch_String(TXT_RADAR_TOGGLE));
+			return(Fetch_String(TXT_DIPLOMACY));
 		}
 		virtual char const * Get_Category(void) const {
 			return(Fetch_String((TXT_INTERFACE)));
 		}
 		virtual char const * Get_Description(void) const {
-			return(Fetch_String(TXT_RADAR_TOGGLE_DESC));
+			return(Fetch_String(TXT_DIPLOMACY_DESC));
 		}
 
 		virtual void Execute(void) const {
-			Map.Zoom_Mode_Control();
+			UI_Diplomacy_Toggle();
 		}
 };
 
@@ -5415,7 +5416,7 @@ static void Init_Commands(void)
 
 	AllCommands.Add(new CenterREventCommandClass);
 
-	AllCommands.Add(new ToggleRadarCommandClass);
+	AllCommands.Add(new DiplomacyCommandClass);
 	AllCommands.Add(new TogglePowerCommandClass);
 	AllCommands.Add(new ToggleSellCommandClass);
 	AllCommands.Add(new ToggleRepairCommandClass);
@@ -5545,7 +5546,8 @@ static void Init_Commands(void)
 /// <summary>
 /// Binds the game commands to the keys named in KEYBOARD.INI.
 /// This routine throws the current key assignments away and rebuilds them from the
-/// player's keyboard file, matching each entry against a command's unique name.
+/// player's keyboard file, matching each entry against a command's unique name. A
+/// ToggleRadar entry, from before the radar's player list was retired, binds Diplomacy.
 /// </summary>
 /// <returns>bool; Was the keyboard file loaded?</returns>
 /// <remarks>The command list must already be built before calling this routine.</remarks>
@@ -5562,9 +5564,10 @@ bool Init_Hotkeys(void)
 			const char *entry = ini.Get_Entry("Hotkey", index);
 			int id = ini.Get_Int("Hotkey", entry, 0);
 			const CommandClass *command = NULL;
+			char const * name = (strcmp(entry, "ToggleRadar") == 0) ? "Diplomacy" : entry;
 
 			for (int cindex = 0; cindex < AllCommands.Count(); cindex++) {
-				if (strcmp(AllCommands[cindex]->Get_Unique_Name(), entry) == 0) {
+				if (strcmp(AllCommands[cindex]->Get_Unique_Name(), name) == 0) {
 					command = AllCommands[cindex];
 					break;
 				}

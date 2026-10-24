@@ -16,6 +16,6 @@ The skirmish and LAN setup screens list only the countries with `Multiplay=yes`,
 
 A computer player seated from the menu gets a random country with the flag. A [launch file](/formats/spawn-ini/) can name a computer player's country instead. If no country has the flag, computer players take the first country in the rules.
 
-The in-game list of player names and kills beside the radar shows only houses whose country has the flag. A house of any other country plays without appearing there.
+The [diplomacy panel](/systems/diplomacy/) lists only houses whose country has the flag. A house of any other country plays without appearing there.
 
 Nothing else reads the flag. Whether a house takes part in the contest at all is set by [`MultiplayPassive`](/keys/multiplaypassive/).

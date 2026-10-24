@@ -2702,46 +2702,6 @@ bool SidebarClass::StripClass::Abandon_Production(FactoryClass const * factory)
 }
 
 
-/***********************************************************************************************
- * SidebarClass::Zoom_Mode_Control -- Handles the zoom mode toggle operation.                  *
- *                                                                                             *
- *    This is the function that is called when the map button is pressed. It will toggle       *
- *    between the different modes that the radar map can assume.                               *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/31/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-void SidebarClass::Zoom_Mode_Control(void)
-{
-	/*
-	**	If radar is active, cycle as follows:
-	**	Zoomed => not zoomed
-	**	not zoomed => player status (multiplayer only)
-	**	player status => radar spying readout
-	**	radar spying readout => zoomed
-	*/
-	if (Session.Type!=GAME_NORMAL) {
-		if (Is_Radar_Existing()) {
-			if (Is_Player_Names()) {
-				Radar_Activate(1);
-				return;
-			}
-		} else if (Is_Player_Names()) {
-			Radar_Activate(0);
-			return;
-		}
-
-		Radar_Activate(2);
-	}
-}
-
-
 /// <summary>
 /// Repositions the sidebar and everything that sits on it.
 /// This routine is called whenever the sidebar changes which edge of the screen it lives

@@ -22,8 +22,8 @@ related:
     id: superweapons
   - type: system
     id: map-visibility
-  - type: command
-    id: ToggleRadar
+  - type: system
+    id: diplomacy
 ---
 
 The sidebar is the fixed-width panel along the right edge of the screen. From the top down it holds the credit readout, the radar pane, four mode buttons, and two strips of cameos with the power bar running down their left side. The panel stays up for the whole match. An observer gets the panel with both strips empty.
@@ -194,13 +194,9 @@ For an observer, the readout shows the elapsed match time instead and plays no t
 
 ### The radar pane
 
-The pane sits below the credit readout. [The radar map](/systems/map-visibility/#the-radar-map) covers what raises and lowers it and what it draws while showing the map. Besides the map, the pane can show the multiplayer name and kill list, an in-game movie, or its blank frame.
+The pane sits below the credit readout. [The radar map](/systems/map-visibility/#the-radar-map) covers what raises and lowers it and what it draws while showing the map. Besides the map, the pane can show an in-game movie or its blank frame. The players and their kills are listed on the [diplomacy panel](/systems/diplomacy/) instead.
 
 With something selected, a left click in the radar picture can act as a click on that cell in the tactical view. It does so when the selection's action there is a move, blocked move, attack, enter, capture, sabotage or harvest. Any other left click, including every click with nothing selected, recenters the tactical view on that cell. The new view is kept within the playable area.
-
-:::caution[Radar Toggle does nothing in a campaign]
-[Radar Toggle](/commands/toggleradar/) switches the pane between the multiplayer name and kill list and the radar map, or the blank frame when the player has no radar. In a campaign game the command does nothing. Nothing else shows the name and kill list, so a campaign never shows it.
-:::
 
 ### The mode buttons
 

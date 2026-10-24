@@ -62,6 +62,7 @@
 #include "theme.h"
 #include "timer.h"
 #include "tracker.h"
+#include "ui/screens/diplomacy/uidiplomacy.h"
 #include "ui/uienginehost.h"
 #include "ui/uishell.h"
 #include "video.h"
@@ -182,6 +183,7 @@ bool InMainLoop = false;
 
 static void Finish_Decided_Game(void)
 {
+	UI_Diplomacy_Close();
 	Unlock_Scenario_Input();
 
 	if (Session.Type == GAME_INTERNET && !GameStatisticsPacketSent) {
@@ -302,6 +304,7 @@ bool Main_Loop(void)
 	*/
 	if (!Session.Play) {
 		if (SpecialDialog == SDLG_NONE && GameInFocus) {
+			UI_Diplomacy_Update();
 			UIShell.Tick();
 			Map.Input(input, x, y);
 			if (input) {
@@ -484,13 +487,6 @@ void Keyboard_Process(KeyNumType & input)
 		*/
 		if (plain == KN_SPACE || plain == KN_ESC) {
 			Queue_Options();
-		}
-
-		/*
-		**	Toggles the map zoom mode similarly to pressing the map button.
-		*/
-		if (plain == KN_TAB) {
-			Map.Zoom_Mode_Control();
 		}
 
 #ifdef _DEBUG

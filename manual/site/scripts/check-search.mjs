@@ -143,7 +143,7 @@ await expectRoute('GDI Drop Pods superweapon', `${base}/systems/drop-pods/`, sco
 await expectRoute('Base placement', `${base}/systems/base-adjacency/`, scoped(SEARCH_VIEWS.systems, 'Buildings & economy'));
 await expectRoute('developer builds', `${base}/using/project-status/`, scoped(SEARCH_VIEWS.using, 'Getting started'));
 await expectRoute('Toggle follow state', `${base}/commands/follow/`, scoped(SEARCH_VIEWS.commands, COMMAND_KIND_AREAS.registered));
-await expectRoute('Map zoom', `${base}/commands/fixed-map-zoom/`, scoped(SEARCH_VIEWS.commands, COMMAND_KIND_AREAS.fixed));
+await expectRoute('Options menu', `${base}/commands/fixed-options-menu/`, scoped(SEARCH_VIEWS.commands, COMMAND_KIND_AREAS.fixed));
 await expectRoute('Command-line help', `${base}/using/command-line/help/`, scoped(SEARCH_VIEWS.using, COMMAND_KIND_AREAS.launch));
 await expectRoute('CRC-indexed archive members', `${base}/formats/mix/`, scoped(SEARCH_VIEWS.formats, FORMAT_KIND_AREAS.binary));
 await expectRoute('RandomMap', `${base}/reference/map-seeds/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.mapSeeds));

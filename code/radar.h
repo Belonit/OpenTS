@@ -137,12 +137,6 @@ class RadarClass: public DisplayClass
 
 		void Flag_Background_Update(Cell const & cell) {Radar_Background(cell); }
 
-		/*
-		**	Toggles player names on & off
-		*/
-		//void Player_Names(bool on);
-		bool Is_Player_Names(void);
-		void Draw_Names(void);
 		void Noop(int, int);
 		void Compute_Radar_Image(void);
 		Rect Compute_Background(Rect const & cell_rect, Rect & update_rect, bool fill_in);
@@ -322,15 +316,15 @@ class RadarClass: public DisplayClass
 		enum RadarModeType {
 			RMODE_UNAVAILABLE,
 			RMODE_TACTICAL,
-			RMODE_PLAYER_NAMES,
+			RMODE_PLAYER_NAMES,		// Retired; kept because saves store the mode.
 			RMODE_MOVIE,
 			RMODE_4,
 			RMODE_5,
 		};
 
 		/*
-		 * This is what the radar pane is presently showing -- the radar map itself, the list
-		 * of player names, or a movie. See RadarModeType for the choices.
+		 * This is what the radar pane is presently showing -- the radar map itself or a movie.
+		 * See RadarModeType for the choices.
 		 */
 		int RadarMode;
 

@@ -66,7 +66,7 @@ const cases = [
 	['using/project-status/index.html', ['Project status', 'Toolchain and targets', 'Authoritative files', 'docs/BUILDING.md']],
 	['commands/follow/index.html', ['Command', 'Hotkey command', 'KEYBOARD.INI', 'Release and Debug']],
 	['using/command-line/help/index.html', ['Command-line help', 'Syntax', 'Aliases', 'Release and Debug', 'ots-breadcrumb']],
-	['commands/fixed-map-zoom/index.html', ['Map zoom', 'Fixed control', 'Fixed controls', 'ots-breadcrumb']],
+	['commands/fixed-options-menu/index.html', ['Options menu', 'Fixed control', 'Fixed controls', 'ots-breadcrumb']],
 	['formats/mix/index.html', ['MIX archives', 'Binary format', '<dt>Role</dt>', 'code/ccfile.cpp', 'Source files', 'code/mixfile.h']],
 	['changes/opents-manual/index.html', ['OpenTS manual', 'Released in', '0.1.0', 'reference pages for every']],
 	['changes/fastmath-runtime/index.html', ['Replace the fastmath lookup tables', 'Numerical results may differ', 'network synchronization']],

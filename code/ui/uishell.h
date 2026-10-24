@@ -50,7 +50,8 @@ class UIShellClass
 		void Serve_Shown_Screen(void);
 		UIResult Run_Modal(UIViewClass & view, UIServiceCallback const & service, bool hideparent = false);
 		UIServiceCallback const * Running_Service(void) const;
-		bool Show_Modeless(UIViewClass & view);
+		bool Show_Modeless(UIViewClass & view, bool reveal = false);
+		bool Owns_Pointer(void) const;
 		void Hide_Modeless(UIViewClass & view);
 		void Refresh(void);
 
@@ -155,6 +156,11 @@ class UIShellClass
 		float RevealWidth = 0.0f;
 		bool Revealing = false;
 		int RevealPasses = 0;
+		// A screen beside the game slides in on its own, while the game keeps calling Tick.
+		UIViewClass * ModelessRevealing = nullptr;
+		float ModelessRevealShown = 0.0f;
+		int ModelessRevealStart = 0;
+		float ModelessRevealWidth = 0.0f;
 
 		bool DevWasActive = false;
 

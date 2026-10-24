@@ -1,6 +1,24 @@
 # Removed settings live here only after source history establishes their removal.
 # They remain searchable and directly addressable, but active indexes omit them.
 - type: command
+  id: ToggleRadar
+  route: /commands/toggleradar/
+  search_aliases:
+    - Radar Toggle
+  summary: Switched the radar pane between the radar map and a list of player names and kills. The list moved to the diplomacy panel, and a ToggleRadar binding in KEYBOARD.INI now binds Diplomacy.
+  replacement:
+    type: command
+    id: Diplomacy
+- type: command
+  id: fixed:map-zoom
+  route: /commands/fixed-map-zoom/
+  search_aliases:
+    - Map zoom
+  summary: Tab switched the radar pane between the radar map and a list of player names and kills when no command was bound to it. The list moved to the diplomacy panel.
+  replacement:
+    type: command
+    id: Diplomacy
+- type: command
   id: fixed:cancel-modem-operation
   route: /commands/fixed-cancel-modem-operation/
   search_aliases:

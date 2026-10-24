@@ -8,15 +8,6 @@ fixed_controls:
     availability: &all { builds: [release, debug] }
     sites:
       - { file: code/mainloop.cpp, function: Keyboard_Process, expression: KN_SPACE }
-  - id: fixed:map-zoom
-    title: Map zoom
-    description: Toggles the tactical map zoom mode.
-    audience: player
-    bindings: [Tab]
-    context: In-game
-    availability: *all
-    sites:
-      - { file: code/mainloop.cpp, function: Keyboard_Process, expression: KN_TAB }
   - id: fixed:multiplayer-message
     title: Multiplayer message recipient
     description: Starts a private message to one connection, or a message to everyone.

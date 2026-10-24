@@ -22,7 +22,7 @@ Shared control works only in network games, and only when `SharedControl=yes` is
 
 ## Granting and withdrawing control
 
-To grant control, select an object that belongs to the ally and press the [`GrantControl`](/commands/grantcontrol/) key. The command has no default key. Pressing it again with that ally's object selected withdraws the grant. Both players see a message when a grant starts or ends.
+To grant control, select an object that belongs to the ally and press the [`GrantControl`](/commands/grantcontrol/) key, or tick the ally's Give box on the [diplomacy panel](/systems/diplomacy/#shared-control). The command has no default key. Pressing it again with that ally's object selected, or clearing the box, withdraws the grant. Both players see a message when a grant starts or ends.
 
 A grant can be made or withdrawn only when all of these hold:
 

@@ -32,6 +32,8 @@ After reading the file at startup, the game binds Delete to [`DeleteWaypoint`](/
 
 At startup the game also binds Enter to [`ChatToAll`](/commands/chattoall/) and Backspace to [`ChatToAllies`](/commands/chattoallies/), each only when the file binds neither that command nor that key. A file that binds the command to another key, or gives the key to another command, keeps its binding.
 
+An entry named `ToggleRadar`, the command the radar pane's player list had before the [diplomacy panel](/systems/diplomacy/) replaced it, binds [`Diplomacy`](/commands/diplomacy/). The dialog saves it back under the new name.
+
 :::caution[Bind each key once]
 Give each key to only one command. If two entries bind the same key, both are kept, and pressing the key runs only one of the two commands. Which one runs cannot be predicted from the file.
 :::

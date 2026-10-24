@@ -345,20 +345,6 @@ void RadarClass::Draw_It(bool forced)
 			case RMODE_TACTICAL:
 				break;
 
-			case RMODE_PLAYER_NAMES:
-				if (IsToRedraw == true) {
-					IsToRedraw = false;
-					if (FullRedraw) {
-						Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, MAX_RADAR_FRAMES, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
-						Draw_Names();
-						LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
-					} else {
-						Draw_Names();
-						LastDrawRect = Rect(RadX + RadOffX, RadY + RadOffY, RadPWidth, RadPHeight);
-					}
-				}
-			break;
-
 			case RMODE_MOVIE:
 				Play_Movie();
 				break;
@@ -731,102 +717,6 @@ void RadarClass::Set_Tactical_Position(Coord const & coord)
 bool RadarClass::Cell_On_Radar(Cell const & cell)
 {
 	return(In_Local_Radar(cell));
-}
-
-
-/***********************************************************************************************
- * Draw_Names -- draws players' names on the radar map                                         *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/07/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-void RadarClass::Draw_Names(void)
-{
-	int c_idx;
-	HousesType house;
-	HouseClass * ptr;
-	int y;
-	char txt[40];
-	HousesType h;
-	int kills;
-	ColorScheme * color;
-	TextPrintType style;
-
-	/*
-	**	Do nothing if the sidebar isn't there
-	*/
-	if (!Map.IsSidebarActive) {
-		return;
-	}
-
-	Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 40, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
-
-	y = RadY + RadOffY+(2);
-
-	Fancy_Text_Print(TXT_NAME_COLON, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX, y), Fetch_Scheme_By_Name(DEFAULT_GADGET_SCHEME), TBLACK, TextPrintType(TPF_EFNT | TPF_NOSHADOW));
-	Fancy_Text_Print(TXT_KILLS_COLON, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX + RadIWidth - 2, y), Fetch_Scheme_By_Name(DEFAULT_GADGET_SCHEME), TBLACK, TextPrintType(TPF_RIGHT | TPF_EFNT | TPF_NOSHADOW));
-	y += 6+1;
-
-	SidebarSurface->Draw_Line(Point2D(RadX + RadOffX, y), Point2D(RadX + RadOffX + RadIWidth - 1, y), SidebarDrawer->Convert_Pixel(LTGREY));
-	y += 2*2/*RESFACTOR*/;
-
-	for (house = HOUSE_FIRST; house < Houses.Count(); house++) {
-		ptr = Houses[house];
-
-		if (!ptr || !ptr->Class->IsMultiplay || ptr->IsObserver) continue;
-
-		/*
-		**	Decode this house's color
-		*/
-		c_idx = ptr->Scheme;
-
-		if (ptr->IsDefeated) {
-			color = Fetch_Scheme_By_Name(DEFAULT_GADGET_SCHEME);
-			style = TextPrintType(TPF_EFNT | TPF_NOSHADOW);
-		} else {
-			color = ColorSchemes[c_idx];
-			style = TextPrintType(TPF_EFNT | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
-		}
-
-		/*
-		**	Initialize our message
-		*/
-		txt[0] = 0;
-		snprintf(txt, sizeof(txt), "%s", Session.Shown_Name(ptr).c_str());
-
-		if (strlen(txt) == 0) {
-			strcpy(txt,"________");
-		}
-
-		/*
-		**	Print the player name, and the # of kills
-		*/
-		if (strlen(txt) > 18) {
-			txt[18] = '.';
-			txt[19] = '\0';
-		}
-		Fancy_Text_Print(txt, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX, y), color, TBLACK, style);
-
-		kills = 0;
-		for (h = HOUSE_FIRST; h < ARRAY_SIZE(ptr->UnitsKilled); h++) {
-			kills += ptr->UnitsKilled[h];
-			kills += ptr->BuildingsKilled[h];
-		}
-		sprintf(txt, "%2d", kills);
-		Fancy_Text_Print(txt, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX + RadIWidth - 2, y), color, TBLACK, TextPrintType(style | TPF_RIGHT));
-
-		y += 8+1;
-
-	}
 }
 
 
@@ -1545,6 +1435,22 @@ void RadarClass::Post_Load_Radar_Fixup(void)
 	for (int i = 0; i < Technos.Count(); i++) {
 		Technos[i]->IsRadarTracked = false;
 	}
+
+	// An older save can hold the retired player-names mode; it reopens as the radar map, or
+	// closed when the house has no radar.
+	if (SuspendedRadarMode == RMODE_PLAYER_NAMES) {
+		SuspendedRadarMode = Is_Radar_Existing() ? RMODE_TACTICAL : RMODE_UNAVAILABLE;
+	}
+	if (RadarMode == RMODE_PLAYER_NAMES) {
+		if (Is_Radar_Existing()) {
+			RadarMode = RMODE_TACTICAL;
+		} else {
+			RadarMode = RMODE_UNAVAILABLE;
+			RadarState = RSTATE_INACTIVE;
+			RadarAnimFrame = 0;
+		}
+	}
+
 	if (RadarMode == RMODE_MOVIE) {
 		RadarState = RSTATE_MOVIE_DONE;
 		Radar_Activate(SuspendedRadarMode);
@@ -2066,15 +1972,6 @@ void RadarClass::Toggle_Radar(bool on)
 	}
 }
 
-
-/// <summary>
-/// Determines if the radar pane is showing the player name list.
-/// </summary>
-/// <returns>bool; Is the player name list currently displayed?</returns>
-bool RadarClass::Is_Player_Names(void)
-{
-	return(RadarMode == RMODE_PLAYER_NAMES && RadarState == RSTATE_ACTIVE);
-}
 
 
 /// <summary>

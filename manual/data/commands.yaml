@@ -525,11 +525,11 @@ registered_commands:
     source: code/init.cpp
     class: CenterREventCommandClass
     guard: null
-- id: ToggleRadar
-  route_id: toggleradar
+- id: Diplomacy
+  route_id: diplomacy
   kind: registered
-  title: Radar Toggle
-  description: Toggle radar display mode on / off.
+  title: Diplomacy
+  description: Opens or closes the panel of players, alliances, shared control, chat and connections.
   category: Interface
   audience: player
   availability:
@@ -538,7 +538,7 @@ registered_commands:
     - debug
   _provenance:
     source: code/init.cpp
-    class: ToggleRadarCommandClass
+    class: DiplomacyCommandClass
     guard: null
 - id: TogglePower
   route_id: togglepower
@@ -1817,19 +1817,6 @@ fixed_controls:
     - debug
   bindings:
   - Space
-  context: In-game
-  _provenance:
-    source: code/mainloop.cpp
-    guard: null
-- id: fixed:map-zoom
-  route_id: fixed-map-zoom
-  kind: fixed
-  title: Map zoom
-  description: Toggles the tactical map zoom mode.
-  audience: player
-  availability: *id001
-  bindings:
-  - Tab
   context: In-game
   _provenance:
     source: code/mainloop.cpp

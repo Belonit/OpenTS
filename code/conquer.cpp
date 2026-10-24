@@ -121,6 +121,7 @@
 #include "surface.h"
 #include "tactical.h"
 #include "theme.h"
+#include "ui/screens/diplomacy/uidiplomacy.h"
 #include "unittype.h"
 #include "voc.h"
 #include "vox.h"
@@ -211,6 +212,7 @@ void Ingame_Menu_Dialog(void)
 			}
 		}
 
+		UI_Diplomacy_Close();
 		Pause_Scenario();
 
 

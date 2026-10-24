@@ -1090,6 +1090,8 @@ BEGIN
     TXT_GRANT_CONTROL_DESC  "Lets the owner of the selected allied object command your units, or takes that back."
     TXT_CONTROL_GRANTED     "%s lets %s command their units."
     TXT_CONTROL_WITHDRAWN   "%s no longer lets %s command their units."
+    TXT_DIPLOMACY           "Diplomacy"
+    TXT_DIPLOMACY_DESC      "Opens or closes the panel of players, alliances, shared control, chat and connections."
 END
 
 #endif    // English (U.S.) resources

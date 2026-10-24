@@ -33,6 +33,7 @@ opents_add_test(UIShell
         ui/screens/keyboard/uikeyboard.cpp
         ui/screens/mainopt/uimainopt.cpp
         ui/screens/desync/uidesync.cpp
+        ui/screens/diplomacy/uidiplomacy.cpp
         ui/screens/mapgen/uimapgen.cpp
         ui/screens/menu/uimenu.cpp
         ui/screens/reconnect/uireconnect.cpp

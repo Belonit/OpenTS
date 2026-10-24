@@ -37,7 +37,7 @@ test('team commands, forced bindings, fixed controls, and launch availability ar
 		.filter((record) => record.forced_binding)
 		.map((record) => [record.id, record.forced_binding]));
 	assert.deepEqual(forced, { Options: 'Escape', DeleteWaypoint: 'Delete' });
-	assert.ok(commands.fixed_controls.some((record) => record.id === 'fixed:map-zoom'));
+	assert.ok(commands.fixed_controls.some((record) => record.id === 'fixed:options-menu'));
 	assert.deepEqual(
 		commands.launch_options.find((record) => record.id === 'launch:tournament-time').availability.builds,
 		['release', 'debug'],

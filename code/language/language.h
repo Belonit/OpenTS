@@ -1171,6 +1171,8 @@
 #define TXT_GRANT_CONTROL_DESC          1717
 #define TXT_CONTROL_GRANTED             1718
 #define TXT_CONTROL_WITHDRAWN           1719
+#define TXT_DIPLOMACY                   1720
+#define TXT_DIPLOMACY_DESC              1721
 
 // Next default values for new objects
 //

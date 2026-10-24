@@ -37,7 +37,7 @@ An observer's house holds no alliances. The launch file's alliance entries for t
 
 Because the house starts defeated, it never counts among the houses or people still playing when the game decides whether the match is over. It cannot surrender.
 
-An observer does not appear on the [score screen](/systems/multiplayer-score-screen/), in the radar pane's name and kill list, or in the statistics report.
+An observer does not appear on the [score screen](/systems/multiplayer-score-screen/) or in the statistics report. The [diplomacy panel](/systems/diplomacy/) lists observers apart from the players.
 
 An observer's house is still an observer after a [saved game](/formats/save-games/) is loaded. A launch file that resumes a network game's save must mark the same seats as watching, or the game refuses to load the save.
 

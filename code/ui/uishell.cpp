@@ -360,6 +360,16 @@ bool UIShellClass::Pointer_Owned(void) const
 }
 
 
+/// <summary>
+/// Whether the interface decides the pointer's shape, as it does while a screen covers the game
+/// or the pointer rests on a screen shown beside the game.
+/// </summary>
+bool UIShellClass::Owns_Pointer(void) const
+{
+	return(Ready && Context != nullptr && Pointer_Owned());
+}
+
+
 /// <returns>True when the interface set the cursor, and the caller should leave it
 /// alone.</returns>
 bool UIShellClass::Handle_Set_Cursor(void)
@@ -668,6 +678,7 @@ void UIShellClass::Shutdown(void)
 		view->Release();
 	}
 	Modeless.clear();
+	ModelessRevealing = nullptr;
 
 	UIDev_Shutdown(*Render);
 
@@ -780,6 +791,12 @@ void UIShellClass::Tick(void)
 
 	Drain_Deferred();
 	Reconcile_Held_Input();
+
+	if (ModelessRevealing != nullptr
+		&& !Advance_Reveal(*ModelessRevealing, ModelessRevealWidth, ModelessRevealStart, ModelessRevealShown)) {
+		Log(UI_REVEAL_DONE, ModelessRevealing->Name(), 0, Clock().Milliseconds() - ModelessRevealStart);
+		ModelessRevealing = nullptr;
+	}
 
 	{
 		UIReentryGuardClass updating(InContext);
@@ -1243,10 +1260,11 @@ void UIShellClass::Report_Open_Error(UIViewClass const & view, char const * reas
 
 /// <summary>
 /// Puts a screen up beside the game and returns at once. The caller owns the view and must
-/// keep it alive until Hide_Modeless.
+/// keep it alive until Hide_Modeless. With reveal set, the screen slides in as a modal one
+/// does, advancing with each Tick, unless a modal screen is up or animations are off.
 /// </summary>
 /// <returns>False when the screen could not be opened, and nothing is shown.</returns>
-bool UIShellClass::Show_Modeless(UIViewClass & view)
+bool UIShellClass::Show_Modeless(UIViewClass & view, bool reveal)
 {
 	if (!Ready || !FontLoaded || InContext) {
 		return(false);
@@ -1263,6 +1281,21 @@ bool UIShellClass::Show_Modeless(UIViewClass & view)
 	view.Sync();
 	view.Show(false);
 	Modeless.push_back(&view);
+
+	if (reveal && Modals.empty() && ModelessRevealing == nullptr && Host.Animate_Screens()) {
+		{
+			UIReentryGuardClass updating(InContext);
+			Context->Update();
+		}
+		ModelessRevealWidth = view.Reveal_Width();
+		ModelessRevealShown = 0.0f;
+		ModelessRevealStart = Clock().Milliseconds();
+		if (ModelessRevealWidth > 0.0f && Advance_Reveal(view, ModelessRevealWidth, ModelessRevealStart, ModelessRevealShown)) {
+			ModelessRevealing = &view;
+			Host.Play_Sample(UI_REVEAL_SOUND, UI_REVEAL_VOLUME);
+		}
+	}
+
 	Refresh();
 
 	char label[160];
@@ -1277,6 +1310,9 @@ void UIShellClass::Hide_Modeless(UIViewClass & view)
 	auto const unlisted = std::remove(Modeless.begin(), Modeless.end(), &view);
 	bool const listed = unlisted != Modeless.end();
 	Modeless.erase(unlisted, Modeless.end());
+	if (ModelessRevealing == &view) {
+		ModelessRevealing = nullptr;
+	}
 	view.Release();
 
 	if (listed && Ready) {

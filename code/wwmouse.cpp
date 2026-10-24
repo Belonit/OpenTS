@@ -59,6 +59,7 @@
 #include "wwmouse.h"
 
 #include "_convert.h"
+#include "_ui.h"
 #include "convert.h"
 #include "dbgprint.h"
 #include "globals.h"
@@ -67,6 +68,7 @@
 #include "sdl/sdlwindow.h"
 #include "shapeset.h"
 #include "ui/rml/rmltexture.h"
+#include "ui/uishell.h"
 #include "video.h"
 #include "vidscale.h"
 #include "win.h"
@@ -543,7 +545,8 @@ void WWMouseClass::Select_Cursor(ShapeSet const * shape, int frame, int hotx, in
 
 	CurrentCursor = cursor;
 
-	if (apply) {
+	// Over a screen shown beside the game, the screen's pointer stays until the mouse leaves it.
+	if (apply && !UIShell.Owns_Pointer()) {
 		Main_Window_Set_Cursor(CursorVisible ? CurrentCursor : NULL);
 	}
 }
@@ -553,7 +556,7 @@ void WWMouseClass::Set_Cursor_Visible(bool visible)
 {
 	CursorVisible = visible;
 
-	if (!Is_Captured()) {
+	if (!Is_Captured() || UIShell.Owns_Pointer()) {
 		return;
 	}
 

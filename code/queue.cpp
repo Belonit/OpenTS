@@ -88,6 +88,7 @@
 #include "_tactica.h"
 #include "_vanim.h"
 #include "_warhead.h"
+#include "_ui.h"
 #include "_weapon.h"
 #include "_xmouse.h"
 #include "aircraft.h"
@@ -161,8 +162,10 @@
 #include "trigger.h"
 #include "trigtype.h"
 #include "tube.h"
+#include "ui/screens/diplomacy/uidiplomacy.h"
 #include "ui/screens/reconnect/uireconnect.h"
 #include "ui/uienginehost.h"
+#include "ui/uishell.h"
 #include "unit.h"
 #include "unittype.h"
 #include "vanim.h"
@@ -1480,6 +1483,8 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 		//---------------------------------------------------------------------
 		Call_Back();
 		if (!first_time && SpecialDialog == SDLG_NONE && reconnect_dlg==0) {
+			UI_Diplomacy_Update();
+			UIShell.Tick();
 			Map.Input(input, x, y);
 			if (input)
 				Keyboard_Process(input);
@@ -2187,6 +2192,7 @@ static int Process_Reconnect_Dialog(CDTimerClass<SystemTimerClass> *timeout_time
 			Reconnect_Say(buf);
 		}
 
+		UI_Diplomacy_Close();
 		ReconnectBox.Show(Reconnect_Notice(their, num_conn, (int)(*timeout_timer / TIMER_SECOND)));
 		return(0);
 	}

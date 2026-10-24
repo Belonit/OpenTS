@@ -44,6 +44,8 @@ The sender's game sends a line only to the machines the table above lists for it
 
 A receiving game drops any line from a machine that holds no [seat](/formats/spawn-ini/#who-is-playing) in the match.
 
+The [diplomacy panel](/systems/diplomacy/#chat) can keep a player out of the lines a sender sends to everyone, to the team or to the observers, and can hide a player's lines from the receiver's screen. Both choices stay on the machine that made them.
+
 Chat does not travel with the game's orders. A line is shown as soon as it arrives and has no effect on play.
 
 ## What is shown

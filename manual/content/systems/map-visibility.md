@@ -52,8 +52,6 @@ related:
   - type: mission
     id: TMISSION_GOTO_SHROUD
   - type: command
-    id: ToggleRadar
-  - type: command
     id: CenterOnRadarEvent
 ---
 

@@ -165,6 +165,7 @@
 #include "trim.h"
 #include "tube.h"
 #include "tutorial.h"
+#include "ui/screens/diplomacy/uidiplomacy.h"
 #include "ui/uishell.h"
 #include "unit.h"
 #include "unittype.h"
@@ -1061,6 +1062,7 @@ void Clear_Scenario(void)
 {
 	Stop_All_Sound_Effects();
 	Sync_Recorder_Disarm();
+	UI_Diplomacy_Close();
 
 	int index;
 

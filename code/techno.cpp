@@ -5370,14 +5370,6 @@ void TechnoClass::Record_The_Kill(TechnoClass * source)
 						}
 						source->House->BuildingsKilled[Owner()]++;
 					}
-
-					/*
-					**	If the map is displaying the multiplayer player names & their
-					** # of kills, tell it to redraw.
-					*/
-					if (Map.Is_Player_Names()) {
-						Map.Redraw_Radar(false);
-					}
 				}
 			}
 			break;
@@ -5403,14 +5395,6 @@ void TechnoClass::Record_The_Kill(TechnoClass * source)
 
 			House->UnitsLost++;
 			if (source != NULL) source->House->UnitsKilled[Owner()]++;
-
-			/*
-			**	If the map is displaying the multiplayer player names & their
-			** # of kills, tell it to redraw.
-			*/
-			if (Map.Is_Player_Names()) {
-				Map.Redraw_Radar(false);
-			}
 			break;
 
 		default:

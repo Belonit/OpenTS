@@ -116,7 +116,6 @@ class SidebarClass : public PowerClass
 		virtual void Reposition_Sidebar(void) override;
 		virtual char const * Help_Text(int id) override;
 
-		void Zoom_Mode_Control(void);
 		bool Abandon_Production(RTTIType type, FactoryClass * factory);
 		bool Activate(int control);
 		bool Add(RTTIType type, int ID);

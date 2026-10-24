@@ -312,7 +312,9 @@ test('Every name a match shows passes through the session', () => {
 
 	// These draw or keep a name without a string of their own.
 	const draws = [
-		['code/radar.cpp', 'void RadarClass::Draw_Names(void)'],
+		['code/ui/screens/diplomacy/uidiplomacydlg.cpp', 'UIDiplomacyRow Player_Row(HouseClass const * house, UIDiplomacyState const & state)'],
+		['code/ui/screens/diplomacy/uidiplomacydlg.cpp', 'UIDiplomacyRow Observer_Row(HouseClass const * house, UIDiplomacyState const & state)'],
+		['code/ui/screens/diplomacy/uidiplomacydlg.cpp', 'std::string Footer_Text(void)'],
 		['code/progress.cpp', 'void ProgressScreenClass::Set_Graphic_Data('],
 		['code/chat.cpp', 'void Chat_Show(HouseClass const * sender'],
 		['code/ipxmgr.cpp', 'void IPXManagerClass::Multiplayer_Debug_Print(int top)'],
