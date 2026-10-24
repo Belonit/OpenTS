@@ -51,6 +51,7 @@
 #include "dialog.hh"
 #include "diff.hh"
 
+#include <array>
 #include <optional>
 #include <string>
 
@@ -532,6 +533,10 @@ class SessionClass
 		bool Record_Network_Report(int id, unsigned int process_milliseconds, unsigned int round_trip_milliseconds, unsigned int stall_milliseconds,
 			unsigned int frame);
 		void Remove_Network_Timing_Player(int id, unsigned int frame);
+		void Report_Departure(HouseClass const * reporter, HouseClass * departed, int frame);
+		bool Is_Player_Removed(HouseClass const * house) const {return(RemovedPlayers[house]);}
+		void Reset_Departures(void);
+		bool Is_Network_Game(void) const {return(Type == GAME_IPX || Type == GAME_INTERNET);}
 		NetTiming::TimingCensus Network_Timing_Census(unsigned int frame);
 		NetTiming::TimingEvaluation Evaluate_Network_Timing(NetTiming::TimingCensus const & census, unsigned int target_fps, unsigned int frame);
 		NetTiming::TimingSettings Network_Timing_Target(void) const;
@@ -623,6 +628,10 @@ class SessionClass
 		unsigned int MaxAhead;
 		unsigned int FrameSendRate;
 		NetTiming::TimingReportCensus NetworkTimingReports;
+
+		// Which players have reported each player's departure, and which players were removed.
+		std::array<HouseSet, HOUSE_MAX> DepartureReports;
+		HouseSet RemovedPlayers;
 		NetTiming::BalancedTimingPolicy NetworkTimingPolicy;
 		std::optional<NetworkTimingTransition> PendingNetworkTiming;
 		int NetworkTimingPolicyOwner;

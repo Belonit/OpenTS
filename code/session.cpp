@@ -63,10 +63,12 @@
 #include "ipxmgr.h"
 #include "language/language.h"
 #include "msgloop.h"
+#include "netsemantic.h"
 #include "netglobal.h"
 #include "progress.h"
 #include "queue.h"
 #include "rules.h"
+#include "savemgr.h"
 #include "savestream.h"
 #include "scenario.h"
 #include "scheme.h"
@@ -567,6 +569,63 @@ void SessionClass::Remove_Network_Timing_Player(int id, unsigned int frame)
 		NetworkTimingReports.Set_Player_Active(id, false, frame);
 		Prepare_Network_Timing_Master(Master_Player_ID(), frame);
 	}
+}
+
+
+/// <summary>
+/// Records that the reporter has lost its connection to the departed player, then removes every
+/// player whose departure more than half of the other remaining players have reported. A removed
+/// player is defeated, or handed to the computer when the match allows it.
+/// </summary>
+void SessionClass::Report_Departure(HouseClass const * reporter, HouseClass * departed, int frame)
+{
+	DepartureReports[House_Slot(departed)].Set(reporter);
+
+	bool removed = true;
+	while (removed) {
+		removed = false;
+		for (int i = 0; i < Houses.Count(); i++) {
+			HouseClass * target = Houses[i];
+			if (target == NULL || RemovedPlayers[target] || !DepartureReports[House_Slot(target)].Any()) {
+				continue;
+			}
+
+			HouseSet reporters;
+			for (int j = 0; j < Houses.Count(); j++) {
+				HouseClass const * house = Houses[j];
+				if (house != NULL && house != target && house->Is_Human_Player() && !RemovedPlayers[house]) {
+					reporters.Set(house);
+				}
+			}
+
+			int const reports = (DepartureReports[House_Slot(target)] & reporters).Count();
+			if (!NetSemantic::Removal_Is_Confirmed(reports, reporters.Count())) {
+				continue;
+			}
+
+			DebugString("Removing player %d at frame %d\n", target->HeapID, ::Frame);
+			RemovedPlayers.Set(target);
+			DepartureReports[House_Slot(target)].Clear();
+			SaveManager.Disable_Multiplayer_Saving();
+			Remove_Network_Timing_Player(target->HeapID, frame >= 0 ? static_cast<unsigned int>(frame) : 0u);
+			if (!target->IsObserver) {
+				if ((Type == GAME_INTERNET && WestwoodOnline_Tournament) || !Options.AITakeover) {
+					target->Flag_To_Die();
+				} else {
+					target->AI_Takeover();
+				}
+			}
+			removed = true;
+		}
+	}
+}
+
+
+// Call once before each match starts.
+void SessionClass::Reset_Departures(void)
+{
+	DepartureReports.fill(HouseSet());
+	RemovedPlayers.Clear();
 }
 
 

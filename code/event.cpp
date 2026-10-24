@@ -89,45 +89,9 @@
 
 
 namespace {
-	enum class EventRejectReason : unsigned int {
-		InvalidType,
-		InvalidOrigin,
-		MissingOrigin,
-		InvalidAllyHouse,
-		InvalidAnimationType,
-		InvalidAnimationOwner,
-		InvalidProductionSelector,
-		InvalidSuperWeapon,
-		InvalidMission,
-		InvalidGameSpeed,
-		InvalidRemovedHouse,
-		InvalidLatencyFudge,
-		UnauthorizedSubject,
-		UnauthorizedTiming,
-		InvalidTimingArithmetic,
-		InvalidTimingValues,
-		UnschedulableTiming,
-		InvalidNetworkReport,
-		InvalidAbandonCount,
-		UnsentEvent,
-		LiveRemoval,
-		PlacementNotBuilding,
-		PlacementOffMap,
-		PlacementTooFar,
-		PlacementShrouded,
-		ProductionNotAllowed,
-		SaleNotAllowed,
-		RepairNotAllowed,
-		PowerToggleNotAllowed,
-		WallNotOwned,
-		MissionNotAllowed,
-		TargetHidden,
-		SuperWeaponOutOfRange,
-		AllianceNotAllowed,
-		Count,
-	};
+	using Reason = EventClass::RejectReason;
 
-	char const * const EventRejectReasonNames[] = {
+	char const * const RejectReasonNames[] = {
 		"invalid type",
 		"invalid origin",
 		"missing origin",
@@ -164,41 +128,35 @@ namespace {
 		"alliance the match does not allow",
 	};
 
-	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
-	unsigned int EventRejectCounts[(unsigned int)EventRejectReason::Count] = {};
+	static_assert(ARRAY_SIZE(RejectReasonNames) == (int)Reason::Count);
+	unsigned int RejectCounts[(unsigned int)Reason::Count] = {};
 
 	// The reasons each player has already been named for during this match.
-	std::array<std::bitset<(std::size_t)EventRejectReason::Count>, HOUSE_MAX> AnnouncedRejections;
-
-
-	bool Is_Network_Game(void)
-	{
-		return(Session.Type == GAME_IPX || Session.Type == GAME_INTERNET);
-	}
+	std::array<std::bitset<(std::size_t)Reason::Count>, HOUSE_MAX> AnnouncedRejections;
 
 
 	// An unmodified game cannot send these. Reasons left out can also follow a change to the
 	// match between a player's click and the command running.
-	bool Is_Announced(EventRejectReason reason)
+	bool Is_Announced(Reason reason)
 	{
 		switch (reason) {
-			case EventRejectReason::InvalidAllyHouse:
-			case EventRejectReason::InvalidAnimationType:
-			case EventRejectReason::InvalidAnimationOwner:
-			case EventRejectReason::InvalidProductionSelector:
-			case EventRejectReason::InvalidSuperWeapon:
-			case EventRejectReason::InvalidMission:
-			case EventRejectReason::InvalidGameSpeed:
-			case EventRejectReason::InvalidRemovedHouse:
-			case EventRejectReason::InvalidLatencyFudge:
-			case EventRejectReason::InvalidAbandonCount:
-			case EventRejectReason::UnsentEvent:
-			case EventRejectReason::PlacementNotBuilding:
-			case EventRejectReason::PlacementOffMap:
-			case EventRejectReason::PowerToggleNotAllowed:
-			case EventRejectReason::WallNotOwned:
-			case EventRejectReason::MissionNotAllowed:
-			case EventRejectReason::AllianceNotAllowed:
+			case Reason::InvalidAllyHouse:
+			case Reason::InvalidAnimationType:
+			case Reason::InvalidAnimationOwner:
+			case Reason::InvalidProductionSelector:
+			case Reason::InvalidSuperWeapon:
+			case Reason::InvalidMission:
+			case Reason::InvalidGameSpeed:
+			case Reason::InvalidRemovedHouse:
+			case Reason::InvalidLatencyFudge:
+			case Reason::InvalidAbandonCount:
+			case Reason::UnsentEvent:
+			case Reason::PlacementNotBuilding:
+			case Reason::PlacementOffMap:
+			case Reason::PowerToggleNotAllowed:
+			case Reason::WallNotOwned:
+			case Reason::MissionNotAllowed:
+			case Reason::AllianceNotAllowed:
 				return(true);
 
 			default:
@@ -211,14 +169,14 @@ namespace {
 	/// Tells every player in a network game who sent a command that an unmodified game cannot
 	/// send. Each player is named at most once per reason in a match.
 	/// </summary>
-	void Announce_Rejection(EventRejectReason reason, int origin)
+	void Announce_Rejection(Reason reason, int origin)
 	{
-		if (!Is_Network_Game() || !Is_Announced(reason) || origin < 0 || origin >= HOUSE_MAX
+		if (!Session.Is_Network_Game() || !Is_Announced(reason) || origin < 0 || origin >= HOUSE_MAX
 			|| !NetSemantic::Index_Is_Valid(origin, Houses.Count()) || Houses[origin] == NULL) {
 			return;
 		}
 
-		std::bitset<(std::size_t)EventRejectReason::Count> & announced = AnnouncedRejections[origin];
+		std::bitset<(std::size_t)Reason::Count> & announced = AnnouncedRejections[origin];
 		if (announced.test((std::size_t)reason)) {
 			return;
 		}
@@ -234,22 +192,6 @@ namespace {
 		snprintf(text, sizeof(text), format, Session.Shown_Name(house).c_str());
 		Session.Messages.Add_Message(NULL, 0, text, house->Scheme,
 			TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-	}
-
-
-	/// <summary>Records a rejected synchronized event.</summary>
-	void Log_Event_Rejection(EventRejectReason reason, unsigned int type, int origin, int detail)
-	{
-		Announce_Rejection(reason, origin);
-
-		unsigned int const reason_index = (unsigned int)reason;
-		unsigned int const count = ++EventRejectCounts[reason_index];
-		if (count == 0 || (count & (count - 1)) != 0) {
-			return;
-		}
-
-		DebugString("Rejected network event: %s, type %u, origin %d, detail %d (count %u)\n",
-			EventRejectReasonNames[reason_index], type, origin, detail, count);
 	}
 
 
@@ -285,77 +227,34 @@ namespace {
 		}
 		return(Fetch_Techno_Type(type, id) != NULL);
 	}
-
-
-	// Departure reports per target and the players already removed; both are synchronized
-	// and last for one match.
-	std::array<HouseSet, HOUSE_MAX> RemovalReports;
-	HouseSet RemovedPlayers;
-
-
-	/// <summary>Returns the players whose departure reports count toward removing the target.</summary>
-	HouseSet Removal_Reporters(HouseClass const * target)
-	{
-		HouseSet reporters;
-		for (int i = 0; i < Houses.Count(); i++) {
-			HouseClass const * house = Houses[i];
-			if (house != NULL && house != target && house->Is_Human_Player() && !RemovedPlayers[house]) {
-				reporters.Set(house);
-			}
-		}
-		return(reporters);
-	}
-
-
-	void Remove_Player(HouseClass * house, int frame)
-	{
-		DebugString("Removing player %d at frame %d\n", house->HeapID, ::Frame);
-		RemovedPlayers.Set(house);
-		RemovalReports[House_Slot(house)].Clear();
-		SaveManager.Disable_Multiplayer_Saving();
-		Session.Remove_Network_Timing_Player(house->HeapID, frame >= 0 ? static_cast<unsigned int>(frame) : 0u);
-		if (house->IsObserver) {
-			return;
-		}
-		if ((Session.Type == GAME_INTERNET && WestwoodOnline_Tournament) || !Session.Options.AITakeover) {
-			house->Flag_To_Die();
-		} else {
-			house->AI_Takeover();
-		}
-	}
-
-
-	/// <summary>Removes every player whose departure more than half of the remaining players have reported.</summary>
-	void Resolve_Removal_Reports(int frame)
-	{
-		bool removed = true;
-		while (removed) {
-			removed = false;
-			for (int i = 0; i < Houses.Count(); i++) {
-				HouseClass * target = Houses[i];
-				if (target == NULL || RemovedPlayers[target] || !RemovalReports[House_Slot(target)].Any()) {
-					continue;
-				}
-				HouseSet const reporters = Removal_Reporters(target);
-				int const reports = (RemovalReports[House_Slot(target)] & reporters).Count();
-				if (NetSemantic::Removal_Is_Confirmed(reports, reporters.Count())) {
-					Remove_Player(target, frame);
-					removed = true;
-				}
-			}
-		}
-	}
 }
 
 
 /// <summary>
-/// Clears the departure reports and the record of announced rejections. Call once before each match starts.
+/// Records that this event was refused, and in a network game names its sender to every
+/// player when an unmodified game cannot send such an event.
 /// </summary>
-void EventClass::Reset_Match_State(void)
+void EventClass::Reject(RejectReason reason, int detail) const
 {
-	RemovalReports.fill(HouseSet());
-	RemovedPlayers.Clear();
-	for (std::bitset<(std::size_t)EventRejectReason::Count> & announced : AnnouncedRejections) {
+	Announce_Rejection(reason, ID);
+
+	unsigned int const reason_index = (unsigned int)reason;
+	unsigned int const count = ++RejectCounts[reason_index];
+	if (count == 0 || (count & (count - 1)) != 0) {
+		return;
+	}
+
+	DebugString("Rejected network event: %s, type %u, origin %d, detail %d (count %u)\n",
+		RejectReasonNames[reason_index], (unsigned int)Type, ID, detail, count);
+}
+
+
+/// <summary>
+/// Forgets which players have been named for refused events. Call once before each match starts.
+/// </summary>
+void EventClass::Reset_Announcements(void)
+{
+	for (std::bitset<(std::size_t)EventClass::RejectReason::Count> & announced : AnnouncedRejections) {
 		announced.reset();
 	}
 }
@@ -903,19 +802,19 @@ void EventClass::Execute(void)
 bool EventClass::Is_Admitted(void) const
 {
 	if (Type == EMPTY || Type >= LAST_EVENT) {
-		Log_Event_Rejection(EventRejectReason::InvalidType, Type, -1, Type);
+		Reject(RejectReason::InvalidType, Type);
 		return(false);
 	}
 	if (!NetSemantic::Index_Is_Valid(ID, Houses.Count())) {
-		Log_Event_Rejection(EventRejectReason::InvalidOrigin, Type, ID, ID);
+		Reject(RejectReason::InvalidOrigin, ID);
 		return(false);
 	}
 	if (Houses[ID] == NULL) {
-		Log_Event_Rejection(EventRejectReason::MissingOrigin, Type, ID, ID);
+		Reject(RejectReason::MissingOrigin, ID);
 		return(false);
 	}
 
-	if (!Is_Network_Game()) {
+	if (!Session.Is_Network_Game()) {
 		return(true);
 	}
 
@@ -927,14 +826,14 @@ bool EventClass::Is_Admitted(void) const
 		}
 		int const owner = subject->House != NULL ? subject->House->HeapID : -1;
 		if (!NetSemantic::Subject_Owner_Is_Valid(ID, owner)) {
-			Log_Event_Rejection(EventRejectReason::UnauthorizedSubject, Type, ID, owner);
+			Reject(RejectReason::UnauthorizedSubject, owner);
 			return(false);
 		}
 	}
 
 	// No client creates these, so in a network game any copy is forged.
 	if (Type == SPECIAL || Type == ANIMATION || Type == PROCESS_TIME) {
-		Log_Event_Rejection(EventRejectReason::UnsentEvent, Type, ID, Type);
+		Reject(RejectReason::UnsentEvent, Type);
 		return(false);
 	}
 	return(true);
@@ -976,8 +875,8 @@ void EventClass::Execute_POWER(void)
 	if (building == NULL || !building->IsActive || building->IsInLimbo || building->Class->IsFirestormWall) {
 		return;
 	}
-	if (Is_Network_Game() && !building->Can_Toggle_Power()) {
-		Log_Event_Rejection(EventRejectReason::PowerToggleNotAllowed, Type, ID, building->Class->HeapID);
+	if (Session.Is_Network_Game() && !building->Can_Toggle_Power()) {
+		Reject(RejectReason::PowerToggleNotAllowed, building->Class->HeapID);
 		return;
 	}
 	if (Type == POWERON) {
@@ -1002,11 +901,11 @@ void EventClass::Execute_ALLY(void)
 	HouseClass * house = Houses[ID];
 	int const index = Data.General.Value;
 	if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
-		Log_Event_Rejection(EventRejectReason::InvalidAllyHouse, Type, ID, index);
+		Reject(RejectReason::InvalidAllyHouse, index);
 		return;
 	}
-	if (Is_Network_Game() && !house->Can_Change_Alliance(Houses[index])) {
-		Log_Event_Rejection(EventRejectReason::AllianceNotAllowed, Type, ID, index);
+	if (Session.Is_Network_Game() && !house->Can_Change_Alliance(Houses[index])) {
+		Reject(RejectReason::AllianceNotAllowed, index);
 		return;
 	}
 	if (house->Is_Ally(Houses[index])) {
@@ -1048,8 +947,8 @@ void EventClass::Execute_REPAIR(void)
 		return;
 	}
 	// Stopping a repair that is under way is always allowed.
-	if (Is_Network_Game() && (techno->RTTI != RTTI_BUILDING || (!((BuildingClass *)techno)->IsRepairing && !techno->Can_Repair()))) {
-		Log_Event_Rejection(EventRejectReason::RepairNotAllowed, Type, ID, techno->RTTI);
+	if (Session.Is_Network_Game() && (techno->RTTI != RTTI_BUILDING || (!((BuildingClass *)techno)->IsRepairing && !techno->Can_Repair()))) {
+		Reject(RejectReason::RepairNotAllowed, techno->RTTI);
 		return;
 	}
 	techno->Repair(-1);
@@ -1062,12 +961,12 @@ void EventClass::Execute_SELL(void)
 	if (techno == NULL || !techno->IsActive || techno->House->HeapID != ID) {
 		return;
 	}
-	if (Is_Network_Game()) {
+	if (Session.Is_Network_Game()) {
 		BuildingClass const * building = techno->RTTI == RTTI_BUILDING ? (BuildingClass const *)techno : NULL;
 		// A move order to a building that packs up into a vehicle is sent as a sale.
 		bool const packs_up = building != NULL && building->Class->UndeploysInto != NULL && building->Can_Redeploy();
 		if (!techno->Can_Demolish() && !packs_up) {
-			Log_Event_Rejection(EventRejectReason::SaleNotAllowed, Type, ID, techno->RTTI);
+			Reject(RejectReason::SaleNotAllowed, techno->RTTI);
 			return;
 		}
 	}
@@ -1083,8 +982,8 @@ void EventClass::Execute_SELLCELL(void)
 	Cell const cell(Data.SellCell.Where.X, Data.SellCell.Where.Y);
 	// A cell without a wall passes, because selling it does nothing.
 	bool const wall = Map.In_Radar(cell) && Map[cell].Overlay != OVERLAY_NONE && OverlayTypes[Map[cell].Overlay]->IsWall;
-	if (Is_Network_Game() && (!Map.In_Radar(cell) || (wall && !house->Can_Sell_Wall(cell)))) {
-		Log_Event_Rejection(EventRejectReason::WallNotOwned, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
+	if (Session.Is_Network_Game() && (!Map.In_Radar(cell) || (wall && !house->Can_Sell_Wall(cell)))) {
+		Reject(RejectReason::WallNotOwned, (cell.X << 16) | (cell.Y & 0xFFFF));
 		return;
 	}
 	house->Sell_Wall(cell, false);
@@ -1097,12 +996,12 @@ void EventClass::Execute_ANIMATION(void)
 	int const owner = (int)Data.Anim.Owner;
 	if (!NetSemantic::Animation_Type_Is_Valid(animation_type, ANIM_NONE, AnimTypes.Count()) ||
 		(animation_type != ANIM_NONE && AnimTypes[animation_type] == NULL)) {
-		Log_Event_Rejection(EventRejectReason::InvalidAnimationType, Type, ID, animation_type);
+		Reject(RejectReason::InvalidAnimationType, animation_type);
 		return;
 	}
 	if (!NetSemantic::Animation_Owner_Is_Valid(owner, HOUSE_NONE, Houses.Count()) ||
 		(owner != HOUSE_NONE && Houses[owner] == NULL)) {
-		Log_Event_Rejection(EventRejectReason::InvalidAnimationOwner, Type, ID, owner);
+		Reject(RejectReason::InvalidAnimationOwner, owner);
 		return;
 	}
 
@@ -1138,19 +1037,19 @@ void EventClass::Execute_PLACE(void)
 	TechnoClass const * object = factory != NULL && factory->Has_Completed() ? factory->Get_Object() : NULL;
 
 	// A placement the house cannot make at all passes, because placing it does nothing.
-	if (Is_Network_Game() && object != NULL && cell != CELL_NONE && cell != Cell(-1, -1)) {
-		EventRejectReason reason = EventRejectReason::Count;
+	if (Session.Is_Network_Game() && object != NULL && cell != CELL_NONE && cell != Cell(-1, -1)) {
+		RejectReason reason = RejectReason::Count;
 		if (object->RTTI != RTTI_BUILDING) {
-			reason = EventRejectReason::PlacementNotBuilding;
+			reason = RejectReason::PlacementNotBuilding;
 		} else if (!Map.In_Radar(cell)) {
-			reason = EventRejectReason::PlacementOffMap;
+			reason = RejectReason::PlacementOffMap;
 		} else if (!DisplayClass::Is_Anchored_Placement(((BuildingClass const *)object)->Class, house, cell)) {
-			reason = EventRejectReason::PlacementTooFar;
+			reason = RejectReason::PlacementTooFar;
 		} else if (!DisplayClass::Is_Unshrouded_Placement(((BuildingClass const *)object)->Class, house, cell)) {
-			reason = EventRejectReason::PlacementShrouded;
+			reason = RejectReason::PlacementShrouded;
 		}
-		if (reason != EventRejectReason::Count) {
-			Log_Event_Rejection(reason, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
+		if (reason != RejectReason::Count) {
+			Reject(reason, (cell.X << 16) | (cell.Y & 0xFFFF));
 			return;
 		}
 	}
@@ -1162,11 +1061,11 @@ void EventClass::Execute_PRODUCE(void)
 {
 	HouseClass * house = Houses[ID];
 	if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, false)) {
-		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+		Reject(RejectReason::InvalidProductionSelector, Data.Specific.ID);
 		return;
 	}
-	if (Is_Network_Game() && !house->Can_Order_Production(Fetch_Techno_Type(Data.Specific.Type, Data.Specific.ID))) {
-		Log_Event_Rejection(EventRejectReason::ProductionNotAllowed, Type, ID, Data.Specific.ID);
+	if (Session.Is_Network_Game() && !house->Can_Order_Production(Fetch_Techno_Type(Data.Specific.Type, Data.Specific.ID))) {
+		Reject(RejectReason::ProductionNotAllowed, Data.Specific.ID);
 		return;
 	}
 	house->Begin_Production(Data.Specific.Type, Data.Specific.ID);
@@ -1182,7 +1081,7 @@ void EventClass::Execute_SUSPEND(void)
 void EventClass::Execute_ABANDON(void)
 {
 	if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, true)) {
-		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+		Reject(RejectReason::InvalidProductionSelector, Data.Specific.ID);
 		return;
 	}
 	Houses[ID]->Abandon_Production(Data.Specific.Type, Data.Specific.ID);
@@ -1193,11 +1092,11 @@ void EventClass::Execute_ABANDON(void)
 void EventClass::Execute_ABANDON_COUNT(void)
 {
 	if (!Production_Selector_Is_Valid(Data.AbandonCount.Type, Data.AbandonCount.ID, true)) {
-		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.AbandonCount.ID);
+		Reject(RejectReason::InvalidProductionSelector, Data.AbandonCount.ID);
 		return;
 	}
 	if (Data.AbandonCount.Count < 1 || Data.AbandonCount.Count > Rule->MaximumQueuedObjects + 1) {
-		Log_Event_Rejection(EventRejectReason::InvalidAbandonCount, Type, ID, Data.AbandonCount.Count);
+		Reject(RejectReason::InvalidAbandonCount, Data.AbandonCount.Count);
 		return;
 	}
 	for (int abandoned = 0; abandoned < Data.AbandonCount.Count; abandoned++) {
@@ -1223,18 +1122,18 @@ void EventClass::Execute_MEGAMISSION(void)
 {
 	HouseClass * house = Houses[ID];
 	if (!NetSemantic::Mission_Is_Valid(Data.MegaMission.Mission, MISSION_NONE, MISSION_COUNT)) {
-		Log_Event_Rejection(EventRejectReason::InvalidMission, Type, ID, Data.MegaMission.Mission);
+		Reject(RejectReason::InvalidMission, Data.MegaMission.Mission);
 		return;
 	}
-	if (Is_Network_Game()) {
+	if (Session.Is_Network_Game()) {
 		if (!NetSemantic::Player_Mission_Is_Allowed(Data.MegaMission.Mission)) {
-			Log_Event_Rejection(EventRejectReason::MissionNotAllowed, Type, ID, Data.MegaMission.Mission);
+			Reject(RejectReason::MissionNotAllowed, Data.MegaMission.Mission);
 			return;
 		}
 		ObjectClass const * target = Data.MegaMission.Target.As_Object();
 		ObjectClass const * destination = Data.MegaMission.Destination.As_Object();
 		if ((target != NULL && !house->Can_See_Target(target)) || (destination != NULL && !house->Can_See_Target(destination))) {
-			Log_Event_Rejection(EventRejectReason::TargetHidden, Type, ID, Data.MegaMission.Mission);
+			Reject(RejectReason::TargetHidden, Data.MegaMission.Mission);
 			return;
 		}
 	}
@@ -1431,13 +1330,13 @@ void EventClass::Execute_SPECIAL_PLACE(void)
 	HouseClass * house = Houses[ID];
 	Cell const cell(Data.Special.Where.X, Data.Special.Where.Y);
 	if (!NetSemantic::Index_Is_Valid(Data.Special.ID, house->SuperWeapon.Count())) {
-		Log_Event_Rejection(EventRejectReason::InvalidSuperWeapon, Type, ID, Data.Special.ID);
+		Reject(RejectReason::InvalidSuperWeapon, Data.Special.ID);
 		return;
 	}
 	// Only a click on the in-range cursor sends a strike for a weapon with Action=EMPulse.
 	SuperClass const * super = house->SuperWeapon[Data.Special.ID];
-	if (Is_Network_Game() && super->Class->Action == ACTION_EMPULSE && !super->Is_In_Range(cell)) {
-		Log_Event_Rejection(EventRejectReason::SuperWeaponOutOfRange, Type, ID, Data.Special.ID);
+	if (Session.Is_Network_Game() && super->Class->Action == ACTION_EMPULSE && !super->Is_In_Range(cell)) {
+		Reject(RejectReason::SuperWeaponOutOfRange, Data.Special.ID);
 		return;
 	}
 	house->Place_Special_Blast((SuperWeaponType)Data.Special.ID, cell);
@@ -1461,7 +1360,7 @@ void EventClass::Execute_OPTIONS(void)
 void EventClass::Execute_GAMESPEED(void)
 {
 	if (!NetSemantic::Game_Speed_Is_Valid(Data.General.Value)) {
-		Log_Event_Rejection(EventRejectReason::InvalidGameSpeed, Type, ID, Data.General.Value);
+		Reject(RejectReason::InvalidGameSpeed, Data.General.Value);
 		return;
 	}
 	Options.GameSpeed = Data.General.Value;
@@ -1473,12 +1372,12 @@ void EventClass::Execute_RESPONSE_TIME(void)
 {
 	int const master = Session.Master_Player_ID();
 	if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
-		Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
+		Reject(RejectReason::UnauthorizedTiming, master);
 		return;
 	}
 	if (!NetSemantic::Response_Time_Is_Valid(Data.FrameInfo.Delay, NETWORK_MIN_MAX_AHEAD, Session.FrameSendRate,
 		Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP)) {
-		Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.FrameInfo.Delay);
+		Reject(RejectReason::InvalidTimingValues, Data.FrameInfo.Delay);
 		return;
 	}
 	Session.Apply_Network_Response_Time(Data.FrameInfo.Delay, Frame >= 0 ? static_cast<unsigned int>(Frame) : 0u);
@@ -1510,31 +1409,30 @@ void EventClass::Execute_REMOVEPLAYER(void)
 	HouseClass * house = Houses[ID];
 	int const index = Data.General.Value;
 	if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
-		Log_Event_Rejection(EventRejectReason::InvalidRemovedHouse, Type, ID, index);
+		Reject(RejectReason::InvalidRemovedHouse, index);
 		return;
 	}
 	HouseClass * target = Houses[index];
-	if (!target->Is_Human_Player() || RemovedPlayers[target] || target == house) {
+	if (!target->Is_Human_Player() || Session.Is_Player_Removed(target) || target == house) {
 		return;
 	}
 
 	// The reported player ignores a sender it is still connected to, so a forged report puts
 	// this machine out of sync instead of removing it.
 	if (!Session.Play && target == PlayerPtr && Ipx.Connection_Index(ID) != -1) {
-		Log_Event_Rejection(EventRejectReason::LiveRemoval, Type, ID, index);
+		Reject(RejectReason::LiveRemoval, index);
 		return;
 	}
 
 	DebugString("Executing REMOVEPLAYER event from player %d for player %d. Frame is %d\n", ID, index, ::Frame);
-	RemovalReports[House_Slot(target)].Set(house);
-	Resolve_Removal_Reports(Frame);
+	Session.Report_Departure(house, target, Frame);
 }
 
 
 void EventClass::Execute_LATENCYFUDGE(void)
 {
 	if (!NetSemantic::Latency_Fudge_Is_Valid(Data.General.Value)) {
-		Log_Event_Rejection(EventRejectReason::InvalidLatencyFudge, Type, ID, Data.General.Value);
+		Reject(RejectReason::InvalidLatencyFudge, Data.General.Value);
 		return;
 	}
 	DebugString("Executing LATENCYFUDGE event. Frame is %d\n", ::Frame);
@@ -1553,16 +1451,16 @@ void EventClass::Execute_TIMING(void)
 	HouseClass * house = Houses[ID];
 	int const master = Session.Master_Player_ID();
 	if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
-		Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
+		Reject(RejectReason::UnauthorizedTiming, master);
 		return;
 	}
 
 	if (Session.CommProtocol != COMM_PROTOCOL_MULTI_E_COMP || Frame < 0) {
-		Log_Event_Rejection(EventRejectReason::InvalidTimingArithmetic, Type, ID, Frame);
+		Reject(RejectReason::InvalidTimingArithmetic, Frame);
 		return;
 	}
 	if (!NetSemantic::Timing_Values_Are_Valid(Data.Timing.DesiredFrameRate, Data.Timing.MaxAhead, Data.Timing.FrameSendRate)) {
-		Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.Timing.MaxAhead);
+		Reject(RejectReason::InvalidTimingValues, Data.Timing.MaxAhead);
 		return;
 	}
 
@@ -1575,14 +1473,14 @@ void EventClass::Execute_TIMING(void)
 		std::uint64_t const boundary = settings.FrameSendRate * ((static_cast<std::uint64_t>(Frame) + NetTiming::MAXIMUM_MAX_AHEAD
 			+ settings.FrameSendRate - 1) / settings.FrameSendRate);
 		if (boundary > static_cast<std::uint64_t>((std::numeric_limits<int>::max)())) {
-			Log_Event_Rejection(EventRejectReason::InvalidTimingArithmetic, Type, ID, Frame);
+			Reject(RejectReason::InvalidTimingArithmetic, Frame);
 			return;
 		}
 	}
 
 	NetTiming::ScheduleResult const result = Session.Schedule_Network_Timing(settings, Data.Timing.DesiredFrameRate, static_cast<unsigned int>(Frame));
 	if (result == NetTiming::ScheduleResult::Rejected) {
-		Log_Event_Rejection(EventRejectReason::UnschedulableTiming, Type, ID, static_cast<int>(settings.MaxAhead));
+		Reject(RejectReason::UnschedulableTiming, static_cast<int>(settings.MaxAhead));
 		return;
 	}
 
@@ -1639,7 +1537,7 @@ void EventClass::Execute_NETWORK_REPORT(void)
 		|| !Session.Record_Network_Report(ID, Data.NetworkReport.AverageProcessMilliseconds,
 			Data.NetworkReport.WorstRoundTripMilliseconds, Data.NetworkReport.StallMilliseconds, static_cast<unsigned int>(Frame)))
 		&& !Session.Play) {
-		Log_Event_Rejection(EventRejectReason::InvalidNetworkReport, Type, ID, Data.NetworkReport.WorstRoundTripMilliseconds);
+		Reject(RejectReason::InvalidNetworkReport, Data.NetworkReport.WorstRoundTripMilliseconds);
 	} else if (!Session.Play) {
 		DebugString("Network report at frame %d from player %d: process %u ms, RTT %d ms, longest wait %u ms\n", Frame, ID,
 			(unsigned int)Data.NetworkReport.AverageProcessMilliseconds,

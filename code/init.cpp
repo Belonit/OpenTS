@@ -1204,7 +1204,8 @@ restart:
 	*/
 	Keyboard->Clear();
 	SaveManager.Reset_Multiplayer_Save_State();
-	EventClass::Reset_Match_State();
+	EventClass::Reset_Announcements();
+	Session.Reset_Departures();
 
 	/*
 	**	Initialize the random number generator(s)

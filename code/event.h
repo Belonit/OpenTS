@@ -273,10 +273,49 @@ class EventClass
 		EventClass(int index, AnimType anim, HousesType owner, Coord const & coord);
 		EventClass(int index, unsigned char type, void *ptr, unsigned int size);
 
+		// Why a received event was refused; each value has a log name in event.cpp.
+		enum class RejectReason : unsigned int {
+			InvalidType,
+			InvalidOrigin,
+			MissingOrigin,
+			InvalidAllyHouse,
+			InvalidAnimationType,
+			InvalidAnimationOwner,
+			InvalidProductionSelector,
+			InvalidSuperWeapon,
+			InvalidMission,
+			InvalidGameSpeed,
+			InvalidRemovedHouse,
+			InvalidLatencyFudge,
+			UnauthorizedSubject,
+			UnauthorizedTiming,
+			InvalidTimingArithmetic,
+			InvalidTimingValues,
+			UnschedulableTiming,
+			InvalidNetworkReport,
+			InvalidAbandonCount,
+			UnsentEvent,
+			LiveRemoval,
+			PlacementNotBuilding,
+			PlacementOffMap,
+			PlacementTooFar,
+			PlacementShrouded,
+			ProductionNotAllowed,
+			SaleNotAllowed,
+			RepairNotAllowed,
+			PowerToggleNotAllowed,
+			WallNotOwned,
+			MissionNotAllowed,
+			TargetHidden,
+			SuperWeaponOutOfRange,
+			AllianceNotAllowed,
+			Count,
+		};
+
 		// Process the event.
 		void Execute(void);
 
-		static void Reset_Match_State(void);
+		static void Reset_Announcements(void);
 
 		int operator == (EventClass & q) {
 			return(memcmp(this, &q, sizeof(q)) == 0);
@@ -287,6 +326,7 @@ class EventClass
 
 	private:
 		bool Is_Admitted(void) const;
+		void Reject(RejectReason reason, int detail) const;
 		TechnoClass * Subject(bool & requires_ownership) const;
 		void Announce_Setting_Change(int text) const;
 
