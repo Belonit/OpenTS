@@ -70,6 +70,8 @@
 #include "scenario.h"
 #include "session.h"
 #include "stats.h"
+#include "super.h"
+#include "suprtype.h"
 #include "surface.h"
 #include "techno.h"
 #include "unit.h"
@@ -117,6 +119,10 @@ namespace {
 		RepairNotAllowed,
 		PowerToggleNotAllowed,
 		WallNotOwned,
+		MissionNotAllowed,
+		TargetHidden,
+		SuperWeaponOutOfRange,
+		AllianceNotAllowed,
 		Count,
 	};
 
@@ -151,6 +157,10 @@ namespace {
 		"repair the repair cursor refuses",
 		"power toggle the power cursor refuses",
 		"sale of a wall the sender does not own",
+		"mission no player order gives",
+		"order against a hidden object",
+		"superweapon target out of range",
+		"alliance the match does not allow",
 	};
 
 	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
@@ -345,6 +355,30 @@ namespace {
 		Coord coord = Coord(cell);
 		coord.Z = Map.Get_Height_GL(coord);
 		return(cellptr.Owner == house->HeapID && !Map.Is_Shrouded(coord, house));
+	}
+
+
+	// Objects under the sender's shroud cannot be clicked; the sender's own and allied objects are exempt.
+	bool Target_Is_Visible(HouseClass const * house, xTargetClass const & target)
+	{
+		ObjectClass const * object = target.As_Object();
+		if (object == NULL) {
+			return(true);
+		}
+
+		HouseClass const * owner = object->Owner_HouseClass();
+		if (owner != NULL && (owner == house || house->Is_Ally(owner))) {
+			return(true);
+		}
+		return(!Map.Is_Shrouded(object->Center_Coord(), house));
+	}
+
+
+	bool Alliance_Is_Allowed(HouseClass const * house, int index)
+	{
+		HouseClass const * target = Houses[index];
+		return(!Scen->Special.IsAllianceFixed && Session.Options.AlliesAllowed && !house->IsDefeated
+			&& target != house && target->Is_Human_Player());
 	}
 
 
@@ -999,6 +1033,10 @@ void EventClass::Execute(void)
 				Log_Event_Rejection(EventRejectReason::InvalidAllyHouse, Type, ID, index);
 				break;
 			}
+			if (Is_Network_Game() && !Alliance_Is_Allowed(house, index)) {
+				Log_Event_Rejection(EventRejectReason::AllianceNotAllowed, Type, ID, index);
+				break;
+			}
 			hptr = Houses[index];
 			if (house->Is_Ally(hptr)) {
 				house->Make_Enemy((HousesType)index);
@@ -1229,6 +1267,16 @@ void EventClass::Execute(void)
 				Log_Event_Rejection(EventRejectReason::InvalidMission, Type, ID, Data.MegaMission.Mission);
 				break;
 			}
+			if (Is_Network_Game()) {
+				if (!NetSemantic::Player_Mission_Is_Allowed(Data.MegaMission.Mission)) {
+					Log_Event_Rejection(EventRejectReason::MissionNotAllowed, Type, ID, Data.MegaMission.Mission);
+					break;
+				}
+				if (!Target_Is_Visible(house, Data.MegaMission.Target) || !Target_Is_Visible(house, Data.MegaMission.Destination)) {
+					Log_Event_Rejection(EventRejectReason::TargetHidden, Type, ID, Data.MegaMission.Mission);
+					break;
+				}
+			}
 			//if (Debug_Print_Events) {
 			//	printf("Whom:%x Tgt:%x Dest:%x ",
 			//		Data.MegaMission.Whom.As_TARGET(),
@@ -1438,6 +1486,12 @@ void EventClass::Execute(void)
 		case SPECIAL_PLACE:
 			if (!NetSemantic::Index_Is_Valid(Data.Special.ID, house->SuperWeapon.Count())) {
 				Log_Event_Rejection(EventRejectReason::InvalidSuperWeapon, Type, ID, Data.Special.ID);
+				break;
+			}
+			// Only a click on the in-range cursor sends a strike for a weapon with Action=EMPulse.
+			if (Is_Network_Game() && house->SuperWeapon[Data.Special.ID]->Class->Action == ACTION_EMPULSE
+				&& !house->SuperWeapon[Data.Special.ID]->Is_In_Range(Cell(Data.Special.Where.X, Data.Special.Where.Y))) {
+				Log_Event_Rejection(EventRejectReason::SuperWeaponOutOfRange, Type, ID, Data.Special.ID);
 				break;
 			}
 			house->Place_Special_Blast((SuperWeaponType)Data.Special.ID, Cell(Data.Special.Where.X, Data.Special.Where.Y));

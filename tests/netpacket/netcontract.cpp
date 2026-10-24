@@ -309,6 +309,11 @@ void Test_Event_Semantics(void)
 	Check(!NetSemantic::Removal_Is_Confirmed(1, 2), "one of two remaining players cannot confirm a departure");
 	Check(!NetSemantic::Removal_Is_Confirmed(2, 4), "an even split does not confirm a departure");
 	Check(!NetSemantic::Removal_Is_Confirmed(0, 0), "a departure with nobody left to report it is not confirmed");
+	Check(NetSemantic::Player_Mission_Is_Allowed(MISSION_NONE) && NetSemantic::Player_Mission_Is_Allowed(MISSION_QMOVE),
+		"player orders accept no mission and a queued move");
+	Check(!NetSemantic::Player_Mission_Is_Allowed(MISSION_MISSILE), "player orders reject a missile launch");
+	Check(!NetSemantic::Player_Mission_Is_Allowed(MISSION_DECONSTRUCTION), "player orders reject deconstruction");
+	Check(!NetSemantic::Player_Mission_Is_Allowed(MISSION_COUNT), "player orders reject a mission past the last one");
 }
 
 

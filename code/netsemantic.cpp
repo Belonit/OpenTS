@@ -99,4 +99,28 @@ namespace NetSemantic
 	{
 		return(reporters > 0 && reports > 0 && reports <= reporters && 2 * reports > reporters);
 	}
+
+
+	/// <summary>Accepts only the missions a player's orders can give, or none.</summary>
+	bool Player_Mission_Is_Allowed(int mission) noexcept
+	{
+		switch (mission) {
+			case MISSION_NONE:
+			case MISSION_ATTACK:
+			case MISSION_MOVE:
+			case MISSION_QMOVE:
+			case MISSION_GUARD:
+			case MISSION_GUARD_AREA:
+			case MISSION_ENTER:
+			case MISSION_CAPTURE:
+			case MISSION_SABOTAGE:
+			case MISSION_HARVEST:
+			case MISSION_PATROL:
+			case MISSION_UNLOAD:
+				return(true);
+
+			default:
+				return(false);
+		}
+	}
 }

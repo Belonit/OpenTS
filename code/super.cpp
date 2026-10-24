@@ -303,6 +303,46 @@ bool SuperClass::Recharge(bool player)
 }
 
 
+BuildingClass * SuperClass::Pulse_Launch_Site(Cell const & cell) const
+{
+	int mindist = INT_MAX;
+	BuildingClass * launchsite = NULL;
+	CellClass * target = &Map[cell];
+
+	for (int index = 0; index < Buildings.Count(); index++) {
+		BuildingClass * b = Buildings[index];
+		if (!b->IsInLimbo && b->Class->IsEMPulseCannon && b->House == House && b->Is_Powered_On()) {
+			if (b->Distance(target) < mindist) {
+				mindist = b->Distance(target);
+				launchsite = b;
+			}
+		}
+	}
+	return(launchsite);
+}
+
+
+/// <summary>
+/// Reports whether the weapon can reach the cell. Only the electromagnetic pulse has a range,
+/// measured from the cannon that would fire it, as the targeting cursor measures it.
+/// </summary>
+bool SuperClass::Is_In_Range(Cell const & cell) const
+{
+	if (Class->Type != SUPER_EM_PULSE) {
+		return(true);
+	}
+
+	BuildingClass const * cannon = Pulse_Launch_Site(cell);
+	if (cannon == NULL || cannon->Get_Class_Weapon_Data()->Weapon == NULL) {
+		return(true);
+	}
+
+	int range = cannon->Get_Class_Weapon_Data()->Weapon->Range / CELL_LEPTON;
+	Cell dist(cell - cannon->PositionCell);
+	return(dist.X * dist.X + dist.Y * dist.Y < range * range);
+}
+
+
 /***********************************************************************************************
  * Superclass::Discharged -- Handles discharged action for special super weapon.               *
  *                                                                                             *
@@ -628,22 +668,7 @@ void SuperClass::Place(Cell const & cell, bool player)
 
 		case SUPER_EM_PULSE:
 			if (IsReady && (!IsOneTime || !IsPresent)) {
-				int mindist = INT_MAX;
-				BuildingClass * launchsite = NULL;
-				CellClass * target = &Map[cell];
-
-				/*
-				 * Search for a suitable launch site for the EMP.
-				 */
-				for (int index = 0; index < Buildings.Count(); index++) {
-					BuildingClass * b = Buildings[index];
-					if (!b->IsInLimbo && b->Class->IsEMPulseCannon && b->House == House && b->Is_Powered_On()) {
-						if (b->Distance(target) < mindist) {
-							mindist = b->Distance(target);
-							launchsite = b;
-						}
-					}
-				}
+				BuildingClass * launchsite = Pulse_Launch_Site(cell);
 
 				/*
 				 * If a launch site was found, then proceed with the normal launch

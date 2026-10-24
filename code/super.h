@@ -36,6 +36,7 @@
 #include "ftimer.h"
 #include "timer.h"
 
+class BuildingClass;
 class SuperWeaponTypeClass;
 class HouseClass;
 
@@ -64,6 +65,7 @@ class SuperClass : public AbstractClass
 		bool Enable(bool onetime = false, bool player=false, bool quiet=false);
 		void Forced_Charge(bool player=false);
 		void Place(Cell const & cell, bool player);
+		BuildingClass * Pulse_Launch_Site(Cell const & cell) const;
 		void Drop_Pods(Cell const & cell) const;
 		void Deactivate_Firestorm(int, bool player) const;
 		bool AI(bool player=false);
@@ -71,6 +73,7 @@ class SuperClass : public AbstractClass
 		void Impatient_Click(void) const;
 		int Anim_Stage(void) const;
 		bool Discharged(bool player, Cell const & cell);
+		bool Is_In_Range(Cell const & cell) const;
 		bool Can_Place(void) const;
 		bool Is_Charging(void) const;
 		bool Is_Powered(void) const;

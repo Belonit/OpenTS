@@ -5924,6 +5924,11 @@ int BuildingClass::Do_MISSION_REPAIR(void)
 int BuildingClass::Do_MISSION_MISSILE(void)
 {
 	if (Class->IsNukeSilo) {
+		if (LastSuperWeaponIndex < 0 || LastSuperWeaponIndex >= SuperWeaponTypes.Count()) {
+			Assign_Mission(MISSION_GUARD);
+			return(1);
+		}
+
 		enum {
 			INITIAL,
 			DOOR_OPENING,
