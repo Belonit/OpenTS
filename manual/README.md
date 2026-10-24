@@ -28,7 +28,7 @@ structure, compatibility, and use.
 | `changes/` | Authored engine lifecycle records |
 | `data/` | Generated catalogs and maintained registries or adapters |
 | `schema/` | JSON Schemas for generated data and authored frontmatter |
-| `tools/` | Extraction, validation, scaffolding, and the contributor launcher |
+| `tools/` | Extraction, validation, scaffolding, the contributor launcher, and the opt-in pre-push hook |
 | `site/` | The Astro/Starlight application, tests, and rendered-artifact checks |
 
 ## Setup
@@ -71,7 +71,7 @@ The launcher commands are:
 | `doctor` | Checks the pinned Python, Python packages, Node, npm, and installed site dependencies. It does not build the manual. |
 | `update` | Regenerates `data/ini-keys.yaml`, `data/scripting.yaml`, and `data/commands.yaml` as one transaction, reports changes against a Git base, and runs structural and lifecycle validation. It changes tracked generated files when the engine catalog changes. |
 | `serve` | Runs `update` and validation, then starts the Astro development server. |
-| `check` | Regenerates into a temporary directory to detect drift, validates all contracts and lifecycle rules, runs the Python and site tests, and builds the site once with render, search, and link checks. It does not update the tracked catalogs. |
+| `check` | Regenerates into a temporary directory to detect drift, validates all contracts and lifecycle rules, runs the Python and site tests, and builds the site once with render, search, and link checks. `--skip-build` leaves out the build and its checks. It does not update the tracked catalogs. |
 | `scaffold` | Creates minimal authored content for a supported page or change type and refuses to overwrite an existing file. Scaffolds remain invalid until every `TODO:` is replaced. |
 | `release-notes` | Renders the change records assigned to one release as Markdown on standard output, for the release workflow and release authors. It changes nothing. |
 
@@ -83,6 +83,23 @@ that a published build does not. Run `npm run build` in `site` for a publishable
 artifact. CI also installs production-only site dependencies and verifies that
 the clean build excludes the fixtures. `check` is the complete local gate, but
 it does not reproduce every CI setup step.
+
+`check --skip-build` runs the drift check, validation, tests, type check, and
+repository Markdown link check without building the site. It misses prose
+links to site pages that do not exist, pages that fail to render, and the
+render, search, and link checks of the built pages. CI still runs those.
+
+The opt-in pre-push hook runs `check --skip-build` when the pushed commits
+change a path that starts the Manual workflow on a push. It checks the working
+tree, including uncommitted changes. It compares against the commit the remote
+branch had. For a new branch, it compares against the commit where the branch
+left the remote's default branch, or against `HEAD` when Git does not know
+that branch. `git push --no-verify` skips the hook.
+
+To enable the hook, run `git config core.hooksPath manual/tools/hooks` from
+the repository root. That setting stops Git from running hooks in
+`.git/hooks`; if you keep hooks there, copy `manual/tools/hooks/pre-push` into
+that directory instead.
 
 Use `update` while changing engine-facing documentation, `serve` when visual
 review is useful, and `check` before handoff. Continue with

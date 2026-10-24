@@ -213,12 +213,15 @@ def command_check(arguments):
         return 1
 
     try:
-        core.run_site_checks()
+        core.run_site_checks(build=not arguments.skip_build)
     except core.ManualCommandError as error:
         print(f"ACTION REQUIRED\n  - {error}")
         return 1
     print(f"TIMING   gate total: {time.perf_counter() - started:.1f}s")
-    print("VERIFIED complete manual check")
+    if arguments.skip_build:
+        print("VERIFIED manual check without the site build and built-page checks")
+    else:
+        print("VERIFIED complete manual check")
     return 0
 
 
@@ -235,6 +238,12 @@ def parser():
         command.add_argument(
             "--base-ref",
             help="Git revision to compare against (defaults to HEAD)")
+        if name == "check":
+            command.add_argument(
+                "--skip-build",
+                action="store_true",
+                help="skip the site build and the render, search and link "
+                     "checks that read it")
     contributor.add_parsers(commands)
     return result
 

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Opt-in manual check before a push; manual/README.md describes the setup.
+if command -v python >/dev/null 2>&1; then python=python; else python=python3; fi
+exec "$python" manual/tools/pre_push.py "$@"

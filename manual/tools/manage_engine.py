@@ -451,13 +451,14 @@ def npm_command():
     return npm
 
 
-def run_site_checks():
-    """Run the tests and check the built site.
+def run_site_checks(build=True):
+    """Run the tests and the type check, then build and check the site.
 
     The tests and the repository Markdown checker read sources rather than
     build output, so they run beside the build.  The type check runs after the
     build because both regenerate the ``.astro`` type cache, and it runs beside
-    the checks of the built pages.
+    the checks of the built pages.  With *build* false, the type check runs
+    beside the tests and nothing is built.
 
     The build carries the removed-entity fixtures, whose pages are the only
     tombstones the manual has; the artifact checks then cover a superset of the
@@ -478,14 +479,24 @@ def run_site_checks():
     if not python_tests:
         raise ManualCommandError("no Python test modules were discovered")
 
+    source_checks = [
+        *python_tests,
+        ("node tests", [npm, "test"], SITE, None),
+        ("markdown links", [npm, "run", "check:docs"], SITE, None),
+    ]
+    if not build:
+        timed("tests and type check", lambda: run_parallel([
+            ("astro check", [npm, "run", "check"], SITE, None),
+            *source_checks,
+        ]))
+        return
+
     fixture_environment = os.environ.copy()
     fixture_environment["MANUAL_TEST_FIXTURES"] = "1"
     # The longest job goes first so a small worker pool starts it at once.
     timed("tests and site build", lambda: run_parallel([
         ("site build", [npm, "run", "build"], SITE, fixture_environment),
-        *python_tests,
-        ("node tests", [npm, "test"], SITE, None),
-        ("markdown links", [npm, "run", "check:docs"], SITE, None),
+        *source_checks,
     ]))
     timed("type and built-page checks", lambda: run_parallel([
         ("astro check", [npm, "run", "check"], SITE, None),

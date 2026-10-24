@@ -1,0 +1,2 @@
+# Git runs these with sh, which needs LF line endings.
+* text eol=lf
