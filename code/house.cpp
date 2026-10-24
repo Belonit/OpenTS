@@ -9230,6 +9230,74 @@ bool HouseClass::Is_Human_Player(void) const
 
 
 /// <summary>
+/// Reports whether this house may make or break an alliance with the given house: the match
+/// must allow alliances without fixing them, this house must not be defeated, and the other
+/// house must be another human player.
+/// </summary>
+bool HouseClass::Can_Change_Alliance(HouseClass const * house) const
+{
+	return(Session.Type != GAME_NORMAL && !Scen->Special.IsAllianceFixed && Session.Options.AlliesAllowed && !IsDefeated
+		&& house != NULL && house != this && house->IsHuman);
+}
+
+
+/// <summary>
+/// Reports whether this house may start producing the type, as the sidebar offers it.
+/// Resuming a suspended object of the same type is always allowed, and build limits are
+/// left to the factory.
+/// </summary>
+bool HouseClass::Can_Order_Production(TechnoTypeClass const * type) const
+{
+	FactoryClass const * factory = Fetch_Factory(type->RTTI);
+	if (factory != NULL && factory->Is_Suspended() && factory->Get_Object()->TClass == type) {
+		return(true);
+	}
+	return(Can_Build(type, false, false) != 0);
+}
+
+
+/// <summary>
+/// Reports whether this house may sell the wall on the cell. The wall must belong to this
+/// house or, in a campaign, to another house its player controls, and its cell must be clear
+/// of this house's shroud.
+/// </summary>
+bool HouseClass::Can_Sell_Wall(Cell const & cell) const
+{
+	if (!Map.In_Radar(cell)) {
+		return(false);
+	}
+
+	CellClass const & cellptr = Map[cell];
+	if (cellptr.Overlay == OVERLAY_NONE || !OverlayTypes[cellptr.Overlay]->IsWall || cellptr.Owner == HOUSE_NONE) {
+		return(false);
+	}
+
+	HouseClass const * owner = Houses[cellptr.Owner];
+	if (owner != this && !(Is_Player_Control() && owner->Is_Player_Control())) {
+		return(false);
+	}
+
+	Coord coord = Coord(cell);
+	coord.Z = Map.Get_Height_GL(coord);
+	return(!Map.Is_Shrouded(coord, this));
+}
+
+
+/// <summary>
+/// Reports whether this house can see an object well enough to give an order against it.
+/// Its own and allied objects always qualify; any other object must be clear of its shroud.
+/// </summary>
+bool HouseClass::Can_See_Target(ObjectClass const * object) const
+{
+	HouseClass const * owner = object->Owner_HouseClass();
+	if (owner != NULL && (owner == this || Is_Ally(owner))) {
+		return(true);
+	}
+	return(!Map.Is_Shrouded(object->Center_Coord(), this));
+}
+
+
+/// <summary>
 /// Can this house place a building at the specified location?
 /// This routine keeps a computer base compact by requiring a candidate site to touch
 /// something the house already occupies. A house following a scenario's base plan is not

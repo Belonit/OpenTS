@@ -2670,7 +2670,7 @@ bool BuildingClass::Active_Click_With(ActionType action, Cell const & cell, bool
 		return(true);
 	}
 
-	if (action == ACTION_MOVE && (!Class->IsConstructionYard || House->Is_Human_Player() && Session.Type != GAME_NORMAL && Session.Options.MCVRedeploy)) {
+	if (action == ACTION_MOVE && Can_Redeploy()) {
 		if (Class->UndeploysInto != NULL) {
 			Assign_Rally_Point(cell);
 			OutList.push_back(EventClass(Owner(), EventClass::SELL, TargetClass(this)));
@@ -4599,6 +4599,9 @@ MoveType BuildingClass::Can_Enter_Cell(CellClass const * cell, FacingType dir, i
 bool BuildingClass::Can_Demolish(void) const
 {
 	if (Class->IsUnsellable) return(false);
+
+	// A deployed vehicle leaves by undeploying, so the sell cursor refuses it.
+	if (Considered_Vehicle()) return(false);
 
 	if (HasBuildupData && BState != BSTATE_CONSTRUCTION && Mission != MISSION_DECONSTRUCTION && Mission != MISSION_CONSTRUCTION) {
 		//if (*this == STRUCT_REFINERY && Is_Something_Attached()) return(false);
@@ -8332,6 +8335,26 @@ bool BuildingClass::Can_Upgrade(BuildingTypeClass const * upgrade, HouseClass co
 
 failed:
 	return(false);
+}
+
+
+/// <summary>
+/// Reports whether a move order may pack this building up into its <c>UndeploysInto=</c>
+/// vehicle. A construction yard needs a human owner and <c>MCVRedeploy</c> in a multiplayer game.
+/// </summary>
+bool BuildingClass::Can_Redeploy(void) const
+{
+	return(!Class->IsConstructionYard || House->Is_Human_Player() && Session.Type != GAME_NORMAL && Session.Options.MCVRedeploy);
+}
+
+
+/// <summary>
+/// Reports whether the power cursor may switch this building on or off: its type sets
+/// <c>TogglePower=yes</c> and uses or needs power, and it is not a deployed vehicle.
+/// </summary>
+bool BuildingClass::Can_Toggle_Power(void) const
+{
+	return(Class->IsCanTogglePower && (Class->Drain > 0 || Class->IsPowered) && Class->IsSelectable && !Considered_Vehicle());
 }
 
 

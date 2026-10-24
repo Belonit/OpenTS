@@ -410,6 +410,8 @@ class BuildingClass : public TechnoClass
 		virtual bool Can_Repair(void) const override;
 		virtual bool Can_Demolish(void) const override;
 		bool Can_Upgrade(BuildingTypeClass const * upgrade, HouseClass const * upgrader) const;
+		bool Can_Redeploy(void) const;
+		bool Can_Toggle_Power(void) const;
 		bool Add_Upgrade(void);
 		bool Remove_Upgrade(void);
 		void Sell_All_Upgrades(void);

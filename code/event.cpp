@@ -287,131 +287,6 @@ namespace {
 	}
 
 
-	/// <summary>
-	/// Applies the placement cursor's rules to a placement on a cell. A placement the house
-	/// cannot make at all passes, because placing it does nothing.
-	/// </summary>
-	bool Placement_Is_Legal(HouseClass * house, RTTIType type, Cell const & cell, EventRejectReason & reason)
-	{
-		if (cell == CELL_NONE || cell == Cell(-1, -1)) {
-			return(true);
-		}
-
-		FactoryClass * factory = house->Fetch_Factory(type);
-		if (factory == NULL || !factory->Has_Completed() || factory->Get_Object() == NULL) {
-			return(true);
-		}
-
-		TechnoClass const * object = factory->Get_Object();
-		if (object->RTTI != RTTI_BUILDING) {
-			reason = EventRejectReason::PlacementNotBuilding;
-			return(false);
-		}
-
-		if (!Map.In_Radar(cell)) {
-			reason = EventRejectReason::PlacementOffMap;
-			return(false);
-		}
-
-		BuildingTypeClass const * building = ((BuildingClass const *)object)->Class;
-		bool proximate = DisplayClass::Is_Proximate_Placement(building, house, cell);
-		if (!proximate && !building->PowersUpBuilding.empty()) {
-			ObjectClass const * host = Map.Cell_Object(cell, Point2D(0, 0));
-			proximate = host != NULL && host->RTTI == RTTI_BUILDING && ((BuildingClass const *)host)->Can_Upgrade(building, house);
-		}
-		if (!proximate) {
-			reason = EventRejectReason::PlacementTooFar;
-			return(false);
-		}
-
-		if (!DisplayClass::Is_Unshrouded_Placement(building, house, cell)) {
-			reason = EventRejectReason::PlacementShrouded;
-			return(false);
-		}
-		return(true);
-	}
-
-
-	/// <summary>
-	/// Applies the sidebar's rules to an order to start production. Resuming a suspended
-	/// object of the same type is always allowed, and build limits are left to the factory.
-	/// </summary>
-	bool Production_Is_Allowed(HouseClass const * house, RTTIType type, int id)
-	{
-		TechnoTypeClass const * tech = Fetch_Techno_Type(type, id);
-		FactoryClass const * factory = house->Fetch_Factory(type);
-		if (factory != NULL && factory->Is_Suspended() && factory->Get_Object()->TClass == tech) {
-			return(true);
-		}
-		return(house->Can_Build(tech, false, false) != 0);
-	}
-
-
-	bool Sale_Is_Allowed(TechnoClass const * techno)
-	{
-		if (techno->RTTI != RTTI_BUILDING) {
-			return(techno->Can_Demolish());
-		}
-
-		BuildingClass const * building = (BuildingClass const *)techno;
-		if (building->Can_Demolish() && !building->Considered_Vehicle()) {
-			return(true);
-		}
-
-		// A move order to a building that packs up into a vehicle is sent as a sale.
-		return(building->Class->UndeploysInto != NULL && (!building->Class->IsConstructionYard || Session.Options.MCVRedeploy));
-	}
-
-
-	bool Power_Toggle_Is_Allowed(BuildingClass const * building)
-	{
-		BuildingTypeClass const * type = building->Class;
-		return(type->IsCanTogglePower && (type->Drain > 0 || type->IsPowered) && type->IsSelectable && !building->Considered_Vehicle());
-	}
-
-
-	// A cell without a wall passes, because selling it does nothing.
-	bool Wall_Sale_Is_Allowed(HouseClass const * house, Cell const & cell)
-	{
-		if (!Map.In_Radar(cell)) {
-			return(false);
-		}
-
-		CellClass const & cellptr = Map[cell];
-		if (cellptr.Overlay == OVERLAY_NONE || !OverlayTypes[cellptr.Overlay]->IsWall) {
-			return(true);
-		}
-
-		Coord coord = Coord(cell);
-		coord.Z = Map.Get_Height_GL(coord);
-		return(cellptr.Owner == house->HeapID && !Map.Is_Shrouded(coord, house));
-	}
-
-
-	// Objects under the sender's shroud cannot be clicked; the sender's own and allied objects are exempt.
-	bool Target_Is_Visible(HouseClass const * house, xTargetClass const & target)
-	{
-		ObjectClass const * object = target.As_Object();
-		if (object == NULL) {
-			return(true);
-		}
-
-		HouseClass const * owner = object->Owner_HouseClass();
-		if (owner != NULL && (owner == house || house->Is_Ally(owner))) {
-			return(true);
-		}
-		return(!Map.Is_Shrouded(object->Center_Coord(), house));
-	}
-
-
-	bool Alliance_Is_Allowed(HouseClass const * house, int index)
-	{
-		HouseClass const * target = Houses[index];
-		return(!Scen->Special.IsAllianceFixed && Session.Options.AlliesAllowed && !house->IsDefeated
-			&& target != house && target->Is_Human_Player());
-	}
-
-
 	// Departure reports per target and the players already removed; both are synchronized
 	// and last for one match.
 	std::array<HouseSet, HOUSE_MAX> RemovalReports;
@@ -1101,7 +976,7 @@ void EventClass::Execute_POWER(void)
 	if (building == NULL || !building->IsActive || building->IsInLimbo || building->Class->IsFirestormWall) {
 		return;
 	}
-	if (Is_Network_Game() && !Power_Toggle_Is_Allowed(building)) {
+	if (Is_Network_Game() && !building->Can_Toggle_Power()) {
 		Log_Event_Rejection(EventRejectReason::PowerToggleNotAllowed, Type, ID, building->Class->HeapID);
 		return;
 	}
@@ -1130,7 +1005,7 @@ void EventClass::Execute_ALLY(void)
 		Log_Event_Rejection(EventRejectReason::InvalidAllyHouse, Type, ID, index);
 		return;
 	}
-	if (Is_Network_Game() && !Alliance_Is_Allowed(house, index)) {
+	if (Is_Network_Game() && !house->Can_Change_Alliance(Houses[index])) {
 		Log_Event_Rejection(EventRejectReason::AllianceNotAllowed, Type, ID, index);
 		return;
 	}
@@ -1187,9 +1062,14 @@ void EventClass::Execute_SELL(void)
 	if (techno == NULL || !techno->IsActive || techno->House->HeapID != ID) {
 		return;
 	}
-	if (Is_Network_Game() && !Sale_Is_Allowed(techno)) {
-		Log_Event_Rejection(EventRejectReason::SaleNotAllowed, Type, ID, techno->RTTI);
-		return;
+	if (Is_Network_Game()) {
+		BuildingClass const * building = techno->RTTI == RTTI_BUILDING ? (BuildingClass const *)techno : NULL;
+		// A move order to a building that packs up into a vehicle is sent as a sale.
+		bool const packs_up = building != NULL && building->Class->UndeploysInto != NULL && building->Can_Redeploy();
+		if (!techno->Can_Demolish() && !packs_up) {
+			Log_Event_Rejection(EventRejectReason::SaleNotAllowed, Type, ID, techno->RTTI);
+			return;
+		}
 	}
 	if (techno->RTTI == RTTI_BUILDING || ((techno->RTTI == RTTI_UNIT || techno->RTTI == RTTI_AIRCRAFT) && Map[techno->Center_Coord()].Cell_Building() != NULL)) {
 		techno->Sell_Back(-1);
@@ -1201,7 +1081,9 @@ void EventClass::Execute_SELLCELL(void)
 {
 	HouseClass * house = Houses[ID];
 	Cell const cell(Data.SellCell.Where.X, Data.SellCell.Where.Y);
-	if (Is_Network_Game() && !Wall_Sale_Is_Allowed(house, cell)) {
+	// A cell without a wall passes, because selling it does nothing.
+	bool const wall = Map.In_Radar(cell) && Map[cell].Overlay != OVERLAY_NONE && OverlayTypes[Map[cell].Overlay]->IsWall;
+	if (Is_Network_Game() && (!Map.In_Radar(cell) || (wall && !house->Can_Sell_Wall(cell)))) {
 		Log_Event_Rejection(EventRejectReason::WallNotOwned, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
 		return;
 	}
@@ -1252,9 +1134,22 @@ void EventClass::Execute_PLACE(void)
 {
 	HouseClass * house = Houses[ID];
 	Cell const cell(Data.Place.Where.X, Data.Place.Where.Y);
-	if (Is_Network_Game()) {
-		EventRejectReason reason;
-		if (!Placement_Is_Legal(house, Data.Place.Type, cell, reason)) {
+	FactoryClass * factory = house->Fetch_Factory(Data.Place.Type);
+	TechnoClass const * object = factory != NULL && factory->Has_Completed() ? factory->Get_Object() : NULL;
+
+	// A placement the house cannot make at all passes, because placing it does nothing.
+	if (Is_Network_Game() && object != NULL && cell != CELL_NONE && cell != Cell(-1, -1)) {
+		EventRejectReason reason = EventRejectReason::Count;
+		if (object->RTTI != RTTI_BUILDING) {
+			reason = EventRejectReason::PlacementNotBuilding;
+		} else if (!Map.In_Radar(cell)) {
+			reason = EventRejectReason::PlacementOffMap;
+		} else if (!DisplayClass::Is_Anchored_Placement(((BuildingClass const *)object)->Class, house, cell)) {
+			reason = EventRejectReason::PlacementTooFar;
+		} else if (!DisplayClass::Is_Unshrouded_Placement(((BuildingClass const *)object)->Class, house, cell)) {
+			reason = EventRejectReason::PlacementShrouded;
+		}
+		if (reason != EventRejectReason::Count) {
 			Log_Event_Rejection(reason, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
 			return;
 		}
@@ -1270,7 +1165,7 @@ void EventClass::Execute_PRODUCE(void)
 		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
 		return;
 	}
-	if (Is_Network_Game() && !Production_Is_Allowed(house, Data.Specific.Type, Data.Specific.ID)) {
+	if (Is_Network_Game() && !house->Can_Order_Production(Fetch_Techno_Type(Data.Specific.Type, Data.Specific.ID))) {
 		Log_Event_Rejection(EventRejectReason::ProductionNotAllowed, Type, ID, Data.Specific.ID);
 		return;
 	}
@@ -1336,7 +1231,9 @@ void EventClass::Execute_MEGAMISSION(void)
 			Log_Event_Rejection(EventRejectReason::MissionNotAllowed, Type, ID, Data.MegaMission.Mission);
 			return;
 		}
-		if (!Target_Is_Visible(house, Data.MegaMission.Target) || !Target_Is_Visible(house, Data.MegaMission.Destination)) {
+		ObjectClass const * target = Data.MegaMission.Target.As_Object();
+		ObjectClass const * destination = Data.MegaMission.Destination.As_Object();
+		if ((target != NULL && !house->Can_See_Target(target)) || (destination != NULL && !house->Can_See_Target(destination))) {
 			Log_Event_Rejection(EventRejectReason::TargetHidden, Type, ID, Data.MegaMission.Mission);
 			return;
 		}

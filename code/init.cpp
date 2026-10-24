@@ -3469,12 +3469,8 @@ class AllianceCommandClass : public CommandClass
 		}
 
 		virtual void Execute(void) const {
-			if (Session.Type != GAME_NORMAL && !Scen->Special.IsAllianceFixed && Session.Options.AlliesAllowed) {
-				if (CurrentObject.Count() && !PlayerPtr->IsDefeated) {
-					if (CurrentObject[0]->Owner_HouseClass() != PlayerPtr && CurrentObject[0]->Owner_HouseClass()->IsHuman) {
-						OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ALLY, CurrentObject[0]->Owner()));
-					}
-				}
+			if (CurrentObject.Count() && PlayerPtr->Can_Change_Alliance(CurrentObject[0]->Owner_HouseClass())) {
+				OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ALLY, CurrentObject[0]->Owner()));
 			}
 		}
 };

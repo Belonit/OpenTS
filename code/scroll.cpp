@@ -302,11 +302,9 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 
 		if (Map.IsPowerMode) {
 			action = ACTION_NO_TOGGLE_POWER;
-			if (object != NULL && object->Owner_HouseClass() != NULL && object->Owner_HouseClass()->Is_Player_Control() && object->RTTI == RTTI_BUILDING && object->Class_Of()->IsSelectable && !object->Considered_Vehicle()) {
-				BuildingTypeClass * bclass = ((BuildingClass *)object)->Class;
-				if (bclass->IsCanTogglePower && (bclass->Drain > 0 || bclass->IsPowered)) {
-					action = ACTION_TOGGLE_POWER;
-				}
+			if (object != NULL && object->Owner_HouseClass() != NULL && object->Owner_HouseClass()->Is_Player_Control() && object->RTTI == RTTI_BUILDING
+				&& ((BuildingClass *)object)->Can_Toggle_Power()) {
+				action = ACTION_TOGGLE_POWER;
 			}
 		}
 
@@ -347,11 +345,7 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 		if (Map.IsSellMode) {
 			if (object != NULL && object->Owner_HouseClass() != NULL && object->Owner_HouseClass()->Is_Player_Control() && object->Can_Demolish()) {
 				if (object->RTTI == RTTI_BUILDING) {
-					if (object->Considered_Vehicle()) {
-						action = ACTION_NO_SELL;
-					} else {
-						action = ACTION_SELL;
-					}
+					action = ACTION_SELL;
 				} else {
 					action = ACTION_SELL_UNIT;
 				}
@@ -362,10 +356,7 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 				*/
 				Coord coord = cell;
 				coord.Z = Map.Get_Height_GL(coord);
-				if (!Map.Is_Shrouded(coord) && !Map.Is_Fogged(coord) &&
-					Map[cell].Overlay != OVERLAY_NONE &&
-					OverlayTypes[Map[cell].Overlay]->IsWall &&
-					Map[cell].Owner != HOUSE_NONE && Houses[Map[cell].Owner]->Is_Player_Control()) {
+				if (!Map.Is_Fogged(coord) && PlayerPtr->Can_Sell_Wall(cell)) {
 					action = ACTION_SELL;
 				} else {
 					action = ACTION_NO_SELL;
