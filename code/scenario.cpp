@@ -89,6 +89,7 @@
 #include "ccrand.h"
 #include "cctooltip.h"
 #include "cell.h"
+#include "chat.h"
 #include "conquer.h"
 #include "convert.h"
 #include "crc.h"
@@ -1080,6 +1081,7 @@ void Clear_Scenario(void)
 	}
 	Delete_All_Objects();
 	Reset_Selection_Filters();
+	Chat_Reset_Filters();
 	for (index = 0; index < IsometricTileTypes.Count(); index++) {
 		AbstractTypes.Add(IsometricTileTypes[index]);
 	}

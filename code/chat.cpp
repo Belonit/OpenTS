@@ -32,6 +32,10 @@
 #include <cstring>
 
 
+static HouseSet ChatMuted;
+static HouseSet ChatNotSentTo;
+
+
 /// <summary>
 /// Whether the player at this machine may open a message of this scope.
 /// </summary>
@@ -145,7 +149,7 @@ void Chat_Send(char const * text)
 	} else {
 		for (int index = 0; index < Ipx.Num_Connections(); index++) {
 			int id = Ipx.Connection_ID(index);
-			if (Chat_Reaches(PlayerPtr, Houses[id], scope)) {
+			if (Chat_Reaches(PlayerPtr, Houses[id], scope) && Chat_Sends_To(Houses[id])) {
 				Ipx.Send_Global_Message(&Session.GPacket, sizeof(GlobalPacketType), 1, Ipx.Connection_Address(id));
 				Ipx.Service();
 			}
@@ -182,6 +186,10 @@ void Chat_Receive(GlobalPacketType const & packet, IPXAddressClass & from)
 
 	if (!Chat_Reaches(sender, PlayerPtr, packet.Message.Scope)) {
 		DebugString("Chat: dropped a line from %s that is not for this house\n", (char const *)sender->IniName);
+		return;
+	}
+
+	if (Chat_Is_Muted(sender)) {
 		return;
 	}
 
@@ -230,4 +238,46 @@ void Chat_Show(HouseClass const * sender, ChatScopeType scope, int target, char 
 	}
 	DesyncDialog.Notify_Chat(name, text);
 	Map.Flag_To_Redraw(GS_REDRAW_ALL);
+}
+
+
+bool Chat_Is_Muted(HouseClass const * house)
+{
+	return(ChatMuted[house]);
+}
+
+
+void Chat_Set_Muted(HouseClass const * house, bool muted)
+{
+	if (muted) {
+		ChatMuted.Set(house);
+	} else {
+		ChatMuted.Clear(house);
+	}
+}
+
+
+/// <summary>
+/// Whether lines in any scope but a private one go to this house. Every house starts included.
+/// </summary>
+bool Chat_Sends_To(HouseClass const * house)
+{
+	return(!ChatNotSentTo[house]);
+}
+
+
+void Chat_Set_Sends_To(HouseClass const * house, bool sends)
+{
+	if (sends) {
+		ChatNotSentTo.Clear(house);
+	} else {
+		ChatNotSentTo.Set(house);
+	}
+}
+
+
+void Chat_Reset_Filters(void)
+{
+	ChatMuted.Clear();
+	ChatNotSentTo.Clear();
 }
