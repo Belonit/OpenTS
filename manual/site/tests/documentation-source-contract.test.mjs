@@ -531,9 +531,9 @@ test('A resume is judged before it is loaded, and the save answers for the rest'
 	], 'a network resume seats the players and opens the network before the save is read');
 
 	assertOrdered(functionBody(source('code/ui/screens/gameopt/uigameoptdlg.cpp'), 'void UI_Game_Options_State(UIGameOptionsState & state)'), [
-		'state.Internet = (Session.Type == GAME_INTERNET);',
+		'state.Solo = (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH);',
 		'state.SaveEnabled = SaveManager.Is_Multiplayer_Saving_Allowed();',
-	], 'an internet game offers the synchronized save the options menu has always known');
+	], 'a network game offers the synchronized save in the options menu');
 
 	assertOrdered(functionBody(source('code/saveload.cpp'), 'bool Reconcile_Players(void)'), [
 		'stricmp(Session.Players[i]->Name, Houses[house]->IniName) == 0',

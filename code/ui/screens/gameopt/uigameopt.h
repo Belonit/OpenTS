@@ -12,8 +12,6 @@
 #include "ui/uiscreen.h"
 
 #include <memory>
-#include <string>
-#include <vector>
 
 class UIViewClass;
 
@@ -47,20 +45,10 @@ class UIGameOptionsServiceClass
 struct UIGameOptionsState
 {
 	bool Solo = true;
-	bool Internet = false;
 	bool BriefingEnabled = true;
 	bool LoadEnabled = true;
 	bool SaveEnabled = true;
 	bool DeleteEnabled = true;
-
-	int Speed = 0;
-	std::vector<std::string> SpeedNames;
-	std::string SpeedName;
-
-	int Connection = 0;
-	int ConnectionLowest = 0;
-	int ConnectionHighest = 0;
-	std::string ConnectionName;
 };
 
 
@@ -74,11 +62,7 @@ class UIGameOptionsPresenterClass : public UIPresenterClass
 		UIGameOptionsState State;
 		UIGameOptionsChoice Choice = UI_GAME_OPTIONS_RESUME;
 
-		bool SpeedChanged = false;
-
 	private:
-		void Update_Name(void);
-
 		UIGameOptionsServiceClass & Service;
 };
 

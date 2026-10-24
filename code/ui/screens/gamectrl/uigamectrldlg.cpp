@@ -134,7 +134,6 @@ void UI_Game_Controls_State(UIGameControlsState & state)
 	state.Coasting = (Options.ScrollMethod == 0);
 	state.EdgeScroll = Options.AutoScroll;
 	state.InGame = GameActive;
-	state.HasSpeed = !(GameActive && Session.Type == GAME_INTERNET);
 	state.HasDifficulty = !GameActive;
 	state.SoundEnabled = AudioEngine.Is_Available();
 

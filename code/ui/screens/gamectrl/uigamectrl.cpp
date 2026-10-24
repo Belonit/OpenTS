@@ -91,9 +91,7 @@ void UIGameControlsPresenterClass::Refresh(void)
 
 void UIGameControlsPresenterClass::Apply(void)
 {
-	if (State.HasSpeed) {
-		Service.Set_Game_Speed(State.Speed);
-	}
+	Service.Set_Game_Speed(State.Speed);
 	Service.Set_Scroll_Rate(State.Scroll);
 	Service.Set_Detail_Level(State.Detail);
 	Service.Set_Cameo_Text(State.CameoText);
@@ -160,7 +158,6 @@ class UIGameControlsViewClass : public UIRmlViewClass
 				&& model.Bind("coasting", &state.Coasting)
 				&& model.Bind("edge", &state.EdgeScroll)
 				&& model.Bind("ingame", &state.InGame)
-				&& model.Bind("hasspeed", &state.HasSpeed)
 				&& model.Bind("hasdifficulty", &state.HasDifficulty)
 				&& model.Bind("soundenabled", &state.SoundEnabled)
 				&& model.Bind("speedname", &state.SpeedName)

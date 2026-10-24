@@ -1308,7 +1308,6 @@ void Test_Game_Controls_Presenter(void)
 		state.Detail = 2;
 		state.Difficulty = 1;
 		state.InGame = false;
-		state.HasSpeed = true;
 		state.HasDifficulty = true;
 		state.SpeedNames = { "Slowest", "Slower", "Slow", "Medium", "Fast", "Faster", "Fastest" };
 		state.DetailNames = { "Low", "Medium", "High" };
@@ -1334,7 +1333,6 @@ void Test_Game_Controls_Presenter(void)
 		RecordingGameControlsServiceClass service;
 		UIGameControlsState state;
 		state.InGame = true;
-		state.HasSpeed = false;
 		state.HasDifficulty = false;
 
 		UIGameControlsPresenterClass presenter(service, state);
@@ -1344,7 +1342,7 @@ void Test_Game_Controls_Presenter(void)
 		presenter.State.SoundEnabled = true;
 		Drive(presenter, "sound");
 		Check(presenter.Result.has_value() && presenter.Next == UIGameControlsPresenterClass::NEXT_SOUND, "the Sound button accepts and names the sound options next");
-		Check(service.Joined() == "scroll 0; detail 0; cameo off; lines off; tooltips off; coasting off; edge off; save", "an Internet game applies no game speed and no difficulty");
+		Check(service.Joined() == "speed 0; scroll 0; detail 0; cameo off; lines off; tooltips off; coasting off; edge off; save", "the in-game screen applies the game speed and no difficulty");
 	}
 
 	{
@@ -2421,7 +2419,6 @@ void Test_Game_Controls_Screen(Rml::Context & context, CountingSystemInterfaceCl
 		RecordingGameControlsServiceClass service;
 		UIGameControlsState state = Game_Controls_Fixture();
 		state.InGame = true;
-		state.HasSpeed = true;
 		state.HasDifficulty = false;
 		state.SoundEnabled = true;
 
@@ -2489,7 +2486,6 @@ void Test_Game_Controls_Screen(Rml::Context & context, CountingSystemInterfaceCl
 		RecordingGameControlsServiceClass service;
 		UIGameControlsState state = Game_Controls_Fixture();
 		state.InGame = false;
-		state.HasSpeed = true;
 		state.HasDifficulty = true;
 
 		UIGameControlsPresenterClass presenter(service, state);
@@ -2534,19 +2530,17 @@ void Test_Game_Controls_Screen(Rml::Context & context, CountingSystemInterfaceCl
 		RecordingGameControlsServiceClass service;
 		UIGameControlsState state = Game_Controls_Fixture();
 		state.InGame = true;
-		state.HasSpeed = false;
 		state.HasDifficulty = false;
 		state.SoundEnabled = false;
 
 		UIGameControlsPresenterClass presenter(service, state);
 		std::unique_ptr<UIViewClass> view = UI_Game_Controls_View(presenter);
 
-		Check(Rml(*view).Prepare(context), "the Internet game controls view prepares");
+		Check(Rml(*view).Prepare(context), "the in-game controls view prepares");
 		view->Show(true);
 		context.Update();
 
 		Rml::ElementDocument * document = Rml(*view).Document();
-		Check(Visible_Sliders(document) == 2, "the Internet screen has no game speed slider");
 
 		Rml::Element * sound = document->GetElementById("sound");
 		Check(sound != nullptr && sound->IsClassSet("disabled"), "the Sound button shows disabled without an audio device");
@@ -2561,7 +2555,7 @@ void Test_Game_Controls_Screen(Rml::Context & context, CountingSystemInterfaceCl
 		context.ProcessKeyUp(Rml::Input::KI_RETURN, 0);
 		context.Update();
 		presenter.Drain();
-		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && service.Joined() == "scroll 2; detail 1; cameo on; lines off; tooltips on; coasting off; edge off; save", "Enter accepts the Internet screen without a game speed or a difficulty");
+		Check(presenter.Result.has_value() && *presenter.Result == UI_RESULT_ACCEPTED && service.Joined() == "speed 4; scroll 2; detail 1; cameo on; lines off; tooltips on; coasting off; edge off; save", "Enter accepts the in-game screen with a game speed and no difficulty");
 
 		view->Release();
 		context.Update();
@@ -3534,8 +3528,6 @@ void Test_Game_Options_Screen(Rml::Context & context, CountingSystemInterfaceCla
 	RecordingGameOptionsServiceClass service;
 
 	UIGameOptionsState state;
-	state.SpeedNames = { "Slowest", "Fastest" };
-	state.SpeedName = "Slowest";
 	UIGameOptionsPresenterClass presenter(service, state);
 	std::unique_ptr<UIViewClass> view = UI_Game_Options_View(presenter);
 
@@ -3557,6 +3549,24 @@ void Test_Game_Options_Screen(Rml::Context & context, CountingSystemInterfaceCla
 	Check(!presenter.State.LoadEnabled && load != nullptr && erase != nullptr && load->IsClassSet("disabled") && erase->IsClassSet("disabled"), "a delete that leaves no saves takes the presses away on the same pass");
 
 	view->Release();
+	context.Update();
+
+	UIGameOptionsState network;
+	network.Solo = false;
+	UIGameOptionsPresenterClass networkpresenter(service, network);
+	std::unique_ptr<UIViewClass> networkview = UI_Game_Options_View(networkpresenter);
+	Check(Rml(*networkview).Prepare(context), "the network options menu view prepares");
+	networkview->Show(true);
+	networkview->Sync();
+	context.Update();
+
+	auto shown = [&](char const * id) {
+		Rml::Element * element = Rml(*networkview).Document()->GetElementById(id);
+		return(element != nullptr && element->IsVisible(true));
+	};
+	Check(shown("load") && shown("save") && !shown("delete") && !shown("briefing"), "a network game's menu offers Load and Save without Delete or Restate Briefing");
+
+	networkview->Release();
 	context.Update();
 }
 

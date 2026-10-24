@@ -47,7 +47,6 @@ struct UIGameControlsState
 	bool Coasting = false;
 	bool EdgeScroll = false;
 	bool InGame = false;
-	bool HasSpeed = true;
 	bool HasDifficulty = true;
 	bool SoundEnabled = false;
 	std::vector<std::string> SpeedNames;

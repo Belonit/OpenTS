@@ -84,7 +84,7 @@ Only an executed removal event changes the master. A machine that loses its conn
 
 ## Player feedback
 
-When the options dialog opens in an internet game, a disabled Connection slider shows the rung in force. The slider is mirrored, so rung 1 sits at its right end. The label beside it names the tier and the rung, such as `Fast (rung 2)`.
+The top line of the [diplomacy panel](/systems/diplomacy/) names the quality tier of the timing in force:
 
 | Rungs | Tier |
 | --- | --- |
@@ -96,8 +96,6 @@ When the options dialog opens in an internet game, a disabled Connection slider 
 A look-ahead longer than its rung normally uses also reads as Bad. This happens at rung 10 with an extended look-ahead, and briefly while a decrease from it steps the look-ahead down.
 
 When a timing event executes with a target in a different tier from the previous target, the message list shows "Connection quality target:" followed by the new tier. For a decrease, the message appears before the staged change takes effect.
-
-The Speed slider in the same dialog sets the game speed, which caps the [frame rate](#frame-rate).
 
 ## Compatibility
 
