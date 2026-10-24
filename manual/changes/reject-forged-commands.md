@@ -14,4 +14,6 @@ A modified game could remove any other player from a network match with a single
 
 A modified game could place a building anywhere on the map, far from its base or under the shroud, and could drop a finished vehicle or infantry onto any cell. Every machine now repeats the placement cursor's base distance and shroud rules when a building is placed, and ignores a placement that fails them.
 
+Orders to start production, sell, repair, toggle power, and sell walls now follow the sidebar's and the cursors' rules on every machine. A modified game could start production without its prerequisites, sell `Unsellable=yes` buildings and vehicles away from a repair building, and sell other players' walls.
+
 A modified game could also change the special game rules for everyone or place damaging animations anywhere on the map. In a network game these commands are now ignored, because no copy of the game sends them.

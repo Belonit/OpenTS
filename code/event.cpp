@@ -64,6 +64,7 @@
 #include "language/language.h"
 #include "mouse.h"
 #include "netsemantic.h"
+#include "overtype.h"
 #include "rules.h"
 #include "savemgr.h"
 #include "scenario.h"
@@ -111,6 +112,11 @@ namespace {
 		PlacementOffMap,
 		PlacementTooFar,
 		PlacementShrouded,
+		ProductionNotAllowed,
+		SaleNotAllowed,
+		RepairNotAllowed,
+		PowerToggleNotAllowed,
+		WallNotOwned,
 		Count,
 	};
 
@@ -140,6 +146,11 @@ namespace {
 		"placement off the map",
 		"placement away from the base",
 		"placement under the shroud",
+		"production without its requirements",
+		"sale the sell cursor refuses",
+		"repair the repair cursor refuses",
+		"power toggle the power cursor refuses",
+		"sale of a wall the sender does not own",
 	};
 
 	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
@@ -278,6 +289,62 @@ namespace {
 			return(false);
 		}
 		return(true);
+	}
+
+
+	/// <summary>
+	/// Applies the sidebar's rules to an order to start production. Resuming a suspended
+	/// object of the same type is always allowed, and build limits are left to the factory.
+	/// </summary>
+	bool Production_Is_Allowed(HouseClass const * house, RTTIType type, int id)
+	{
+		TechnoTypeClass const * tech = Fetch_Techno_Type(type, id);
+		FactoryClass const * factory = house->Fetch_Factory(type);
+		if (factory != NULL && factory->Is_Suspended() && factory->Get_Object()->TClass == tech) {
+			return(true);
+		}
+		return(house->Can_Build(tech, false, false) != 0);
+	}
+
+
+	bool Sale_Is_Allowed(TechnoClass const * techno)
+	{
+		if (techno->RTTI != RTTI_BUILDING) {
+			return(techno->Can_Demolish());
+		}
+
+		BuildingClass const * building = (BuildingClass const *)techno;
+		if (building->Can_Demolish() && !building->Considered_Vehicle()) {
+			return(true);
+		}
+
+		// A move order to a building that packs up into a vehicle is sent as a sale.
+		return(building->Class->UndeploysInto != NULL && (!building->Class->IsConstructionYard || Session.Options.MCVRedeploy));
+	}
+
+
+	bool Power_Toggle_Is_Allowed(BuildingClass const * building)
+	{
+		BuildingTypeClass const * type = building->Class;
+		return(type->IsCanTogglePower && (type->Drain > 0 || type->IsPowered) && type->IsSelectable && !building->Considered_Vehicle());
+	}
+
+
+	// A cell without a wall passes, because selling it does nothing.
+	bool Wall_Sale_Is_Allowed(HouseClass const * house, Cell const & cell)
+	{
+		if (!Map.In_Radar(cell)) {
+			return(false);
+		}
+
+		CellClass const & cellptr = Map[cell];
+		if (cellptr.Overlay == OVERLAY_NONE || !OverlayTypes[cellptr.Overlay]->IsWall) {
+			return(true);
+		}
+
+		Coord coord = Coord(cell);
+		coord.Z = Map.Get_Height_GL(coord);
+		return(cellptr.Owner == house->HeapID && !Map.Is_Shrouded(coord, house));
 	}
 
 
@@ -898,16 +965,18 @@ void EventClass::Execute(void)
 	switch (Type) {
 
 		case POWERON:
-			building = Data.Target.Whom.As_Building();
-			if (building && building->IsActive && !building->IsInLimbo && !building->Class->IsFirestormWall) {
-				building->Turn_On();
-			}
-			break;
-
 		case POWEROFF:
 			building = Data.Target.Whom.As_Building();
 			if (building && building->IsActive && !building->IsInLimbo && !building->Class->IsFirestormWall) {
-				building->Turn_Off();
+				if (Is_Network_Game() && !Power_Toggle_Is_Allowed(building)) {
+					Log_Event_Rejection(EventRejectReason::PowerToggleNotAllowed, Type, ID, building->Class->HeapID);
+					break;
+				}
+				if (Type == POWERON) {
+					building->Turn_On();
+				} else {
+					building->Turn_Off();
+				}
 			}
 			break;
 
@@ -970,6 +1039,11 @@ void EventClass::Execute(void)
 		case REPAIR:
 			techno = Data.Target.Whom.As_Techno();
 			if (techno && techno->IsActive) {
+				// Stopping a repair that is under way is always allowed.
+				if (Is_Network_Game() && (techno->RTTI != RTTI_BUILDING || (!((BuildingClass *)techno)->IsRepairing && !techno->Can_Repair()))) {
+					Log_Event_Rejection(EventRejectReason::RepairNotAllowed, Type, ID, techno->RTTI);
+					break;
+				}
 				techno->Repair(-1);
 			}
 			break;
@@ -981,6 +1055,10 @@ void EventClass::Execute(void)
 		case SELL:
 			techno = Data.Target.Whom.As_Techno();
 			if (techno && techno->IsActive && techno->House->HeapID == ID) {
+				if (Is_Network_Game() && !Sale_Is_Allowed(techno)) {
+					Log_Event_Rejection(EventRejectReason::SaleNotAllowed, Type, ID, techno->RTTI);
+					break;
+				}
 				if (techno->RTTI == RTTI_BUILDING || ((techno->RTTI == RTTI_UNIT || techno->RTTI == RTTI_AIRCRAFT) && Map[techno->Center_Coord()].Cell_Building() != NULL)) {
 					techno->Sell_Back(-1);
 				}
@@ -995,9 +1073,15 @@ void EventClass::Execute(void)
 		**	Tells the wall at the specified location to sell off.
 		*/
 		case SELLCELL:
-//			cell = Data.SellCell.Cell;
-			house->Sell_Wall(Cell(Data.SellCell.Where.X, Data.SellCell.Where.Y), false);
+		{
+			Cell const cell(Data.SellCell.Where.X, Data.SellCell.Where.Y);
+			if (Is_Network_Game() && !Wall_Sale_Is_Allowed(house, cell)) {
+				Log_Event_Rejection(EventRejectReason::WallNotOwned, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
+				break;
+			}
+			house->Sell_Wall(cell, false);
 			break;
+		}
 
 		/*
 		**	This even is used to trigger an animation that is generated as a direct
@@ -1064,6 +1148,10 @@ void EventClass::Execute(void)
 		case PRODUCE:
 			if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, false)) {
 				Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+				break;
+			}
+			if (Is_Network_Game() && !Production_Is_Allowed(house, Data.Specific.Type, Data.Specific.ID)) {
+				Log_Event_Rejection(EventRejectReason::ProductionNotAllowed, Type, ID, Data.Specific.ID);
 				break;
 			}
 			house->Begin_Production(Data.Specific.Type, Data.Specific.ID);

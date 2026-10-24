@@ -909,7 +909,7 @@ int HouseClass::Can_Build(ObjectTypeClass const * type, bool forced, bool includ
 
 		int level = Control.TechLevel;
 #ifdef _DEBUG
-		if (Debug_Cheat) {
+		if (Debug_Cheat && Session.Type != GAME_IPX && Session.Type != GAME_INTERNET) {
 			level = 98;
 			pre.Clear();
 		}

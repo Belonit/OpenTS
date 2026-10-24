@@ -40,6 +40,15 @@ In a network game, placing a building on the map repeats the placement cursor's 
 - The site passes the [base adjacency](/systems/base-adjacency/) check, or it is a building that accepts the upgrade being placed.
 - No cell of the foundation is under the sender's shroud, unless the building lays its own tile.
 
+Other orders in a network game must pass the rules that the sidebar and the cursors apply:
+
+- Starting production requires the prerequisites, tech level, and side that the sidebar requires. Resuming a paused object of the same type is always allowed.
+- Selling a building requires a building that the sell cursor accepts. It cannot have [`Unsellable=yes`](/keys/unsellable/), be under construction or being sold, or be a deployed vehicle. A firestorm wall can be sold only while its firestorm is off. A move order that packs a building up into a vehicle still works.
+- Selling a vehicle or aircraft requires it to be docked at a building with [`UnitRepair=yes`](/keys/unitrepair/).
+- Starting a repair requires a building the repair cursor accepts: a damaged building with [`Repairable=yes`](/keys/repairable/), or one carrying a limpet drone. Stopping a repair is always allowed.
+- Turning a building's power on or off requires [`TogglePower=yes`](/keys/togglepower/) and a building that uses or needs power.
+- Selling a wall requires the sender to own the wall, with its cell clear of the sender's shroud.
+
 A command aimed at one object requires the sender to own that object when the command runs. This covers power on or off, repair, sell, setting a primary factory or a rally point, deploy, scatter, stop, and move, attack, and other mission orders. A command to a missing or destroyed object does nothing. A captured object ignores commands from its former owner.
 
 ## Timing changes
