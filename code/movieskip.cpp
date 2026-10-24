@@ -71,7 +71,7 @@ namespace MovieSkip
 		/// <summary>Whether the machines of this session keep in step while a movie plays.</summary>
 		bool Is_Network_Game(void)
 		{
-			return((Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) && !Session.Play && Session.Players.Count() > 1);
+			return(Session.Is_Network_Game() && !Session.Play && Session.Players.Count() > 1);
 		}
 
 

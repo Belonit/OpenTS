@@ -75,7 +75,7 @@ bool Service_Pick(void)
 {
 	Windows_Message_Handler();
 
-	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+	if (Session.Is_Network_Game()) {
 		return(Net2Callback());
 	}
 

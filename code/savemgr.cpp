@@ -412,7 +412,7 @@ void SaveManagerClass::Write_Spawn_Copy(void)
 /// </summary>
 bool SaveManagerClass::Multiplayer_Load_Is_Allowed(void) const
 {
-	return((Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) && !Session.Play
+	return(Session.Is_Network_Game() && !Session.Play
 		&& Session.Am_I_Master() && !MultiplayerLoad.Is_Pending());
 }
 
@@ -476,7 +476,7 @@ bool SaveManagerClass::Multiplayer_Load_Request(int slot)
 /// </summary>
 void SaveManagerClass::Multiplayer_Load_Receive(int slot)
 {
-	if (Session.Type != GAME_IPX && Session.Type != GAME_INTERNET) {
+	if (!Session.Is_Network_Game()) {
 		DebugString("Ignoring a load request outside a network game\n");
 		return;
 	}

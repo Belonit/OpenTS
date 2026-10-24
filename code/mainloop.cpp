@@ -619,7 +619,7 @@ void Message_Input(KeyNumType &input)
 	**	message must be MAX_MESSAGE_LENGTH plus the size of "From: xxx (house)".
 	*/
 	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH && input >= KN_F1 && input < (KN_F1 + Session.MaxPlayers) && !Session.Messages.Is_Edit()) {
-		if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+		if (Session.Is_Network_Game()) {
 			/*
 			**	For a network game:
 			**	F1-F7 = "To <name> (house):" (only allowed if we're not in ObiWan mode)
@@ -664,7 +664,7 @@ void Message_Input(KeyNumType &input)
 	**	Send a message
 	*/
 	if ((rc==3 || rc==4) && Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-		if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+		if (Session.Is_Network_Game()) {
 			if (rc==3) {
 				Chat_Send(Session.Messages.Get_Edit_Buf());
 			} else {

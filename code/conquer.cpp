@@ -535,7 +535,7 @@ void Call_Back(void)
 	/*
 	 * Network game maintenance.
 	 */
-	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+	if (Session.Is_Network_Game()) {
 		IPX_Call_Back();
 	}
 }

@@ -79,7 +79,7 @@ bool Chat_Reaches(HouseClass const * from, HouseClass const * to, ChatScopeType 
 /// <returns>bool; Did the edit open?</returns>
 bool Chat_Begin(ChatScopeType scope, int house)
 {
-	if (Session.Type != GAME_IPX && Session.Type != GAME_INTERNET) {
+	if (!Session.Is_Network_Game()) {
 		return(false);
 	}
 	if (Session.Messages.Is_Edit() || !Chat_Can_Open(scope)) {

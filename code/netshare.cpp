@@ -1049,7 +1049,7 @@ void CalcRandomMapDigest(char * digest, int bufsize)
 int CreateRandomMap(void)
 {
 	int result;
-	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+	if (Session.Is_Network_Game()) {
 		result = Do_Random_Map_Dialog(Net2Callback);
 	} else {
 		result = Do_Random_Map_Dialog(MapGen_Call_Back);

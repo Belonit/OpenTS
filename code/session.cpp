@@ -366,7 +366,7 @@ int SessionClass::Create_Connections(void)
 	DebugString("Entering Create_Connections\n");
 
 
-	if (Session.Type != GAME_IPX && Session.Type != GAME_INTERNET) {
+	if (!Session.Is_Network_Game()) {
 		return(0);
 	}
 

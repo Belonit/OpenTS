@@ -128,7 +128,7 @@ void Play_Movie(char const * name, ThemeType theme, bool clrscrn_after, bool str
 		}
 
 		// The other machines wait for this one, so the movie runs on without the window's focus.
-		if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+		if (Session.Is_Network_Game()) {
 			vqa->VQA->Set_Pause_On_Focus_Loss(false);
 		}
 

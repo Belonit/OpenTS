@@ -502,7 +502,7 @@ bool Queue_Exit(void)
 void Queue_AI(void)
 {
 	if (Frame >= 0 && Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP
-		&& (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET)) {
+		&& Session.Is_Network_Game()) {
 		Session.Advance_Network_Timing(static_cast<unsigned int>(Frame));
 	}
 
@@ -2131,7 +2131,7 @@ static int Process_Reconnect_Dialog(CDTimerClass<SystemTimerClass> *timeout_time
 					oldest_index = i;
 				}
 			}
-			if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+			if (Session.Is_Network_Game()) {
 				int const oldest_id = Ipx.Connection_ID(oldest_index);
 				sprintf(buf, Fetch_String(TXT_RECONNECTING_TO), Session.Shown_Name(oldest_id, Ipx.Connection_Name(oldest_id)).c_str());
 			} else {
@@ -2404,7 +2404,7 @@ bool Cast_Kick_Vote(int kicker, int kickee)
 	Session.KickVoteWho[kickee][votes] = kicker;
 	Session.KickVoteCount[kickee]++;
 
-	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+	if (Session.Is_Network_Game()) {
 		DebugString("Player %s votes to kick player %s from the game\n",
 			kicker_player->Name, kickee_player->Name);
 		snprintf(buffer, sizeof(buffer), Fetch_String(TXT_RECONNECT_KICK_RECEIVED),
@@ -2531,7 +2531,7 @@ static int Handle_Timeout(ConnManClass *net, FrameSyncStruct *their)
 	//------------------------------------------------------------------------
 	// For network, destroy the oldest connection
 	//------------------------------------------------------------------------
-	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+	if (Session.Is_Network_Game()) {
 		j = 0x7fffffff;
 		oldest_index = 0;
 		for (i = 0; i < net->Num_Connections(); i++) {
@@ -2561,7 +2561,7 @@ static int Handle_Timeout(ConnManClass *net, FrameSyncStruct *their)
 				their[i].sent = their[i+1].sent;
 				their[i].recv = their[i+1].recv;
 			}
-			if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
+			if (Session.Is_Network_Game()) {
 				Destroy_Connection(id,1);
 			}
 		}
@@ -3245,7 +3245,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 
 			Report_Out_Of_Sync(mismatches, mismatch_count, CRC, ARRAY_SIZE(CRC));
 
-			if (net == NULL || (Session.Type != GAME_IPX && Session.Type != GAME_INTERNET)) {
+			if (net == NULL || !Session.Is_Network_Game()) {
 
 				// A recording has nobody to decide with, so it keeps the plain box.
 				Session.Suspended++;
@@ -3401,8 +3401,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 					//	for that player.  The HousesType for this event is the
 					// connection ID.
 					//............................................................
-						if ((Session.Type == GAME_IPX ||
-							Session.Type == GAME_INTERNET) && net) {
+						if (Session.Is_Network_Game() && net) {
 							index = net->Connection_Index (house);
 							if (index != -1) {
 								for (k = index; k < net->Num_Connections() - 1; k++) {
