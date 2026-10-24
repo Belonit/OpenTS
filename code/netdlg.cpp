@@ -287,7 +287,7 @@ void Destroy_Connection(int id, int error)
 	//------------------------------------------------------------------------
 	Ipx.Delete_Connection(id);
 
-	// Every survivor reports the departure; execution makes later copies no-ops.
+	// Every survivor reports the departure; the player is removed once more than half of the others have.
 	if (PlayerPtr != NULL) {
 		OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::REMOVEPLAYER, id));
 	}

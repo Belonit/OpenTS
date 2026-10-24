@@ -24,4 +24,5 @@ namespace NetSemantic
 	bool Timing_Authority_Is_Valid(int sender, int master) noexcept;
 	bool Response_Time_Is_Valid(unsigned int delay, unsigned int minimum_delay, unsigned int frame_send_rate, bool compressed) noexcept;
 	bool Timing_Values_Are_Valid(unsigned int desired_frame_rate, unsigned int max_ahead, unsigned int frame_send_rate) noexcept;
+	bool Removal_Is_Confirmed(int reports, int reporters) noexcept;
 }

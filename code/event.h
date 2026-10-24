@@ -276,6 +276,8 @@ class EventClass
 		// Process the event.
 		void Execute(void);
 
+		static void Reset_Match_State(void);
+
 		int operator == (EventClass & q) {
 			return(memcmp(this, &q, sizeof(q)) == 0);
 		};

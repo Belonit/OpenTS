@@ -304,6 +304,11 @@ void Test_Event_Semantics(void)
 	Check(!NetSemantic::Timing_Values_Are_Valid(0, 9, 3), "timing values reject zero desired FPS");
 	Check(!NetSemantic::Timing_Values_Are_Valid(60, 10, 3), "timing values reject an unaligned horizon");
 	Check(!NetSemantic::Timing_Values_Are_Valid(60, 251, 10), "timing values reject a horizon above the cap");
+	Check(NetSemantic::Removal_Is_Confirmed(1, 1), "the only other player can confirm a departure");
+	Check(NetSemantic::Removal_Is_Confirmed(2, 3), "two of three remaining players confirm a departure");
+	Check(!NetSemantic::Removal_Is_Confirmed(1, 2), "one of two remaining players cannot confirm a departure");
+	Check(!NetSemantic::Removal_Is_Confirmed(2, 4), "an even split does not confirm a departure");
+	Check(!NetSemantic::Removal_Is_Confirmed(0, 0), "a departure with nobody left to report it is not confirmed");
 }
 
 

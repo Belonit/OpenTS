@@ -10,6 +10,7 @@
 #pragma once
 
 #include <array>
+#include <bit>
 #include <cassert>
 #include <concepts>
 #include <cstdint>
@@ -48,6 +49,7 @@ class HouseSet
 
 		void Clear(void) {Bits = 0;}
 		bool Any(void) const {return(Bits != 0);}
+		int Count(void) const {return(std::popcount(Bits));}
 
 		HouseSet operator&(HouseSet other) const {return(HouseSet(Bits & other.Bits));}
 		HouseSet operator|(HouseSet other) const {return(HouseSet(Bits | other.Bits));}

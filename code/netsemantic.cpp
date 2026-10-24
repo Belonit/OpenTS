@@ -92,4 +92,11 @@ namespace NetSemantic
 		unsigned int const minimum_max_ahead = frame_send_rate == 1 ? 4 : 3 * frame_send_rate;
 		return(max_ahead >= minimum_max_ahead && max_ahead <= 250 && max_ahead % frame_send_rate == 0);
 	}
+
+
+	/// <summary>Checks that more than half of the players who could report a departure have reported it.</summary>
+	bool Removal_Is_Confirmed(int reports, int reporters) noexcept
+	{
+		return(reporters > 0 && reports > 0 && reports <= reporters && 2 * reports > reporters);
+	}
 }

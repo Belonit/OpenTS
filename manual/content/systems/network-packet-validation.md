@@ -28,9 +28,10 @@ Each command is checked again when it runs. A command that fails is ignored, and
 - A superweapon strike names one of the sender's superweapons.
 - A mission order names a defined mission, or none.
 - An alliance names an existing player.
-- An animation names a defined animation type, or none, and its owner, if it has one, is an existing player.
 - A game speed change names one of the seven game speeds.
 - A change to the legacy latency setting stays within `0` to `3`.
+
+In a network game, three commands that no copy of the game sends are always ignored: a change to the special game rules, an animation placed by a player, and the old processing-time report.
 
 In a network game, a command aimed at one object requires the sender to own that object when the command runs. This covers power on or off, repair, sell, setting a primary factory or a rally point, deploy, scatter, stop, and move, attack, and other mission orders. A command to a missing or destroyed object does nothing. A captured object ignores commands from its former owner.
 
@@ -88,6 +89,8 @@ Some of these messages have further rules:
 
 Checksums and address matching detect damaged packets and tell players apart. They do not prove who a player is.
 
-When a player leaves, every remaining machine queues that player's removal as a synchronized command. The first copy to run removes the player, and later copies do nothing.
+## Player removal
 
-Because every machine sends it, the removal command carries no check on who sent it. A modified game can use it to remove any other player, and every machine carries out the removal. A kick through the [reconnect dialog](/systems/reconnect-dialog/) still needs a vote from every other player.
+When a machine loses its connection to a player, it sends a synchronized report of that player's departure. The player is removed once more than half of the other players still in the match have reported it. Observers and defeated players who are still connected count among those players, and a player who has already been removed does not. In a two-player game, one report is enough.
+
+The reported player's own machine ignores a report from a player it is still connected to. A forged report in a two-player game therefore puts the match out of sync instead of removing the player. A kick through the [reconnect dialog](/systems/reconnect-dialog/) still needs a vote from every other player.

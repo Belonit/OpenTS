@@ -58,6 +58,7 @@
 #include "foot.h"
 #include "goptions.h"
 #include "house.h"
+#include "ipxmgr.h"
 #include "language/language.h"
 #include "mouse.h"
 #include "netsemantic.h"
@@ -76,6 +77,7 @@
 #include "ramp.hh"
 #include "special.hh"
 
+#include <array>
 #include <cstdint>
 #include <limits>
 
@@ -101,6 +103,8 @@ namespace {
 		UnschedulableTiming,
 		InvalidNetworkReport,
 		InvalidAbandonCount,
+		UnsentEvent,
+		LiveRemoval,
 		Count,
 	};
 
@@ -124,6 +128,8 @@ namespace {
 		"unschedulable timing",
 		"invalid network report",
 		"invalid abandon count",
+		"event no client sends",
+		"removal of a connected player",
 	};
 
 	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
@@ -205,6 +211,89 @@ namespace {
 				return(NULL);
 		}
 	}
+
+
+	bool Is_Network_Game(void)
+	{
+		return(Session.Type == GAME_IPX || Session.Type == GAME_INTERNET);
+	}
+
+
+	// No client creates these, so in a network game any copy is forged.
+	bool Is_Unsent_Event(unsigned char type)
+	{
+		return(type == EventClass::SPECIAL || type == EventClass::ANIMATION || type == EventClass::PROCESS_TIME);
+	}
+
+
+	// Departure reports per target and the players already removed; both are synchronized
+	// and last for one match.
+	std::array<HouseSet, HOUSE_MAX> RemovalReports;
+	HouseSet RemovedPlayers;
+
+
+	/// <summary>Returns the players whose departure reports count toward removing the target.</summary>
+	HouseSet Removal_Reporters(HouseClass const * target)
+	{
+		HouseSet reporters;
+		for (int i = 0; i < Houses.Count(); i++) {
+			HouseClass const * house = Houses[i];
+			if (house != NULL && house != target && house->Is_Human_Player() && !RemovedPlayers[house]) {
+				reporters.Set(house);
+			}
+		}
+		return(reporters);
+	}
+
+
+	void Remove_Player(HouseClass * house, int frame)
+	{
+		DebugString("Removing player %d at frame %d\n", house->HeapID, ::Frame);
+		RemovedPlayers.Set(house);
+		RemovalReports[House_Slot(house)].Clear();
+		SaveManager.Disable_Multiplayer_Saving();
+		Session.Remove_Network_Timing_Player(house->HeapID, frame >= 0 ? static_cast<unsigned int>(frame) : 0u);
+		if (house->IsObserver) {
+			return;
+		}
+		if ((Session.Type == GAME_INTERNET && WestwoodOnline_Tournament) || !Session.Options.AITakeover) {
+			house->Flag_To_Die();
+		} else {
+			house->AI_Takeover();
+		}
+	}
+
+
+	/// <summary>Removes every player whose departure more than half of the remaining players have reported.</summary>
+	void Resolve_Removal_Reports(int frame)
+	{
+		bool removed = true;
+		while (removed) {
+			removed = false;
+			for (int i = 0; i < Houses.Count(); i++) {
+				HouseClass * target = Houses[i];
+				if (target == NULL || RemovedPlayers[target] || !RemovalReports[House_Slot(target)].Any()) {
+					continue;
+				}
+				HouseSet const reporters = Removal_Reporters(target);
+				int const reports = (RemovalReports[House_Slot(target)] & reporters).Count();
+				if (NetSemantic::Removal_Is_Confirmed(reports, reporters.Count())) {
+					Remove_Player(target, frame);
+					removed = true;
+				}
+			}
+		}
+	}
+}
+
+
+/// <summary>
+/// Clears the synchronized departure reports. Call once before each match starts.
+/// </summary>
+void EventClass::Reset_Match_State(void)
+{
+	RemovalReports.fill(HouseSet());
+	RemovedPlayers.Clear();
 }
 
 
@@ -729,6 +818,10 @@ void EventClass::Execute(void)
 				Log_Event_Rejection(EventRejectReason::UnauthorizedSubject, Type, ID, owner);
 				return;
 			}
+		}
+		if (Is_Unsent_Event(Type)) {
+			Log_Event_Rejection(EventRejectReason::UnsentEvent, Type, ID, Type);
+			return;
 		}
 	}
 	HouseClass * hptr = NULL;
@@ -1292,24 +1385,21 @@ void EventClass::Execute(void)
 				Log_Event_Rejection(EventRejectReason::InvalidRemovedHouse, Type, ID, index);
 				break;
 			}
-			if (!Houses[index]->Is_Human_Player()) {
+			hptr = Houses[index];
+			if (!hptr->Is_Human_Player() || RemovedPlayers[hptr] || hptr == house) {
 				break;
 			}
 
-			DebugString("Executing REMOVEPLAYER event. Frame is %d\n", ::Frame);
-			SaveManager.Disable_Multiplayer_Saving();
-			Session.Remove_Network_Timing_Player(index, Frame >= 0 ? static_cast<unsigned int>(Frame) : 0u);
-			house = Houses[index];
-			if (house->IsObserver) {
+			// The reported player ignores a sender it is still connected to, so a forged report puts
+			// this machine out of sync instead of removing it.
+			if (!Session.Play && hptr == PlayerPtr && Ipx.Connection_Index(ID) != -1) {
+				Log_Event_Rejection(EventRejectReason::LiveRemoval, Type, ID, index);
 				break;
 			}
-			if ((Session.Type == GAME_INTERNET && WestwoodOnline_Tournament) || !Session.Options.AITakeover) {
-				house->Flag_To_Die();
-			} else {
-				if (house->Is_Human_Player()) {
-					house->AI_Takeover();
-				}
-			}
+
+			DebugString("Executing REMOVEPLAYER event from player %d for player %d. Frame is %d\n", ID, index, ::Frame);
+			RemovalReports[House_Slot(hptr)].Set(house);
+			Resolve_Removal_Reports(Frame);
 			break;
 
 		case LATENCYFUDGE:
