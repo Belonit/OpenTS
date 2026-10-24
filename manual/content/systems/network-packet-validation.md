@@ -61,6 +61,8 @@ Other commands have these rules:
 
 Some of these commands can fail for a player whose game is not modified, because the match changes between the click and the command running. For example, the anchor for a placement or a prerequisite for production can be destroyed in that time, or a target can move into an area the sender has never seen.
 
+In a network game, a command that an unmodified game cannot send also shows every player the message "*player* sent an illegal command." This covers the three commands that no copy of the game sends, a check from the [command contents](#command-contents) list that fails, and these interface rules: placing a vehicle, infantry, or aircraft on a chosen cell, placing outside the playable map, toggling power on a building that does not allow it, selling another player's wall, giving a mission that players cannot order, and an alliance change the match does not allow. The message appears at most once per player for each broken rule in a match, and nobody is removed from the match. A command that fails because the match changed in the meantime is ignored without a message.
+
 ## Timing changes
 
 A change to the synchronized timing is accepted only from the [master](/systems/out-of-sync-recovery/#the-master). In a compressed game, the player who is master when the match starts stays master while still playing. After that player leaves, the lowest seat still held takes over.

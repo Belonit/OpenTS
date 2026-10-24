@@ -83,6 +83,7 @@
 #include "special.hh"
 
 #include <array>
+#include <bitset>
 #include <cstdint>
 #include <limits>
 
@@ -166,10 +167,81 @@ namespace {
 	static_assert(ARRAY_SIZE(EventRejectReasonNames) == (int)EventRejectReason::Count);
 	unsigned int EventRejectCounts[(unsigned int)EventRejectReason::Count] = {};
 
+	// The reasons each player has already been named for during this match.
+	std::array<std::bitset<(std::size_t)EventRejectReason::Count>, HOUSE_MAX> AnnouncedRejections;
+
+
+	bool Is_Network_Game(void)
+	{
+		return(Session.Type == GAME_IPX || Session.Type == GAME_INTERNET);
+	}
+
+
+	// An unmodified game cannot send these. Reasons left out can also follow a change to the
+	// match between a player's click and the command running.
+	bool Is_Announced(EventRejectReason reason)
+	{
+		switch (reason) {
+			case EventRejectReason::InvalidAllyHouse:
+			case EventRejectReason::InvalidAnimationType:
+			case EventRejectReason::InvalidAnimationOwner:
+			case EventRejectReason::InvalidProductionSelector:
+			case EventRejectReason::InvalidSuperWeapon:
+			case EventRejectReason::InvalidMission:
+			case EventRejectReason::InvalidGameSpeed:
+			case EventRejectReason::InvalidRemovedHouse:
+			case EventRejectReason::InvalidLatencyFudge:
+			case EventRejectReason::InvalidAbandonCount:
+			case EventRejectReason::UnsentEvent:
+			case EventRejectReason::PlacementNotBuilding:
+			case EventRejectReason::PlacementOffMap:
+			case EventRejectReason::PowerToggleNotAllowed:
+			case EventRejectReason::WallNotOwned:
+			case EventRejectReason::MissionNotAllowed:
+			case EventRejectReason::AllianceNotAllowed:
+				return(true);
+
+			default:
+				return(false);
+		}
+	}
+
+
+	/// <summary>
+	/// Tells every player in a network game who sent a command that an unmodified game cannot
+	/// send. Each player is named at most once per reason in a match.
+	/// </summary>
+	void Announce_Rejection(EventRejectReason reason, int origin)
+	{
+		if (!Is_Network_Game() || !Is_Announced(reason) || origin < 0 || origin >= HOUSE_MAX
+			|| !NetSemantic::Index_Is_Valid(origin, Houses.Count()) || Houses[origin] == NULL) {
+			return;
+		}
+
+		std::bitset<(std::size_t)EventRejectReason::Count> & announced = AnnouncedRejections[origin];
+		if (announced.test((std::size_t)reason)) {
+			return;
+		}
+		announced.set((std::size_t)reason);
+
+		HouseClass const * house = Houses[origin];
+		char const * format = Fetch_String(TXT_ILLEGAL_COMMAND);
+		if (format == NULL || format[0] == '\0') {
+			return;
+		}
+
+		char text[256];
+		snprintf(text, sizeof(text), format, Session.Shown_Name(house).c_str());
+		Session.Messages.Add_Message(NULL, 0, text, house->Scheme,
+			TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
+	}
+
 
 	/// <summary>Records a rejected synchronized event.</summary>
 	void Log_Event_Rejection(EventRejectReason reason, unsigned int type, int origin, int detail)
 	{
+		Announce_Rejection(reason, origin);
+
 		unsigned int const reason_index = (unsigned int)reason;
 		unsigned int const count = ++EventRejectCounts[reason_index];
 		if (count == 0 || (count & (count - 1)) != 0) {
@@ -241,12 +313,6 @@ namespace {
 				requires_ownership = false;
 				return(NULL);
 		}
-	}
-
-
-	bool Is_Network_Game(void)
-	{
-		return(Session.Type == GAME_IPX || Session.Type == GAME_INTERNET);
 	}
 
 
@@ -444,12 +510,15 @@ namespace {
 
 
 /// <summary>
-/// Clears the synchronized departure reports. Call once before each match starts.
+/// Clears the departure reports and the record of announced rejections. Call once before each match starts.
 /// </summary>
 void EventClass::Reset_Match_State(void)
 {
 	RemovalReports.fill(HouseSet());
 	RemovedPlayers.Clear();
+	for (std::bitset<(std::size_t)EventRejectReason::Count> & announced : AnnouncedRejections) {
+		announced.reset();
+	}
 }
 
 

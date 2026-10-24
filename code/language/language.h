@@ -880,6 +880,7 @@
 #define TXT_CONNECTION_QUALITY_STATUS   1123
 #define TXT_CONNECTION_QUALITY_RUNG     1124
 #define TXT_PLAYER_NUMBER               1125
+#define TXT_ILLEGAL_COMMAND             1126
 #define IDC_LADDER_TYPE                 1043
 #define IDC_LADDER_LOCATION             1044
 #define IDC_FINDGAME_LOCATION           1046
