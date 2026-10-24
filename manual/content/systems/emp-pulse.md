@@ -64,7 +64,7 @@ Each house holds one pulse target. A second launch before a cannon has fired the
 
 Give the superweapon [`Action=EMPulse`](/keys/action/#scope-superweapontype) so the player can aim it. A click on the in-range cursor fires the first superweapon that declares `Action=EMPulse`, so two EM pulse superweapons cannot be aimed separately.
 
-While the player aims an EM pulse superweapon, the cursor shows the in-range form only if the player owns an operational cannon and the target lies within the [`Range`](/keys/range/#scope-weapontype) of the nearest such cannon's primary weapon. Elsewhere it shows the out-of-range form. The superweapon's `Action` does not change which form appears.
+While the player aims an EM pulse superweapon, the cursor shows the in-range form only if the player owns a cannon that qualifies for launch and the cell under the cursor lies within the [`Range`](/keys/range/#scope-weapontype) of the nearest such cannon's primary weapon. Elsewhere it shows the out-of-range form. The superweapon's `Action` does not change which form appears.
 
 A click on the out-of-range cursor fires the first superweapon that declares `Action=EMPulseRange`, and launches nothing if none does. The launch has no range limit of its own, so an EM pulse superweapon declared `Action=EMPulseRange` fires at any distance.
 

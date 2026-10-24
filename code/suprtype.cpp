@@ -22,6 +22,7 @@
 #include "mouse.h"
 #include "savestream.h"
 #include "sun.h"
+#include "super.h"
 #include "swizzle.h"
 #include "weapon.h"
 
@@ -311,41 +312,13 @@ ActionType SuperWeaponTypeClass::What_Action(Cell const & cell, ObjectClass * ob
 		return(Action);
 	}
 
-	AbstractClass * target;
-	Cell target_cell;
-
-	if (object != NULL) {
-		target = object;
-		target_cell = object->PositionCell;
-	} else {
-		target = &Map[cell];
-		target_cell = cell;
-	}
-
-	BuildingClass * cannon = NULL;
-	int mindist = INT_MAX;
-
-	for (int i = 0; i < Buildings.Count(); i++) {
-		BuildingClass * building = Buildings[i];
-		if (building->Class->IsEMPulseCannon && building->House == PlayerPtr && building->Is_Powered_On()) {
-			if (building->Distance(target) < mindist) {
-				mindist = building->Distance(target);
-				cannon = building;
-			}
-		}
-	}
-
-	if (cannon == NULL) {
+	if (HeapID >= PlayerPtr->SuperWeapon.Count()) {
 		return(ACTION_EMPULSE_RANGE);
 	}
 
-	WeaponTypeClass *weap = cannon->Get_Class_Weapon_Data()->Weapon;
-	int range = weap->Range / CELL_LEPTON;
-	Cell cannon_cell = cannon->PositionCell;
-	Cell dist(target_cell - cannon_cell);
-	if (dist.X * dist.X + dist.Y * dist.Y < range * range) {
-		return(ACTION_EMPULSE);
+	SuperClass const * super = PlayerPtr->SuperWeapon[HeapID];
+	if (super->Pulse_Launch_Site(cell) == NULL || !super->Is_In_Range(cell)) {
+		return(ACTION_EMPULSE_RANGE);
 	}
-
-	return(ACTION_EMPULSE_RANGE);
+	return(ACTION_EMPULSE);
 }

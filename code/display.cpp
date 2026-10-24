@@ -2170,7 +2170,8 @@ void DisplayClass::Mouse_Left_Release(Coord const & coord, Cell const & cell, Ob
 	if (PendingObjectPtr) {
 
 		if (PendingObject->RTTI == RTTI_BUILDINGTYPE) {
-			ProximityCheck = Passes_Proximity_Check(PendingObject, PendingHouse, CursorSize, ZoneCell+ZoneOffset);
+			ProximityCheck = Passes_Proximity_Check(PendingObject, PendingHouse, CursorSize, cell + ZoneOffset);
+			ShroudCheck = Passes_Shroud_Check(PendingObject, PendingHouse, CursorSize, cell + ZoneOffset);
 		}
 
 		/*
