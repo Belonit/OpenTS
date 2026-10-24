@@ -63,7 +63,6 @@
 #include "ipxmgr.h"
 #include "language/language.h"
 #include "msgloop.h"
-#include "netsemantic.h"
 #include "netglobal.h"
 #include "progress.h"
 #include "queue.h"
@@ -599,7 +598,7 @@ void SessionClass::Report_Departure(HouseClass const * reporter, HouseClass * de
 			}
 
 			int const reports = (DepartureReports[House_Slot(target)] & reporters).Count();
-			if (!NetSemantic::Removal_Is_Confirmed(reports, reporters.Count())) {
+			if (2 * reports <= reporters.Count()) {
 				continue;
 			}
 

@@ -128,7 +128,6 @@
 #include "netdlg.h"
 #include "netglobal.h"
 #include "netpacket.h"
-#include "netsemantic.h"
 #include "netshare.h"
 #include "nettiming.h"
 #include "opents_build.h"
@@ -3214,7 +3213,7 @@ static int Execute_DoList(int max_houses, HousesType base_house,
 			// The identifier arrived over the network, so it is bounded before it
 			// reaches the heap or the out-of-sync flags.
 			//..................................................................
-			if (!NetSemantic::Index_Is_Valid(DoList[j].ID, Houses.Count())
+			if (DoList[j].ID < 0 || DoList[j].ID >= Houses.Count()
 				|| DoList[j].ID >= MAX_PLAYERS
 				|| Sync_Is_Out_Of_Sync(DoList[j].ID)) {
 				continue;

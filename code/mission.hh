@@ -53,6 +53,31 @@ enum MissionType {
 	MISSION_FIRST=0
 };
 
+
+// Reports whether a player's orders can give the mission. MISSION_NONE counts, because an
+// order may carry no mission.
+constexpr bool Mission_Is_Player_Order(int mission)
+{
+	switch (mission) {
+		case MISSION_NONE:
+		case MISSION_ATTACK:
+		case MISSION_MOVE:
+		case MISSION_QMOVE:
+		case MISSION_GUARD:
+		case MISSION_GUARD_AREA:
+		case MISSION_ENTER:
+		case MISSION_CAPTURE:
+		case MISSION_SABOTAGE:
+		case MISSION_HARVEST:
+		case MISSION_PATROL:
+		case MISSION_UNLOAD:
+			return(true);
+
+		default:
+			return(false);
+	}
+}
+
 inline MissionType operator++(MissionType & mission)
 {
 	mission = MissionType(int(mission) + 1);

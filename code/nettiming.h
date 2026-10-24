@@ -238,4 +238,7 @@ namespace NetTiming
 	std::optional<TimingTransitionAdvance> Advance_Timing_Transition(TimingTransitionState & transition, TimingSettings current, std::uint32_t frame);
 	bool Timing_Update_Is_Due(std::uint32_t frame, std::uint32_t activation_frame);
 	bool Event_Is_Due(int event_frame, bool is_executed, int frame);
+	bool Timing_Authority_Is_Valid(int sender, int master);
+	bool Response_Time_Is_Valid(unsigned int delay, unsigned int minimum_delay, unsigned int frame_send_rate, bool compressed);
+	bool Timing_Values_Are_Valid(unsigned int desired_frame_rate, unsigned int max_ahead, unsigned int frame_send_rate);
 }

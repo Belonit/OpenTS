@@ -1297,6 +1297,25 @@ namespace
 		Expect("worsening does not retag frame information", unchanged_frame_info);
 	}
 
+
+	void Test_Timing_Event_Values(void)
+	{
+		using namespace NetTiming;
+
+		Expect("the resolved master may send timing events", Timing_Authority_Is_Valid(2, 2));
+		Expect("a guest may not send timing events", !Timing_Authority_Is_Valid(3, 2));
+		Expect("legacy response time accepts its minimum", Response_Time_Is_Valid(2, 2, 0, false));
+		Expect("legacy response time preserves its byte range", Response_Time_Is_Valid(255, 2, 0, false));
+		Expect("compressed response time accepts two aligned periods", Response_Time_Is_Valid(6, 2, 3, true));
+		Expect("compressed response time rejects one period", !Response_Time_Is_Valid(3, 2, 3, true));
+		Expect("compressed response time rejects misalignment", !Response_Time_Is_Valid(7, 2, 3, true));
+		Expect("compressed response time enforces the scheduling cap", !Response_Time_Is_Valid(255, 2, 3, true));
+		Expect("timing values accept a balanced setting", Timing_Values_Are_Valid(60, 9, 3));
+		Expect("timing values reject zero desired FPS", !Timing_Values_Are_Valid(0, 9, 3));
+		Expect("timing values reject an unaligned horizon", !Timing_Values_Are_Valid(60, 10, 3));
+		Expect("timing values reject a horizon above the cap", !Timing_Values_Are_Valid(60, 251, 10));
+	}
+
 }
 
 
@@ -1327,6 +1346,7 @@ int main(void)
 	Test_Staged_Decrease();
 	Test_Transition_Sequences();
 	Test_Recorded_Transitions();
+	Test_Timing_Event_Values();
 
 	if (Failures != 0) {
 		std::cerr << Failures << " network timing checks failed\n";

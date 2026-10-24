@@ -63,7 +63,7 @@
 #include "ipxmgr.h"
 #include "language/language.h"
 #include "mouse.h"
-#include "netsemantic.h"
+#include "nettiming.h"
 #include "overtype.h"
 #include "rules.h"
 #include "savemgr.h"
@@ -172,7 +172,7 @@ namespace {
 	void Announce_Rejection(Reason reason, int origin)
 	{
 		if (!Session.Is_Network_Game() || !Is_Announced(reason) || origin < 0 || origin >= HOUSE_MAX
-			|| !NetSemantic::Index_Is_Valid(origin, Houses.Count()) || Houses[origin] == NULL) {
+			|| origin >= Houses.Count() || Houses[origin] == NULL) {
 			return;
 		}
 
@@ -805,7 +805,7 @@ bool EventClass::Is_Admitted(void) const
 		Reject(RejectReason::InvalidType, Type);
 		return(false);
 	}
-	if (!NetSemantic::Index_Is_Valid(ID, Houses.Count())) {
+	if (ID < 0 || ID >= Houses.Count()) {
 		Reject(RejectReason::InvalidOrigin, ID);
 		return(false);
 	}
@@ -825,7 +825,7 @@ bool EventClass::Is_Admitted(void) const
 			return(false);
 		}
 		int const owner = subject->House != NULL ? subject->House->HeapID : -1;
-		if (!NetSemantic::Subject_Owner_Is_Valid(ID, owner)) {
+		if (owner != ID) {
 			Reject(RejectReason::UnauthorizedSubject, owner);
 			return(false);
 		}
@@ -900,7 +900,7 @@ void EventClass::Execute_ALLY(void)
 {
 	HouseClass * house = Houses[ID];
 	int const index = Data.General.Value;
-	if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
+	if (index < 0 || index >= Houses.Count() || Houses[index] == NULL) {
 		Reject(RejectReason::InvalidAllyHouse, index);
 		return;
 	}
@@ -994,13 +994,11 @@ void EventClass::Execute_ANIMATION(void)
 {
 	int const animation_type = (int)Data.Anim.What;
 	int const owner = (int)Data.Anim.Owner;
-	if (!NetSemantic::Animation_Type_Is_Valid(animation_type, ANIM_NONE, AnimTypes.Count()) ||
-		(animation_type != ANIM_NONE && AnimTypes[animation_type] == NULL)) {
+	if (animation_type != ANIM_NONE && (animation_type < 0 || animation_type >= AnimTypes.Count() || AnimTypes[animation_type] == NULL)) {
 		Reject(RejectReason::InvalidAnimationType, animation_type);
 		return;
 	}
-	if (!NetSemantic::Animation_Owner_Is_Valid(owner, HOUSE_NONE, Houses.Count()) ||
-		(owner != HOUSE_NONE && Houses[owner] == NULL)) {
+	if (owner != HOUSE_NONE && (owner < 0 || owner >= Houses.Count() || Houses[owner] == NULL)) {
 		Reject(RejectReason::InvalidAnimationOwner, owner);
 		return;
 	}
@@ -1121,12 +1119,12 @@ void EventClass::Execute_PRIMARY(void)
 void EventClass::Execute_MEGAMISSION(void)
 {
 	HouseClass * house = Houses[ID];
-	if (!NetSemantic::Mission_Is_Valid(Data.MegaMission.Mission, MISSION_NONE, MISSION_COUNT)) {
+	if (Data.MegaMission.Mission != MISSION_NONE && (Data.MegaMission.Mission < 0 || Data.MegaMission.Mission >= MISSION_COUNT)) {
 		Reject(RejectReason::InvalidMission, Data.MegaMission.Mission);
 		return;
 	}
 	if (Session.Is_Network_Game()) {
-		if (!NetSemantic::Player_Mission_Is_Allowed(Data.MegaMission.Mission)) {
+		if (!Mission_Is_Player_Order(Data.MegaMission.Mission)) {
 			Reject(RejectReason::MissionNotAllowed, Data.MegaMission.Mission);
 			return;
 		}
@@ -1329,7 +1327,7 @@ void EventClass::Execute_SPECIAL_PLACE(void)
 {
 	HouseClass * house = Houses[ID];
 	Cell const cell(Data.Special.Where.X, Data.Special.Where.Y);
-	if (!NetSemantic::Index_Is_Valid(Data.Special.ID, house->SuperWeapon.Count())) {
+	if (Data.Special.ID < 0 || Data.Special.ID >= house->SuperWeapon.Count()) {
 		Reject(RejectReason::InvalidSuperWeapon, Data.Special.ID);
 		return;
 	}
@@ -1359,7 +1357,7 @@ void EventClass::Execute_OPTIONS(void)
 
 void EventClass::Execute_GAMESPEED(void)
 {
-	if (!NetSemantic::Game_Speed_Is_Valid(Data.General.Value)) {
+	if (Data.General.Value < 0 || Data.General.Value >= OptionsClass::MAX_SPEED_SETTING) {
 		Reject(RejectReason::InvalidGameSpeed, Data.General.Value);
 		return;
 	}
@@ -1371,11 +1369,11 @@ void EventClass::Execute_GAMESPEED(void)
 void EventClass::Execute_RESPONSE_TIME(void)
 {
 	int const master = Session.Master_Player_ID();
-	if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
+	if (!Session.Play && !NetTiming::Timing_Authority_Is_Valid(ID, master)) {
 		Reject(RejectReason::UnauthorizedTiming, master);
 		return;
 	}
-	if (!NetSemantic::Response_Time_Is_Valid(Data.FrameInfo.Delay, NETWORK_MIN_MAX_AHEAD, Session.FrameSendRate,
+	if (!NetTiming::Response_Time_Is_Valid(Data.FrameInfo.Delay, NETWORK_MIN_MAX_AHEAD, Session.FrameSendRate,
 		Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP)) {
 		Reject(RejectReason::InvalidTimingValues, Data.FrameInfo.Delay);
 		return;
@@ -1408,7 +1406,7 @@ void EventClass::Execute_REMOVEPLAYER(void)
 {
 	HouseClass * house = Houses[ID];
 	int const index = Data.General.Value;
-	if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
+	if (index < 0 || index >= Houses.Count() || Houses[index] == NULL) {
 		Reject(RejectReason::InvalidRemovedHouse, index);
 		return;
 	}
@@ -1431,7 +1429,7 @@ void EventClass::Execute_REMOVEPLAYER(void)
 
 void EventClass::Execute_LATENCYFUDGE(void)
 {
-	if (!NetSemantic::Latency_Fudge_Is_Valid(Data.General.Value)) {
+	if (Data.General.Value < 0 || Data.General.Value > 3) {
 		Reject(RejectReason::InvalidLatencyFudge, Data.General.Value);
 		return;
 	}
@@ -1450,7 +1448,7 @@ void EventClass::Execute_TIMING(void)
 {
 	HouseClass * house = Houses[ID];
 	int const master = Session.Master_Player_ID();
-	if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
+	if (!Session.Play && !NetTiming::Timing_Authority_Is_Valid(ID, master)) {
 		Reject(RejectReason::UnauthorizedTiming, master);
 		return;
 	}
@@ -1459,7 +1457,7 @@ void EventClass::Execute_TIMING(void)
 		Reject(RejectReason::InvalidTimingArithmetic, Frame);
 		return;
 	}
-	if (!NetSemantic::Timing_Values_Are_Valid(Data.Timing.DesiredFrameRate, Data.Timing.MaxAhead, Data.Timing.FrameSendRate)) {
+	if (!NetTiming::Timing_Values_Are_Valid(Data.Timing.DesiredFrameRate, Data.Timing.MaxAhead, Data.Timing.FrameSendRate)) {
 		Reject(RejectReason::InvalidTimingValues, Data.Timing.MaxAhead);
 		return;
 	}

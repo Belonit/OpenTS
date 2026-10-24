@@ -13,7 +13,6 @@
 #include "netpacket.h"
 #include "netreader.h"
 #include "netglobal.h"
-#include "netsemantic.h"
 #include "autosave.h"
 
 #include <array>
@@ -271,49 +270,13 @@ void Test_Frame_Arithmetic(void)
 }
 
 
-void Test_Event_Semantics(void)
+void Test_Player_Order_Missions(void)
 {
-	Check(NetSemantic::Index_Is_Valid(0, 1), "index validation accepts the first collection entry");
-	Check(!NetSemantic::Index_Is_Valid(-1, 1), "index validation rejects a negative entry");
-	Check(!NetSemantic::Index_Is_Valid(1, 1), "index validation rejects the one-past entry");
-	Check(NetSemantic::Subject_Owner_Is_Valid(3, 3), "a synchronized subject may be controlled by its owner");
-	Check(!NetSemantic::Subject_Owner_Is_Valid(3, 4), "a synchronized subject rejects another player's identity");
-	Check(NetSemantic::Game_Speed_Is_Valid(0) && NetSemantic::Game_Speed_Is_Valid(6), "game-speed validation accepts both legal edges");
-	Check(!NetSemantic::Game_Speed_Is_Valid(-1) && !NetSemantic::Game_Speed_Is_Valid(7), "game-speed validation rejects both outside edges");
-	Check(NetSemantic::Latency_Fudge_Is_Valid(0) && NetSemantic::Latency_Fudge_Is_Valid(3), "latency-margin validation accepts both legal edges");
-	Check(!NetSemantic::Latency_Fudge_Is_Valid(-1) && !NetSemantic::Latency_Fudge_Is_Valid(4), "latency-margin validation rejects both outside edges");
-	Check(NetSemantic::Animation_Type_Is_Valid(-1, -1, 5) && NetSemantic::Animation_Type_Is_Valid(4, -1, 5),
-		"animation validation accepts its sentinel and last entry");
-	Check(!NetSemantic::Animation_Type_Is_Valid(5, -1, 5), "animation validation rejects its one-past entry");
-	Check(NetSemantic::Animation_Owner_Is_Valid(-1, -1, 5) && NetSemantic::Animation_Owner_Is_Valid(4, -1, 5),
-		"animation-owner validation accepts its sentinel and last entry");
-	Check(!NetSemantic::Animation_Owner_Is_Valid(5, -1, 5), "animation-owner validation rejects its one-past entry");
-	Check(NetSemantic::Mission_Is_Valid(-1, -1, 25) && NetSemantic::Mission_Is_Valid(24, -1, 25),
-		"mission validation accepts its sentinel and last entry");
-	Check(!NetSemantic::Mission_Is_Valid(25, -1, 25) && !NetSemantic::Mission_Is_Valid(-2, -1, 25),
-		"mission validation rejects its one-past entry and other negatives");
-	Check(NetSemantic::Timing_Authority_Is_Valid(2, 2), "the resolved master may send timing events");
-	Check(!NetSemantic::Timing_Authority_Is_Valid(3, 2), "a guest may not send timing events");
-	Check(NetSemantic::Response_Time_Is_Valid(2, 2, 0, false), "legacy response time accepts its minimum");
-	Check(NetSemantic::Response_Time_Is_Valid(255, 2, 0, false), "legacy response time preserves its byte range");
-	Check(NetSemantic::Response_Time_Is_Valid(6, 2, 3, true), "compressed response time accepts two aligned periods");
-	Check(!NetSemantic::Response_Time_Is_Valid(3, 2, 3, true), "compressed response time rejects one period");
-	Check(!NetSemantic::Response_Time_Is_Valid(7, 2, 3, true), "compressed response time rejects misalignment");
-	Check(!NetSemantic::Response_Time_Is_Valid(255, 2, 3, true), "compressed response time enforces the scheduling cap");
-	Check(NetSemantic::Timing_Values_Are_Valid(60, 9, 3), "timing values accept a balanced setting");
-	Check(!NetSemantic::Timing_Values_Are_Valid(0, 9, 3), "timing values reject zero desired FPS");
-	Check(!NetSemantic::Timing_Values_Are_Valid(60, 10, 3), "timing values reject an unaligned horizon");
-	Check(!NetSemantic::Timing_Values_Are_Valid(60, 251, 10), "timing values reject a horizon above the cap");
-	Check(NetSemantic::Removal_Is_Confirmed(1, 1), "the only other player can confirm a departure");
-	Check(NetSemantic::Removal_Is_Confirmed(2, 3), "two of three remaining players confirm a departure");
-	Check(!NetSemantic::Removal_Is_Confirmed(1, 2), "one of two remaining players cannot confirm a departure");
-	Check(!NetSemantic::Removal_Is_Confirmed(2, 4), "an even split does not confirm a departure");
-	Check(!NetSemantic::Removal_Is_Confirmed(0, 0), "a departure with nobody left to report it is not confirmed");
-	Check(NetSemantic::Player_Mission_Is_Allowed(MISSION_NONE) && NetSemantic::Player_Mission_Is_Allowed(MISSION_QMOVE),
+	Check(Mission_Is_Player_Order(MISSION_NONE) && Mission_Is_Player_Order(MISSION_QMOVE),
 		"player orders accept no mission and a queued move");
-	Check(!NetSemantic::Player_Mission_Is_Allowed(MISSION_MISSILE), "player orders reject a missile launch");
-	Check(!NetSemantic::Player_Mission_Is_Allowed(MISSION_DECONSTRUCTION), "player orders reject deconstruction");
-	Check(!NetSemantic::Player_Mission_Is_Allowed(MISSION_COUNT), "player orders reject a mission past the last one");
+	Check(!Mission_Is_Player_Order(MISSION_MISSILE), "player orders reject a missile launch");
+	Check(!Mission_Is_Player_Order(MISSION_DECONSTRUCTION), "player orders reject deconstruction");
+	Check(!Mission_Is_Player_Order(MISSION_COUNT), "player orders reject a mission past the last one");
 }
 
 
@@ -916,7 +879,7 @@ int main(void)
 	Test_Event_Contract();
 	Test_Envelope_Rules();
 	Test_Frame_Arithmetic();
-	Test_Event_Semantics();
+	Test_Player_Order_Missions();
 	Test_Full_Compressed_Table();
 	Test_Mega_Mission();
 	Test_Add_Player();
