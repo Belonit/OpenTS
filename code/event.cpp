@@ -287,42 +287,6 @@ namespace {
 	}
 
 
-	/// <summary>Resolves the object controlled by an ownership-gated event.</summary>
-	TechnoClass * Event_Subject(EventClass const & event, bool & requires_ownership)
-	{
-		requires_ownership = true;
-		switch (event.Type) {
-			case EventClass::POWERON:
-			case EventClass::POWEROFF:
-			case EventClass::REPAIR:
-			case EventClass::PRIMARY:
-			case EventClass::IDLE:
-			case EventClass::DEPLOY:
-			case EventClass::SCATTER:
-			case EventClass::SELL:
-				return(event.Data.Target.Whom.As_Techno());
-
-			case EventClass::ARCHIVE:
-				return(event.Data.NavCom.Whom.As_Techno());
-
-			case EventClass::MEGAMISSION:
-			case EventClass::MEGAMISSION_F:
-				return(event.Data.MegaMission.Whom.As_Techno());
-
-			default:
-				requires_ownership = false;
-				return(NULL);
-		}
-	}
-
-
-	// No client creates these, so in a network game any copy is forged.
-	bool Is_Unsent_Event(unsigned char type)
-	{
-		return(type == EventClass::SPECIAL || type == EventClass::ANIMATION || type == EventClass::PROCESS_TIME);
-	}
-
-
 	/// <summary>
 	/// Applies the placement cursor's rules to a placement on a cell. A placement the house
 	/// cannot make at all passes, because placing it does nothing.
@@ -1014,803 +978,792 @@ EventClass::EventClass(int index, unsigned char type, void * ptr, unsigned int s
  *=============================================================================================*/
 void EventClass::Execute(void)
 {
-	TechnoClass * techno = NULL;
-	BuildingClass * building = NULL;
-	AnimClass * anim = NULL;
+	if (!Is_Admitted()) {
+		return;
+	}
+
+	switch (Type) {
+		case POWERON:
+		case POWEROFF:      Execute_POWER(); break;
+		case ARCHIVE:       Execute_ARCHIVE(); break;
+		case ALLY:          Execute_ALLY(); break;
+		case DESTRUCT:      Execute_DESTRUCT(); break;
+		case SPECIAL:       Execute_SPECIAL(); break;
+		case REPAIR:        Execute_REPAIR(); break;
+		case SELL:          Execute_SELL(); break;
+		case SELLCELL:      Execute_SELLCELL(); break;
+		case ANIMATION:     Execute_ANIMATION(); break;
+		case PLACE:         Execute_PLACE(); break;
+		case PRODUCE:       Execute_PRODUCE(); break;
+		case SUSPEND:       Execute_SUSPEND(); break;
+		case ABANDON:       Execute_ABANDON(); break;
+		case ABANDON_COUNT: Execute_ABANDON_COUNT(); break;
+		case PRIMARY:       Execute_PRIMARY(); break;
+		case MEGAMISSION_F:
+		case MEGAMISSION:   Execute_MEGAMISSION(); break;
+		case IDLE:          Execute_IDLE(); break;
+		case DEPLOY:        Execute_DEPLOY(); break;
+		case SCATTER:       Execute_SCATTER(); break;
+		case SPECIAL_PLACE: Execute_SPECIAL_PLACE(); break;
+		case EXIT:          Execute_EXIT(); break;
+		case OPTIONS:       Execute_OPTIONS(); break;
+		case GAMESPEED:     Execute_GAMESPEED(); break;
+		case RESPONSE_TIME: Execute_RESPONSE_TIME(); break;
+		case SAVEGAME:      Execute_SAVEGAME(); break;
+		case ADDPLAYER:     Execute_ADDPLAYER(); break;
+		case REMOVEPLAYER:  Execute_REMOVEPLAYER(); break;
+		case LATENCYFUDGE:  Execute_LATENCYFUDGE(); break;
+		case TIMING:        Execute_TIMING(); break;
+		case PROCESS_TIME:  Execute_PROCESS_TIME(); break;
+		case NETWORK_REPORT: Execute_NETWORK_REPORT(); break;
+		default:            break;
+	}
+}
+
+
+/// <summary>
+/// Applies the checks every event must pass before it runs: a known type, an existing sender
+/// and, in a network game, the sender's ownership of the object it commands.
+/// </summary>
+bool EventClass::Is_Admitted(void) const
+{
 	if (Type == EMPTY || Type >= LAST_EVENT) {
 		Log_Event_Rejection(EventRejectReason::InvalidType, Type, -1, Type);
-		return;
+		return(false);
 	}
 	if (!NetSemantic::Index_Is_Valid(ID, Houses.Count())) {
 		Log_Event_Rejection(EventRejectReason::InvalidOrigin, Type, ID, ID);
-		return;
+		return(false);
 	}
 	if (Houses[ID] == NULL) {
 		Log_Event_Rejection(EventRejectReason::MissingOrigin, Type, ID, ID);
+		return(false);
+	}
+
+	if (!Is_Network_Game()) {
+		return(true);
+	}
+
+	bool requires_ownership = false;
+	TechnoClass * subject = Subject(requires_ownership);
+	if (requires_ownership) {
+		if (subject == NULL || !subject->IsActive || subject->Strength <= 0) {
+			return(false);
+		}
+		int const owner = subject->House != NULL ? subject->House->HeapID : -1;
+		if (!NetSemantic::Subject_Owner_Is_Valid(ID, owner)) {
+			Log_Event_Rejection(EventRejectReason::UnauthorizedSubject, Type, ID, owner);
+			return(false);
+		}
+	}
+
+	// No client creates these, so in a network game any copy is forged.
+	if (Type == SPECIAL || Type == ANIMATION || Type == PROCESS_TIME) {
+		Log_Event_Rejection(EventRejectReason::UnsentEvent, Type, ID, Type);
+		return(false);
+	}
+	return(true);
+}
+
+
+/// <summary>Returns the object an ownership-gated event commands, or NULL for any other event.</summary>
+TechnoClass * EventClass::Subject(bool & requires_ownership) const
+{
+	requires_ownership = true;
+	switch (Type) {
+		case POWERON:
+		case POWEROFF:
+		case REPAIR:
+		case PRIMARY:
+		case IDLE:
+		case DEPLOY:
+		case SCATTER:
+		case SELL:
+			return(Data.Target.Whom.As_Techno());
+
+		case ARCHIVE:
+			return(Data.NavCom.Whom.As_Techno());
+
+		case MEGAMISSION:
+		case MEGAMISSION_F:
+			return(Data.MegaMission.Whom.As_Techno());
+
+		default:
+			requires_ownership = false;
+			return(NULL);
+	}
+}
+
+
+void EventClass::Execute_POWER(void)
+{
+	BuildingClass * building = Data.Target.Whom.As_Building();
+	if (building == NULL || !building->IsActive || building->IsInLimbo || building->Class->IsFirestormWall) {
+		return;
+	}
+	if (Is_Network_Game() && !Power_Toggle_Is_Allowed(building)) {
+		Log_Event_Rejection(EventRejectReason::PowerToggleNotAllowed, Type, ID, building->Class->HeapID);
+		return;
+	}
+	if (Type == POWERON) {
+		building->Turn_On();
+	} else {
+		building->Turn_Off();
+	}
+}
+
+
+void EventClass::Execute_ARCHIVE(void)
+{
+	TechnoClass * techno = Data.NavCom.Whom.As_Techno();
+	if (techno && techno->IsActive) {
+		techno->ArchiveTarget = Data.NavCom.Where.As_Abstract();
+	}
+}
+
+
+void EventClass::Execute_ALLY(void)
+{
+	HouseClass * house = Houses[ID];
+	int const index = Data.General.Value;
+	if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
+		Log_Event_Rejection(EventRejectReason::InvalidAllyHouse, Type, ID, index);
+		return;
+	}
+	if (Is_Network_Game() && !Alliance_Is_Allowed(house, index)) {
+		Log_Event_Rejection(EventRejectReason::AllianceNotAllowed, Type, ID, index);
+		return;
+	}
+	if (house->Is_Ally(Houses[index])) {
+		house->Make_Enemy((HousesType)index);
+	} else {
+		house->Make_Ally((HousesType)index);
+	}
+}
+
+
+void EventClass::Execute_DESTRUCT(void)
+{
+	Houses[ID]->Flag_To_Die();
+}
+
+
+/// <summary>
+/// Replaces the special game rules on every machine and tells the players they changed.
+/// </summary>
+void EventClass::Execute_SPECIAL(void)
+{
+	HouseClass * house = Houses[ID];
+	Special = Data.Options.Data;
+	Scen->Special = Data.Options.Data;
+
+	char txt[80];
+	sprintf(txt, Fetch_String(TXT_SPECIAL_WARNING), Session.Shown_Name(house).c_str());
+	Session.Messages.Add_Message(NULL, 0, txt,
+		house->Scheme,
+		TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), 1200);
+	Map.Flag_To_Redraw();
+}
+
+
+void EventClass::Execute_REPAIR(void)
+{
+	TechnoClass * techno = Data.Target.Whom.As_Techno();
+	if (techno == NULL || !techno->IsActive) {
+		return;
+	}
+	// Stopping a repair that is under way is always allowed.
+	if (Is_Network_Game() && (techno->RTTI != RTTI_BUILDING || (!((BuildingClass *)techno)->IsRepairing && !techno->Can_Repair()))) {
+		Log_Event_Rejection(EventRejectReason::RepairNotAllowed, Type, ID, techno->RTTI);
+		return;
+	}
+	techno->Repair(-1);
+}
+
+
+void EventClass::Execute_SELL(void)
+{
+	TechnoClass * techno = Data.Target.Whom.As_Techno();
+	if (techno == NULL || !techno->IsActive || techno->House->HeapID != ID) {
+		return;
+	}
+	if (Is_Network_Game() && !Sale_Is_Allowed(techno)) {
+		Log_Event_Rejection(EventRejectReason::SaleNotAllowed, Type, ID, techno->RTTI);
+		return;
+	}
+	if (techno->RTTI == RTTI_BUILDING || ((techno->RTTI == RTTI_UNIT || techno->RTTI == RTTI_AIRCRAFT) && Map[techno->Center_Coord()].Cell_Building() != NULL)) {
+		techno->Sell_Back(-1);
+	}
+}
+
+
+void EventClass::Execute_SELLCELL(void)
+{
+	HouseClass * house = Houses[ID];
+	Cell const cell(Data.SellCell.Where.X, Data.SellCell.Where.Y);
+	if (Is_Network_Game() && !Wall_Sale_Is_Allowed(house, cell)) {
+		Log_Event_Rejection(EventRejectReason::WallNotOwned, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
+		return;
+	}
+	house->Sell_Wall(cell, false);
+}
+
+
+void EventClass::Execute_ANIMATION(void)
+{
+	int const animation_type = (int)Data.Anim.What;
+	int const owner = (int)Data.Anim.Owner;
+	if (!NetSemantic::Animation_Type_Is_Valid(animation_type, ANIM_NONE, AnimTypes.Count()) ||
+		(animation_type != ANIM_NONE && AnimTypes[animation_type] == NULL)) {
+		Log_Event_Rejection(EventRejectReason::InvalidAnimationType, Type, ID, animation_type);
+		return;
+	}
+	if (!NetSemantic::Animation_Owner_Is_Valid(owner, HOUSE_NONE, Houses.Count()) ||
+		(owner != HOUSE_NONE && Houses[owner] == NULL)) {
+		Log_Event_Rejection(EventRejectReason::InvalidAnimationOwner, Type, ID, owner);
 		return;
 	}
 
-	HouseClass * house = Houses[ID];
-	if (Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) {
-		bool requires_ownership = false;
-		TechnoClass * subject = Event_Subject(*this, requires_ownership);
-		if (requires_ownership) {
-			if (subject == NULL || !subject->IsActive || subject->Strength <= 0) {
-				return;
-			}
-			int const owner = subject->House != NULL ? subject->House->HeapID : -1;
-			if (!NetSemantic::Subject_Owner_Is_Valid(ID, owner)) {
-				Log_Event_Rejection(EventRejectReason::UnauthorizedSubject, Type, ID, owner);
-				return;
-			}
+	Coord coord(Data.Anim.Where.X, Data.Anim.Where.Y);
+	coord.Z = Map.Get_Height_GL(coord);
+	if (Map[coord].IsUnderBridge) {
+		coord.Z += BRIDGE_LEPTON_HEIGHT;
+	}
+
+	AnimClass * anim = NULL;
+	if (Data.Anim.What == ANIM_NONE) {
+		anim = new AnimClass(Rule->MoveFlash, coord);
+	} else {
+		anim = new AnimClass(AnimTypes[Data.Anim.What], coord);
+	}
+	if (anim) {
+		if (owner != HOUSE_NONE && !Houses[owner]->Is_Player_Control()) {
+			anim->Make_Invisible();
 		}
-		if (Is_Unsent_Event(Type)) {
-			Log_Event_Rejection(EventRejectReason::UnsentEvent, Type, ID, Type);
+	}
+}
+
+
+/// <summary>
+/// Places the object waiting in the sender's factory for the given type: a building on the
+/// given cell, or anything at its factory's exit when the cell is CELL_NONE.
+/// </summary>
+void EventClass::Execute_PLACE(void)
+{
+	HouseClass * house = Houses[ID];
+	Cell const cell(Data.Place.Where.X, Data.Place.Where.Y);
+	if (Is_Network_Game()) {
+		EventRejectReason reason;
+		if (!Placement_Is_Legal(house, Data.Place.Type, cell, reason)) {
+			Log_Event_Rejection(reason, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
 			return;
 		}
 	}
-	HouseClass * hptr = NULL;
-	const char *str = NULL;
-//	Cell cell;
-//	Coord coord;
-	char txt[80];
-	char msg[256];
-//	bool formation = false;
-	int i;
-	int index;
-//	RTTIType rt;
+	house->Place_Object(Data.Place.Type, cell);
+}
 
-	//if (Debug_Print_Events) {
-	//	printf("(%d) Executing %s ID:%d Frame:%d ",
-	//		::Frame, EventNames[Type], ID, Frame);
-	//}
 
-	switch (Type) {
+void EventClass::Execute_PRODUCE(void)
+{
+	HouseClass * house = Houses[ID];
+	if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, false)) {
+		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+		return;
+	}
+	if (Is_Network_Game() && !Production_Is_Allowed(house, Data.Specific.Type, Data.Specific.ID)) {
+		Log_Event_Rejection(EventRejectReason::ProductionNotAllowed, Type, ID, Data.Specific.ID);
+		return;
+	}
+	house->Begin_Production(Data.Specific.Type, Data.Specific.ID);
+}
 
-		case POWERON:
-		case POWEROFF:
-			building = Data.Target.Whom.As_Building();
-			if (building && building->IsActive && !building->IsInLimbo && !building->Class->IsFirestormWall) {
-				if (Is_Network_Game() && !Power_Toggle_Is_Allowed(building)) {
-					Log_Event_Rejection(EventRejectReason::PowerToggleNotAllowed, Type, ID, building->Class->HeapID);
-					break;
-				}
-				if (Type == POWERON) {
-					building->Turn_On();
-				} else {
-					building->Turn_Off();
-				}
-			}
-			break;
 
-		/*
-		**	Update the archive target for this building.
-		*/
-		case ARCHIVE:
-			techno = Data.NavCom.Whom.As_Techno();
-			if (techno && techno->IsActive) {
-				techno->ArchiveTarget = Data.NavCom.Where.As_Abstract();
-			}
-			break;
+void EventClass::Execute_SUSPEND(void)
+{
+	Houses[ID]->Suspend_Production(Data.Specific.Type);
+}
 
-		/*
-		**	Make or break alliance.
-		*/
-		case ALLY:
-			index = Data.General.Value;
-			if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
-				Log_Event_Rejection(EventRejectReason::InvalidAllyHouse, Type, ID, index);
-				break;
-			}
-			if (Is_Network_Game() && !Alliance_Is_Allowed(house, index)) {
-				Log_Event_Rejection(EventRejectReason::AllianceNotAllowed, Type, ID, index);
-				break;
-			}
-			hptr = Houses[index];
-			if (house->Is_Ally(hptr)) {
-				house->Make_Enemy((HousesType)index);
-			} else {
-				house->Make_Ally((HousesType)index);
-			}
-			break;
 
-		/*
-		**	Special self destruct action requested. This is active in the multiplayer mode.
-		*/
-		case DESTRUCT:
-			house->Flag_To_Die();
-			break;
+void EventClass::Execute_ABANDON(void)
+{
+	if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, true)) {
+		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
+		return;
+	}
+	Houses[ID]->Abandon_Production(Data.Specific.Type, Data.Specific.ID);
+}
 
-		/*
-		**	Update the special control flags. This is necessary so that in a multiplay
-		**	game, all machines will agree on the rules. If these options change during
-		**	game play, then all players are informed that options have changed.
-		*/
-		case SPECIAL:
-			if (house != NULL) {
-				Special = Data.Options.Data;
-				Scen->Special = Data.Options.Data;
 
-				sprintf(txt, Fetch_String(TXT_SPECIAL_WARNING), Session.Shown_Name(house).c_str());
-				Session.Messages.Add_Message(NULL, 0, txt,
-					house->Scheme,
-					TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), 1200);
-				Map.Flag_To_Redraw();
-			}
-			break;
+// A count no factory could hold is refused rather than run.
+void EventClass::Execute_ABANDON_COUNT(void)
+{
+	if (!Production_Selector_Is_Valid(Data.AbandonCount.Type, Data.AbandonCount.ID, true)) {
+		Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.AbandonCount.ID);
+		return;
+	}
+	if (Data.AbandonCount.Count < 1 || Data.AbandonCount.Count > Rule->MaximumQueuedObjects + 1) {
+		Log_Event_Rejection(EventRejectReason::InvalidAbandonCount, Type, ID, Data.AbandonCount.Count);
+		return;
+	}
+	for (int abandoned = 0; abandoned < Data.AbandonCount.Count; abandoned++) {
+		Houses[ID]->Abandon_Production(Data.AbandonCount.Type, Data.AbandonCount.ID);
+	}
+}
 
-		/*
-		**	Starts or stops repair on the specified object. This event is triggered by the
-		**	player clicking the repair wrench on a building.
-		*/
-		case REPAIR:
-			techno = Data.Target.Whom.As_Techno();
-			if (techno && techno->IsActive) {
-				// Stopping a repair that is under way is always allowed.
-				if (Is_Network_Game() && (techno->RTTI != RTTI_BUILDING || (!((BuildingClass *)techno)->IsRepairing && !techno->Can_Repair()))) {
-					Log_Event_Rejection(EventRejectReason::RepairNotAllowed, Type, ID, techno->RTTI);
-					break;
-				}
-				techno->Repair(-1);
-			}
-			break;
 
-		/*
-		**	Tells a building/unit to sell. This event is triggered by the player clicking the
-		**	sell animating cursor over the building or unit.
-		*/
-		case SELL:
-			techno = Data.Target.Whom.As_Techno();
-			if (techno && techno->IsActive && techno->House->HeapID == ID) {
-				if (Is_Network_Game() && !Sale_Is_Allowed(techno)) {
-					Log_Event_Rejection(EventRejectReason::SaleNotAllowed, Type, ID, techno->RTTI);
-					break;
-				}
-				if (techno->RTTI == RTTI_BUILDING || ((techno->RTTI == RTTI_UNIT || techno->RTTI == RTTI_AIRCRAFT) && Map[techno->Center_Coord()].Cell_Building() != NULL)) {
-					techno->Sell_Back(-1);
-				}
-			} else {
-//				if (Is_Target_Cell(Data.Target.Whom)) {
-//					Houses.Raw_Ptr(ID)->Sell_Wall(As_Cell(Data.Target.Whom));
-//				}
-			}
-			break;
+void EventClass::Execute_PRIMARY(void)
+{
+	BuildingClass * building = Data.Target.Whom.As_Building();
+	if (building && building->IsActive) {
+		building->Toggle_Primary();
+	}
+}
 
-		/*
-		**	Tells the wall at the specified location to sell off.
-		*/
-		case SELLCELL:
-		{
-			Cell const cell(Data.SellCell.Where.X, Data.SellCell.Where.Y);
-			if (Is_Network_Game() && !Wall_Sale_Is_Allowed(house, cell)) {
-				Log_Event_Rejection(EventRejectReason::WallNotOwned, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
-				break;
-			}
-			house->Sell_Wall(cell, false);
-			break;
+
+/// <summary>
+/// Gives an object a mission with its target and destination. Most player orders arrive
+/// this way. A queued move appends the destination instead of replacing the route.
+/// </summary>
+void EventClass::Execute_MEGAMISSION(void)
+{
+	HouseClass * house = Houses[ID];
+	if (!NetSemantic::Mission_Is_Valid(Data.MegaMission.Mission, MISSION_NONE, MISSION_COUNT)) {
+		Log_Event_Rejection(EventRejectReason::InvalidMission, Type, ID, Data.MegaMission.Mission);
+		return;
+	}
+	if (Is_Network_Game()) {
+		if (!NetSemantic::Player_Mission_Is_Allowed(Data.MegaMission.Mission)) {
+			Log_Event_Rejection(EventRejectReason::MissionNotAllowed, Type, ID, Data.MegaMission.Mission);
+			return;
 		}
-
-		/*
-		**	This even is used to trigger an animation that is generated as a direct
-		**	result of player intervention.
-		*/
-		case ANIMATION:
-		{
-			int const animation_type = (int)Data.Anim.What;
-			int const owner = (int)Data.Anim.Owner;
-			if (!NetSemantic::Animation_Type_Is_Valid(animation_type, ANIM_NONE, AnimTypes.Count()) ||
-				(animation_type != ANIM_NONE && AnimTypes[animation_type] == NULL)) {
-				Log_Event_Rejection(EventRejectReason::InvalidAnimationType, Type, ID, animation_type);
-				break;
-			}
-			if (!NetSemantic::Animation_Owner_Is_Valid(owner, HOUSE_NONE, Houses.Count()) ||
-				(owner != HOUSE_NONE && Houses[owner] == NULL)) {
-				Log_Event_Rejection(EventRejectReason::InvalidAnimationOwner, Type, ID, owner);
-				break;
-			}
-
-			Coord coord(Data.Anim.Where.X, Data.Anim.Where.Y);
-			coord.Z = Map.Get_Height_GL(coord);
-			if (Map[coord].IsUnderBridge) {
-				coord.Z += BRIDGE_LEPTON_HEIGHT;
-			}
-			if (Data.Anim.What == ANIM_NONE) {
-				anim = new AnimClass(Rule->MoveFlash, coord);
-			} else {
-				anim = new AnimClass(AnimTypes[Data.Anim.What], coord);
-			}
-			if (anim) {
-				if (owner != HOUSE_NONE && !Houses[owner]->Is_Player_Control()) {
-					anim->Make_Invisible();
-				}
-			}
-			break;
+		if (!Target_Is_Visible(house, Data.MegaMission.Target) || !Target_Is_Visible(house, Data.MegaMission.Destination)) {
+			Log_Event_Rejection(EventRejectReason::TargetHidden, Type, ID, Data.MegaMission.Mission);
+			return;
 		}
-
-		/*
-		**	This event will place the specified object at the specified location.
-		**	The event is used to place newly constructed buildings down on the map. The
-		**	object type is specified. From this object type, the house can determine the
-		**	exact factory and real object pointer to use.
-		*/
-		case PLACE:
-		{
-			Cell const cell(Data.Place.Where.X, Data.Place.Where.Y);
-			if (Is_Network_Game()) {
-				EventRejectReason reason;
-				if (!Placement_Is_Legal(house, Data.Place.Type, cell, reason)) {
-					Log_Event_Rejection(reason, Type, ID, (cell.X << 16) | (cell.Y & 0xFFFF));
-					break;
-				}
-			}
-			house->Place_Object(Data.Place.Type, cell);
-			break;
-		}
-
-		/*
-		**	This event starts production of the specified object type. The house can
-		**	determine from the type and ID value, what object to begin production on and
-		**	what factory to use.
-		*/
-		case PRODUCE:
-			if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, false)) {
-				Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
-				break;
-			}
-			if (Is_Network_Game() && !Production_Is_Allowed(house, Data.Specific.Type, Data.Specific.ID)) {
-				Log_Event_Rejection(EventRejectReason::ProductionNotAllowed, Type, ID, Data.Specific.ID);
-				break;
-			}
-			house->Begin_Production(Data.Specific.Type, Data.Specific.ID);
-			break;
-
-		/*
-		**	This event is generated when the player puts production on hold. From the
-		**	object type, the factory can be inferred.
-		*/
-		case SUSPEND:
-			house->Suspend_Production(Data.Specific.Type);
-			break;
-
-		/*
-		**	This event is generated when the player cancels production of the specified
-		**	object type. From the object type, the exact factory can be inferred.
-		*/
-		case ABANDON:
-			if (!Production_Selector_Is_Valid(Data.Specific.Type, Data.Specific.ID, true)) {
-				Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.Specific.ID);
-				break;
-			}
-			house->Abandon_Production(Data.Specific.Type, Data.Specific.ID);
-			break;
-
-		// A count no factory could hold is refused rather than run.
-		case ABANDON_COUNT:
-			if (!Production_Selector_Is_Valid(Data.AbandonCount.Type, Data.AbandonCount.ID, true)) {
-				Log_Event_Rejection(EventRejectReason::InvalidProductionSelector, Type, ID, Data.AbandonCount.ID);
-				break;
-			}
-			if (Data.AbandonCount.Count < 1 || Data.AbandonCount.Count > Rule->MaximumQueuedObjects + 1) {
-				Log_Event_Rejection(EventRejectReason::InvalidAbandonCount, Type, ID, Data.AbandonCount.Count);
-				break;
-			}
-			for (int abandoned = 0; abandoned < Data.AbandonCount.Count; abandoned++) {
-				house->Abandon_Production(Data.AbandonCount.Type, Data.AbandonCount.ID);
-			}
-			break;
-
-		/*
-		**	Toggles the primary factory state of the specified building.
-		*/
-		case PRIMARY:
-			{
-				BuildingClass * building = Data.Target.Whom.As_Building();
-				if (building && building->IsActive) {
-					building->Toggle_Primary();
-				}
-			}
-			break;
-
-		/*
-		**	This is the general purpose mission control event. Most player
-		**	action routes through this event. It sets a unit's mission, TarCom,
-		**	and NavCom to the values specified.
-		*/
-		case MEGAMISSION_F:
-#if 0
-			techno = Data.MegaMission_F.Whom.As_Techno();
-			if (techno && techno->IsActive && techno->Is_Foot()) {
-				((FootClass *)techno)->IsFormationMove = true;
-				((FootClass *)techno)->FormationSpeed = Data.MegaMission_F.Speed;
-				((FootClass *)techno)->FormationMaxSpeed = Data.MegaMission_F.MaxSpeed;
-				FormMove = true;
-				FormSpeed = Data.MegaMission_F.Speed;
-				FormMaxSpeed = Data.MegaMission_F.MaxSpeed;
-				formation = true;
-			}
-#endif
-			// Fall thru to next case...
-
-		case MEGAMISSION:
-			if (!NetSemantic::Mission_Is_Valid(Data.MegaMission.Mission, MISSION_NONE, MISSION_COUNT)) {
-				Log_Event_Rejection(EventRejectReason::InvalidMission, Type, ID, Data.MegaMission.Mission);
-				break;
-			}
-			if (Is_Network_Game()) {
-				if (!NetSemantic::Player_Mission_Is_Allowed(Data.MegaMission.Mission)) {
-					Log_Event_Rejection(EventRejectReason::MissionNotAllowed, Type, ID, Data.MegaMission.Mission);
-					break;
-				}
-				if (!Target_Is_Visible(house, Data.MegaMission.Target) || !Target_Is_Visible(house, Data.MegaMission.Destination)) {
-					Log_Event_Rejection(EventRejectReason::TargetHidden, Type, ID, Data.MegaMission.Mission);
-					break;
-				}
-			}
-			//if (Debug_Print_Events) {
-			//	printf("Whom:%x Tgt:%x Dest:%x ",
-			//		Data.MegaMission.Whom.As_TARGET(),
-			//		Data.MegaMission.Target.As_TARGET(),
-			//		Data.MegaMission.Destination.As_TARGET());
-			//}
-			techno = Data.MegaMission.Whom.As_Techno();
-			if (techno != NULL && techno->IsActive && techno->Strength > 0 && !techno->IsInLimbo) {
-
-				/*
-				**	Fetch a pointer to the object of the mission. If there is an error with
-				**	this object, such as it is dead, then bail.
-				*/
-				ObjectClass * object = NULL;
-				if (Data.MegaMission.Target.Is_Valid()) {
-					object = Data.MegaMission.Target.As_Object();
-					if (object != NULL && (!object->IsActive || object->Strength == 0 || object->IsInLimbo)) {
-						break;
-//						object = NULL;
-//						Data.MegaMission.Target.Invalidate();
-					}
-				}
-
-				/*
-				**	If the destination target is invalid because the object is dead, then
-				**	bail from processing this mega mission.
-				*/
-				if (Data.MegaMission.Destination.Is_Valid()) {
-					object = Data.MegaMission.Destination.As_Object();
-					if (object != NULL && (!object->IsActive || object->Strength == 0 || object->IsInLimbo)) {
-						break;
-//						object = NULL;
-//						Data.MegaMission.Destination.Invalidate();
-					}
-				}
-
-				if (Data.MegaMission.Mission == MISSION_ENTER && techno->CurrentMission == MISSION_ENTER && techno->Is_Foot()) {
-					AbstractClass * target = Data.MegaMission.Destination.As_Abstract();
-					if (target != NULL && target->RTTI == RTTI_BUILDING && techno->Contact_With_Whom() == target) {
-						break;
-					}
-				}
-
-				/*
-				**	Break any existing tether or team contact, since it is now invalid.
-				*/
-				if (!techno->IsTethered) {
-					techno->Transmit_Message(RADIO_OVER_OUT);
-				} else {
-					TechnoClass * radio = techno->Contact_With_Whom();
-					if (radio != NULL && radio->IsActive) {
-						BuildingClass * building = dynamic_cast<BuildingClass *>(radio); /// Note, not As_BuildingClass(), that uses Abstract to Building, this is Techno to Building
-						if (building != NULL && building->Class->IsRefinery) {
-							techno->Transmit_Message(RADIO_OVER_OUT);
-							techno->IsTethered = false;
-						}
-					}
-				}
-				if (techno->NearbyObject != NULL) {
-					techno->NearbyObject = NULL;
-				}
-				if (techno->Is_Foot()) {
-					//if (!formation) ((FootClass *)techno)->IsFormationMove = false;
-					if (((FootClass *)techno)->Team && Data.MegaMission.Mission != MISSION_UNLOAD) {
-						((FootClass *)techno)->Team->Remove((FootClass *)techno);
-					}
-				}
-
-				if (object != NULL) {
-					if (PlayerPtr->Is_Ally(techno)) {
-						object->Clicked_As_Target();
-					}
-				}
-
-				/*
-				**	Test to see if the navigation target should really be queued rather
-				**	than assigned to the object. This would be the case if this is a
-				**	special queued move mission and there is already a valid navigation
-				**	target for this unit.
-				*/
-				bool q = (Data.MegaMission.Mission == MISSION_QMOVE);
-
-				techno->Assign_Mission((MissionType)Data.MegaMission.Mission);
-
-				FootClass * foot = dynamic_cast<FootClass *>(techno); /// Note, not As_FootClass(), that uses Abstract to Foot, this is Techno to Foot
-				if (foot != NULL) {
-					foot->SuspendedNavCom = NULL;
-				}
-				techno->SuspendedTarCom = NULL;
-
-				/*
-				**	Guard area mode is handled with care. The specified target is actually
-				**	assigned as the location that should be guarded. In addition, the
-				**	movement destination is immediately set to this new location.
-				*/
-				if (Data.MegaMission.Mission == MISSION_GUARD_AREA && techno->Is_Foot()) {
-					techno->Assign_Target(NULL);
-					techno->Assign_Destination(Data.MegaMission.Target.As_Abstract());
-					techno->ArchiveTarget = Data.MegaMission.Target.As_Abstract();
-				} else {
-					if (foot != NULL) {
-						foot->ArchiveTarget = NULL;
-					}
-					if (q && foot != NULL) {
-						foot->Queue_Navigation_List(Data.MegaMission.Destination.As_Abstract());
-					} else {
-						if (foot != NULL) {
-							foot->Clear_Navigation_List();
-						}
-						techno->Assign_Target(Data.MegaMission.Target.As_Abstract());
-						techno->Assign_Destination(Data.MegaMission.Destination.As_Abstract());
-					}
-				}
-
-#ifdef NEVER
-				if ((techno->What_Am_I() == RTTI_UNIT || techno->What_Am_I() == RTTI_INFANTRY) &&
-						Data.MegaMission.Mission == MISSION_GUARD_AREA) {
-
-					((FootClass *)techno)->ArchiveTarget = Data.MegaMission.Destination;
-				}
-#endif
-			}
-			break;
-
-		/*
-		**	Request that the unit/infantry/aircraft go into idle mode.
-		*/
-		case IDLE:
-			techno = Data.Target.Whom.As_Techno();
-			if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered) {
-
-				if (techno->CurrentMission == MISSION_CONSTRUCTION || techno->CurrentMission == MISSION_DECONSTRUCTION) {
-					break;
-				}
-
-				if (!techno->IsOnBridge && Map[(Coord const &)techno->PositionCoord].Ramp == RAMP_NONE && techno->Is_On_Elevation()) {
-					break;
-				}
-
-				if (techno->Is_Foot()) {
-					((FootClass *)techno)->NavQueue.Clear();
-					((FootClass *)techno)->Clear_Navigation_List();
-					((FootClass *)techno)->CurrentPath = PATH_NONE;
-					((FootClass *)techno)->NextWaypoint = 0;
-					((FootClass *)techno)->WaypointOffsetCell = Cell(0, 0);
-					((FootClass *)techno)->WaypointTargetCell = Cell(0, 0);
-				}
-				techno->Transmit_Message(RADIO_OVER_OUT);
-				techno->Assign_Destination(NULL);
-				techno->Assign_Target(NULL);
-				if (techno->RTTI != RTTI_AIRCRAFT) {
-					techno->Assign_Mission(MISSION_GUARD);
-					techno->Commence();
-				}
-			}
-			break;
-
-		case DEPLOY:
-			techno = Data.Target.Whom.As_Techno();
-			if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered && techno->StunDuration == 0) {
-
-				if (!techno->IsOnBridge) {
-					if (!Map[(Coord const &)techno->PositionCoord].Ramp != 0 && techno->Is_On_Elevation()) {
-						break;
-					}
-				}
-
-				if (techno->CurrentMission == MISSION_CONSTRUCTION || techno->CurrentMission == MISSION_DECONSTRUCTION || techno->RTTI == RTTI_AIRCRAFT) {
-					break;
-				}
-
-				bool should_unload = false;
-				Cell cell = techno->PositionCell;
-				if (cell == CELL_NONE) {
-					should_unload = true;
-				} else {
-					building = Map[cell].Cell_Building();
-					if (building == NULL || !building->Class->IsWeaponsFactory) {
-						should_unload = true;
-					}
-				}
-
-				if (should_unload) {
-					techno->Transmit_Message(RADIO_OVER_OUT);
-					techno->Assign_Destination(NULL);
-					techno->Assign_Target(NULL);
-					techno->Assign_Mission(MISSION_UNLOAD);
-				}
-			}
-			break;
-
-		/*
-		**	Request that the unit/infantry/aircraft scatter from its current location.
-		*/
-		case SCATTER:
-			techno = Data.Target.Whom.As_Techno();
-			if (techno != NULL && techno->Is_Foot() && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered) {
-				((FootClass *)techno)->IsScattering = true;
-				techno->Scatter(COORD_NONE, true, false);
-			}
-			break;
-
-		/*
-		**	If we are placing down the ion cannon blast then lets take
-		**	care of it.
-		*/
-		case SPECIAL_PLACE:
-			if (!NetSemantic::Index_Is_Valid(Data.Special.ID, house->SuperWeapon.Count())) {
-				Log_Event_Rejection(EventRejectReason::InvalidSuperWeapon, Type, ID, Data.Special.ID);
-				break;
-			}
-			// Only a click on the in-range cursor sends a strike for a weapon with Action=EMPulse.
-			if (Is_Network_Game() && house->SuperWeapon[Data.Special.ID]->Class->Action == ACTION_EMPULSE
-				&& !house->SuperWeapon[Data.Special.ID]->Is_In_Range(Cell(Data.Special.Where.X, Data.Special.Where.Y))) {
-				Log_Event_Rejection(EventRejectReason::SuperWeaponOutOfRange, Type, ID, Data.Special.ID);
-				break;
-			}
-			house->Place_Special_Blast((SuperWeaponType)Data.Special.ID, Cell(Data.Special.Where.X, Data.Special.Where.Y));
-			break;
-
-		/*
-		**	Exit the game.
-		**	Give parting message while palette is fading to black.
-		*/
-		case EXIT:
-			//Theme.Queue_Song(THEME_NONE);
-			//Stop_Speaking();
-			//Speak(VOX_CONTROL_EXIT);
-			//while (Is_Speaking()) {
-			//	Call_Back();
-			//}
-			//GameActive = false;
-			PlayerAborts = true;
-			break;
-
-		/*
-		**	Process the options menu, unless we're playing back a recording.
-		*/
-		case OPTIONS:
-			if (!Session.Play) {
-				SpecialDialog = SDLG_OPTIONS;
-			}
-			break;
-
-		/*
-		**	Process the options Game Speed
-		*/
-		case GAMESPEED:
-			if (!NetSemantic::Game_Speed_Is_Valid(Data.General.Value)) {
-				Log_Event_Rejection(EventRejectReason::InvalidGameSpeed, Type, ID, Data.General.Value);
-				break;
-			}
-			Options.GameSpeed = Data.General.Value;
-
-			house = Houses[ID];
-			if (house != PlayerPtr && house != NULL) {
-				str = Fetch_String(TXT_PLAYER_CHANGED_SPEED);
-				if (str != NULL && strlen(str) != 0) {
-					sprintf(msg, str, Session.Shown_Name(house).c_str());
-					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-				}
-			}
-			break;
-
-		/*
-		**	Adjust connection timing for multiplayer games
-		*/
-		case RESPONSE_TIME:
-		{
-			int const master = Session.Master_Player_ID();
-			if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
-				Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
-				break;
-			}
-			if (!NetSemantic::Response_Time_Is_Valid(Data.FrameInfo.Delay, NETWORK_MIN_MAX_AHEAD, Session.FrameSendRate,
-				Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP)) {
-				Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.FrameInfo.Delay);
-				break;
-			}
-			Session.Apply_Network_Response_Time(Data.FrameInfo.Delay, Frame >= 0 ? static_cast<unsigned int>(Frame) : 0u);
-			break;
-		}
-
-		/*
-		**	Save a multiplayer game (this event is only generated in multiplayer mode)
-		*/
-		case SAVEGAME:
-			SaveManager.Request_Multiplayer_Save(Fetch_String(TXT_MULTIPLAYER_GAME), false,
-				SaveManagerClass::NoticeType::Requested);
-			break;
-
-		/*
-		**	Add a new player to the game:
-		**	- Form a network connection to him
-		**	- Add his name, ID, House etc to our list of players
-		**	- Re-sort the ID array
-		**	- Place his units on the map
-		*/
-		case ADDPLAYER:
-			// int i;
-			// printf("ADDPLAYER EVENT!\n");
-			// for (i=0;i<Data.Variable.Size;i++) {
-			// 	printf("%d\n", ((char *)Data.Variable.Pointer)[i]);
-			// }
-			if (ID != PlayerPtr->HeapID) {
-				delete [] Data.Variable.Pointer;
-			}
-			break;
-
-		case REMOVEPLAYER:
-			index = Data.General.Value;
-			if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
-				Log_Event_Rejection(EventRejectReason::InvalidRemovedHouse, Type, ID, index);
-				break;
-			}
-			hptr = Houses[index];
-			if (!hptr->Is_Human_Player() || RemovedPlayers[hptr] || hptr == house) {
-				break;
-			}
-
-			// The reported player ignores a sender it is still connected to, so a forged report puts
-			// this machine out of sync instead of removing it.
-			if (!Session.Play && hptr == PlayerPtr && Ipx.Connection_Index(ID) != -1) {
-				Log_Event_Rejection(EventRejectReason::LiveRemoval, Type, ID, index);
-				break;
-			}
-
-			DebugString("Executing REMOVEPLAYER event from player %d for player %d. Frame is %d\n", ID, index, ::Frame);
-			RemovalReports[House_Slot(hptr)].Set(house);
-			Resolve_Removal_Reports(Frame);
-			break;
-
-		case LATENCYFUDGE:
-			if (!NetSemantic::Latency_Fudge_Is_Valid(Data.General.Value)) {
-				Log_Event_Rejection(EventRejectReason::InvalidLatencyFudge, Type, ID, Data.General.Value);
-				break;
-			}
-			DebugString("Executing LATENCYFUDGE event. Frame is %d\n", ::Frame);
-			Session.LatencyFudge = Data.General.Value;
-			DebugString("LatencyFudge is %d\n", Session.LatencyFudge);
-
-			house = Houses[ID];
-			if (house != PlayerPtr && house != NULL) {
-				str = Fetch_String(TXT_PLAYER_CHANGED_LATENCY);
-				if (str != NULL && strlen(str) != 0) {
-					sprintf(msg, str, Session.Shown_Name(house).c_str());
-					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-				}
-			}
-			break;
-
-		//
-		// This event tells all systems to use new timing values.  It's like
-		// RESPONSE_TIME, only it works.  It's only used with the
-		// COMM_MULTI_E_COMP protocol.
-		//
-		case TIMING:
-		{
-			int const master = Session.Master_Player_ID();
-			if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
-				Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
-				break;
-			}
-
-			if (Session.CommProtocol != COMM_PROTOCOL_MULTI_E_COMP || Frame < 0) {
-				Log_Event_Rejection(EventRejectReason::InvalidTimingArithmetic, Type, ID, Frame);
-				break;
-			}
-			if (!NetSemantic::Timing_Values_Are_Valid(Data.Timing.DesiredFrameRate, Data.Timing.MaxAhead, Data.Timing.FrameSendRate)) {
-				Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.Timing.MaxAhead);
-				break;
-			}
-
-			NetTiming::TimingSettings const settings{Data.Timing.FrameSendRate, Data.Timing.MaxAhead};
-			NetTiming::ConnectionQuality const old_quality = NetTiming::Connection_Quality_For_Settings(Session.Network_Timing_Target());
-			unsigned int const old_frame_send_rate = Session.FrameSendRate;
-			unsigned int const old_max_ahead = Session.MaxAhead;
-
-			if (settings.MaxAhead > old_max_ahead || settings.FrameSendRate > old_frame_send_rate) {
-				std::uint64_t const boundary = settings.FrameSendRate * ((static_cast<std::uint64_t>(Frame) + NetTiming::MAXIMUM_MAX_AHEAD
-					+ settings.FrameSendRate - 1) / settings.FrameSendRate);
-				if (boundary > static_cast<std::uint64_t>((std::numeric_limits<int>::max)())) {
-					Log_Event_Rejection(EventRejectReason::InvalidTimingArithmetic, Type, ID, Frame);
-					break;
-				}
-			}
-
-			NetTiming::ScheduleResult const result = Session.Schedule_Network_Timing(settings, Data.Timing.DesiredFrameRate, static_cast<unsigned int>(Frame));
-			if (result == NetTiming::ScheduleResult::Rejected) {
-				Log_Event_Rejection(EventRejectReason::UnschedulableTiming, Type, ID, static_cast<int>(settings.MaxAhead));
-				break;
-			}
-
-			DebugString("Network timing event at frame %d from player %d: %u/%u at %u fps %s\n", Frame, ID, settings.FrameSendRate, settings.MaxAhead,
-				Data.Timing.DesiredFrameRate, result == NetTiming::ScheduleResult::Applied ? "applied" : "staged");
-			NetTiming::ConnectionQuality const quality = NetTiming::Connection_Quality_For_Settings(settings);
-			if (quality != old_quality) {
-				char const * format = Fetch_String(TXT_CONNECTION_QUALITY_STATUS);
-				char const * quality_name = Fetch_String(Network_Quality_Text_ID(quality));
-				if (format != NULL && quality_name != NULL && format[0] != '\0' && quality_name[0] != '\0') {
-					snprintf(msg, sizeof(msg), format, quality_name);
-					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme,
-						TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-				}
-			}
-
-#if (TIMING_FIX)
-			//
-			// If MaxAhead is about to increase, we're vulnerable to a Packet-
-			// Received-Too-Late error, if any system generates an event after
-			// this TIMING event, but before it executes.  So, record the
-			// period of vulnerability's frame start & end values, so we
-			// can reschedule these events to execute after it's over.
-			//
-			if (result == NetTiming::ScheduleResult::Applied && (Session.MaxAhead > old_max_ahead || Session.FrameSendRate > old_frame_send_rate)) {
-				std::uint64_t const boundary = Session.FrameSendRate * ((static_cast<std::uint64_t>(Frame) + Session.MaxAhead
-					+ Session.FrameSendRate - 1) / Session.FrameSendRate);
-				NewMaxAheadFrame1 = Frame;
-				NewMaxAheadFrame2 = static_cast<int>(boundary);
-			} else {
-				NewMaxAheadFrame1 = 0;
-				NewMaxAheadFrame2 = 0;
-			}
-#endif
-			break;
-		}
-
-		//
-		// This event tells all systems what the other systems' process
-		// timing requirements are; it's used to compute a desired frame rate
-		// for the game.
-		//
-		case PROCESS_TIME:
-			for (i = 0; i < Session.Players.Count(); i++) {
-				if (ID == Session.Players[i]->Player.ID) {
-					Session.Players[i]->Player.ProcessTime = Data.ProcessTime.AverageTicks;
-					break;
-				}
-			}
-			break;
-
-		case NETWORK_REPORT:
-			// A recording started without a roster has nobody to attribute reports to.
-			if ((Session.CommProtocol != COMM_PROTOCOL_MULTI_E_COMP || Frame < 0
-				|| !Session.Record_Network_Report(ID, Data.NetworkReport.AverageProcessMilliseconds,
-					Data.NetworkReport.WorstRoundTripMilliseconds, Data.NetworkReport.StallMilliseconds, static_cast<unsigned int>(Frame)))
-				&& !Session.Play) {
-				Log_Event_Rejection(EventRejectReason::InvalidNetworkReport, Type, ID, Data.NetworkReport.WorstRoundTripMilliseconds);
-			} else if (!Session.Play) {
-				DebugString("Network report at frame %d from player %d: process %u ms, RTT %d ms, longest wait %u ms\n", Frame, ID,
-					(unsigned int)Data.NetworkReport.AverageProcessMilliseconds,
-					Data.NetworkReport.WorstRoundTripMilliseconds == NETWORK_RTT_UNAVAILABLE ? -1 : (int)Data.NetworkReport.WorstRoundTripMilliseconds,
-					(unsigned int)Data.NetworkReport.StallMilliseconds);
-			}
-			break;
-
-		/*
-		**	Default: do nothing.
-		*/
-		default:
-			break;
 	}
 
-	//if (Debug_Print_Events) {
-	//	printf("\n");
-	//}
+	TechnoClass * techno = Data.MegaMission.Whom.As_Techno();
+	if (techno == NULL || !techno->IsActive || techno->Strength <= 0 || techno->IsInLimbo) {
+		return;
+	}
 
+	/*
+	**	Fetch a pointer to the object of the mission. If there is an error with
+	**	this object, such as it is dead, then bail.
+	*/
+	ObjectClass * object = NULL;
+	if (Data.MegaMission.Target.Is_Valid()) {
+		object = Data.MegaMission.Target.As_Object();
+		if (object != NULL && (!object->IsActive || object->Strength == 0 || object->IsInLimbo)) {
+			return;
+		}
+	}
+
+	/*
+	**	If the destination target is invalid because the object is dead, then
+	**	bail from processing this mega mission.
+	*/
+	if (Data.MegaMission.Destination.Is_Valid()) {
+		object = Data.MegaMission.Destination.As_Object();
+		if (object != NULL && (!object->IsActive || object->Strength == 0 || object->IsInLimbo)) {
+			return;
+		}
+	}
+
+	if (Data.MegaMission.Mission == MISSION_ENTER && techno->CurrentMission == MISSION_ENTER && techno->Is_Foot()) {
+		AbstractClass * target = Data.MegaMission.Destination.As_Abstract();
+		if (target != NULL && target->RTTI == RTTI_BUILDING && techno->Contact_With_Whom() == target) {
+			return;
+		}
+	}
+
+	/*
+	**	Break any existing tether or team contact, since it is now invalid.
+	*/
+	if (!techno->IsTethered) {
+		techno->Transmit_Message(RADIO_OVER_OUT);
+	} else {
+		TechnoClass * radio = techno->Contact_With_Whom();
+		if (radio != NULL && radio->IsActive) {
+			BuildingClass * building = dynamic_cast<BuildingClass *>(radio); /// Note, not As_BuildingClass(), that uses Abstract to Building, this is Techno to Building
+			if (building != NULL && building->Class->IsRefinery) {
+				techno->Transmit_Message(RADIO_OVER_OUT);
+				techno->IsTethered = false;
+			}
+		}
+	}
+	if (techno->NearbyObject != NULL) {
+		techno->NearbyObject = NULL;
+	}
+	if (techno->Is_Foot()) {
+		if (((FootClass *)techno)->Team && Data.MegaMission.Mission != MISSION_UNLOAD) {
+			((FootClass *)techno)->Team->Remove((FootClass *)techno);
+		}
+	}
+
+	if (object != NULL) {
+		if (PlayerPtr->Is_Ally(techno)) {
+			object->Clicked_As_Target();
+		}
+	}
+
+	/*
+	**	Test to see if the navigation target should really be queued rather
+	**	than assigned to the object. This would be the case if this is a
+	**	special queued move mission and there is already a valid navigation
+	**	target for this unit.
+	*/
+	bool q = (Data.MegaMission.Mission == MISSION_QMOVE);
+
+	techno->Assign_Mission((MissionType)Data.MegaMission.Mission);
+
+	FootClass * foot = dynamic_cast<FootClass *>(techno); /// Note, not As_FootClass(), that uses Abstract to Foot, this is Techno to Foot
+	if (foot != NULL) {
+		foot->SuspendedNavCom = NULL;
+	}
+	techno->SuspendedTarCom = NULL;
+
+	/*
+	**	Guard area mode is handled with care. The specified target is actually
+	**	assigned as the location that should be guarded. In addition, the
+	**	movement destination is immediately set to this new location.
+	*/
+	if (Data.MegaMission.Mission == MISSION_GUARD_AREA && techno->Is_Foot()) {
+		techno->Assign_Target(NULL);
+		techno->Assign_Destination(Data.MegaMission.Target.As_Abstract());
+		techno->ArchiveTarget = Data.MegaMission.Target.As_Abstract();
+	} else {
+		if (foot != NULL) {
+			foot->ArchiveTarget = NULL;
+		}
+		if (q && foot != NULL) {
+			foot->Queue_Navigation_List(Data.MegaMission.Destination.As_Abstract());
+		} else {
+			if (foot != NULL) {
+				foot->Clear_Navigation_List();
+			}
+			techno->Assign_Target(Data.MegaMission.Target.As_Abstract());
+			techno->Assign_Destination(Data.MegaMission.Destination.As_Abstract());
+		}
+	}
+}
+
+
+void EventClass::Execute_IDLE(void)
+{
+	TechnoClass * techno = Data.Target.Whom.As_Techno();
+	if (techno == NULL || !techno->IsActive || techno->IsInLimbo || techno->IsTethered) {
+		return;
+	}
+
+	if (techno->CurrentMission == MISSION_CONSTRUCTION || techno->CurrentMission == MISSION_DECONSTRUCTION) {
+		return;
+	}
+
+	if (!techno->IsOnBridge && Map[(Coord const &)techno->PositionCoord].Ramp == RAMP_NONE && techno->Is_On_Elevation()) {
+		return;
+	}
+
+	if (techno->Is_Foot()) {
+		((FootClass *)techno)->NavQueue.Clear();
+		((FootClass *)techno)->Clear_Navigation_List();
+		((FootClass *)techno)->CurrentPath = PATH_NONE;
+		((FootClass *)techno)->NextWaypoint = 0;
+		((FootClass *)techno)->WaypointOffsetCell = Cell(0, 0);
+		((FootClass *)techno)->WaypointTargetCell = Cell(0, 0);
+	}
+	techno->Transmit_Message(RADIO_OVER_OUT);
+	techno->Assign_Destination(NULL);
+	techno->Assign_Target(NULL);
+	if (techno->RTTI != RTTI_AIRCRAFT) {
+		techno->Assign_Mission(MISSION_GUARD);
+		techno->Commence();
+	}
+}
+
+
+void EventClass::Execute_DEPLOY(void)
+{
+	TechnoClass * techno = Data.Target.Whom.As_Techno();
+	if (techno == NULL || !techno->IsActive || techno->IsInLimbo || techno->IsTethered || techno->StunDuration != 0) {
+		return;
+	}
+
+	if (!techno->IsOnBridge) {
+		if (!Map[(Coord const &)techno->PositionCoord].Ramp != 0 && techno->Is_On_Elevation()) {
+			return;
+		}
+	}
+
+	if (techno->CurrentMission == MISSION_CONSTRUCTION || techno->CurrentMission == MISSION_DECONSTRUCTION || techno->RTTI == RTTI_AIRCRAFT) {
+		return;
+	}
+
+	bool should_unload = false;
+	Cell cell = techno->PositionCell;
+	if (cell == CELL_NONE) {
+		should_unload = true;
+	} else {
+		BuildingClass * building = Map[cell].Cell_Building();
+		if (building == NULL || !building->Class->IsWeaponsFactory) {
+			should_unload = true;
+		}
+	}
+
+	if (should_unload) {
+		techno->Transmit_Message(RADIO_OVER_OUT);
+		techno->Assign_Destination(NULL);
+		techno->Assign_Target(NULL);
+		techno->Assign_Mission(MISSION_UNLOAD);
+	}
+}
+
+
+void EventClass::Execute_SCATTER(void)
+{
+	TechnoClass * techno = Data.Target.Whom.As_Techno();
+	if (techno != NULL && techno->Is_Foot() && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered) {
+		((FootClass *)techno)->IsScattering = true;
+		techno->Scatter(COORD_NONE, true, false);
+	}
+}
+
+
+void EventClass::Execute_SPECIAL_PLACE(void)
+{
+	HouseClass * house = Houses[ID];
+	Cell const cell(Data.Special.Where.X, Data.Special.Where.Y);
+	if (!NetSemantic::Index_Is_Valid(Data.Special.ID, house->SuperWeapon.Count())) {
+		Log_Event_Rejection(EventRejectReason::InvalidSuperWeapon, Type, ID, Data.Special.ID);
+		return;
+	}
+	// Only a click on the in-range cursor sends a strike for a weapon with Action=EMPulse.
+	SuperClass const * super = house->SuperWeapon[Data.Special.ID];
+	if (Is_Network_Game() && super->Class->Action == ACTION_EMPULSE && !super->Is_In_Range(cell)) {
+		Log_Event_Rejection(EventRejectReason::SuperWeaponOutOfRange, Type, ID, Data.Special.ID);
+		return;
+	}
+	house->Place_Special_Blast((SuperWeaponType)Data.Special.ID, cell);
+}
+
+
+void EventClass::Execute_EXIT(void)
+{
+	PlayerAborts = true;
+}
+
+
+void EventClass::Execute_OPTIONS(void)
+{
+	if (!Session.Play) {
+		SpecialDialog = SDLG_OPTIONS;
+	}
+}
+
+
+void EventClass::Execute_GAMESPEED(void)
+{
+	if (!NetSemantic::Game_Speed_Is_Valid(Data.General.Value)) {
+		Log_Event_Rejection(EventRejectReason::InvalidGameSpeed, Type, ID, Data.General.Value);
+		return;
+	}
+	Options.GameSpeed = Data.General.Value;
+	Announce_Setting_Change(TXT_PLAYER_CHANGED_SPEED);
+}
+
+
+void EventClass::Execute_RESPONSE_TIME(void)
+{
+	int const master = Session.Master_Player_ID();
+	if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
+		Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
+		return;
+	}
+	if (!NetSemantic::Response_Time_Is_Valid(Data.FrameInfo.Delay, NETWORK_MIN_MAX_AHEAD, Session.FrameSendRate,
+		Session.CommProtocol == COMM_PROTOCOL_MULTI_E_COMP)) {
+		Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.FrameInfo.Delay);
+		return;
+	}
+	Session.Apply_Network_Response_Time(Data.FrameInfo.Delay, Frame >= 0 ? static_cast<unsigned int>(Frame) : 0u);
+}
+
+
+void EventClass::Execute_SAVEGAME(void)
+{
+	SaveManager.Request_Multiplayer_Save(Fetch_String(TXT_MULTIPLAYER_GAME), false,
+		SaveManagerClass::NoticeType::Requested);
+}
+
+
+// Every machine but the sender's owns a copy of the joining player's data.
+void EventClass::Execute_ADDPLAYER(void)
+{
+	if (ID != PlayerPtr->HeapID) {
+		delete [] Data.Variable.Pointer;
+	}
+}
+
+
+/// <summary>
+/// Records one player's report that another has left. The reported player is removed once
+/// more than half of the other remaining players have reported it.
+/// </summary>
+void EventClass::Execute_REMOVEPLAYER(void)
+{
+	HouseClass * house = Houses[ID];
+	int const index = Data.General.Value;
+	if (!NetSemantic::Index_Is_Valid(index, Houses.Count()) || Houses[index] == NULL) {
+		Log_Event_Rejection(EventRejectReason::InvalidRemovedHouse, Type, ID, index);
+		return;
+	}
+	HouseClass * target = Houses[index];
+	if (!target->Is_Human_Player() || RemovedPlayers[target] || target == house) {
+		return;
+	}
+
+	// The reported player ignores a sender it is still connected to, so a forged report puts
+	// this machine out of sync instead of removing it.
+	if (!Session.Play && target == PlayerPtr && Ipx.Connection_Index(ID) != -1) {
+		Log_Event_Rejection(EventRejectReason::LiveRemoval, Type, ID, index);
+		return;
+	}
+
+	DebugString("Executing REMOVEPLAYER event from player %d for player %d. Frame is %d\n", ID, index, ::Frame);
+	RemovalReports[House_Slot(target)].Set(house);
+	Resolve_Removal_Reports(Frame);
+}
+
+
+void EventClass::Execute_LATENCYFUDGE(void)
+{
+	if (!NetSemantic::Latency_Fudge_Is_Valid(Data.General.Value)) {
+		Log_Event_Rejection(EventRejectReason::InvalidLatencyFudge, Type, ID, Data.General.Value);
+		return;
+	}
+	DebugString("Executing LATENCYFUDGE event. Frame is %d\n", ::Frame);
+	Session.LatencyFudge = Data.General.Value;
+	DebugString("LatencyFudge is %d\n", Session.LatencyFudge);
+	Announce_Setting_Change(TXT_PLAYER_CHANGED_LATENCY);
+}
+
+
+/// <summary>
+/// Schedules new frame rate, send period and look-ahead values from the master. Only the
+/// compressed protocol sends this event.
+/// </summary>
+void EventClass::Execute_TIMING(void)
+{
+	HouseClass * house = Houses[ID];
+	int const master = Session.Master_Player_ID();
+	if (!Session.Play && !NetSemantic::Timing_Authority_Is_Valid(ID, master)) {
+		Log_Event_Rejection(EventRejectReason::UnauthorizedTiming, Type, ID, master);
+		return;
+	}
+
+	if (Session.CommProtocol != COMM_PROTOCOL_MULTI_E_COMP || Frame < 0) {
+		Log_Event_Rejection(EventRejectReason::InvalidTimingArithmetic, Type, ID, Frame);
+		return;
+	}
+	if (!NetSemantic::Timing_Values_Are_Valid(Data.Timing.DesiredFrameRate, Data.Timing.MaxAhead, Data.Timing.FrameSendRate)) {
+		Log_Event_Rejection(EventRejectReason::InvalidTimingValues, Type, ID, Data.Timing.MaxAhead);
+		return;
+	}
+
+	NetTiming::TimingSettings const settings{Data.Timing.FrameSendRate, Data.Timing.MaxAhead};
+	NetTiming::ConnectionQuality const old_quality = NetTiming::Connection_Quality_For_Settings(Session.Network_Timing_Target());
+	unsigned int const old_frame_send_rate = Session.FrameSendRate;
+	unsigned int const old_max_ahead = Session.MaxAhead;
+
+	if (settings.MaxAhead > old_max_ahead || settings.FrameSendRate > old_frame_send_rate) {
+		std::uint64_t const boundary = settings.FrameSendRate * ((static_cast<std::uint64_t>(Frame) + NetTiming::MAXIMUM_MAX_AHEAD
+			+ settings.FrameSendRate - 1) / settings.FrameSendRate);
+		if (boundary > static_cast<std::uint64_t>((std::numeric_limits<int>::max)())) {
+			Log_Event_Rejection(EventRejectReason::InvalidTimingArithmetic, Type, ID, Frame);
+			return;
+		}
+	}
+
+	NetTiming::ScheduleResult const result = Session.Schedule_Network_Timing(settings, Data.Timing.DesiredFrameRate, static_cast<unsigned int>(Frame));
+	if (result == NetTiming::ScheduleResult::Rejected) {
+		Log_Event_Rejection(EventRejectReason::UnschedulableTiming, Type, ID, static_cast<int>(settings.MaxAhead));
+		return;
+	}
+
+	DebugString("Network timing event at frame %d from player %d: %u/%u at %u fps %s\n", Frame, ID, settings.FrameSendRate, settings.MaxAhead,
+		Data.Timing.DesiredFrameRate, result == NetTiming::ScheduleResult::Applied ? "applied" : "staged");
+	NetTiming::ConnectionQuality const quality = NetTiming::Connection_Quality_For_Settings(settings);
+	if (quality != old_quality) {
+		char const * format = Fetch_String(TXT_CONNECTION_QUALITY_STATUS);
+		char const * quality_name = Fetch_String(Network_Quality_Text_ID(quality));
+		if (format != NULL && quality_name != NULL && format[0] != '\0' && quality_name[0] != '\0') {
+			char msg[256];
+			snprintf(msg, sizeof(msg), format, quality_name);
+			Session.Messages.Add_Message(NULL, 0, msg, house->Scheme,
+				TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
+		}
+	}
+
+#if (TIMING_FIX)
+	//
+	// If MaxAhead is about to increase, we're vulnerable to a Packet-
+	// Received-Too-Late error, if any system generates an event after
+	// this TIMING event, but before it executes.  So, record the
+	// period of vulnerability's frame start & end values, so we
+	// can reschedule these events to execute after it's over.
+	//
+	if (result == NetTiming::ScheduleResult::Applied && (Session.MaxAhead > old_max_ahead || Session.FrameSendRate > old_frame_send_rate)) {
+		std::uint64_t const boundary = Session.FrameSendRate * ((static_cast<std::uint64_t>(Frame) + Session.MaxAhead
+			+ Session.FrameSendRate - 1) / Session.FrameSendRate);
+		NewMaxAheadFrame1 = Frame;
+		NewMaxAheadFrame2 = static_cast<int>(boundary);
+	} else {
+		NewMaxAheadFrame1 = 0;
+		NewMaxAheadFrame2 = 0;
+	}
+#endif
+}
+
+
+void EventClass::Execute_PROCESS_TIME(void)
+{
+	for (int i = 0; i < Session.Players.Count(); i++) {
+		if (ID == Session.Players[i]->Player.ID) {
+			Session.Players[i]->Player.ProcessTime = Data.ProcessTime.AverageTicks;
+			break;
+		}
+	}
+}
+
+
+void EventClass::Execute_NETWORK_REPORT(void)
+{
+	// A recording started without a roster has nobody to attribute reports to.
+	if ((Session.CommProtocol != COMM_PROTOCOL_MULTI_E_COMP || Frame < 0
+		|| !Session.Record_Network_Report(ID, Data.NetworkReport.AverageProcessMilliseconds,
+			Data.NetworkReport.WorstRoundTripMilliseconds, Data.NetworkReport.StallMilliseconds, static_cast<unsigned int>(Frame)))
+		&& !Session.Play) {
+		Log_Event_Rejection(EventRejectReason::InvalidNetworkReport, Type, ID, Data.NetworkReport.WorstRoundTripMilliseconds);
+	} else if (!Session.Play) {
+		DebugString("Network report at frame %d from player %d: process %u ms, RTT %d ms, longest wait %u ms\n", Frame, ID,
+			(unsigned int)Data.NetworkReport.AverageProcessMilliseconds,
+			Data.NetworkReport.WorstRoundTripMilliseconds == NETWORK_RTT_UNAVAILABLE ? -1 : (int)Data.NetworkReport.WorstRoundTripMilliseconds,
+			(unsigned int)Data.NetworkReport.StallMilliseconds);
+	}
+}
+
+
+// Tells the other players that the sender changed a setting that affects everyone.
+void EventClass::Announce_Setting_Change(int text) const
+{
+	HouseClass * house = Houses[ID];
+	if (house == PlayerPtr) {
+		return;
+	}
+
+	char const * str = Fetch_String(text);
+	if (str != NULL && strlen(str) != 0) {
+		char msg[256];
+		sprintf(msg, str, Session.Shown_Name(house).c_str());
+		Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
+	}
 }

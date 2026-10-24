@@ -284,5 +284,42 @@ class EventClass
 
 		static unsigned char EventLength[LAST_EVENT];
 		static char const * EventNames[LAST_EVENT];
+
+	private:
+		bool Is_Admitted(void) const;
+		TechnoClass * Subject(bool & requires_ownership) const;
+		void Announce_Setting_Change(int text) const;
+
+		void Execute_POWER(void);
+		void Execute_ARCHIVE(void);
+		void Execute_ALLY(void);
+		void Execute_DESTRUCT(void);
+		void Execute_SPECIAL(void);
+		void Execute_REPAIR(void);
+		void Execute_SELL(void);
+		void Execute_SELLCELL(void);
+		void Execute_ANIMATION(void);
+		void Execute_PLACE(void);
+		void Execute_PRODUCE(void);
+		void Execute_SUSPEND(void);
+		void Execute_ABANDON(void);
+		void Execute_ABANDON_COUNT(void);
+		void Execute_PRIMARY(void);
+		void Execute_MEGAMISSION(void);
+		void Execute_IDLE(void);
+		void Execute_DEPLOY(void);
+		void Execute_SCATTER(void);
+		void Execute_SPECIAL_PLACE(void);
+		void Execute_EXIT(void);
+		void Execute_OPTIONS(void);
+		void Execute_GAMESPEED(void);
+		void Execute_RESPONSE_TIME(void);
+		void Execute_SAVEGAME(void);
+		void Execute_ADDPLAYER(void);
+		void Execute_REMOVEPLAYER(void);
+		void Execute_LATENCYFUDGE(void);
+		void Execute_TIMING(void);
+		void Execute_PROCESS_TIME(void);
+		void Execute_NETWORK_REPORT(void);
 };
 #pragma pack(pop)
