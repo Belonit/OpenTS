@@ -244,8 +244,9 @@ UIShellHostClass & UI_Engine_Host(void)
 
 
 /// <summary>
-/// Services the game once while a modal screen is up. A network match keeps running its game
-/// loop under the screen, so it stays in step with the other players; otherwise only the
+/// Services the game once while a modal screen is up. A network match in play keeps running
+/// its game loop under the screen, so it stays in step with the other players. Before play
+/// starts, as during a refused launch or a failed load, and in other games, only the
 /// maintenance callback runs.
 /// </summary>
 /// <returns>True once the match has ended, which closes the screen.</returns>
@@ -255,7 +256,7 @@ bool UI_Service_Game(void)
 
 	Windows_Message_Handler();
 
-	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH && !Session.NetOpen && !Session.Suspended) {
+	if (GameLoopActive && Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH && !Session.NetOpen && !Session.Suspended) {
 		if (!inmainloop) {
 			inmainloop = true;
 			bool ended = Main_Loop();

@@ -408,6 +408,8 @@ void Main_Game(int argc, char * argv[])
 		SpecialDialog = SDLG_NONE;
 		_special_dialog_flag = true;
 
+		GameLoopActive = true;
+
 #ifdef _DEBUG
 		/*
 		**	Scenario-editor version of main-loop processing
@@ -452,6 +454,8 @@ void Main_Game(int argc, char * argv[])
 			Ingame_Menu_Dialog();
 		}
 #endif
+		GameLoopActive = false;
+
 		Stop_Ingame_Movie();
 		IonStormClass::Stop_Audio();
 

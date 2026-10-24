@@ -332,6 +332,10 @@ int BuildLevel = MPLAYER_BUILD_LEVEL_MAX;		// Buildable level (1 = simplest)
 */
 bool GameActive;
 
+// True only while Main_Game runs a scenario's game loop; a screen shown outside it advances
+// no frames.
+bool GameLoopActive = false;
+
 
 /***************************************************************************
 **	This is a scratch variable that is used to when a reference is needed to
