@@ -145,7 +145,7 @@ const indexContracts = [
 		['Hotkey commands bound through', 'KEYBOARD.INI', 'data-command-index', 'Filter commands', 'Player commands', 'Debug only'],
 		['invented default', 'Rebindable command', 'Launch option', 'Command line option', 'command line options accepted', 'Fixed control']],
 	['commands/fixed-controls/index.html',
-		['Controls with hardcoded keys', 'data-command-index', 'Filter controls', 'ots-breadcrumb', 'Map zoom', 'Debug only'],
+		['Controls with hardcoded keys', 'data-command-index', 'Filter controls', 'ots-breadcrumb', 'Options menu', 'Debug only'],
 		['All types', 'Filter commands', 'Hotkey command', 'Command line option', 'fixed:']],
 	['using/command-line/index.html',
 		['Options accepted on the command line.', 'data-command-index', 'Filter options', 'ots-breadcrumb', 'Command-line help', 'Windowed mode', 'Debug only'],
