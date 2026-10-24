@@ -259,6 +259,12 @@ test('Every name a match shows passes through the session', () => {
 	];
 	const named = new RegExp(String.raw`\b(?:${naming.join('|')})\b`, 'g');
 
+	// A string handed to one of these is formatted inside it, so the helper's body is checked instead.
+	const formatters = [
+		['code/event.cpp', 'void EventClass::Announce_Setting_Change(int text) const'],
+	];
+	const handed = new RegExp(String.raw`\b(?:${formatters.map(([, signature]) => signature.match(/(\w+)\(/)[1]).join('|')})\(`);
+
 	// The lobby dialogs come before a match, and a launch file never opens them.
 	const lobby = new Set(['netdlg2.cpp', 'skirmish.cpp']);
 	const files = readdirSync(resolve(repository, 'code')).filter((name) => name.endsWith('.cpp') && !lobby.has(name));
@@ -272,6 +278,11 @@ test('Every name a match shows passes through the session', () => {
 				text.lastIndexOf('{', match.index),
 				text.lastIndexOf('}', match.index),
 			) + 1;
+
+			if (handed.test(text.slice(start, text.indexOf(';', match.index)))) {
+				formats++;
+				continue;
+			}
 
 			// A string fetched in one statement is formatted in a later one.
 			let end = text.indexOf(';', match.index);
@@ -290,6 +301,14 @@ test('Every name a match shows passes through the session', () => {
 		}
 	}
 	assert.ok(formats >= 17, `expected the names in every match message to be found, found ${formats}`);
+
+	for (const [path, signature] of formatters) {
+		const body = functionBody(source(path), signature);
+		assert.ok(
+			body.split(';').some((statement) => statement.includes('printf(') && shown.test(statement)),
+			`${signature} in ${path} formats a name that does not pass through the session`,
+		);
+	}
 
 	// These draw or keep a name without a string of their own.
 	const draws = [
