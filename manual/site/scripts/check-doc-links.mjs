@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,6 +24,7 @@ const roots = rootOption >= 0 ? ['.'] : [
 	'manual/site/src/content/docs',
 ];
 
+const isMarkdown = (path) => ['.md', '.mdx'].includes(extname(path).toLowerCase());
 const markdownFiles = [];
 function collect(path) {
 	if (!existsSync(path)) return;
@@ -30,12 +32,40 @@ function collect(path) {
 		for (const name of readdirSync(path).sort()) collect(resolve(path, name));
 		return;
 	}
-	if (['.md', '.mdx'].includes(extname(path).toLowerCase())) markdownFiles.push(path);
+	if (isMarkdown(path)) markdownFiles.push(path);
 }
-for (const root of roots) collect(resolve(repository, root));
+
+// Files git ignores never reach a checkout, so the repository check skips them.
+function gitVisibleMarkdown() {
+	const listing = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', ...roots], {
+		cwd: repository,
+		encoding: 'utf8',
+		maxBuffer: 64 * 1024 * 1024,
+	});
+	if (listing.status !== 0) return null;
+	return [...new Set(listing.stdout.split('\0'))]
+		.filter((path) => path && isMarkdown(path))
+		.map((path) => resolve(repository, path))
+		.filter((path) => existsSync(path))
+		.sort();
+}
+
+const visible = rootOption >= 0 ? null : gitVisibleMarkdown();
+if (visible) markdownFiles.push(...visible);
+else for (const root of roots) collect(resolve(repository, root));
 
 const displayPath = (path) => relative(repository, path).split(sep).join('/');
 const failures = [];
+
+const directoryNames = new Map();
+function namesIn(directory) {
+	let names = directoryNames.get(directory);
+	if (!names) {
+		names = readdirSync(directory);
+		directoryNames.set(directory, names);
+	}
+	return names;
+}
 
 function exactCaseFailure(path) {
 	const local = relative(repository, path);
@@ -44,7 +74,7 @@ function exactCaseFailure(path) {
 	}
 	let cursor = repository;
 	for (const part of local.split(sep).filter(Boolean)) {
-		const names = readdirSync(cursor);
+		const names = namesIn(cursor);
 		if (!names.includes(part)) {
 			const actual = names.find((name) => name.toLowerCase() === part.toLowerCase());
 			return actual ? `path case is ${JSON.stringify(actual)}, not ${JSON.stringify(part)}` : null;
