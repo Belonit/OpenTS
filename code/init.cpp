@@ -3453,6 +3453,36 @@ class CenterBaseCommandClass : public CommandClass
 };
 
 
+/// <summary>
+/// Queues a change of the local player's alliance with the given house when the player may
+/// change it. The change allies an enemy, or ends an alliance on both sides.
+/// </summary>
+/// <returns>bool; Was the change queued?</returns>
+bool Request_Alliance_Toggle(HouseClass const * house)
+{
+	if (PlayerPtr == NULL || house == NULL || !PlayerPtr->Can_Change_Alliance(house)) {
+		return(false);
+	}
+	OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ALLY, house->HeapID));
+	return(true);
+}
+
+
+/// <summary>
+/// Queues a grant of shared control to the given house, or the withdrawal of one, when the
+/// local player may grant it control.
+/// </summary>
+/// <returns>bool; Was the change queued?</returns>
+bool Request_Control_Grant_Toggle(HouseClass const * house)
+{
+	if (PlayerPtr == NULL || house == NULL || !PlayerPtr->Can_Grant_Control(house)) {
+		return(false);
+	}
+	OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::GRANT_CONTROL, house->HeapID));
+	return(true);
+}
+
+
 class AllianceCommandClass : public CommandClass
 {
 	public:
@@ -3470,8 +3500,8 @@ class AllianceCommandClass : public CommandClass
 		}
 
 		virtual void Execute(void) const {
-			if (CurrentObject.Count() && PlayerPtr->Can_Change_Alliance(CurrentObject[0]->Owner_HouseClass())) {
-				OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::ALLY, CurrentObject[0]->Owner()));
+			if (CurrentObject.Count()) {
+				Request_Alliance_Toggle(CurrentObject[0]->Owner_HouseClass());
 			}
 		}
 };
@@ -3494,8 +3524,8 @@ class GrantControlCommandClass : public CommandClass
 		}
 
 		virtual void Execute(void) const {
-			if (CurrentObject.Count() && PlayerPtr->Can_Grant_Control(CurrentObject[0]->Owner_HouseClass())) {
-				OutList.push_back(EventClass(PlayerPtr->HeapID, EventClass::GRANT_CONTROL, CurrentObject[0]->Owner()));
+			if (CurrentObject.Count()) {
+				Request_Control_Grant_Toggle(CurrentObject[0]->Owner_HouseClass());
 			}
 		}
 };

@@ -758,7 +758,7 @@ class HouseClass : public AbstractClass
 		*/
 		Cell Random_Cell_In_Zone(ZoneType zone) const;
 		static void Computer_Paranoid(void);
-		bool Is_Allowed_To_Ally(HouseClass * house) const;
+		bool Is_Allowed_To_Ally(HouseClass const * house) const;
 		bool Can_Change_Alliance(HouseClass const * house) const;
 		bool Can_Order_Production(TechnoTypeClass const * type) const;
 		bool Can_Sell_Wall(Cell const & cell) const;
@@ -768,6 +768,7 @@ class HouseClass : public AbstractClass
 		bool Is_Player_Commanded(void) const;
 		bool Toggle_Control_Grant(HouseClass const * house);
 		void End_Control_Grants(HouseClass * house);
+		int Total_Kills(void) const;
 		void Super_Weapon_Handler(void);
 		int * Factory_Counter(RTTIType rtti);
 		int Factory_Count(RTTIType rtti) const;

@@ -23,6 +23,7 @@ template<class T> class TRect;
 typedef TRect<int> Rect;
 class Surface;
 class ObjectClass;
+class HouseClass;
 
 bool Parse_Command_Line(int argc, char * argv[]);
 
@@ -36,6 +37,8 @@ bool Allocate_Surfaces(const Rect & hidden_rect, const Rect & composite_rect, co
 bool Init_Hotkeys(void);
 void Execute_Command(char const * name);
 void Reset_Selection_Filters(void);
+bool Request_Alliance_Toggle(HouseClass const * house);
+bool Request_Control_Grant_Toggle(HouseClass const * house);
 
 #define ATTRACT_MODE_TIMEOUT	TIMER_MINUTE
 

@@ -5855,7 +5855,7 @@ void HouseClass::All_To_Hunt(void)
  * HISTORY:                                                                                    *
  *   09/23/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool HouseClass::Is_Allowed_To_Ally(HouseClass * house) const
+bool HouseClass::Is_Allowed_To_Ally(HouseClass const * house) const
 {
 	if (house != NULL) {
 		/*
@@ -9374,6 +9374,22 @@ void HouseClass::End_Control_Grants(HouseClass * house)
 	}
 	ControlGrantees.Clear(house);
 	house->ControlGrantees.Clear(this);
+}
+
+
+/// <summary>
+/// Returns the number of units and buildings this house has destroyed, counting every owner.
+/// </summary>
+int HouseClass::Total_Kills(void) const
+{
+	int kills = 0;
+	for (int i = 0; i < ARRAY_SIZE(UnitsKilled); i++) {
+		kills += UnitsKilled[i];
+	}
+	for (int i = 0; i < ARRAY_SIZE(BuildingsKilled); i++) {
+		kills += BuildingsKilled[i];
+	}
+	return(kills);
 }
 
 

@@ -350,7 +350,6 @@ void MultiScore::Tally_Score(void)
 	HouseClass * hptr;
 	HouseClass * hptr2;
 	int score_index;
-	int i;
 
 	Session.NumScores = 0;
 
@@ -440,15 +439,9 @@ void MultiScore::Tally_Score(void)
 		/*
 		**	Tally up all kills for this player
 		*/
-		int kills = 0;
+		int const kills = hptr->Total_Kills();
 		int losses = 0;
 
-		for (i = 0; i < ARRAY_SIZE(hptr->UnitsKilled); i++) {
-			kills += hptr->UnitsKilled[i];
-		}
-		for (i = 0; i < ARRAY_SIZE(hptr->BuildingsKilled); i++) {
-			kills += hptr->BuildingsKilled[i];
-		}
 		Session.Score[score_index].Kills[0] = kills;
 
 		losses += hptr->UnitsLost;
