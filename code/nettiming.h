@@ -154,6 +154,26 @@ namespace NetTiming
 			std::array<PlayerReport, MAX_TIMING_PLAYERS> Reports = {};
 	};
 
+	constexpr unsigned int WAIT_WINDOW_SECONDS = 30;
+
+	// Time this machine spent waiting on each player over the last WAIT_WINDOW_SECONDS.
+	class WaitLedger
+	{
+		public:
+			void Reset(void);
+			void Add(unsigned int player, Milliseconds waited, Milliseconds now);
+			Milliseconds Recent(unsigned int player, Milliseconds now) const;
+
+		private:
+			struct Bucket {
+				bool Used = false;
+				Milliseconds Second = 0;
+				Milliseconds Waited = 0;
+			};
+
+			std::array<std::array<Bucket, WAIT_WINDOW_SECONDS>, MAX_TIMING_PLAYERS> Buckets = {};
+	};
+
 	unsigned int Game_Speed_Frame_Rate(int game_speed);
 	unsigned int Solo_Game_Speed_Frame_Rate(int game_speed);
 

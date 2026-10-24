@@ -941,6 +941,37 @@ namespace
 	}
 
 
+	void Test_Wait_Ledger(void)
+	{
+		using namespace NetTiming;
+
+		WaitLedger ledger;
+		Expect_Equal("a new ledger has no waits", ledger.Recent(1, 5000), 0u);
+
+		ledger.Add(1, 300, 10000);
+		ledger.Add(1, 200, 10999);
+		ledger.Add(2, 50, 10500);
+		Expect_Equal("waits in one second add up", ledger.Recent(1, 11000), 500u);
+		Expect_Equal("players are kept apart", ledger.Recent(2, 11000), 50u);
+
+		ledger.Add(1, 400, 25000);
+		Expect_Equal("waits across seconds add up", ledger.Recent(1, 25000), 900u);
+		Expect_Equal("a wait still counts in the last second of the window", ledger.Recent(1, 39999), 900u);
+		Expect_Equal("a wait leaves the window after thirty seconds", ledger.Recent(1, 40000), 400u);
+		Expect_Equal("the newest wait leaves last", ledger.Recent(1, 55000), 0u);
+
+		ledger.Add(1, 100, 70000);
+		Expect_Equal("a reused bucket drops its old second", ledger.Recent(1, 70000), 100u);
+
+		ledger.Add(MAX_TIMING_PLAYERS, 100, 70000);
+		ledger.Add(static_cast<unsigned int>(-1), 100, 70000);
+		Expect_Equal("an out-of-range player reads as no wait", ledger.Recent(MAX_TIMING_PLAYERS, 70000), 0u);
+
+		ledger.Reset();
+		Expect_Equal("reset clears every player", ledger.Recent(1, 70000) + ledger.Recent(2, 70000), 0u);
+	}
+
+
 	void Test_Master_Handoff_State(void)
 	{
 		using namespace NetTiming;
@@ -1342,6 +1373,7 @@ int main(void)
 	Test_Hysteresis_And_Cooldown();
 	Test_Stale_And_Long_Term_Recovery();
 	Test_Stall_Feedback();
+	Test_Wait_Ledger();
 	Test_Master_Handoff_State();
 	Test_Staged_Decrease();
 	Test_Transition_Sequences();

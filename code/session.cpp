@@ -526,6 +526,7 @@ void SessionClass::Reset_Network_Timing(unsigned int frame)
 		MaxMaxAhead = MaxAhead;
 	}
 	NetworkTimingReports.Reset();
+	WaitedOn.Reset();
 	NetworkTimingPolicy.Reset(frame);
 	PendingNetworkTiming.reset();
 	NetworkTimingPolicyOwner = -1;

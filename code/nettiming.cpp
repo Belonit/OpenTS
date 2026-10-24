@@ -380,6 +380,48 @@ namespace NetTiming
 	}
 
 
+	void WaitLedger::Reset(void)
+	{
+		Buckets = {};
+	}
+
+
+	/// <summary>Records a wait on the player at the given time; an out-of-range player is ignored.</summary>
+	void WaitLedger::Add(unsigned int player, Milliseconds waited, Milliseconds now)
+	{
+		if (player >= Buckets.size() || waited == 0) {
+			return;
+		}
+
+		Milliseconds const second = now / 1000;
+		Bucket & bucket = Buckets[player][second % WAIT_WINDOW_SECONDS];
+		if (!bucket.Used || bucket.Second != second) {
+			bucket = {};
+			bucket.Used = true;
+			bucket.Second = second;
+		}
+		bucket.Waited += waited;
+	}
+
+
+	/// <summary>Returns the time waited on the player in the whole seconds of the window ending at the given time.</summary>
+	Milliseconds WaitLedger::Recent(unsigned int player, Milliseconds now) const
+	{
+		if (player >= Buckets.size()) {
+			return(0);
+		}
+
+		Milliseconds const second = now / 1000;
+		Milliseconds total = 0;
+		for (Bucket const & bucket : Buckets[player]) {
+			if (bucket.Used && second - bucket.Second < WAIT_WINDOW_SECONDS) {
+				total += bucket.Waited;
+			}
+		}
+		return(total);
+	}
+
+
 	/// <summary>The network frame rate for a game speed, 0 fastest to 6 slowest; others get 60.</summary>
 	unsigned int Game_Speed_Frame_Rate(int game_speed)
 	{

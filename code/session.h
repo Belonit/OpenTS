@@ -650,6 +650,8 @@ class SessionClass
 		// Longest single wait for other players, in ticks. A report covers this interval and the previous one.
 		int			WorstStallTicks;
 		int			PreviousWorstStallTicks;
+		// Local only, for display: never saved, sent or used by the match.
+		NetTiming::WaitLedger WaitedOn;
 
 		/*
 		 * This is the largest MaxAhead the game has run at, since the value only ever grows.

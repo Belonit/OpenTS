@@ -284,6 +284,7 @@ static int LastExecutedFrame = -1;
 
 // How often a frame packet asks for an acknowledgement while a link is still unmeasured.
 constexpr int ROUND_TRIP_PROBE_FRAMES = 32;
+constexpr NetTiming::Milliseconds WAITED_ON_MINIMUM = 100;
 static int LastRoundTripProbeFrame = -ROUND_TRIP_PROBE_FRAMES;
 
 static std::array<unsigned int, static_cast<std::size_t>(NetPacket::DecodeError::COUNT)>
@@ -1189,6 +1190,9 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 	 */
 	bool stall_drawn = false;			/// true = the current stall has been recorded
 	int loop_count;						/// # of times through the wait loop
+	NetTiming::Milliseconds const wait_start = NetTiming::Default_Clock().Now();
+	NetTiming::Milliseconds wait_stamp = wait_start;
+	std::array<NetTiming::Milliseconds, NetTiming::MAX_TIMING_PLAYERS> waited_on = {};
 
 	//........................................................................
 	// Timing variables
@@ -1422,6 +1426,22 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 				break;
 			}
 
+			NetTiming::Milliseconds const now = NetTiming::Default_Clock().Now();
+			NetTiming::Milliseconds const waited = NetTiming::Elapsed_Milliseconds(wait_stamp, now);
+			wait_stamp = now;
+			if (frame_stall != -1) {
+				unsigned int const id = static_cast<unsigned int>(net->Connection_ID(frame_stall));
+				if (id < waited_on.size()) {
+					waited_on[id] += waited;
+				}
+			}
+			if (count_stall != -1 && count_stall != frame_stall) {
+				unsigned int const id = static_cast<unsigned int>(net->Connection_ID(count_stall));
+				if (id < waited_on.size()) {
+					waited_on[id] += waited;
+				}
+			}
+
 			/*
 			 * ..................................................................
 			 * Record (and optionally display) who's stalling the game.
@@ -1475,6 +1495,15 @@ static RetcodeType Wait_For_Players(int first_time, ConnManClass *net,
 
 	if (!first_time && (int)timer > Session.WorstStallTicks) {
 		Session.WorstStallTicks = (int)timer;
+	}
+
+	// Short waits are the ordinary pacing between machines; only a hold-up long enough to notice
+	// counts against the players it waited on.
+	NetTiming::Milliseconds const wait_end = NetTiming::Default_Clock().Now();
+	if (!first_time && NetTiming::Milliseconds_Have_Elapsed(wait_start, wait_end, WAITED_ON_MINIMUM)) {
+		for (unsigned int id = 0; id < waited_on.size(); id++) {
+			Session.WaitedOn.Add(id, waited_on[id], wait_end);
+		}
 	}
 	if (reconnect_dlg) {
 		Close_Reconnect_Dialog();

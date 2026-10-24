@@ -231,6 +231,7 @@ class IPXManagerClass : public ConnManClass
 		.....................................................................*/
 		virtual unsigned int Response_Time(void) override;
 		virtual std::optional<NetTiming::Milliseconds> Worst_Local_Round_Trip_MS(void) const override;
+		virtual std::optional<NetTiming::Milliseconds> Round_Trip_MS(int id) const override;
 		unsigned int Global_Response_Time(void);
 		virtual void Reset_Response_Time(bool zero) override;
 

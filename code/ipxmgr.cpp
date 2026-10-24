@@ -1328,6 +1328,19 @@ std::optional<NetTiming::Milliseconds> IPXManagerClass::Worst_Local_Round_Trip_M
 }
 
 
+/// <summary>Returns the smoothed round trip to the given player, or nothing when the player has no link or it is unmeasured.</summary>
+std::optional<NetTiming::Milliseconds> IPXManagerClass::Round_Trip_MS(int id) const
+{
+	for (int i = 0; i < NumConnections; i++) {
+		if (Connection[i]->ID == id) {
+			return(Connection[i]->Smoothed_Round_Trip_MS());
+		}
+	}
+
+	return(std::nullopt);
+}
+
+
 /// <summary>
 /// Fetches the average response time of a single connection.
 /// This routine is used by the network queue logic to pace itself against the slowest
