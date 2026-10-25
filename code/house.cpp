@@ -6406,23 +6406,13 @@ void HouseClass::Tracking_Active_Add(TechnoClass * techno, bool bycapture)
 }
 
 
-/***********************************************************************************************
- * HouseClass::As_Pointer -- Converts a house number into a house object pointer.              *
- *                                                                                             *
- *    Use this routine to convert a house number into the house pointer that it represents.    *
- *    A simple index into the Houses template array is not sufficient, since the array order   *
- *    is arbitrary. An actual scan through the house object is required in order to find the   *
- *    house object desired.                                                                    *
- *                                                                                             *
- * INPUT:   house -- The house type number to look up.                                         *
- *                                                                                             *
- * OUTPUT:  Returns with a pointer to the house object that the house number represents.       *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/23/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// Fetches the house playing a country, or the house at the start position a spawn house
+/// names.
+/// </summary>
+/// <param name="house">The country or spawn house to look up.</param>
+/// <returns>The first house playing that country, or NULL when nobody does. An observer plays
+/// no country, so it never receives what a scenario or trigger gives one.</returns>
 HouseClass * House_From_HousesType(HousesType house)
 {
 	int spawn_waypoint = Spawn_House_Waypoint(house);
@@ -6432,7 +6422,7 @@ HouseClass * House_From_HousesType(HousesType house)
 
 	for (int index = 0; index < Houses.Count(); index++) {
 		HouseClass * housep = Houses[index];
-		if (housep->Class->House == house) {
+		if (housep->Class->House == house && !housep->IsObserver) {
 			return(housep);
 		}
 	}

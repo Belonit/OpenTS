@@ -36,7 +36,7 @@ credit:
 - dkeeton
 ---
 
-A seat listed under `[IsSpectator]` in `spawn.ini` watches the match without playing. The observer's house starts defeated with nothing on the map, sees the whole map with the radar up, and sees every house's cloaked and underground objects, pips and rank insignia as their owners do. Its credit readout shows the match time, it can message only everyone or the other observers, and it is left out of the score screen, the radar pane's name list and the statistics report.
+A seat listed under `[IsSpectator]` in `spawn.ini` watches the match without playing. The observer's house starts defeated with nothing on the map, even when the map gives objects to the observer's country, and sees the whole map with the radar up, and sees every house's cloaked and underground objects, pips and rank insignia as their owners do. Its credit readout shows the match time, it can message only everyone or the other observers, and it is left out of the score screen, the radar pane's name list and the statistics report.
 
 A defeated player now sees the whole map as an observer does. The fog is lifted and kept from growing back, and every house's cloaked and underground objects, pips and rank insignia are shown.
 
