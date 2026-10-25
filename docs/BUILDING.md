@@ -69,6 +69,13 @@ rendering, GPU, camera, joystick, haptic, HIDAPI, sensor, power, dialog, and
 tray subsystems are left out, along with its OpenGL, OpenGL ES, and Vulkan
 support.
 
+Test harnesses can use [doctest](https://github.com/doctest/doctest), vendored
+through `thirdparty/doctest` at a tested tag and linked only into the
+harnesses, never into the game. A harness registered with `DOCTEST` in
+`opents_add_test` appears in CTest as one test per case, named
+`<harness>.<case>`, such as `audiohandle.the index is masked`. Its executable
+runs a single case with `-tc="<case>"`, and `*` matches any text.
+
 For a fresh clone, use `git clone --recurse-submodules`. Configuration stops
 with instructions if a submodule is missing. Update a pinned tag in a
 separate change.

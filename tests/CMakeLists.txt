@@ -2,15 +2,67 @@
 # runs. Set before the subdirectories so every target below inherits it.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/test-bin")
 
+if(NOT EXISTS "${CMAKE_SOURCE_DIR}/thirdparty/doctest/doctest/doctest.h")
+    message(FATAL_ERROR
+        "thirdparty/doctest is empty. Fetch the submodules with:\n"
+        "  git submodule update --init --recursive")
+endif()
+
+# The option spellings are MSVC's, so a target built by another compiler takes its defaults
+# instead.
+function(opents_test_compile_options target)
+    target_compile_features(${target} PRIVATE cxx_std_20)
+    target_compile_options(${target} PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:$<$<CONFIG:Debug>:/MTd>>
+        $<$<CXX_COMPILER_ID:MSVC>:$<$<CONFIG:Release>:/MT>>
+        $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
+        $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
+    )
+endfunction()
+
+# Every doctest harness links this entry point instead of compiling doctest's runner itself.
+add_library(OpenTSDoctestMain STATIC "${CMAKE_CURRENT_SOURCE_DIR}/doctestmain.cpp")
+target_include_directories(OpenTSDoctestMain PUBLIC "${CMAKE_SOURCE_DIR}/thirdparty/doctest")
+set_target_properties(OpenTSDoctestMain PROPERTIES FOLDER "Tests")
+opents_test_compile_options(OpenTSDoctestMain)
+
+# Registers each test case of a doctest harness as its own CTest test named <name>.<case>.
+# The build writes the case list once per configuration, so a build directory holding Debug
+# and Release runs the executable that `ctest -C` selects.
+function(opents_discover_doctest target name)
+    set(list_base "${CMAKE_CURRENT_BINARY_DIR}/${target}_tests")
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+            -D "TEST_EXECUTABLE=$<TARGET_FILE:${target}>"
+            -D "TEST_WORKING_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+            -D "TEST_PREFIX=${name}."
+            -D "TEST_LIST=${target}_TESTS"
+            -D "CTEST_FILE=${list_base}-$<CONFIG>.cmake"
+            -P "${CMAKE_SOURCE_DIR}/thirdparty/doctest/scripts/cmake/doctestAddTests.cmake"
+        VERBATIM
+    )
+
+    set(include_file "${CMAKE_CURRENT_BINARY_DIR}/${target}_include.cmake")
+    file(WRITE "${include_file}"
+        "if(EXISTS \"${list_base}-\${CTEST_CONFIGURATION_TYPE}.cmake\")\n"
+        "    include(\"${list_base}-\${CTEST_CONFIGURATION_TYPE}.cmake\")\n"
+        "else()\n"
+        "    add_test(${name}_NOT_BUILT ${name}_NOT_BUILT)\n"
+        "endif()\n"
+    )
+    set_property(DIRECTORY APPEND PROPERTY TEST_INCLUDE_FILES "${include_file}")
+endfunction()
+
 # Builds one test harness and registers it with CTest.
 #
 # A harness compiles the engine sources it exercises instead of linking the game, so ENGINE
 # names them per test, relative to code/. SOURCES are relative to the test's own directory.
 # FLOAT adds the float semantics the engine builds with, so a harness measuring numeric
 # results matches it. UTF8 is for a harness whose own source holds non-ASCII text. STAMP is
-# for a harness that reaches the generated version headers.
+# for a harness that reaches the generated version headers. DOCTEST is for a harness written
+# with doctest; CTest then lists each of its test cases separately.
 function(opents_add_test target)
-    cmake_parse_arguments(TEST "FLOAT;UTF8;STAMP" "NAME"
+    cmake_parse_arguments(TEST "FLOAT;UTF8;STAMP;DOCTEST" "NAME"
         "SOURCES;ENGINE;INCLUDES;DEFINITIONS;LIBRARIES" ${ARGN})
 
     set(sources "")
@@ -22,8 +74,8 @@ function(opents_add_test target)
     endforeach()
 
     add_executable(${target} ${sources})
-    target_compile_features(${target} PRIVATE cxx_std_20)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")
+    opents_test_compile_options(${target})
 
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/code"
@@ -34,14 +86,6 @@ function(opents_add_test target)
         target_compile_definitions(${target} PRIVATE ${TEST_DEFINITIONS})
     endif()
 
-    # The option spellings and the Win32 import libraries below are MSVC's, so a harness built
-    # by another compiler takes its defaults instead.
-    target_compile_options(${target} PRIVATE
-        $<$<CXX_COMPILER_ID:MSVC>:$<$<CONFIG:Debug>:/MTd>>
-        $<$<CXX_COMPILER_ID:MSVC>:$<$<CONFIG:Release>:/MT>>
-        $<$<CXX_COMPILER_ID:MSVC>:/EHsc>
-        $<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>
-    )
     if(TEST_UTF8)
         target_compile_options(${target} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
     endif()
@@ -64,7 +108,12 @@ function(opents_add_test target)
         add_dependencies(${target} OpenTSBuildStamp)
     endif()
 
-    add_test(NAME ${TEST_NAME} COMMAND ${target})
+    if(TEST_DOCTEST)
+        target_link_libraries(${target} PRIVATE OpenTSDoctestMain)
+        opents_discover_doctest(${target} ${TEST_NAME})
+    else()
+        add_test(NAME ${TEST_NAME} COMMAND ${target})
+    endif()
 endfunction()
 
 add_subdirectory(actionids)

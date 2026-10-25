@@ -13,85 +13,84 @@
 
 #include "audio/audiohandle.h"
 
-#include <cstdio>
-
-namespace {
-
-int Failures = 0;
-int Checked = 0;
+#include "doctest/doctest.h"
 
 
-void Check(bool condition, char const * what)
-{
-	Checked++;
-	if (!condition) {
-		Failures++;
-		std::printf("FAIL: %s\n", what);
-	}
-}
-
-
-void Test_Null(void)
+TEST_CASE("a default handle is null")
 {
 	AudioHandle handle;
-	Check(handle.Is_Null(), "default handle is null");
-	Check(handle.Raw() == 0, "null handle is raw zero");
-	Check(handle == AudioHandle(), "null handles compare equal");
-	Check(!AudioHandle::Make(0, 1).Is_Null(), "index 0 with generation 1 is not null");
-
-	AudioHandle made = AudioHandle::Make(5, 9);
-	made.Clear();
-	Check(made.Is_Null(), "clear makes a handle null");
+	CHECK(handle.Is_Null());
+	CHECK(handle.Raw() == 0u);
+	CHECK(handle == AudioHandle());
 }
 
 
-void Test_Round_Trip(void)
+TEST_CASE("index 0 with generation 1 is not null")
+{
+	CHECK_FALSE(AudioHandle::Make(0, 1).Is_Null());
+}
+
+
+TEST_CASE("clear makes a handle null")
+{
+	AudioHandle made = AudioHandle::Make(5, 9);
+	made.Clear();
+	CHECK(made.Is_Null());
+}
+
+
+TEST_CASE("index, generation, and raw value round-trip")
 {
 	for (unsigned index = 0; index <= AudioHandle::INDEX_MASK; index += 17) {
 		for (unsigned generation = 1; generation <= AudioHandle::GENERATION_MASK; generation += 100003) {
+			INFO("index ", index, ", generation ", generation);
 			AudioHandle handle = AudioHandle::Make(index, generation);
-			Check(handle.Index() == index, "index round-trips");
-			Check(handle.Generation() == generation, "generation round-trips");
-			Check((int)handle.Raw() >= 0, "raw value is non-negative as int");
-			Check(AudioHandle::From_Raw(handle.Raw()) == handle, "raw value round-trips");
+			CHECK(handle.Index() == index);
+			CHECK(handle.Generation() == generation);
+			CHECK_MESSAGE((int)handle.Raw() >= 0, "the raw value is non-negative as an int");
+			CHECK(AudioHandle::From_Raw(handle.Raw()) == handle);
 		}
 	}
-
-	AudioHandle top = AudioHandle::Make(AudioHandle::INDEX_MASK, AudioHandle::GENERATION_MASK);
-	Check(top.Index() == AudioHandle::INDEX_MASK && top.Generation() == AudioHandle::GENERATION_MASK, "extreme values round-trip");
-	Check((int)top.Raw() >= 0, "extreme value keeps bit 31 clear");
-
-	Check(AudioHandle::Make(3, 4) != AudioHandle::Make(3, 5), "different generations differ");
-	Check(AudioHandle::Make(3, 4) != AudioHandle::Make(4, 4), "different indices differ");
-	Check(AudioHandle::Make(300, 4) == AudioHandle::Make(300 & AudioHandle::INDEX_MASK, 4), "index is masked");
 }
 
 
-void Test_Generation(void)
+TEST_CASE("extreme values round-trip and keep bit 31 clear")
 {
-	Check(AudioHandle::Next_Generation(1) == 2, "generation advances");
-	Check(AudioHandle::Next_Generation(0) == 1, "generation leaves zero");
-	Check(AudioHandle::Next_Generation(AudioHandle::GENERATION_MASK) == 1, "generation wraps past zero");
-	Check(AudioHandle::Next_Generation(AudioHandle::GENERATION_MASK - 1) == AudioHandle::GENERATION_MASK, "generation reaches the top value");
+	AudioHandle top = AudioHandle::Make(AudioHandle::INDEX_MASK, AudioHandle::GENERATION_MASK);
+	CHECK(top.Index() == AudioHandle::INDEX_MASK);
+	CHECK(top.Generation() == AudioHandle::GENERATION_MASK);
+	CHECK((int)top.Raw() >= 0);
+}
 
-	// A slot handed out, recycled, and handed out again yields a different handle.
+
+TEST_CASE("handles differ by index and by generation")
+{
+	CHECK(AudioHandle::Make(3, 4) != AudioHandle::Make(3, 5));
+	CHECK(AudioHandle::Make(3, 4) != AudioHandle::Make(4, 4));
+}
+
+
+TEST_CASE("the index is masked")
+{
+	CHECK(AudioHandle::Make(300, 4) == AudioHandle::Make(300 & AudioHandle::INDEX_MASK, 4));
+}
+
+
+TEST_CASE("the generation advances, skips zero, and wraps")
+{
+	CHECK(AudioHandle::Next_Generation(1) == 2u);
+	CHECK(AudioHandle::Next_Generation(0) == 1u);
+	CHECK(AudioHandle::Next_Generation(AudioHandle::GENERATION_MASK) == 1u);
+	CHECK(AudioHandle::Next_Generation(AudioHandle::GENERATION_MASK - 1) == AudioHandle::GENERATION_MASK);
+}
+
+
+TEST_CASE("a reused slot yields a different handle with the same index")
+{
 	unsigned generation = 1;
 	AudioHandle first = AudioHandle::Make(7, generation);
 	generation = AudioHandle::Next_Generation(generation);
 	AudioHandle second = AudioHandle::Make(7, generation);
-	Check(first != second, "reused slot yields a different handle");
-	Check(first.Index() == second.Index(), "reused slot keeps its index");
-}
-
-} // namespace
-
-
-int main(void)
-{
-	Test_Null();
-	Test_Round_Trip();
-	Test_Generation();
-
-	std::printf("audiohandle: %d checks, %d failures\n", Checked, Failures);
-	return(Failures == 0 ? 0 : 1);
+	CHECK(first != second);
+	CHECK(first.Index() == second.Index());
 }
