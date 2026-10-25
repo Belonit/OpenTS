@@ -2286,17 +2286,10 @@ launch_options:
   route_id: capture-map
   kind: launch
   title: Map capture
-  description: Draws the map named as a PNG picture and exits, without showing a window, a console or
-    a dialog. Give the picture's file with -CAPTUREOUT=; without it the game exits at once. The picture
-    covers the map's LocalSize area as the game clamps it, 48 pixels per column and 24 pixels per row
-    plus 108, drawn as the scenario starts, with no shroud and no interface. A campaign mission keeps
-    every house's objects; a multiplayer map keeps only Neutral and Special objects and places no starting
-    units. A map is a campaign mission when [Basic] MultiplayerOnly is not set and [Basic] Player names
-    a house in its [Houses] section other than Neutral or Special. Firestorm is enabled whenever it is
-    installed. The game exits with code 0 once the picture is written. It exits with code 1 when the map
-    is missing or does not load, or the file cannot be written, and writes the reason to the debug log
-    and to the console it was started from. A crash also exits with code 1 and leaves its crash report
-    as usual.
+  description: Draws the map named as a PNG picture with the default capture settings and exits, without
+    showing a window, a console or a dialog. Name the picture with -CAPTUREOUT=; without it the game exits
+    at once. The map capture description format says what a capture draws and how the game exits. Use
+    -CAPTURE= for more settings.
   audience: developer
   availability: *id001
   syntax: -CAPTUREMAP=<map>
@@ -2312,6 +2305,19 @@ launch_options:
   audience: developer
   availability: *id001
   syntax: -CAPTUREOUT=<path>
+  _provenance:
+    source: code/init.cpp
+    guard: null
+- id: launch:capture
+  route_id: capture
+  kind: launch
+  title: Map capture description
+  description: Makes the map capture the file describes and exits, without showing a window, a console
+    or a dialog. A relative path is taken from the game's own folder. The map capture description format
+    describes the file. It cannot be combined with -CAPTUREMAP= or -CAPTUREOUT=.
+  audience: developer
+  availability: *id001
+  syntax: -CAPTURE=<file>
   _provenance:
     source: code/init.cpp
     guard: null

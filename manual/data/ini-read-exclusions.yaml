@@ -40,6 +40,16 @@ site_exclusions:
     classification: duplicate
     canonical_key: Player
     reason: A map capture reads the scenario's own Player setting early to choose how to load the map.
+  - path: code/mapcapture.cpp
+    function: Read_Settings
+    keys: [Frames]
+    classification: excluded
+    reason: Frames belongs to a map capture description file, which its own format page documents, not to game data.
+  - path: code/mapcapture.cpp
+    function: Read_Description
+    keys: [Map, Output]
+    classification: excluded
+    reason: Map and Output belong to a map capture description file, which its own format page documents, not to game data.
 
   # The map digest is written into the tail of a map file by the editor and read
   # back only to check that two players hold the same scenario. Its entry name is

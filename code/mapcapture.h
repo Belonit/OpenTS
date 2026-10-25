@@ -11,9 +11,10 @@
 #pragma once
 
 
-// Renders one map to a PNG for a lobby preview, as a headless task.
+// Renders a map to a PNG, such as a lobby preview, as a headless task.
 namespace MapCapture
 {
 	void Request_Map(char const * name);
 	void Request_Output(char const * path);
+	void Request_Description(char const * path);
 }

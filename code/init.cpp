@@ -1541,6 +1541,11 @@ bool Parse_Command_Line(int argc, char * argv[])
 			continue;
 		}
 
+		if (strnicmp(string, "-CAPTURE=", strlen("-CAPTURE=")) == 0) {
+			MapCapture::Request_Description(&original[strlen("-CAPTURE=")]);
+			continue;
+		}
+
 		// A client asking the game to launch what SPAWN.INI describes.
 		if (stricmp(string, "-SPAWN") == 0) {
 			Spawner_Request();
