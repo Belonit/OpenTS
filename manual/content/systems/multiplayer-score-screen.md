@@ -18,7 +18,9 @@ Click, or press Space or Escape, to close the screen. If the launch file enables
 
 ## Who is listed
 
-The screen has one row for each house that played. Houses whose country sets [`MultiplayPassive=yes`](/keys/multiplaypassive/) are left out, and so are [observers](/systems/observers/). Defeated players keep their rows, so a four-player match always ends with four rows.
+The screen has one row for each house that played, up to eight rows. Houses whose country sets [`MultiplayPassive=yes`](/keys/multiplaypassive/) are left out, and so are [observers](/systems/observers/). Defeated players keep their rows, so a four-player match ends with a row for each of the four players.
+
+A map that sets `MultiplayPassive=no` for the `Neutral` or `Special` country lists that house too. Human players get rows first, then computer players, then `Neutral`, then `Special`. When eight rows are already taken, the remaining houses are not listed, so a full eight-player match on such a map shows only the players.
 
 Each row shows the house's name in the match, computer players included. With [`QuickMatch=yes`](/formats/spawn-ini/#what-a-player-is-shown) in the launch file, each row shows the player's number instead of a name.
 

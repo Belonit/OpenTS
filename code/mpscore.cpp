@@ -383,6 +383,12 @@ void MultiScore::Tally_Score(void)
 		/*
 		**	Just add this player to the end of the array, if there's room
 		*/
+		// A full game on a map that makes an extra house a player has more scoring houses than rows; the later houses are left off.
+		if (Session.NumScores >= MAX_MULTI_NAMES) {
+			DebugString("MultiScore: No score row left for house %d.\n", (int)house);
+			continue;
+		}
+
 		score_index = Session.NumScores++;
 
 		/*
