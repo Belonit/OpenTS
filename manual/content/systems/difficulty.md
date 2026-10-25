@@ -4,6 +4,7 @@ summary: "Turns the chosen difficulty into one slot per house and scales that ho
 category: ai-teams
 keys:
   - AIHateDelays
+  - Airspeed
   - Armor
   - BuildTime
   - CompEasyBonus
@@ -70,12 +71,13 @@ The map's `[Basic] Player=` entry does not put its house in the player's column.
 
 ## What one difficulty section sets
 
-A difficulty section has eight settings that take effect. The six multipliers do not all point the same way. A value above 1 makes the house deal more damage, move faster and take less damage. It also makes the house fire more slowly, pay more and build more slowly. Each house uses the values in its section as written; only the choice of section is inverted.
+A difficulty section has nine settings that take effect. The seven multipliers do not all point the same way. A value above 1 makes the house deal more damage, move faster and take less damage. It also makes the house fire more slowly, pay more and build more slowly. Each house uses the values in its section as written; only the choice of section is inverted.
 
 | Setting | Effect on a house in that slot |
 | --- | --- |
 | [`FirePower=`](/keys/firepower-difficulty-settings/) | Multiplies the damage of most weapons its objects fire; above 1 deals more. The key page lists the projectiles it does not scale. |
 | [`Groundspeed=`](/keys/groundspeed/#scope-difficulty-settings) | Multiplies the speed of its ground movement; above 1 travels faster. |
+| [`Airspeed=`](/keys/airspeed/#scope-difficulty-settings) | Multiplies the top speed of its objects on the flying locomotor; above 1 flies faster. |
 | [`Armor=`](/keys/armor/#scope-difficulty-settings) | Divides the damage its objects take; above 1 takes less. |
 | [`ROF=`](/keys/rof/#scope-difficulty-settings) | Multiplies the delay between its shots; above 1 fires more slowly. |
 | [`Cost=`](/keys/cost/#scope-difficulty-settings) | Multiplies the prices it pays; above 1 pays more. |
@@ -87,6 +89,7 @@ A difficulty section has eight settings that take effect. The six multipliers do
 [Difficult] ; example values that weaken the house reading this section
 FirePower=0.8
 Groundspeed=0.9
+Airspeed=0.9
 Armor=0.8
 ROF=1.2
 Cost=1.2
@@ -97,10 +100,10 @@ DestroyWalls=no
 
 The linked key pages give the defaults.
 
-The first seven settings are copied into the house when it gets its slot, as [the next section](#how-the-figures-are-combined) describes. `DestroyWalls` is read from the section whenever a computer object considers a wall. The section's current value therefore always applies, and no country setting changes it.
+The first eight settings are copied into the house when it gets its slot, as [the next section](#how-the-figures-are-combined) describes. `DestroyWalls` is read from the section whenever a computer object considers a wall. The section's current value therefore always applies, and no country setting changes it.
 
 :::caution[Keep all three sections in the rules files]
-Until some file supplies a difficulty section, every value in it is zero and each flag is `no`. A house in that slot deals no damage, has zero ground speed and pays nothing. Each hit it takes does only 1 point of damage, the least a hit can do. A computer house in that slot also ignores walls as targets, since `DestroyWalls` is `no`.
+Until some file supplies a difficulty section, every value in it is zero and each flag is `no`. A house in that slot deals no damage, has zero ground speed and airspeed and pays nothing. Each hit it takes does only 1 point of damage, the least a hit can do. A computer house in that slot also ignores walls as targets, since `DestroyWalls` is `no`.
 
 When no rules file supplies a section, the version a map or a campaign's companion file supplied stays in force for later scenarios in the same session, until another file supplies that section again. A rules file that supplies the section replaces the map's version at the next scenario load.
 :::
@@ -109,18 +112,19 @@ When no rules file supplies a section, the version a map or a campaign's compani
 A file that contains a difficulty section resets every key it leaves out to that key's built-in default. A map that declares `[Difficult]` to change one multiplier therefore returns the section's other keys to those defaults, not to the values in the rules files. Copy the whole section to keep the other values.
 :::
 
-Files that contain a difficulty section are read in this order: [each rules file in turn](/formats/rules-registries/), then the map. In a campaign, the companion `.INI` named for the scenario is read after every house already has its handicap. Its difficulty sections therefore change only `DestroyWalls`, not the seven figures the houses already hold.
+Files that contain a difficulty section are read in this order: [each rules file in turn](/formats/rules-registries/), then the map. In a campaign, the companion `.INI` named for the scenario is read after every house already has its handicap. Its difficulty sections therefore change only `DestroyWalls`, not the eight figures the houses already hold.
 
 ## How the figures are combined
 
-A house's seven copied figures are computed once, when the house gets its slot. They are not recomputed per shot, order or frame, so a later change to a difficulty section or a country reaches the house only when it is re-handicapped.
+A house's eight copied figures are computed once, when the house gets its slot. They are not recomputed per shot, order or frame, so a later change to a difficulty section or a country reaches the house only when it is re-handicapped.
 
-Outside a campaign game, six of the figures are also multiplied by the matching setting in the house's country section. A campaign game leaves the country out and keeps everything else:
+Outside a campaign game, seven of the figures are also multiplied by the matching setting in the house's country section. A campaign game leaves the country out and keeps everything else:
 
 | Difficulty setting | Campaign game | Outside a campaign |
 | --- | --- | --- |
 | `FirePower=` | On its own | Times the country's [`Firepower=`](/keys/firepower-housetype/) |
 | `Groundspeed=` | Times [`GameSpeedBias`](/keys/gamespeedbias/) | Times the country's [`Groundspeed=`](/keys/groundspeed/#scope-housetype) and `GameSpeedBias` |
+| `Airspeed=` | Times `GameSpeedBias` | Times the country's [`Airspeed=`](/keys/airspeed/#scope-housetype) and `GameSpeedBias` |
 | `Armor=` | On its own | Times the country's [`Armor=`](/keys/armor/#scope-housetype) |
 | `ROF=` | On its own | Times the country's [`ROF=`](/keys/rof/#scope-housetype) |
 | `Cost=` | On its own | Times the country's [`Cost=`](/keys/cost/#scope-housetype) |
@@ -194,10 +198,10 @@ A map's triggers do not use a house's slot. They follow the scenario's difficult
 
 ## Parsed settings without effect
 
-Four keys in the difficulty sections are read but change nothing:
+Three keys in the difficulty sections are read but change nothing:
 
 - [`BuildSlowdown`](/keys/buildslowdown/) is never used.
 - [`ContentScan`](/keys/contentscan/#scope-difficulty-settings) is tested only in code the game never runs.
-- [`Airspeed`](/keys/airspeed/#scope-difficulty-settings) and [`BuildDelay`](/keys/builddelay/) are copied into the house's figures, but nothing uses those figures. A country's [`Airspeed=`](/keys/airspeed/#scope-housetype) is combined into the same unused figure.
+- [`BuildDelay`](/keys/builddelay/) is copied into the house's figures, but nothing uses that figure.
 
 Two related keys elsewhere have no effect either. [`FineDiffControl`](/keys/finediffcontrol/) in `[General]` is never used. The [`ContentScan`](/keys/contentscan/#scope-global-rules) threshold in `[IQ]` belongs to the same test as the difficulty section's `ContentScan`, which never runs.

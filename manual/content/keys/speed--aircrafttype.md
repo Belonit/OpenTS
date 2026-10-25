@@ -29,7 +29,7 @@ Infantry and vehicles have that distance scaled by:
 
 A prone soldier moves at a speed set by [`Crawls`](/keys/crawls/).
 
-An aircraft on the fly locomotor moves at its type's speed times its throttle; none of the modifiers above apply. A unit on the jumpjet locomotor ignores this key for travel and uses the [jumpjet speed](/keys/speed/#scope-global-rules) instead.
+An aircraft on the flying locomotor moves at its type's stored speed times its house's [air-speed bias](/keys/airspeed/), the veteran speed ability when it has [`FASTER`](/systems/veterancy/#abilities), and its own throttle. It does not use the ground-speed bias or the flag half, and a limpet does not slow it. The speed crate multiplier is part of the calculation but is always 1, because aircraft cannot pick up crates. A unit on the jumpjet locomotor ignores this key for travel and uses the [jumpjet speed](/keys/speed/#scope-global-rules) instead.
 
 :::caution[Writing `-1` is the same as leaving the key out]
 `Speed=-1` keeps whatever speed the type already had. To make a type immobile, write `Speed=0`.

@@ -274,13 +274,17 @@ The damage penalty in step 3 belongs to the drive locomotor alone. Every other o
 | Walk, Mech | Steps 5 to 10 above, with the throttle fixed at full | Ignored |
 | Hover | The same, times the hover locomotor's own acceleration ramp | Ignored |
 | Tunnel | The same, times [`TunnelSpeed`](/keys/tunnelspeed/) while digging down and coming up; a fixed rate underground | Ignored |
-| Fly | The type's top speed times the aircraft's own throttle, and nothing else | Ignored |
+| Fly | The type's top speed times the house's [air-speed bias](/systems/difficulty/#how-the-figures-are-combined), the [veteran speed ability](/keys/veteranspeed/) and the aircraft's own throttle | Ignored |
 | Jumpjet | `[JumpjetControls]` alone; the type's `Speed=` is not read | Ignored |
 | Levitate | `[LEVITATION]` alone; the type's `Speed=` is not read | Ignored |
 | Drop pod | Its height above the ground, with the rules-wide descent rate as the minimum | Ignored |
 | Teleport | Instantaneous | Ignored |
 
-An aircraft's speed therefore ignores the ground speed bias, the crate multiplier, the veteran ability, the flag penalty and the damage penalty. The setting meant to give aircraft a bias of their own is stored but never read; [difficulty settings](/systems/difficulty/#parsed-settings-without-effect) covers it.
+An aircraft's speed does not use the ground speed bias, the flag penalty or the damage penalty. The veteran speed multiplier applies only when the aircraft has [`FASTER`](/systems/veterancy/#abilities).
+
+The [speed crate](/systems/crates/) multiplier is part of the calculation, but only a speed crate sets it and aircraft cannot pick up crates, so it is 1 for every aircraft.
+
+The engine rounds the result down to a whole number after the air-speed bias, again after the veteran speed multiplier and again after the throttle. A slow type therefore loses proportionally more to each factor than a fast one.
 
 The other movement settings on this page each reach only the locomotors listed here:
 

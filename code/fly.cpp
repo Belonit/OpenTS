@@ -1614,11 +1614,19 @@ void FlyLocomotionClass::Tumble(void)
 
 /// <summary>
 /// Fetches the speed the aircraft is currently traveling at.
+/// Starts by calculating the top speed of the aircraft, then multiplies it with the current speed which is a percentage
+/// of the top speed that the locomotion is moving the aircraft in due to acceleration or deceleration.
+/// The top speed calculation includes house biases as well as the speed multiplier if the aircraft has the FASTER ability.
 /// </summary>
 /// <returns>Returns with the distance the aircraft will cover in one game frame.</returns>
 int FlyLocomotionClass::Apparent_Speed(void)
 {
-	return(LinkedTo->TClass->MaxSpeed * CurrentSpeed);
+	int speed = LinkedTo->Get_Max_Speed() * LinkedTo->House->AirspeedBias * LinkedTo->SpeedBias;
+	if (LinkedTo->Has_Ability(ABILITY_FASTER)) {
+		speed *= Rule->VeteranSpeed + 1.0;
+	}
+
+	return speed * CurrentSpeed;
 }
 
 

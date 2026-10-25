@@ -1,6 +1,5 @@
 ---
 key: Airspeed
-summary: A multiplier on a country or a difficulty setting that changes no speed in the game.
-no_effect: true
-see_also: ["system:difficulty"]
+summary: The multiplier a country or a difficulty setting applies to the top speed of objects on the flying locomotor.
+see_also: ["system:difficulty", "system:movement-and-terrain"]
 ---
