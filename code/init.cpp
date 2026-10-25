@@ -5560,7 +5560,8 @@ static void Init_Commands(void)
 /// Binds the game commands to the keys named in KEYBOARD.INI.
 /// This routine throws the current key assignments away and rebuilds them from the
 /// player's keyboard file, matching each entry against a command's unique name. A
-/// ToggleRadar entry, from before the radar's player list was retired, binds Diplomacy.
+/// ToggleRadar entry, from before the radar's player list was retired, binds Diplomacy. When
+/// the file binds one key more than once, the first entry for it is used.
 /// </summary>
 /// <returns>bool; Was the keyboard file loaded?</returns>
 /// <remarks>The command list must already be built before calling this routine.</remarks>
@@ -5587,6 +5588,11 @@ bool Init_Hotkeys(void)
 			}
 
 			if ((command != NULL) && (id != 0)) {
+				// A key bound twice, as when a file keeps ToggleRadar beside Diplomacy, keeps its first binding.
+				if (HotkeyCommands.Is_Present(id)) {
+					DebugString("KEYBOARD.INI binds key %d again, to %s; the earlier binding stands.\n", id, entry);
+					continue;
+				}
 				HotkeyCommands.Add_Index(id, command);
 			}
 		}
