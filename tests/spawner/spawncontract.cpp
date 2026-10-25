@@ -755,8 +755,25 @@ int main(void)
 			"Name=Commander\n"
 			"Side=2\n"
 			"Color=0\n";
-		Check(!Judge(past_countries, sizeof(past_countries) - 1, 2, 8, fault),
-			"a country the rules did not declare is refused");
+		Check(!Judge(past_countries, sizeof(past_countries) - 1, 2, 8, fault) &&
+			fault.find("[Settings] Side=2") != std::string::npos,
+			"a country the rules did not declare is refused under the key that set it");
+
+		char const sorted_past_countries[] =
+			"[Settings]\n"
+			"Name=Alpha\n"
+			"Side=9\n"
+			"Color=5\n"
+			"\n"
+			"[Other1]\n"
+			"Name=Bravo\n"
+			"Side=0\n"
+			"Color=0\n"
+			"Ip=10.0.0.9\n"
+			"Port=50002\n";
+		Check(!Judge(sorted_past_countries, sizeof(sorted_past_countries) - 1, 2, 8, fault) &&
+			fault.find("[Settings] Side=9") != std::string::npos,
+			"a refusal names the person's own section after house order has moved them");
 
 		char const past_colors[] =
 			"[Settings]\n"
@@ -802,8 +819,9 @@ int main(void)
 			"\n"
 			"[HouseHandicaps]\n"
 			"Multi2=7\n";
-		Check(!Judge(past_difficulty, sizeof(past_difficulty) - 1, 2, 8, fault),
-			"a difficulty naming none is refused");
+		Check(!Judge(past_difficulty, sizeof(past_difficulty) - 1, 2, 8, fault) &&
+			fault.find("[HouseHandicaps] Multi2=7") != std::string::npos,
+			"a difficulty naming none is refused under the entry that set it");
 
 		char const easy_difficulty[] =
 			"[Settings]\n"
@@ -864,8 +882,8 @@ int main(void)
 			"Ip=10.0.0.9\n"
 			"Port=50002\n";
 		Check(!Judge(one_name, sizeof(one_name) - 1, 2, 8, fault) &&
-			fault.find("1") != std::string::npos && fault.find("2") != std::string::npos,
-			"two people under one name are refused however either is spelled");
+			fault.find("[Settings]") != std::string::npos && fault.find("[Other1]") != std::string::npos,
+			"two people under one name are refused however either is spelled, naming both sections");
 
 		char const alone[] =
 			"[Settings]\n"
@@ -1150,8 +1168,8 @@ int main(void)
 			"\n"
 			"[IsSpectator]\n"
 			"Multi1=Yes\n";
-		Check(!Judge(watchers_alone, sizeof(watchers_alone) - 1, 2, 8, fault),
-			"a match of watchers alone is refused");
+		Check(Judge(watchers_alone, sizeof(watchers_alone) - 1, 2, 8, fault),
+			"a match of watchers alone is accepted");
 
 		Check(!Judge(_Skirmish, sizeof(_Skirmish) - 1, 0, 8, fault),
 			"a match is refused rather than read against countries the rules never declared");

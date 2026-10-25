@@ -335,7 +335,7 @@ static bool Spawner_Wire_Network(void)
 	}
 
 	if (!Ipx.Init()) {
-		return(Spawner_Refuse("The network could not be opened."));
+		return(Spawner_Refuse("The game could not open its network connection."));
 	}
 
 	// Loading-screen progress goes out before the in-game timing is set, and the manager's
@@ -355,22 +355,22 @@ static bool Spawner_Wire_Network(void)
 static bool Spawner_Resume(bool & gameloaded)
 {
 	if (SpawnConfig.SaveGameName.empty()) {
-		return(Spawner_Refuse("The file asks to resume a saved game without naming one."));
+		return(Spawner_Refuse("SPAWN.INI sets LoadSaveGame=yes but gives no SaveGameName."));
 	}
 
 	SaveVersionInfo info;
 	if (!Get_Savefile_Info(SpawnConfig.SaveGameName.c_str(), &info)) {
-		return(Spawner_Refuse("The saved game %s is missing or unreadable.", SpawnConfig.SaveGameName.c_str()));
+		return(Spawner_Refuse("The saved game %s is missing or cannot be read.", SpawnConfig.SaveGameName.c_str()));
 	}
 
 	if (info.Get_Internal_Version() != ExpectedGameVersion) {
-		return(Spawner_Refuse("The saved game was made by another version of the game."));
+		return(Spawner_Refuse("The saved game %s was made by a different version of the game.", SpawnConfig.SaveGameName.c_str()));
 	}
 
 	// A client never arranges a local network game, so no launch file describes one.
 	GameType type = (GameType)info.Get_Game_Type();
 	if (type == GAME_IPX) {
-		return(Spawner_Refuse("Resuming a game arranged over the local network is not supported."));
+		return(Spawner_Refuse("The saved game %s is from a LAN game set up in the menu, which SPAWN.INI cannot resume.", SpawnConfig.SaveGameName.c_str()));
 	}
 
 	// The file seats the same people again, so the network opens before the load.
@@ -398,7 +398,7 @@ static bool Spawner_Resume(bool & gameloaded)
 	}
 
 	if (type == GAME_INTERNET && !Reconcile_Players()) {
-		return(Spawner_Refuse("The saved game and the file do not agree on who is playing."));
+		return(Spawner_Refuse("SPAWN.INI does not seat the same players as the saved game %s.", SpawnConfig.SaveGameName.c_str()));
 	}
 
 	// The save's options apply, except game speed, movies and this machine's waits.
@@ -422,13 +422,13 @@ static bool Spawner_Setup_Campaign(void)
 {
 	if (SpawnConfig.CampaignDifficulty < 0 || SpawnConfig.CampaignDifficulty >= DIFF_COUNT ||
 		SpawnConfig.CampaignCDifficulty < 0 || SpawnConfig.CampaignCDifficulty >= DIFF_COUNT) {
-		return(Spawner_Refuse("A campaign is played at difficulty 0, 1 or 2, and the file says %d and %d.",
-			SpawnConfig.CampaignDifficulty, SpawnConfig.CampaignCDifficulty));
+		return(Spawner_Refuse("SPAWN.INI sets DifficultyModeHuman=%d and DifficultyModeComputer=%d; each must be 0 to %d.",
+			SpawnConfig.CampaignDifficulty, SpawnConfig.CampaignCDifficulty, DIFF_COUNT - 1));
 	}
 
 	if (SpawnConfig.CampaignID < -1 || SpawnConfig.CampaignID >= Campaigns.Count()) {
-		return(Spawner_Refuse("The file names campaign %d, and there are %d.",
-			SpawnConfig.CampaignID, Campaigns.Count()));
+		return(Spawner_Refuse("SPAWN.INI sets CampaignID=%d; it must be -1 to %d.",
+			SpawnConfig.CampaignID, Campaigns.Count() - 1));
 	}
 
 	Session.Type = GAME_NORMAL;
@@ -531,7 +531,7 @@ bool Spawner_Prepare(bool & gameloaded)
 
 	CCFileClass file("SPAWN.INI");
 	if (!file.Is_Available()) {
-		return(Spawner_Refuse("SPAWN.INI is missing, and it says what to launch."));
+		return(Spawner_Refuse("SPAWN.INI is missing. The game was started with -SPAWN, which needs it."));
 	}
 
 	CCINIClass ini;
@@ -546,7 +546,7 @@ bool Spawner_Prepare(bool & gameloaded)
 
 	// Every kind of launch uses this speed, so it is checked first.
 	if (SpawnConfig.GameSpeed < 0 || SpawnConfig.GameSpeed >= OptionsClass::MAX_SPEED_SETTING) {
-		return(Spawner_Refuse("The file asks for game speed %d, and the game has 0 through %d.",
+		return(Spawner_Refuse("SPAWN.INI sets GameSpeed=%d; it must be 0 to %d.",
 			SpawnConfig.GameSpeed, OptionsClass::MAX_SPEED_SETTING - 1));
 	}
 

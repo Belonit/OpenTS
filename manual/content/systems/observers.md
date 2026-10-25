@@ -87,11 +87,11 @@ With or without coach mode, a defeated player keeps their row on the score scree
 
 A match with at least one person playing ends when only one side is left, or when no person is left playing. A house whose country sets [`MultiplayPassive=yes`](/keys/multiplaypassive/), such as `Neutral`, does not count as a side.
 
-A match in which every person watches ends only when an enemy of a surviving house is defeated and only one side is left. Losing an allied house to a scripted event does not end the match, and a match whose houses are all on one side from the start never ends. An observer leaves such a match through the menu.
+A match in which every person watches ends only when an enemy of a surviving house is defeated and only one side is left. Losing an allied house to a scripted event does not end the match, and a match whose houses are all on one side from the start never ends. Neither does a match with no computer player, where nobody plays at all. An observer leaves such a match through the menu.
 
 ## Seating
 
-Any number of people may watch, as long as somebody plays; a computer player counts. The game refuses a launch file in which every person watches and no computer plays.
+Any number of people may watch. A launch file may also seat only observers and no computer player.
 
 One person may play alone beside observers. With no opponent, that match ends when the player is defeated.
 

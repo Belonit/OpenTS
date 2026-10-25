@@ -304,8 +304,7 @@ A new skirmish, and any game against other machines, new or resumed, is also ref
 - `AIPlayers` is negative or more than the seats no person holds;
 - a person's `Side` is not a country the rules have, or their `Color` is not an entry in the rules' `[Colors]` list; a computer seat's country and color are checked the same way unless they are `-1`;
 - a `[HouseHandicaps]` entry is outside `-1` to `6`;
-- an occupied seat's alliance entry is outside `-1` to `7`, or names a seat that is empty;
-- every person watches and no computer plays; this check does not apply to a resumed game.
+- an occupied seat's alliance entry is outside `-1` to `7`, or names a seat that is empty.
 
 A game against other machines, new or resumed, is also refused when:
 
@@ -321,7 +320,7 @@ The game sets how far ahead the machines run and how often they exchange their o
 
 `AimableSams` is not read: a defense whose weapon reaches only the air can be aimed at a chosen aircraft, which [`SAM`](/keys/sam/) owns.
 
-`ContinueWithoutHumans` is not read. A match ends once no person is left playing it, except a match in which every person is [watching](/systems/observers/), which runs on until one side remains.
+`ContinueWithoutHumans` is not read. A match ends once no person is left playing it, except a match in which every person is [watching](/systems/observers/#when-the-match-ends), which runs on until one side remains. When no computer plays either, the match runs until every observer leaves.
 
 `ReadMissionSection` and `CustomMissionID` are not read, and neither is the mission section a client writes for a custom mission. A custom mission's loading picture reaches this game through `CustomLoadScreen`.
 

@@ -54,6 +54,7 @@ class SpawnerConfigClass
 		 */
 		struct SlotType {
 			OccupancyType Occupancy = OccupancyType::Empty;
+			int FilePosition = -1;
 			std::string Name;
 			int Color = -1;
 			int Country = -1;
