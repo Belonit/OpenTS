@@ -501,7 +501,14 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 
 	int error_code = EXIT_FAILURE;
 
-	if (Parse_Command_Line(argc, argv) && Apply_Game_Directories()) {
+	bool const parsed = Parse_Command_Line(argc, argv);
+
+#ifdef _DEBUG
+	// Debug builds show the console without -XC, once the command line is parsed.
+	Debug_Init_Console();
+#endif
+
+	if (parsed && Apply_Game_Directories()) {
 
 		if (!Debug_MultipleInstances && !Claim_Single_Instance()) {
 			return(EXIT_SUCCESS);

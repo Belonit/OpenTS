@@ -1455,6 +1455,10 @@ bool Parse_Command_Line(int argc, char * argv[])
 		**	Print usage text only if requested.
 		*/
 		if (stricmp("/?", string) == 0 || stricmp("-?", string) == 0 || stricmp("-h", string) == 0 || stricmp("/h", string) == 0) {
+#ifdef _DEBUG
+			Debug_Init_Console();
+#endif
+
 			/*
 			**	Unrecognized command line parameter... Display usage
 			**	and then exit.
@@ -1665,6 +1669,9 @@ bool Parse_Command_Line(int argc, char * argv[])
 						break;
 
 					default:
+#ifdef _DEBUG
+						Debug_Init_Console();
+#endif
 						puts(Fetch_String(TXT_INVALID));
 						return(false);
 				}

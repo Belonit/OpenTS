@@ -27,6 +27,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 
 #define CONSOLE_WINDOW_NAME		"Debug Console"
 
@@ -43,6 +44,7 @@ static constexpr unsigned DEBUG_LOG_MAX_AGE_DAYS = 14;
 static constexpr unsigned __int64 DEBUG_LOG_MAX_BYTES = 64ui64 * 1024ui64 * 1024ui64;
 static constexpr unsigned __int64 DEBUG_LOG_NOTICE_RESERVE = sizeof(DebugTruncationNotice) - 1;
 static constexpr unsigned __int64 DEBUG_LOG_BUDGET = DEBUG_LOG_MAX_BYTES - DEBUG_LOG_NOTICE_RESERVE;
+static constexpr size_t DEBUG_CONSOLE_REPLAY_MAX = 64 * 1024;
 
 static SRWLOCK DebugLock = SRWLOCK_INIT;
 static DWORD DebugLockOwner = 0;
@@ -54,6 +56,10 @@ static HANDLE DebugConsole = INVALID_HANDLE_VALUE;
 static char DebugDirectory[MAX_PATH];
 static char DebugFileName[MAX_PATH];
 static unsigned __int64 DebugBytesWritten = 0;
+
+// Text logged before the console opens, written to it when it does. Past the limit, the rest
+// of that text is in the log file only.
+static std::string ConsoleReplay;
 
 /// <summary>
 /// Reports whether the command line asks for the debug console. The game's own parser runs
@@ -222,6 +228,12 @@ static void Init_Console_Locked(void)
 	}
 
 	ConsoleActive = true;
+
+	if (DebugConsole != INVALID_HANDLE_VALUE && !ConsoleReplay.empty()) {
+		DWORD actual;
+		WriteConsole(DebugConsole, ConsoleReplay.data(), (DWORD)ConsoleReplay.size(), &actual, NULL);
+	}
+	std::string().swap(ConsoleReplay);
 }
 
 
@@ -229,9 +241,9 @@ static void Write_Banner_Locked(SYSTEMTIME const & started);
 
 
 /// <summary>
-/// Prepares the log directory and this run's log file, then opens the console if this build
-/// or the command line asks for it. The caller holds the logging lock. A log that cannot be
-/// opened leaves the debugger and console sinks working.
+/// Prepares the log directory and this run's log file, then opens the console if the command
+/// line asks for it. The caller holds the logging lock. A log that cannot be opened leaves the
+/// debugger and console sinks working.
 /// </summary>
 static void Init_Locked(void)
 {
@@ -279,13 +291,9 @@ static void Init_Locked(void)
 		}
 	}
 
-#ifdef _DEBUG
-	Init_Console_Locked();
-#else
 	if (Command_Line_Requests_Console()) {
 		Init_Console_Locked();
 	}
-#endif
 
 	// Last, so that the banner heads the log and also reaches a console that has just opened.
 	Write_Banner_Locked(now);
@@ -318,8 +326,12 @@ static void Write_Text_Locked(char const * text, size_t length)
 		OutputDebugString(text);
 	}
 
-	if (ConsoleActive && DebugConsole != INVALID_HANDLE_VALUE) {
-		WriteConsole(DebugConsole, text, (DWORD)length, &actual, NULL);
+	if (ConsoleActive) {
+		if (DebugConsole != INVALID_HANDLE_VALUE) {
+			WriteConsole(DebugConsole, text, (DWORD)length, &actual, NULL);
+		}
+	} else if (ConsoleReplay.size() + length <= DEBUG_CONSOLE_REPLAY_MAX) {
+		ConsoleReplay.append(text, length);
 	}
 }
 
@@ -498,9 +510,8 @@ static void Init_Once(bool with_console)
 
 
 /// <summary>
-/// Prepares the debug log and, when the build or the command line asks for it, the debug
-/// console. Logging works without this call, but calling it early fixes the log's timestamp
-/// at process start and puts the console up before the first message.
+/// Prepares the debug log and, when the command line asks for it, the debug console. Logging
+/// works without this call, but calling it early fixes the log's timestamp at process start.
 /// </summary>
 void Debug_Init(void)
 {
@@ -509,7 +520,7 @@ void Debug_Init(void)
 
 
 /// <summary>
-/// Opens the debug console if it is not open already.
+/// Opens the debug console if it is not open already, starting it with the text logged so far.
 /// </summary>
 void Debug_Init_Console(void)
 {
