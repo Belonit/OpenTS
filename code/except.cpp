@@ -55,6 +55,7 @@
 #include "win.h"
 
 #include <commctrl.h>
+#include <crtdbg.h>
 #include <dbghelp.h>
 #include <tlhelp32.h>
 
@@ -2079,6 +2080,16 @@ void Exception_Register_Log_File(char const * path)
 void Exception_Set_Unattended(bool unattended)
 {
 	Unattended = unattended;
+
+	if (unattended) {
+		// An unattended failed assertion writes to stderr and aborts, and the abort is reported
+		// as a crash; nobody is there to answer the runtime library's dialog.
+		_set_error_mode(_OUT_TO_STDERR);
+		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+		_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+	}
 }
 
 
