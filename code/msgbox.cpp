@@ -36,6 +36,7 @@
 #include "msgbox.h"
 
 #include "data.h"
+#include "mapcapture.h"
 #include "ui/screens/msgbox/uimsgbox.h"
 
 
@@ -66,6 +67,12 @@
  *=============================================================================================*/
 int WWMessageBox::_Process(const char * msg, int defresponse, const char * b1txt, const char * b2txt, const char * b3txt, bool preserve)
 {
+	// Nobody answers a box during a capture run, so the message fails the capture.
+	if (MapCapture::Is_Requested()) {
+		MapCapture::Fail(msg);
+		return(defresponse);
+	}
+
 	return(UI_Message_Box(msg, defresponse, b1txt, b2txt, b3txt));
 }
 

@@ -95,6 +95,7 @@
 #include "levitate.h"
 #include "light.h"
 #include "lightcon.h"
+#include "mapcapture.h"
 #include "mech.h"
 #include "misc.h"
 #include "mixfile.h"
@@ -504,13 +505,15 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 	bool const parsed = Parse_Command_Line(argc, argv);
 
 #ifdef _DEBUG
-	// Debug builds show the console without -XC, once the command line is parsed.
-	Debug_Init_Console();
+	// Debug builds show the console without -XC, except to a capture run, which shows nothing.
+	if (!MapCapture::Is_Requested()) {
+		Debug_Init_Console();
+	}
 #endif
 
-	if (parsed && Apply_Game_Directories()) {
+	if (parsed && MapCapture::Check_Request() && Apply_Game_Directories()) {
 
-		if (!Debug_MultipleInstances && !Claim_Single_Instance()) {
+		if (!Debug_MultipleInstances && !MapCapture::Is_Requested() && !Claim_Single_Instance()) {
 			return(EXIT_SUCCESS);
 		}
 
@@ -556,6 +559,13 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		 */
 		if (!WindowedMode) {
 			WindowedMode = !Options.Fullscreen;
+		}
+
+		// A capture draws into surfaces of its own size, and its window is never shown.
+		if (MapCapture::Is_Requested()) {
+			WindowedMode = true;
+			Options.ScreenWidth = 640;
+			Options.ScreenHeight = 480;
 		}
 
 		Keyboard = new KeyboardClass();
@@ -606,6 +616,12 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 
 		UIShell.Init();
 
+		// A window that is never shown never gains the focus, and the loops that wait for it
+		// would never end.
+		if (MapCapture::Is_Requested()) {
+			GameInFocus = true;
+		}
+
 		do {
 			Windows_Message_Handler();
 		}
@@ -633,7 +649,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		**	Check for forced intro movie run disabling. If the conquer
 		**	configuration file says "no", then don't run the intro.
 		*/
-		if (!Special.IsFromInstall && !Spawner_Is_Requested()) {
+		if (!Special.IsFromInstall && !Spawner_Is_Requested() && !MapCapture::Is_Requested()) {
 			Special.IsFromInstall = ConfigINI.Get_Bool("Intro", "PlayIntro", true);
 		}
 
@@ -641,7 +657,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		**	Regardless of whether we should run it or not, here we're
 		**	gonna change it to say "no" in the future.
 		*/
-		if (Special.IsFromInstall == true && !Spawner_Is_Requested()) {
+		if (Special.IsFromInstall == true && !Spawner_Is_Requested() && !MapCapture::Is_Requested()) {
 			ConfigINI.Put_Bool("Intro", "PlayIntro", false);
 
 			// Left closed, so that saving opens it for writing itself.
@@ -665,7 +681,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 
 		Game_Window_Begin_Shutdown();
 
-		error_code = EXIT_SUCCESS;
+		error_code = MapCapture::Is_Requested() ? MapCapture::Exit_Code() : EXIT_SUCCESS;
 
 	} else {
 

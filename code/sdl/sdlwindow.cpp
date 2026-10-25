@@ -37,6 +37,7 @@ bool _Started = false;
 SDL_Window * _Window = nullptr;
 int _NativeModals = 0;
 bool _Watching = false;
+bool _Unattended = false;
 
 SDLInputStateClass _Input;
 
@@ -410,8 +411,10 @@ bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon con
 	SetWindowSubclass(Window_Handle(), Watch_Messages, WindowSubclass, 0);
 	_Input.Reset();
 
-	SDL_ShowWindow(_Window);
-	SDL_RaiseWindow(_Window);
+	if (!_Unattended) {
+		SDL_ShowWindow(_Window);
+		SDL_RaiseWindow(_Window);
+	}
 
 	// Typed text is always on, as characters from Windows were.
 	SDL_StartTextInput(_Window);
@@ -764,8 +767,27 @@ void Main_Window_Set_Clipboard_Text(std::string const & text)
 }
 
 
+void Main_Window_Set_Unattended(bool unattended)
+{
+	_Unattended = unattended;
+}
+
+
+static void Report_Unattended_Box(char const * title, char const * text)
+{
+	DebugString("SDL: %s: %s\n", title, text);
+	std::fprintf(stderr, "%s\n", text);
+	std::fflush(stderr);
+}
+
+
 void Main_Window_Error_Box(char const * title, char const * text)
 {
+	if (_Unattended) {
+		Report_Unattended_Box(title, text);
+		return;
+	}
+
 	Begin_Native_Modal();
 	if (!SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, title, text, _Window)) {
 		DebugString("SDL: the message box was not shown: %s\n", SDL_GetError());
@@ -776,6 +798,11 @@ void Main_Window_Error_Box(char const * title, char const * text)
 
 bool Main_Window_Confirm_Box(char const * title, char const * text, char const * yes, char const * no)
 {
+	if (_Unattended) {
+		Report_Unattended_Box(title, text);
+		return(false);
+	}
+
 	SDL_MessageBoxButtonData const buttons[] = {
 		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, yes },
 		{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, no },

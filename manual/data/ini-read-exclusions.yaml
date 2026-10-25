@@ -28,6 +28,19 @@ site_exclusions:
     canonical_key: Cameo
     reason: Save-game restoration re-reads the same Cameo art setting already extracted from the type reader.
 
+  - path: code/mapcapture.cpp
+    function: Is_Campaign_Map
+    keys: [MultiplayerOnly]
+    classification: duplicate
+    canonical_key: MultiplayerOnly
+    reason: A map capture reads the scenario's own MultiplayerOnly setting early to choose how to load the map.
+  - path: code/mapcapture.cpp
+    function: Is_Campaign_Map
+    keys: [Player]
+    classification: duplicate
+    canonical_key: Player
+    reason: A map capture reads the scenario's own Player setting early to choose how to load the map.
+
   # The map digest is written into the tail of a map file by the editor and read
   # back only to check that two players hold the same scenario. Its entry name is
   # the numeral 1, which is why no rule could name it until the key-name contract

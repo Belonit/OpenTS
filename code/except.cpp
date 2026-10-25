@@ -272,6 +272,8 @@ static char TestMode[32];
 static bool TestSectionFault = false;
 static bool TestDumperFault = false;
 
+static bool Unattended = false;
+
 static bool Resolve_Symbol(DWORD_PTR address, char * name, unsigned name_size, DWORD_PTR * displacement);
 static bool Resolve_Line(DWORD_PTR address, char * file, unsigned file_size, unsigned * line);
 static void Write_Crash_Artifacts(EXCEPTION_POINTERS * e_info, DWORD crashed_thread);
@@ -1567,6 +1569,10 @@ static void Release_Display(void)
 /// </summary>
 static void Show_Recursion_Notice(void)
 {
+	if (Unattended) {
+		return;
+	}
+
 	char message[MAX_PATH + 256];
 
 	if (ArtifactFolder[0] != '\0') {
@@ -1587,6 +1593,19 @@ static void Show_Recursion_Notice(void)
 /// </summary>
 [[noreturn]] static void Show_Exception_Dialog(void)
 {
+	if (Unattended) {
+		char message[MAX_PATH + 64];
+		snprintf(message, sizeof(message), "The game crashed. A report was saved to %s\r\n", ArtifactFolder);
+
+		DWORD written = 0;
+		HANDLE const error = GetStdHandle(STD_ERROR_HANDLE);
+		if (error != NULL && error != INVALID_HANDLE_VALUE) {
+			WriteFile(error, message, (DWORD)strlen(message), &written, NULL);
+		}
+
+		Terminate_Now();
+	}
+
 	Release_Display();
 
 	INT_PTR const result = DialogBoxParam(ProgramInstance, MAKEINTRESOURCE(IDD_EXCEPTION), NULL,
@@ -2057,6 +2076,12 @@ void Exception_Register_Log_File(char const * path)
 }
 
 
+void Exception_Set_Unattended(bool unattended)
+{
+	Unattended = unattended;
+}
+
+
 /// <summary>
 /// Records which test fault the launch options asked for.
 /// </summary>
@@ -2229,6 +2254,11 @@ bool Describe_Code_Address(void const *, char * buffer, unsigned size)
 	}
 
 	return(false);
+}
+
+
+void Exception_Set_Unattended(bool)
+{
 }
 
 

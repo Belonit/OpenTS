@@ -59,6 +59,9 @@ void Install_Exception_Handler(void);
 void Exception_Register_Log_File(char const * path);
 bool Describe_Code_Address(void const * address, char * buffer, unsigned size);
 
+// An unattended run writes the crash report and exits without showing the crash dialog.
+void Exception_Set_Unattended(bool unattended);
+
 void Exception_Set_Test_Mode(char const * mode);
 void Exception_Run_Immediate_Test(void);
 void Exception_Run_Post_Window_Test(void);

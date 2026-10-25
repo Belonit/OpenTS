@@ -134,6 +134,7 @@
 #include "loaddlg.h"
 #include "logic.h"
 #include "mainopt.h"
+#include "mapcapture.h"
 #include "misc.h"
 #include "mixfile.h"
 #include "mono.h"
@@ -258,8 +259,6 @@ static CampaignType Choose_Campaign(void);
 static void Init_Threads(void);
 void Draw_Version_Text(Surface * surface);
 void Version_Dialog(void);
-
-void Init_Random(void);
 
 #define ATTRACT_MODE_TIMEOUT	TIMER_MINUTE		// timeout for attract mode
 
@@ -430,7 +429,7 @@ int Init_Game(int , char * [])
 	/*
 	**	Play the startup animation.
 	*/
-	if (!Spawner_Is_Requested()) {
+	if (!Spawner_Is_Requested() && !MapCapture::Is_Requested()) {
 		if (Special.IsFromInstall == true) {
 			DebugString("Playing first time intro sequence.\n");
 			Play_Movie("EVA.VQA", THEME_NONE, false);
@@ -922,6 +921,11 @@ restart:
 	**	Main menu processing; only do this if we're not in editor mode.
 	*/
 	if (!Debug_Map) {
+
+		if (MapCapture::Is_Requested()) {
+			MapCapture::Run();
+			return(false);
+		}
 
 		/*
 		**	Menu selection processing loop
@@ -1523,6 +1527,16 @@ bool Parse_Command_Line(int argc, char * argv[])
 
 		if (strnicmp(string, "-USERDIR=", strlen("-USERDIR=")) == 0) {
 			Set_User_Directory(&original[strlen("-USERDIR=")]);
+			continue;
+		}
+
+		if (strnicmp(string, "-CAPTUREMAP=", strlen("-CAPTUREMAP=")) == 0) {
+			MapCapture::Request_Map(&original[strlen("-CAPTUREMAP=")]);
+			continue;
+		}
+
+		if (strnicmp(string, "-CAPTUREOUT=", strlen("-CAPTUREOUT=")) == 0) {
+			MapCapture::Request_Output(&original[strlen("-CAPTUREOUT=")]);
 			continue;
 		}
 

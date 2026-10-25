@@ -31,6 +31,10 @@ struct MainWindowIcon
 
 void Main_Window_Destroy(void);
 
+// Set before Main_Window_Create, an unattended run's window is never shown, and each message
+// box writes its text to the debug log and stderr and answers no.
+void Main_Window_Set_Unattended(bool unattended);
+
 // Optional icon pixels are straight-alpha RGBA, top row first, borrowed only for this call.
 bool Main_Window_Create(bool windowed, int width, int height, MainWindowIcon const * icon = nullptr);
 NativeWindow Main_Window_Native(void);

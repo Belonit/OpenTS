@@ -28,6 +28,7 @@ class HouseClass;
 bool Parse_Command_Line(int argc, char * argv[]);
 
 int Init_Game(int argc, char * argv[]);
+void Init_Random(void);
 bool Select_Game(bool fade);
 
 int Main_Menu(unsigned int timeout);
