@@ -3,7 +3,7 @@ import './check-selector-render.mjs';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { UI } from '../src/i18n/en.mjs';
-import { readCollection } from './lib/content-sources.mjs';
+import { readCollection, readDataYaml } from './lib/content-sources.mjs';
 import {
 	developmentRelease,
 	escapeHtml,
@@ -65,7 +65,7 @@ const cases = [
 	['reference/theater-controls/index.html', ['[General]', '[&lt;TileSet ID&gt;]', '<strong data-visible-count>']],
 	['using/project-status/index.html', ['Project status', 'Toolchain and targets', 'Authoritative files', 'docs/BUILDING.md']],
 	['commands/follow/index.html', ['Command', 'Hotkey command', 'KEYBOARD.INI', 'Release and Debug']],
-	['using/command-line/help/index.html', ['Command-line help', 'Syntax', 'Aliases', 'Release and Debug', 'ots-breadcrumb']],
+	['using/command-line/index.html', ['Command line options', 'Passing options', 'Command-line help', '<var>&lt;path&gt;</var>', 'ots-breadcrumb']],
 	['commands/fixed-options-menu/index.html', ['Options menu', 'Fixed control', 'Fixed controls', 'ots-breadcrumb']],
 	['formats/mix/index.html', ['MIX archives', 'Binary format', '<dt>Role</dt>', 'code/ccfile.cpp', 'Source files', 'code/mixfile.h']],
 	['changes/opents-manual/index.html', ['OpenTS manual', 'Released in', '0.1.0', 'reference pages for every']],
@@ -108,7 +108,6 @@ const searchScopeContracts = [
 	...taxonomyContracts('using', 'using', UI.usingCategories, UI.navigation.using),
 	['formats/mix/index.html', ['Topic:Binary format', 'Part of the manual:Formats']],
 	['commands/follow/index.html', ['Topic:Player commands', 'Topic:Hotkey commands', 'Part of the manual:Commands']],
-	['using/command-line/help/index.html', ['Topic:Command line options', 'Topic:Developer commands', 'Part of the manual:Using OpenTS']],
 	['keys/bounceanim/index.html', ['Topic:Art', 'Topic:Rules', 'Part of the manual:INI reference']],
 	['keys/action/index.html', ['Topic:Rules', 'Topic:Scenario format', 'Part of the manual:INI reference', 'Part of the manual:Mapping']],
 	['mapping/actions/taction-change-house/index.html', ['Topic:Trigger actions', 'Part of the manual:Mapping']],
@@ -148,8 +147,8 @@ const indexContracts = [
 		['Controls with hardcoded keys', 'data-command-index', 'Filter controls', 'ots-breadcrumb', 'Options menu', 'Debug only'],
 		['All types', 'Filter commands', 'Hotkey command', 'Command line option', 'fixed:']],
 	['using/command-line/index.html',
-		['Options accepted on the command line.', 'data-command-index', 'Filter options', 'ots-breadcrumb', 'Command-line help', 'Windowed mode', 'Debug only'],
-		['All types', 'Filter commands', 'Hotkey command', 'Fixed control', 'launch:']],
+		['Passing options', 'data-launch-reference', 'Filter options', 'ots-breadcrumb', 'Command-line help', 'Windowed mode', 'Debug build only', 'Removed options'],
+		['data-command-index', 'Developer commands', 'Debug only', 'Hotkey command', 'launch:']],
 	['formats/index.html',
 		['File syntax, registration, record layout, and binary data.', 'Syntax', 'Configuration file', 'Registry', 'Record', 'Binary format', 'MIX archives', 'Map seed files', 'sl-link-card'],
 		['byte layout', 'compatibility boundaries', 'Map seed file format', 'Theater control file format']],
@@ -811,6 +810,38 @@ for (const [alias, destination] of [
 		throw new Error(`${alias} is not a compatibility redirect to ${destination}`);
 	}
 }
+
+/* Every launch option is an entry on the command line page. Its established
+   route redirects to that entry, and a link into the page has to name an id the
+   page carries, because the link check ignores fragments. */
+const commandLineMain = renderedMain('using/command-line/index.html');
+const commandLineIds = [...commandLineMain.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
+const repeatedIds = [...new Set(commandLineIds.filter((id, index) => commandLineIds.indexOf(id) !== index))];
+if (repeatedIds.length) throw new Error(`using/command-line/ repeats element ids: ${repeatedIds.join(', ')}`);
+for (const option of readDataYaml('commands.yaml').launch_options) {
+	if (!commandLineIds.includes(option.route_id)) {
+		throw new Error(`using/command-line/ has no entry #${option.route_id} for ${option.id}`);
+	}
+	const redirect = readFileSync(resolve('dist/using/command-line', option.route_id, 'index.html'), 'utf8');
+	if (!redirect.includes('Redirecting to:') || !redirect.includes(`${base}/using/command-line/#${option.route_id}"`)) {
+		throw new Error(`using/command-line/${option.route_id}/ is not a redirect to its entry`);
+	}
+}
+for (const [, fragment] of commandLineMain.matchAll(/href="#([^"]+)"/g)) {
+	if (!commandLineIds.includes(fragment)) throw new Error(`using/command-line/ links to its own missing #${fragment}`);
+}
+const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const commandLineLink = new RegExp(`href="${escapedBase}/using/command-line/#([^"]+)"`, 'g');
+for (const relative of readdirSync(resolve('dist'), { recursive: true })) {
+	if (!String(relative).endsWith('.html')) continue;
+	const html = readFileSync(resolve('dist', relative), 'utf8');
+	for (const [, fragment] of html.matchAll(commandLineLink)) {
+		if (!commandLineIds.includes(fragment)) {
+			throw new Error(`${relative} links to using/command-line/#${fragment}, which the page does not have`);
+		}
+	}
+}
+
 /* Both primary entry points carry the same button affordance the reference
    landing already uses, and neither falls back to a bare link. */
 const landingHtml = readFileSync(resolve('dist/index.html'), 'utf8');
@@ -880,7 +911,7 @@ for (const [relative, view, expected] of [
 	['keys/aa/index.html', 'reference', [`location:${UI.navigation.allKeys}`]],
 	['commands/follow/index.html', 'commands', [`location:${UI.navigation.browseCommands}`]],
 	['mapping/actions/taction-play-anim/index.html', 'mapping', [`location:${UI.navigation.actions}`]],
-	['using/command-line/help/index.html', 'using', [`location:${UI.navigation.commandLine}`]],
+	['using/command-line/index.html', 'using', [`page:${UI.navigation.commandLine}`]],
 	['reference/rules/buildingtype/index.html', 'reference', ['page:BuildingType']],
 	['internals/locomotion/index.html', 'internals', ['page:Locomotion and piggybacking']],
 ]) {

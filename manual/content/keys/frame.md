@@ -10,4 +10,4 @@ when_omitted:
 
 The value names the game frame from which the object described by the other sync-bug settings would be watched. The watching code is built into neither configuration, so reaching the frame changes nothing.
 
-`Frame` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/playback/).
+`Frame` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/#playback).

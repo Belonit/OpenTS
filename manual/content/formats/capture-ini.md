@@ -19,7 +19,7 @@ related:
   id: launch:capture-map
 ---
 
-A map capture description is an INI file that [`-CAPTURE=<file>`](/using/command-line/capture) reads. The capture it describes loads one map, draws one picture of it with no interface, and writes the picture as a PNG file. The game shows no window, console or dialog during the run and exits once the capture is done. [`-CAPTUREMAP=`](/using/command-line/capture-map) with [`-CAPTUREOUT=`](/using/command-line/capture-output) makes the same capture with the default settings and no file.
+A map capture description is an INI file that [`-CAPTURE=<file>`](/using/command-line/#capture) reads. The capture it describes loads one map, draws one picture of it with no interface, and writes the picture as a PNG file. The game shows no window, console or dialog during the run and exits once the capture is done. [`-CAPTUREMAP=`](/using/command-line/#capture-map) with [`-CAPTUREOUT=`](/using/command-line/#capture-output) makes the same capture with the default settings and no file.
 
 The keys below belong in the `[Capture]` section.
 

@@ -212,7 +212,6 @@ export default defineConfig({
 					label: UI.navigation.using,
 					items: [
 						{ label: UI.navigation.browseUsing, link: link('/using/') },
-						{ label: UI.navigation.commandLine, link: link('/using/command-line/') },
 						...proseEntries('../content/using', '/using'),
 					],
 				},

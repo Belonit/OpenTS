@@ -48,16 +48,17 @@
         "guard": { "type": ["string", "null"] }
       }
     },
+    "audience": { "enum": ["player", "developer", "debug"] },
+    "launchGroup": { "enum": ["files-display", "multiplayer", "map-capture", "testing", "startup", "debug-build"] },
     "common": {
       "type": "object",
-      "required": ["id", "route_id", "kind", "title", "description", "audience", "availability", "_provenance"],
+      "required": ["id", "route_id", "kind", "title", "description", "availability", "_provenance"],
       "properties": {
         "id": { "$ref": "#/$defs/nonEmptyString" },
         "route_id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
         "kind": { "enum": ["registered", "fixed", "launch"] },
         "title": { "$ref": "#/$defs/nonEmptyString" },
         "description": { "type": "string" },
-        "audience": { "enum": ["player", "developer", "debug"] },
         "availability": { "$ref": "#/$defs/availability" },
         "_provenance": { "$ref": "#/$defs/provenance" }
       }
@@ -75,7 +76,7 @@
             "kind": { "const": "registered" },
             "title": true,
             "description": true,
-            "audience": true,
+            "audience": { "$ref": "#/$defs/audience" },
             "availability": true,
             "category": { "$ref": "#/$defs/nonEmptyString" },
             "forced_binding": { "enum": ["Delete", "Escape"] },
@@ -97,7 +98,7 @@
             "kind": { "const": "fixed" },
             "title": true,
             "description": true,
-            "audience": true,
+            "audience": { "$ref": "#/$defs/audience" },
             "availability": true,
             "bindings": {
               "type": "array",
@@ -117,14 +118,14 @@
         {
           "type": "object",
           "additionalProperties": false,
-          "required": ["id", "route_id", "kind", "title", "description", "audience", "availability", "syntax", "_provenance"],
+          "required": ["id", "route_id", "kind", "title", "description", "group", "availability", "syntax", "_provenance"],
           "properties": {
             "id": true,
             "route_id": true,
             "kind": { "const": "launch" },
             "title": true,
             "description": true,
-            "audience": true,
+            "group": { "$ref": "#/$defs/launchGroup" },
             "availability": true,
             "syntax": { "$ref": "#/$defs/nonEmptyString" },
             "aliases": {

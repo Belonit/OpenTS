@@ -76,6 +76,12 @@ handler and launch-parser branch needs exactly one public adapter or one
 reasoned exclusion. Command IDs are case-sensitive. Do not infer default
 bindings from a declaration or nearby code.
 
+A launch option's adapter also names its `group`. An option belongs to
+`debug-build` and lists only the Debug build exactly when every one of its
+parser sites is compiled under `_DEBUG`; the extractor refuses any other
+combination. An adapter's title, description, audience and group are authored
+copy, so changing them is not an engine change.
+
 The branch check accepts an existing development-release addition record for later changes to a command, enum signature, or scripting index. The addition target must match the entity and scope in both the Git base and the current tree, and its release must still be the active development release in both snapshots. A current-only addition target does not satisfy a required `changed` target. Follow the [authoring rules](AUTHORING.md#lifecycle-records) when updating addition prose.
 
 Enums are authored selections backed by explicit source adapters. Documenting
@@ -163,6 +169,11 @@ paths live in `data/scripting-route-aliases.yaml`; never assign a reserved
 numeric path to another engine ID. Removed keys, scripting entities, formats,
 enums, systems, and commands use tombstones. A tombstone takes its removal
 version from the lifecycle record rather than duplicating it.
+
+Command line options have no pages of their own. Each option's established
+route, `/using/command-line/<route>/`, redirects to its entry at
+`/using/command-line/#<route>`. When an option is removed, its tombstone takes
+over that route.
 
 Every route change must be deliberate and reviewed with the rendered route
 diff.

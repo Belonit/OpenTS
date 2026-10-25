@@ -461,6 +461,34 @@ def _adjudicate(discovered, records, exclusions, label):
     return by_identity
 
 
+def _debug_guarded(guard):
+    return guard is not None and "_DEBUG" in guard.split(" && ")
+
+
+def check_launch_builds(adapters, discovered):
+    """Raise unless each launch option's group and availability agree with its build guard.
+
+    An option whose every site is compiled only under ``_DEBUG`` must list only the Debug
+    build and sit in the ``debug-build`` group, and no other option may do either.
+    """
+    errors = []
+    for adapter in adapters:
+        guarded = all(
+            _debug_guarded(discovered[_manifest_identity(site)].guard)
+            for site in adapter["sites"])
+        debug_only = adapter["availability"]["builds"] == ["debug"]
+        debug_group = adapter["group"] == "debug-build"
+        if guarded != debug_only or guarded != debug_group:
+            errors.append(
+                f"launch-option adapter {adapter['id']}: "
+                f"{'every site is' if guarded else 'not every site is'} guarded by _DEBUG, "
+                f"but availability is {adapter['availability']['builds']} and group is "
+                f"{adapter['group']!r}. Debug-only options list only the Debug build and use "
+                "the debug-build group; no other option does either")
+    if errors:
+        raise ValueError("\n".join(errors))
+
+
 def adapted_commands(manifest=None, code_directory=CODE):
     manifest = load_manifest() if manifest is None else manifest
     fixed_sites = _adjudicate(
@@ -469,6 +497,7 @@ def adapted_commands(manifest=None, code_directory=CODE):
     launch_sites = _adjudicate(
         discover_launch_sites(), manifest["launch_options"],
         manifest["launch_exclusions"], "launch-option")
+    check_launch_builds(manifest["launch_options"], launch_sites)
 
     def provenance(record, discovered):
         source = discovered[_manifest_identity(record["sites"][0])]
@@ -499,7 +528,7 @@ def adapted_commands(manifest=None, code_directory=CODE):
             "kind": "launch",
             "title": adapter["title"],
             "description": adapter["description"],
-            "audience": adapter["audience"],
+            "group": adapter["group"],
             "availability": adapter["availability"],
             "syntax": adapter["syntax"],
             "_provenance": provenance(adapter, launch_sites),

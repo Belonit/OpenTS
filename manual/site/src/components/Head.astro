@@ -43,8 +43,7 @@ const [system, guide, using, internal] = await Promise.all([
 
 /* /commands/fixed-controls/ is an index page, not a command detail route. */
 const commandDetailId = detailId('commands');
-const commandId = (commandDetailId !== 'fixed-controls' ? commandDetailId : undefined)
-	?? pathname.match(/^\/using\/command-line\/([^/]+)\/?$/)?.[1];
+const commandId = commandDetailId !== 'fixed-controls' ? commandDetailId : undefined;
 const command = commandId ? commandByRoute(decodeURIComponent(commandId)) : undefined;
 const format = (pathname.startsWith('/formats/') || pathname.startsWith('/mapping/'))
 	? [...allFormats().values()].find((record) => record.route === pathname)
@@ -55,7 +54,7 @@ const scopes = searchScopesForPath(pathname, {
 	guideCategory: guide?.data.category,
 	usingCategory: using?.data.category,
 	commandKind: command?.kind,
-	commandAudience: command?.audience,
+	commandAudience: command && command.kind !== 'launch' ? command.audience : undefined,
 	formatKind: format?.kind,
 	internalCategory: internal?.data.category,
 });

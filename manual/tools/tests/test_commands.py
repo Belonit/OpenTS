@@ -8,6 +8,7 @@ import unittest
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+import catalog_validation
 import commands
 import commands_engine
 import schema_validation
@@ -169,10 +170,73 @@ class CommandAdapterTests(unittest.TestCase):
     def test_debug_only_launch_availability_stays_distinct(self):
         launch = {record["id"]: record for record in self.catalog["launch_options"]}
         self.assertEqual(launch["launch:seed"]["availability"]["builds"], ["debug"])
+        self.assertEqual(launch["launch:seed"]["group"], "debug-build")
         self.assertEqual(
             launch["launch:tournament-time"]["availability"]["builds"],
             ["release", "debug"],
         )
+        self.assertNotEqual(launch["launch:tournament-time"]["group"], "debug-build")
+
+    def test_debug_build_group_must_match_the_debug_guard(self):
+        guarded = commands_engine.Site(
+            "code/init.cpp", "Parse_Command_Line", "literal:-GUARDED", "_DEBUG", 1, "")
+        open_site = commands_engine.Site(
+            "code/init.cpp", "Parse_Command_Line", "literal:-OPEN", None, 2, "")
+        discovered = {site.identity: site for site in (guarded, open_site)}
+
+        def adapter(site, group, builds):
+            return {
+                "id": f"launch:{site.expression.split('-')[1].lower()}",
+                "group": group,
+                "availability": {"builds": builds},
+                "sites": [{"file": site.file, "function": site.function,
+                           "expression": site.expression, "guard": site.guard}],
+            }
+
+        commands_engine.check_launch_builds([
+            adapter(guarded, "debug-build", ["debug"]),
+            adapter(open_site, "testing", ["release", "debug"]),
+        ], discovered)
+        for mismatch in (
+            adapter(guarded, "testing", ["debug"]),
+            adapter(guarded, "debug-build", ["release", "debug"]),
+            adapter(open_site, "debug-build", ["release", "debug"]),
+            adapter(open_site, "testing", ["debug"]),
+        ):
+            with self.subTest(adapter=mismatch), \
+                    self.assertRaisesRegex(ValueError, "debug-build group"):
+                commands_engine.check_launch_builds([mismatch], discovered)
+
+
+class CommandOverlayTests(unittest.TestCase):
+    def test_launch_overlay_cannot_hold_a_heading(self):
+        with TemporaryDirectory() as directory:
+            manual = Path(directory)
+            (manual / "data").mkdir()
+            (manual / "data" / "commands.yaml").write_text(
+                "registered_commands:\n"
+                "- {id: Sample, route_id: sample, kind: registered}\n"
+                "fixed_controls: []\n"
+                "launch_options:\n"
+                "- {id: 'launch:option', route_id: option, kind: launch}\n",
+                encoding="utf-8",
+            )
+            overlays = manual / "content" / "commands"
+            overlays.mkdir(parents=True)
+            heading = "---\ncommand_id: {}\n---\n\n## Details\n\nText.\n"
+            fenced = "---\ncommand_id: {}\n---\n\n```sh\n# not a heading\n```\n"
+
+            (overlays / "option.md").write_text(fenced.format("'launch:option'"), encoding="utf-8")
+            (overlays / "sample.md").write_text(heading.format("Sample"), encoding="utf-8")
+            errors = []
+            catalog_validation.validate_commands(errors, manual)
+            self.assertEqual(errors, [])
+
+            (overlays / "option.md").write_text(heading.format("'launch:option'"), encoding="utf-8")
+            errors = []
+            catalog_validation.validate_commands(errors, manual)
+            self.assertTrue(any(
+                "option.md" in error and "cannot contain a heading" in error for error in errors))
 
 
 class CommandContractTests(unittest.TestCase):

@@ -1,12 +1,12 @@
 ---
 import { UI } from '../i18n/en.mjs';
-import type { CommandAudience, CommandRecord } from '../lib/commands';
+import type { CommandAudience, KeyCommandRecord } from '../lib/commands';
 import { commandRoute } from '../lib/commands';
 import { withBase } from '../lib/paths';
 
 interface Props {
-	records: CommandRecord[];
-	/** Plural noun for the filter label and empty state ("commands", "controls", "options"). */
+	records: KeyCommandRecord[];
+	/** Plural noun for the filter label and empty state ("commands", "controls"). */
 	noun?: string;
 	subjectHeader?: string;
 	audiences?: CommandAudience[];
@@ -24,10 +24,9 @@ const {
 const rows = [...records].sort((left, right) =>
 	left.title.localeCompare(right.title) || left.id.localeCompare(right.id));
 
-const invocation = (record: CommandRecord) => {
+const invocation = (record: KeyCommandRecord) => {
 	if (record.kind === 'registered') return record.forced_binding ?? 'KEYBOARD.INI';
-	if (record.kind === 'fixed') return record.bindings.join(', ');
-	return record.syntax;
+	return record.bindings.join(', ');
 };
 ---
 

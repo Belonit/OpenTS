@@ -12,7 +12,7 @@ The game opens its screen at `ScreenWidth` by [`ScreenHeight`](/keys/screenheigh
 
 Writing `-1` for either dimension makes both 640 by 480, even when the launch option gives a size.
 
-A size written in `sun.ini` wins over the [resolution launch option](/using/command-line/resolution/), which fills in only a dimension the file leaves out.
+A size written in `sun.ini` wins over the [resolution launch option](/using/command-line/#resolution), which fills in only a dimension the file leaves out.
 
 If the renderer cannot start at the chosen size, the game shows a video error and exits.
 

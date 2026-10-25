@@ -30,7 +30,7 @@ Exceptions/exception-20260817-061945-7420/
 
 Report a crash by attaching the whole folder. If the folder cannot be created, the files are written directly into the executable's directory instead.
 
-The folder stays beside the executable when [`-USERDIR`](/using/command-line/user-directory/) names a user directory, so the game needs write access to the executable's directory to save a report.
+The folder stays beside the executable when [`-USERDIR`](/using/command-line/#user-directory) names a user directory, so the game needs write access to the executable's directory to save a report.
 
 At startup, the game deletes crash folders last modified more than 30 days ago.
 
@@ -87,7 +87,7 @@ After writing the folder, the game shows the report and the folder's path in a d
 
 ## Raising a crash on purpose
 
-[`-EXCEPTIONTEST=<fault>`](/using/command-line/exception-test) raises a chosen fault, so crash reporting can be checked on a given machine without waiting for a real crash.
+[`-EXCEPTIONTEST=<fault>`](/using/command-line/#exception-test) raises a chosen fault, so crash reporting can be checked on a given machine without waiting for a real crash.
 
 ## Before sharing a folder
 

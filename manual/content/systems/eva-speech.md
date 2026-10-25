@@ -44,6 +44,6 @@ Each scenario starts with EVA enabled. A saved game restores the setting it had 
 
 While any of these holds, every request to speak is refused and nothing is queued:
 
-- the game was started with the [quiet launch option](/using/command-line/quiet/);
+- the game was started with the [quiet launch option](/using/command-line/#quiet);
 - `VoiceVolume` is below 1/255 (about 0.004), which includes zero;
 - no audio device is available.

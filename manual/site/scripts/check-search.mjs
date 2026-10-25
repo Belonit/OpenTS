@@ -96,6 +96,18 @@ async function expectRoute(query, route, filters) {
 	console.log(`OK       ${JSON.stringify(query)}${filterLabel(filters)} -> ${route}`);
 }
 
+// A page with many entries answers through the sub-result for the entry's heading.
+async function expectEntry(query, route, fragment) {
+	const response = await pagefind.search(query);
+	const results = await Promise.all(response.results.slice(0, 25).map((result) => result.data()));
+	const page = results.find((result) => new URL(result.url, 'https://local.invalid').pathname === route);
+	const anchors = (page?.sub_results ?? []).map((sub) => new URL(sub.url, 'https://local.invalid').hash);
+	if (!anchors.includes(`#${fragment}`)) {
+		throw new Error(`Search for ${JSON.stringify(query)} did not reach ${route}#${fragment}. Sub-results:\n  ${anchors.join('\n  ') || 'none'}`);
+	}
+	console.log(`OK       ${JSON.stringify(query)} -> ${route}#${fragment}`);
+}
+
 async function expectNoRoute(query, route, filters) {
 	const urls = await urlsFor(query, filters, Number.POSITIVE_INFINITY);
 	if (urls.some((url) => new URL(url, 'https://local.invalid').pathname === route)) {
@@ -121,7 +133,9 @@ await expectRoute('MISSION_HUNT', `${base}/reference/enums/mission/`);
 await expectRoute('RTTI_VEINHOLEMONSTER', `${base}/reference/enums/rtti-type/`);
 await expectRoute('developer builds', `${base}/using/project-status/`);
 await expectRoute('Toggle follow state', `${base}/commands/follow/`);
-await expectRoute('Command-line help', `${base}/using/command-line/help/`);
+await expectRoute('Command-line help', `${base}/using/command-line/`);
+await expectEntry('CAPTUREMAP', `${base}/using/command-line/`, 'capture-map');
+await expectEntry('Quiet mode', `${base}/using/command-line/`, 'quiet');
 await expectRoute('CRC-indexed archive members', `${base}/formats/mix/`);
 await expectRoute('RandomMap', `${base}/reference/map-seeds/`);
 await expectRoute('Each TileSet section defines', `${base}/reference/theater-controls/`);
@@ -144,7 +158,7 @@ await expectRoute('Base placement', `${base}/systems/base-adjacency/`, scoped(SE
 await expectRoute('developer builds', `${base}/using/project-status/`, scoped(SEARCH_VIEWS.using, 'Getting started'));
 await expectRoute('Toggle follow state', `${base}/commands/follow/`, scoped(SEARCH_VIEWS.commands, COMMAND_KIND_AREAS.registered));
 await expectRoute('Options menu', `${base}/commands/fixed-options-menu/`, scoped(SEARCH_VIEWS.commands, COMMAND_KIND_AREAS.fixed));
-await expectRoute('Command-line help', `${base}/using/command-line/help/`, scoped(SEARCH_VIEWS.using, COMMAND_KIND_AREAS.launch));
+await expectRoute('Command-line help', `${base}/using/command-line/`, scoped(SEARCH_VIEWS.using, COMMAND_KIND_AREAS.launch));
 await expectRoute('CRC-indexed archive members', `${base}/formats/mix/`, scoped(SEARCH_VIEWS.formats, FORMAT_KIND_AREAS.binary));
 await expectRoute('RandomMap', `${base}/reference/map-seeds/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.mapSeeds));
 await expectRoute('Each TileSet section defines', `${base}/reference/theater-controls/`, scoped(SEARCH_VIEWS.reference, SEARCH_AREAS.theaterControls));

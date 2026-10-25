@@ -25,6 +25,8 @@ RELATED_COLLECTIONS = (
     ("content/formats", "*.md", None),
 )
 _FRONTMATTER = re.compile(r"^---\r?\n([\s\S]*?)\r?\n---")
+_MARKDOWN_HEADING = re.compile(r"^#{1,6}\s", re.M)
+_FENCE = re.compile(r"^(```|~~~)[\s\S]*?^\1", re.M)
 
 
 def frontmatter(path, errors=None, context=None):
@@ -101,6 +103,11 @@ def validate_commands(errors, manual):
             errors.append(
                 f"{label}: filename must be {expected}; create it with: "
                 f"python manual/tools/manage.py scaffold command {identifier}")
+        body = _FENCE.sub("", _FRONTMATTER.sub("", overlay.read_text(encoding="utf-8"), count=1))
+        if record.get("kind") == "launch" and _MARKDOWN_HEADING.search(body):
+            errors.append(
+                f"{label}: a command line option's overlay renders inside its entry "
+                "on the command line page, so it cannot contain a heading")
     return records
 
 

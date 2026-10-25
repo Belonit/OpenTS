@@ -12,5 +12,5 @@ when_omitted:
 Damage the game forces through is not affected. A hunter-seeker that detonates still damages its target, and infantry standing in Tiberium still take damage from it and can die.
 
 :::caution[The entry is read in campaigns only]
-Only a single-player mission reads `[SpecialFlags]` from the map. In every other game type, weapons do damage whatever the map says, unless a Debug build was started with the [`-XI`](/using/command-line/inert/) launch option.
+Only a single-player mission reads `[SpecialFlags]` from the map. In every other game type, weapons do damage whatever the map says, unless a Debug build was started with the [`-XI`](/using/command-line/#inert) launch option.
 :::

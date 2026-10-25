@@ -27,7 +27,7 @@ The game writes the file once per match, at the first of these:
 - the game goes out of sync, or loses its connection to the other machines;
 - the local player leaves before the match is decided.
 
-The file goes beside the game's executable, or into the folder [`-USERDIR=`](/using/command-line/user-directory/) names. It replaces any `stats.dmp` already there. An [observer's](/systems/observers/) machine writes no file.
+The file goes beside the game's executable, or into the folder [`-USERDIR=`](/using/command-line/#user-directory) names. It replaces any `stats.dmp` already there. An [observer's](/systems/observers/) machine writes no file.
 
 The counts and the match time carry over through a saved game, so a match resumed from a save, or loaded during play, reports the whole match.
 

@@ -117,9 +117,9 @@ test('commands and formats expose kind, audience, and compatibility views', () =
 		views: [SEARCH_VIEWS.commands],
 		areas: [COMMAND_KIND_AREAS.registered, COMMAND_AUDIENCE_AREAS.player],
 	});
-	assert.deepEqual(scopes('/using/command-line/help/', { commandKind: 'launch', commandAudience: 'developer' }), {
+	assert.deepEqual(scopes('/using/command-line/cd-path/'), {
 		views: [SEARCH_VIEWS.using],
-		areas: [COMMAND_KIND_AREAS.launch, COMMAND_AUDIENCE_AREAS.developer],
+		areas: [COMMAND_KIND_AREAS.launch],
 	});
 	assert.deepEqual(scopes('/formats/mix/', { formatKind: 'binary' }), {
 		views: [SEARCH_VIEWS.formats],

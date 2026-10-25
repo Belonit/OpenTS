@@ -139,6 +139,8 @@ export function taxonomyContracts(collection, prefix, categories, view) {
 			if (!group) throw new Error(`System category ${entry.category} belongs to no group`);
 			areas.push(group.title);
 		}
+		// The command line page sits under /using/command-line/, which also files it with the options.
+		if (collection === 'using' && entry.id === 'command-line') areas.push(UI.commandKindAreas.launch);
 		return [
 			`${prefix}/${entry.id}/index.html`,
 			[...areas.map((area) => `Topic:${escape(area)}`), `Part of the manual:${escape(view)}`],

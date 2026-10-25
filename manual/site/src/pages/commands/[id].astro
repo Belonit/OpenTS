@@ -2,7 +2,7 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import CommandPage from '../../components/CommandPage.astro';
 import TombstoneDetail from '../../components/TombstoneDetail.astro';
-import { allCommands, requireCommand, type CommandRecord } from '../../lib/commands';
+import { allCommands, requireCommand, type KeyCommandRecord } from '../../lib/commands';
 import { tombstones, type TombstoneRecord } from '../../lib/data';
 import { requireRouteTail } from '../../lib/paths';
 
@@ -18,7 +18,7 @@ export async function getStaticPaths() {
 		byCommand.set(record.id, overlay);
 	}
 	const active = allCommands()
-		.filter((record) => record.kind !== 'launch')
+		.filter((record): record is KeyCommandRecord => record.kind !== 'launch')
 		.map((record) => ({
 			params: { id: record.route_id },
 			props: { kind: 'active' as const, record, overlay: byCommand.get(record.id) },
@@ -33,7 +33,7 @@ export async function getStaticPaths() {
 }
 
 type Props =
-	| { kind: 'active'; record: CommandRecord; overlay?: CollectionEntry<'commands'> }
+	| { kind: 'active'; record: KeyCommandRecord; overlay?: CollectionEntry<'commands'> }
 	| { kind: 'removed'; record: TombstoneRecord };
 const props = Astro.props as Props;
 ---

@@ -483,6 +483,25 @@ class LifecycleEntityExpansionTests(unittest.TestCase):
             "command:Removed: tombstone route must remain '/commands/removed/'"
             in error for error in errors))
 
+    def test_launch_option_copy_and_grouping_are_not_engine_changes(self):
+        def option(identifier, **fields):
+            return {
+                "id": identifier, "route_id": identifier.split(":")[1], "kind": "launch",
+                "title": "Option", "description": "Before.", "audience": "developer",
+                "availability": {"builds": ["release", "debug"]}, "syntax": "-OPT",
+                "_provenance": {"source": "code/init.cpp", "guard": None}, **fields,
+            }
+
+        base = {"launch_options": [option("launch:copy"), option("launch:syntax")]}
+        regrouped = {
+            key: value for key, value in option("launch:copy").items() if key != "audience"}
+        current = {"launch_options": [
+            {**regrouped, "description": "After.", "group": "testing"},
+            option("launch:syntax", syntax="-OPTION"),
+        ]}
+        delta = validate_manual.classify_command_deltas(current, base)
+        self.assertEqual(delta["changed"], {"launch:syntax"})
+
     def test_format_tombstones_preserve_compatibility_and_default_routes(self):
         base_formats = {
             "teamtypes": {"route": "/mapping/team-types/"},

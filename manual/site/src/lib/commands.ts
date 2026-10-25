@@ -11,6 +11,7 @@ const RAW_COMMANDS = import.meta.glob('../../../data/commands.yaml', {
 
 export type CommandBuild = 'release' | 'debug';
 export type CommandAudience = 'player' | 'developer' | 'debug';
+export type LaunchGroup = 'files-display' | 'multiplayer' | 'map-capture' | 'testing' | 'startup' | 'debug-build';
 
 export interface CommandAvailability {
 	builds: CommandBuild[];
@@ -21,29 +22,32 @@ interface CommonCommand {
 	route_id: string;
 	title: string;
 	description: string;
-	audience: CommandAudience;
 	availability: CommandAvailability;
 }
 
 export interface RegisteredCommand extends CommonCommand {
 	kind: 'registered';
+	audience: CommandAudience;
 	category: string;
 	forced_binding?: 'Delete' | 'Escape';
 }
 
 export interface FixedControl extends CommonCommand {
 	kind: 'fixed';
+	audience: CommandAudience;
 	bindings: string[];
 	context: string;
 }
 
 export interface LaunchOption extends CommonCommand {
 	kind: 'launch';
+	group: LaunchGroup;
 	syntax: string;
 	aliases?: string[];
 }
 
 export type CommandRecord = RegisteredCommand | FixedControl | LaunchOption;
+export type KeyCommandRecord = RegisteredCommand | FixedControl;
 
 interface RawCatalog {
 	registered_commands: Array<RegisteredCommand & { _provenance: unknown }>;
@@ -95,9 +99,19 @@ export function requireCommand(identifier: string, context: string): CommandReco
 	return record;
 }
 
+export function launchOptions(): LaunchOption[] {
+	return allCommands().filter((record): record is LaunchOption => record.kind === 'launch');
+}
+
+/** Orders options by the switch a reader types, ignoring dashes, slashes and placeholders. */
+export function launchSortKey(record: LaunchOption): string {
+	return record.syntax.replace(/<[^>]*>/g, '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+}
+
+/** Every launch option is an entry on one page; its old page route redirects to the entry. */
 export function commandRoute(record: CommandRecord): string {
 	return record.kind === 'launch'
-		? `/using/command-line/${record.route_id}/`
+		? `/using/command-line/#${record.route_id}`
 		: `/commands/${record.route_id}/`;
 }
 

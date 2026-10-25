@@ -11,4 +11,4 @@ when_omitted:
 
 The value is meant to be the world coordinate of an object to watch, written as three comma-separated numbers.
 
-`Coord` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/playback/).
+`Coord` is one of the [sync-bug settings](/systems/developer-mode/#the-sync-dump). They are read only when the player picks multiplayer play from the main menu in a Debug build started with [`-XY`](/using/command-line/#playback).

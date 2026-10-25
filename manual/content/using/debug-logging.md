@@ -23,7 +23,7 @@ Debug/DEBUG_17-08-2026_06-00-35.LOG
 
 Because each run gets its own file, the log from a run that crashed is still there after the next launch. When two processes start within the same second, the second adds its process id to the name.
 
-The log stays beside the executable when [`-USERDIR`](/using/command-line/user-directory/) names a user directory, so the game needs write access to the executable's directory to keep a log. If the folder or the file cannot be created, the game still runs, and its output still reaches the console and an attached debugger.
+The log stays beside the executable when [`-USERDIR`](/using/command-line/#user-directory) names a user directory, so the game needs write access to the executable's directory to keep a log. If the folder or the file cannot be created, the game still runs, and its output still reaches the console and an attached debugger.
 
 At startup, the game deletes logs last written more than 14 days ago. A single log stops growing at 64 MB, and its last line then says that the size limit was reached.
 
@@ -62,7 +62,7 @@ Some lines are written in several parts while the engine works through a step. S
 
 ## Opening the console
 
-Debug builds always open the console. Release builds open it when [`-XC`](/using/command-line/console-debug) is passed. The console opens before the game writes its first log line, so it shows the whole log, including startup. It keeps about 4,000 lines of scrollback.
+Debug builds always open the console. Release builds open it when [`-XC`](/using/command-line/#console-debug) is passed. The console opens before the game writes its first log line, so it shows the whole log, including startup. It keeps about 4,000 lines of scrollback.
 
 The console's close button is disabled, because closing a console window ends the program that owns it. Close the game instead.
 

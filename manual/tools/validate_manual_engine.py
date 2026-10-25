@@ -462,11 +462,12 @@ def classify_command_deltas(current, base):
         #
         # A registered command's description is the engine's own registered
         # text, so a change there is an engine change. A fixed control's or a
-        # launch option's description is authored copy in command-adapters.yaml
-        # like its title, and correcting the wording is documentation work.
+        # launch option's description, audience and group are authored copy in
+        # command-adapters.yaml like its title, and changing them is
+        # documentation work.
         ignored = {"id", "route_id", "title", "_provenance"}
         if record.get("kind") in {"fixed", "launch"}:
-            ignored.add("description")
+            ignored.update({"description", "audience", "group"})
         return {
             field: value for field, value in record.items()
             if field not in ignored

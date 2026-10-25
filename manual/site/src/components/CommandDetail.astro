@@ -1,8 +1,8 @@
 ---
-import type { CommandRecord } from '../lib/commands';
+import type { KeyCommandRecord } from '../lib/commands';
 import { commandAvailabilityLabel, commandKindLabel } from '../lib/commands';
 
-interface Props { record: CommandRecord }
+interface Props { record: KeyCommandRecord }
 const { record } = Astro.props;
 ---
 
@@ -18,10 +18,6 @@ const { record } = Astro.props;
 		{record.kind === 'fixed' && <>
 			<dt>Binding</dt><dd>{record.bindings.map((binding) => <kbd>{binding}</kbd>)}</dd>
 			<dt>Context</dt><dd>{record.context}</dd>
-		</>}
-		{record.kind === 'launch' && <>
-			<dt>Syntax</dt><dd><code>{record.syntax}</code></dd>
-			{record.aliases?.length && <><dt>Aliases</dt><dd>{record.aliases.map((alias) => <code>{alias}</code>)}</dd></>}
 		</>}
 		<dt>Audience</dt><dd>{record.audience[0].toUpperCase() + record.audience.slice(1)}</dd>
 		<dt>Availability</dt><dd>{commandAvailabilityLabel(record.availability)}</dd>

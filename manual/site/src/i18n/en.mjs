@@ -63,6 +63,25 @@ export const UI = {
 		fixed: 'Fixed controls',
 		launch: 'Command line options',
 	},
+	launchGroups: [
+		{ id: 'files-display', title: 'Files and display' },
+		{ id: 'multiplayer', title: 'Multiplayer' },
+		{ id: 'map-capture', title: 'Map capture' },
+		{ id: 'testing', title: 'Testing and diagnostics' },
+		{ id: 'startup', title: 'Startup' },
+		{ id: 'debug-build', title: 'Debug build only', description: 'Only a Debug build accepts these options.' },
+	],
+	commandLine: {
+		filter: 'Filter options',
+		placeholder: 'Switch, name, or what it does…',
+		of: 'of',
+		noMatches: 'No options match this filter.',
+		also: 'Also',
+		removed: 'Removed options',
+		removedOption: 'Option',
+		removedSummary: 'What it did',
+		removedIn: 'Removed in',
+	},
 	commands: {
 		/** @param {string} noun */
 		filter: (noun) => `Filter ${noun}`,

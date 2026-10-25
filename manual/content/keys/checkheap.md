@@ -8,4 +8,4 @@ when_omitted:
   value: "0"
 ---
 
-No heap check runs, whatever the value. The engine reads it when the player picks multiplayer play from the main menu, in either build configuration and with or without [`-XY`](/using/command-line/playback/).
+No heap check runs, whatever the value. The engine reads it when the player picks multiplayer play from the main menu, in either build configuration and with or without [`-XY`](/using/command-line/#playback).

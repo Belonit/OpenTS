@@ -16,7 +16,7 @@ related:
   id: launch:spawn
 ---
 
-A client that sets up matches outside the game, such as the CnCNet client, writes this file beside the game and starts the game with [`-SPAWN`](/using/command-line/spawn). The game then plays the match the file describes instead of showing its menu, and exits when that match ends.
+A client that sets up matches outside the game, such as the CnCNet client, writes this file beside the game and starts the game with [`-SPAWN`](/using/command-line/#spawn). The game then plays the match the file describes instead of showing its menu, and exits when that match ends.
 
 Every key on this page belongs in the `[Settings]` section unless the page names another section. The game ignores keys it does not know. Values are read as follows:
 
@@ -241,7 +241,7 @@ A saved game keeps the picture and the bar position. The first restart after the
 
 `DifficultyBasedAINames=yes` names each computer player `Hard AI`, `Medium AI` or `Easy AI` instead of `Computer`. The name follows the seat's `[HouseHandicaps]` entry: `0` is Hard, `1` Medium, and `2` to `6` Easy. A seat without an entry is named after `AIDifficulty`, so `AIDifficulty=2` names it Hard. The name does not reflect the [bonus](/systems/difficulty/#the-computers-bonus-with-more-than-one-human) a computer player can get in a match with more than one person.
 
-`QuickMatch=yes` shows every player, computer players included, as `Player 1` to `Player 8` instead of by name. This covers the loading screen, the radar's name list, chat, the messages about alliances, defeats, changed settings and players leaving, the reconnect and out-of-sync dialogs, the vote to skip a movie, the score screen, and the [`-MPDEBUG`](/using/command-line/multiplayer-debug/) overlay. A player's number is their seat's place in [house order](#who-is-playing), so it is the same on every machine and does not change when others leave. The real names stay in this file and still appear in the game's log.
+`QuickMatch=yes` shows every player, computer players included, as `Player 1` to `Player 8` instead of by name. This covers the loading screen, the radar's name list, chat, the messages about alliances, defeats, changed settings and players leaving, the reconnect and out-of-sync dialogs, the vote to skip a movie, the score screen, and the [`-MPDEBUG`](/using/command-line/#multiplayer-debug) overlay. A player's number is their seat's place in [house order](#who-is-playing), so it is the same on every machine and does not change when others leave. The real names stay in this file and still appear in the game's log.
 
 ## The match results file
 

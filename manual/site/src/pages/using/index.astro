@@ -21,13 +21,6 @@ const categories = USING_CATEGORIES.map((category) => ({
 			<h2 id={category.id}>{category.title}</h2>
 			<p class="ots-compact">{category.description}</p>
 			<CardGrid>
-				{category.id === 'getting-started' && (
-					<LinkCard
-						title="Command line options"
-						href={withBase('/using/command-line/')}
-						description="Options accepted on the OpenTS command line."
-					/>
-				)}
 				{category.entries.map((entry) => (
 					<LinkCard
 						title={entry.data.title}

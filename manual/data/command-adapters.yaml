@@ -468,8 +468,8 @@ launch_options:
     title: Command-line help
     syntax: "-?"
     aliases: ["/?", "-h", "/h"]
-    description: Prints the built-in command-line summary and exits startup.
-    audience: developer
+    description: Shows the original game's parameter summary and exits without starting the game.
+    group: startup
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-?' }
@@ -479,235 +479,216 @@ launch_options:
   - id: launch:playtest
     title: Playtest mode
     syntax: PLAYTEST
-    description: Enables the debug playtest flag.
-    audience: debug
+    description: Arms the debug keys, which any command-line argument already does.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'obfuscated:PARM_PLAYTEST', guard: _DEBUG }
   - id: launch:from-install
     title: Installer launch
     syntax: FROMINSTALL
-    description: Marks startup as launched by the installer.
-    audience: developer
+    description: Plays the `EVA.VQA` introduction movie before the startup movies, whatever `PlayIntro` says.
+    group: startup
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'obfuscated:PARM_INSTALL' }
   - id: launch:check-map
     title: Map checking
     syntax: -CHECKMAP
-    description: Runs the map check every frame; the routine it calls has no body and always reports success, so no map is examined.
-    audience: debug
+    description: Runs a map check every frame, which examines nothing and always passes.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CHECKMAP', guard: _DEBUG }
   - id: launch:data-directory
     title: Game data directory
     syntax: -DATADIR=<path>
-    description: Reads the game's data from the directory named, which the game never writes to.
-    audience: player
+    description: Reads the game's data from the directory named, and never writes there.
+    group: files-display
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-DATADIR=' }
   - id: launch:user-directory
     title: User data directory
     syntax: -USERDIR=<path>
-    description: Keeps the settings, saved games and other files the game writes in the directory named, creating it when it is not there.
-    audience: player
+    description: Writes settings, saved games and the other files the game creates into the directory named, and creates the directory when it is missing.
+    group: files-display
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-USERDIR=' }
   - id: launch:spawn
     title: Client launch
     syntax: -SPAWN
-    description: Launches the game SPAWN.INI describes, in place of the startup movies and the menu.
-    audience: player
+    description: Plays the match `SPAWN.INI` describes in place of the startup movies and the menu, and exits when the match ends.
+    group: multiplayer
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-SPAWN' }
   - id: launch:capture-map
     title: Map capture
     syntax: -CAPTUREMAP=<map>
-    description: >-
-      Draws the map named as a PNG picture with the default capture settings and exits,
-      without showing a window, a console or a dialog. Name the picture with -CAPTUREOUT=;
-      without it the game exits at once. The map capture description format says what a
-      capture draws and how the game exits. Use -CAPTURE= for more settings.
-    audience: developer
+    description: Draws the map named to a PNG picture with the default capture settings, then exits without having shown a window, a console or a dialog.
+    group: map-capture
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CAPTUREMAP=' }
   - id: launch:capture-output
     title: Map capture file
     syntax: -CAPTUREOUT=<path>
-    description: >-
-      Names the PNG file a -CAPTUREMAP= capture writes, replacing any file already there. A
-      relative path is taken from the game's own folder. The folder must exist.
-    audience: developer
+    description: Names the PNG file a `-CAPTUREMAP=` capture writes, replacing any file already there.
+    group: map-capture
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CAPTUREOUT=' }
   - id: launch:capture
     title: Map capture description
     syntax: -CAPTURE=<file>
-    description: >-
-      Makes the map capture the file describes and exits, without showing a window, a console
-      or a dialog. A relative path is taken from the game's own folder. The map capture
-      description format describes the file. It cannot be combined with -CAPTUREMAP= or
-      -CAPTUREOUT=.
-    audience: developer
+    description: Makes the map capture the file describes, then exits without having shown a window, a console or a dialog.
+    group: map-capture
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-CAPTURE=' }
   - id: launch:tournament-time
     title: Tournament time limit
     syntax: -TIME=<minutes>
-    description: Sets the tournament time limit.
-    audience: developer
+    description: Ends a network match after the number of game minutes given, and decides by score whether this player wins.
+    group: multiplayer
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-TIME=' }
   - id: launch:multiplayer-debug
     title: Internet debug display
     syntax: -MPDEBUG
-    description: Enables the Internet debug display.
-    audience: debug
+    description: Shows network statistics along the bottom of the screen in any game but a campaign mission.
+    group: multiplayer
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-MPDEBUG' }
   - id: launch:stealth
     title: Network stealth mode
     syntax: -STEALTH
-    description: Enables network stealth mode.
-    audience: developer
+    description: Has no effect. It was meant to keep this copy out of other players' LAN game lists.
+    group: multiplayer
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-STEALTH' }
   - id: launch:attract
     title: Attract mode
     syntax: -ATTRACT
-    description: Enables attract mode.
-    audience: developer
+    description: Lets any key press end a `-XY` playback before the playback writes its report, and has no other effect.
+    group: startup
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-ATTRACT' }
   - id: launch:resolution
     title: Resolution
     syntax: -<width>X<height>
-    description: Sets the initial screen width and height.
-    audience: player
+    description: Sets the screen size, such as `-1280X720`, for a dimension `sun.ini` leaves out.
+    group: files-display
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'pattern:-<width>X<height>' }
   - id: launch:windowed
     title: Windowed mode
     syntax: -WIN
-    description: Enables windowed mode.
-    audience: player
+    description: Opens the game in a window for this run, whatever `Fullscreen` says.
+    group: files-display
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-WIN' }
   - id: launch:multiple-instances
     title: Multiple copies
     syntax: -MULTIINSTANCE
-    description: >-
-      Lets this copy start while another copy of the game is running. Without it, a second copy
-      brings the running copy's window to the front and exits.
-    audience: developer
+    description: Lets this copy start while another copy of the game is running.
+    group: testing
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-MULTIINSTANCE' }
   - id: launch:exception-test
     title: Exception reporting test
     syntax: -EXCEPTIONTEST=<fault>
-    description: >-
-      Raises a chosen fault on purpose so that crash reporting can be checked without waiting
-      for a real crash. Accepts av-read, av-write, stack, purecall, terminate, invalidparam,
-      fatal, worker, sectionfault, wndproc, and timer.
-    audience: developer
+    description: Raises the fault named on purpose, so that crash reporting can be checked without waiting for a real crash.
+    group: testing
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-EXCEPTIONTEST=' }
   - id: launch:desync-test
     title: Out-of-sync test
     syntax: -DESYNCTEST=<frame>
-    description: >-
-      Corrupts this machine's own game checksum once, on the first frame at or after the one
-      given, so that the out-of-sync report can be checked without waiting for a real
-      divergence. The corruption waits for the checksum comparison to start, so a frame inside
-      the first 256 fires as soon as it does.
-    audience: developer
+    description: Corrupts this machine's game checksum once, from the frame given, so that the out-of-sync report can be checked without waiting for a real divergence.
+    group: testing
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-DESYNCTEST=' }
   - id: launch:seed
     title: Random seed
     syntax: -SEED<number>
-    description: Seeds the random number generator with the number given, for a campaign mission or skirmish started from the menu, so it repeats the same random draws each time. 0 draws a new seed.
-    audience: debug
+    description: Seeds the random number generator for a campaign mission or skirmish started from the menu, so that it repeats the same random draws each time.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'literal:-SEED', guard: _DEBUG }
   - id: launch:monochrome
     title: Monochrome debug display
     syntax: -XM
-    description: Enables the monochrome debug display.
-    audience: debug
+    description: Enables the monochrome debug pages, which the monochrome debug key then switches on and off.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XM', guard: _DEBUG }
   - id: launch:inert
     title: Inert weapons
     syntax: -XI
-    description: Enables inert weapons so units take no damage.
-    audience: debug
+    description: Makes weapons deal no damage, as `Inert=yes` does, in any game but a campaign mission.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XI', guard: _DEBUG }
   - id: launch:speed-build
-    title: Accelerated timers
+    title: Instant superweapon charge
     syntax: -XH
-    description: Enables accelerated recharge and construction timers.
-    audience: debug
+    description: Makes a superweapon finish charging one frame after it starts.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XH', guard: _DEBUG }
   - id: launch:record
-    title: Multiplayer recording
+    title: Game recording
     syntax: -XX
-    description: Enables multiplayer recording.
-    audience: debug
+    description: Records each game to `RECORD.BIN`, campaign missions included.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XX', guard: _DEBUG }
   - id: launch:playback
     title: Recording playback
     syntax: -XY
-    description: Enables multiplayer recording playback.
-    audience: debug
+    description: Plays back `RECORD.BIN` in place of the main menu, but the playback writes an out-of-sync report and exits on its first frame.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XY', guard: _DEBUG }
   - id: launch:console-debug
     title: Console debug output
     syntax: -XC
-    description: Opens the debug output console. Debug builds always open it; this option opens it in release builds.
-    audience: developer
+    description: Opens the debug console in a Release build. A Debug build opens it without this option, except during a map capture.
+    group: testing
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XC' }
   - id: launch:event-debug
     title: Event and packet debug
     syntax: -XP
-    description: Enables event and packet debug output.
-    audience: debug
+    description: Writes the orders packed into each outgoing network packet, and each player's departure, to the debug log.
+    group: debug-build
     availability: *debug
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XP', guard: _DEBUG }
   - id: launch:quiet
     title: Quiet mode
     syntax: -XQ
-    description: Enables quiet mode.
-    audience: developer
+    description: Mutes music, sound effects and EVA speech.
+    group: testing
     availability: *all
     sites:
       - { file: code/init.cpp, function: Parse_Command_Line, expression: 'compact:-XQ' }

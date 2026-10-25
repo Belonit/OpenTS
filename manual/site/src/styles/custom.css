@@ -714,6 +714,117 @@ h1.ots-keytitle {
 .ots-reference-key small { margin-top: 0; }
 .ots-reference-key .ots-badge-noeffect { justify-self: start; }
 .ots-unknown { color: var(--ots-muted); font-style: italic; }
+
+/* ---------- command line reference ---------- */
+
+/* Each entry is a switch column beside its explanation, one row per option. */
+.ots-launch-reference > .ots-reference-controls {
+	margin-bottom: 0.5rem;
+	border-bottom: 1px solid var(--ots-line);
+	border-radius: 6px;
+}
+
+.ots-launch-reference > .ots-reference-controls label {
+	flex: 1;
+}
+
+.ots-launch-reference th {
+	white-space: nowrap;
+}
+
+.sl-markdown-content .ots-launch-list {
+	margin-top: 0.75rem;
+	border-top: 1px solid var(--ots-line);
+}
+
+.sl-markdown-content .ots-launch {
+	display: grid;
+	grid-template-columns: 15rem minmax(0, 1fr);
+	gap: 0.15rem 1.5rem;
+	margin: 0;
+	padding: 0.85rem 0.75rem;
+	border-bottom: 1px solid var(--ots-line-soft);
+}
+
+.sl-markdown-content .ots-launch:has(> .ots-launch-switch:target) {
+	background: var(--ots-accent-soft);
+}
+
+.sl-markdown-content .ots-launch > * {
+	margin: 0;
+}
+
+.sl-markdown-content .ots-launch-switch {
+	font-size: 0.95rem;
+	line-height: 1.6;
+	color: var(--ots-ink-strong);
+}
+
+.ots-launch-switch a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.ots-launch-switch a:hover {
+	color: var(--ots-accent);
+}
+
+.ots-launch-switch code {
+	padding: 0;
+	background: none;
+	font-weight: 700;
+	overflow-wrap: anywhere;
+}
+
+.ots-launch-switch var {
+	font-style: italic;
+	font-weight: 400;
+	color: var(--ots-gen);
+}
+
+.sl-markdown-content .ots-launch-body > * {
+	max-width: 65ch;
+	margin: 0.5rem 0 0;
+}
+
+.sl-markdown-content .ots-launch-body > :first-child {
+	margin-top: 0;
+}
+
+.sl-markdown-content .ots-launch-name {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--ots-muted);
+}
+
+.ots-launch-name .ots-badge {
+	text-decoration: none;
+	text-transform: none;
+}
+
+.sl-markdown-content .ots-launch-also {
+	font-size: 0.875rem;
+	color: var(--ots-muted);
+}
+
+.ots-launch-group[hidden],
+.ots-launch[hidden],
+.ots-launch-reference tr[hidden] {
+	display: none;
+}
+
+@media (max-width: 50em) {
+	.sl-markdown-content .ots-launch {
+		grid-template-columns: minmax(0, 1fr);
+		padding-inline: 0;
+	}
+}
 .ots-empty { padding: 1rem; border: 1px solid var(--ots-line); color: var(--ots-muted); }
 
 /* ------------------------------------------------------------------ */

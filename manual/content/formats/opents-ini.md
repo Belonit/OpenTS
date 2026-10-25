@@ -115,13 +115,13 @@ Each save keeps what it was written with. Turning the key off makes new saves sm
 
 `OPENTS.INI` must be a loose file, because the game does not read it from an archive. The game looks for it in the game data directory, then in that directory's `INI` and `MIX` folders, and reads the first copy it finds. The user data directory is not searched for it.
 
-The game data directory is the one [`-DATADIR`](/using/command-line/data-directory/) names, or the game's own directory when that option is not used.
+The game data directory is the one [`-DATADIR`](/using/command-line/#data-directory) names, or the game's own directory when that option is not used.
 
 ## The order files are searched for in
 
-1. the user data directory, when [`-USERDIR`](/using/command-line/user-directory/) names one;
+1. the user data directory, when [`-USERDIR`](/using/command-line/#user-directory) names one;
 2. the game's own directory;
-3. the game data directory, when [`-DATADIR`](/using/command-line/data-directory/) names one;
+3. the game data directory, when [`-DATADIR`](/using/command-line/#data-directory) names one;
 4. the folders `SearchPaths` lists, in the order written;
 5. the `ui` folder in the game's own directory.
 

@@ -39,8 +39,16 @@ maintainer contracts, not ordinary prose.
 | Format | Registration, structure, loading, search behavior, and record shape |
 | Guide | A procedure or troubleshooting path |
 | Using OpenTS | Setup, configuration, compatibility, migration, or troubleshooting for the current OpenTS version |
-| Command | One registered hotkey command, fixed control, or command line option |
+| Command | One registered hotkey command or fixed control, or one entry on the command line options page |
 | Internal | Contributor-facing architecture, state, ownership, and invariants |
+
+Command line options share one page, `content/using/command-line.md`, which
+holds the rules for passing them; the template adds an entry for every option.
+An entry opens with the option's `description` from
+`data/command-adapters.yaml`, one sentence that states its effect, and its
+`group` there picks the section. Anything more goes in the option's overlay,
+`content/commands/<route>.md`, which renders under that sentence and must not
+use headings. Link an option as `/using/command-line/#<route>`.
 
 A feature may need several page types. Link them instead of copying a format's
 fields into a system page, a system's algorithm into a key page, or an

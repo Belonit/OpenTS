@@ -124,10 +124,7 @@ export function searchScopesForPath(pathname, options = {}) {
 		views.add(SEARCH_VIEWS.using);
 		const category = taxonomyTitle(UI.usingCategories, options.usingCategory);
 		if (category) areas.add(category);
-		if (isWithin(path, '/using/command-line/')) {
-			areas.add(COMMAND_KIND_AREAS.launch);
-			if (options.commandAudience) areas.add(COMMAND_AUDIENCE_AREAS[options.commandAudience]);
-		}
+		if (isWithin(path, '/using/command-line/')) areas.add(COMMAND_KIND_AREAS.launch);
 	} else if (isWithin(path, '/systems/')) {
 		views.add(SEARCH_VIEWS.systems);
 		const systemCategory = options.systemCategory;

@@ -2203,8 +2203,8 @@ launch_options:
   route_id: help
   kind: launch
   title: Command-line help
-  description: Prints the built-in command-line summary and exits startup.
-  audience: developer
+  description: Shows the original game's parameter summary and exits without starting the game.
+  group: startup
   availability: *id001
   syntax: -?
   _provenance:
@@ -2218,8 +2218,8 @@ launch_options:
   route_id: playtest
   kind: launch
   title: Playtest mode
-  description: Enables the debug playtest flag.
-  audience: debug
+  description: Arms the debug keys, which any command-line argument already does.
+  group: debug-build
   availability: *id002
   syntax: PLAYTEST
   _provenance:
@@ -2229,8 +2229,9 @@ launch_options:
   route_id: from-install
   kind: launch
   title: Installer launch
-  description: Marks startup as launched by the installer.
-  audience: developer
+  description: Plays the `EVA.VQA` introduction movie before the startup movies, whatever `PlayIntro`
+    says.
+  group: startup
   availability: *id001
   syntax: FROMINSTALL
   _provenance:
@@ -2240,9 +2241,8 @@ launch_options:
   route_id: check-map
   kind: launch
   title: Map checking
-  description: Runs the map check every frame; the routine it calls has no body and always reports success,
-    so no map is examined.
-  audience: debug
+  description: Runs a map check every frame, which examines nothing and always passes.
+  group: debug-build
   availability: *id002
   syntax: -CHECKMAP
   _provenance:
@@ -2252,8 +2252,8 @@ launch_options:
   route_id: data-directory
   kind: launch
   title: Game data directory
-  description: Reads the game's data from the directory named, which the game never writes to.
-  audience: player
+  description: Reads the game's data from the directory named, and never writes there.
+  group: files-display
   availability: *id001
   syntax: -DATADIR=<path>
   _provenance:
@@ -2263,9 +2263,9 @@ launch_options:
   route_id: user-directory
   kind: launch
   title: User data directory
-  description: Keeps the settings, saved games and other files the game writes in the directory named,
-    creating it when it is not there.
-  audience: player
+  description: Writes settings, saved games and the other files the game creates into the directory named,
+    and creates the directory when it is missing.
+  group: files-display
   availability: *id001
   syntax: -USERDIR=<path>
   _provenance:
@@ -2275,8 +2275,9 @@ launch_options:
   route_id: spawn
   kind: launch
   title: Client launch
-  description: Launches the game SPAWN.INI describes, in place of the startup movies and the menu.
-  audience: player
+  description: Plays the match `SPAWN.INI` describes in place of the startup movies and the menu, and
+    exits when the match ends.
+  group: multiplayer
   availability: *id001
   syntax: -SPAWN
   _provenance:
@@ -2286,11 +2287,9 @@ launch_options:
   route_id: capture-map
   kind: launch
   title: Map capture
-  description: Draws the map named as a PNG picture with the default capture settings and exits, without
-    showing a window, a console or a dialog. Name the picture with -CAPTUREOUT=; without it the game exits
-    at once. The map capture description format says what a capture draws and how the game exits. Use
-    -CAPTURE= for more settings.
-  audience: developer
+  description: Draws the map named to a PNG picture with the default capture settings, then exits without
+    having shown a window, a console or a dialog.
+  group: map-capture
   availability: *id001
   syntax: -CAPTUREMAP=<map>
   _provenance:
@@ -2300,9 +2299,8 @@ launch_options:
   route_id: capture-output
   kind: launch
   title: Map capture file
-  description: Names the PNG file a -CAPTUREMAP= capture writes, replacing any file already there. A relative
-    path is taken from the game's own folder. The folder must exist.
-  audience: developer
+  description: Names the PNG file a `-CAPTUREMAP=` capture writes, replacing any file already there.
+  group: map-capture
   availability: *id001
   syntax: -CAPTUREOUT=<path>
   _provenance:
@@ -2312,10 +2310,9 @@ launch_options:
   route_id: capture
   kind: launch
   title: Map capture description
-  description: Makes the map capture the file describes and exits, without showing a window, a console
-    or a dialog. A relative path is taken from the game's own folder. The map capture description format
-    describes the file. It cannot be combined with -CAPTUREMAP= or -CAPTUREOUT=.
-  audience: developer
+  description: Makes the map capture the file describes, then exits without having shown a window, a console
+    or a dialog.
+  group: map-capture
   availability: *id001
   syntax: -CAPTURE=<file>
   _provenance:
@@ -2325,8 +2322,9 @@ launch_options:
   route_id: tournament-time
   kind: launch
   title: Tournament time limit
-  description: Sets the tournament time limit.
-  audience: developer
+  description: Ends a network match after the number of game minutes given, and decides by score whether
+    this player wins.
+  group: multiplayer
   availability: *id001
   syntax: -TIME=<minutes>
   _provenance:
@@ -2336,8 +2334,8 @@ launch_options:
   route_id: multiplayer-debug
   kind: launch
   title: Internet debug display
-  description: Enables the Internet debug display.
-  audience: debug
+  description: Shows network statistics along the bottom of the screen in any game but a campaign mission.
+  group: multiplayer
   availability: *id001
   syntax: -MPDEBUG
   _provenance:
@@ -2347,8 +2345,8 @@ launch_options:
   route_id: stealth
   kind: launch
   title: Network stealth mode
-  description: Enables network stealth mode.
-  audience: developer
+  description: Has no effect. It was meant to keep this copy out of other players' LAN game lists.
+  group: multiplayer
   availability: *id001
   syntax: -STEALTH
   _provenance:
@@ -2358,8 +2356,9 @@ launch_options:
   route_id: attract
   kind: launch
   title: Attract mode
-  description: Enables attract mode.
-  audience: developer
+  description: Lets any key press end a `-XY` playback before the playback writes its report, and has
+    no other effect.
+  group: startup
   availability: *id001
   syntax: -ATTRACT
   _provenance:
@@ -2369,8 +2368,8 @@ launch_options:
   route_id: resolution
   kind: launch
   title: Resolution
-  description: Sets the initial screen width and height.
-  audience: player
+  description: Sets the screen size, such as `-1280X720`, for a dimension `sun.ini` leaves out.
+  group: files-display
   availability: *id001
   syntax: -<width>X<height>
   _provenance:
@@ -2380,8 +2379,8 @@ launch_options:
   route_id: windowed
   kind: launch
   title: Windowed mode
-  description: Enables windowed mode.
-  audience: player
+  description: Opens the game in a window for this run, whatever `Fullscreen` says.
+  group: files-display
   availability: *id001
   syntax: -WIN
   _provenance:
@@ -2391,9 +2390,8 @@ launch_options:
   route_id: multiple-instances
   kind: launch
   title: Multiple copies
-  description: Lets this copy start while another copy of the game is running. Without it, a second copy
-    brings the running copy's window to the front and exits.
-  audience: developer
+  description: Lets this copy start while another copy of the game is running.
+  group: testing
   availability: *id001
   syntax: -MULTIINSTANCE
   _provenance:
@@ -2403,10 +2401,9 @@ launch_options:
   route_id: exception-test
   kind: launch
   title: Exception reporting test
-  description: Raises a chosen fault on purpose so that crash reporting can be checked without waiting
-    for a real crash. Accepts av-read, av-write, stack, purecall, terminate, invalidparam, fatal, worker,
-    sectionfault, wndproc, and timer.
-  audience: developer
+  description: Raises the fault named on purpose, so that crash reporting can be checked without waiting
+    for a real crash.
+  group: testing
   availability: *id001
   syntax: -EXCEPTIONTEST=<fault>
   _provenance:
@@ -2416,10 +2413,9 @@ launch_options:
   route_id: desync-test
   kind: launch
   title: Out-of-sync test
-  description: Corrupts this machine's own game checksum once, on the first frame at or after the one
-    given, so that the out-of-sync report can be checked without waiting for a real divergence. The corruption
-    waits for the checksum comparison to start, so a frame inside the first 256 fires as soon as it does.
-  audience: developer
+  description: Corrupts this machine's game checksum once, from the frame given, so that the out-of-sync
+    report can be checked without waiting for a real divergence.
+  group: testing
   availability: *id001
   syntax: -DESYNCTEST=<frame>
   _provenance:
@@ -2429,9 +2425,9 @@ launch_options:
   route_id: seed
   kind: launch
   title: Random seed
-  description: Seeds the random number generator with the number given, for a campaign mission or skirmish
-    started from the menu, so it repeats the same random draws each time. 0 draws a new seed.
-  audience: debug
+  description: Seeds the random number generator for a campaign mission or skirmish started from the menu,
+    so that it repeats the same random draws each time.
+  group: debug-build
   availability: *id002
   syntax: -SEED<number>
   _provenance:
@@ -2441,8 +2437,9 @@ launch_options:
   route_id: monochrome
   kind: launch
   title: Monochrome debug display
-  description: Enables the monochrome debug display.
-  audience: debug
+  description: Enables the monochrome debug pages, which the monochrome debug key then switches on and
+    off.
+  group: debug-build
   availability: *id002
   syntax: -XM
   _provenance:
@@ -2452,8 +2449,8 @@ launch_options:
   route_id: inert
   kind: launch
   title: Inert weapons
-  description: Enables inert weapons so units take no damage.
-  audience: debug
+  description: Makes weapons deal no damage, as `Inert=yes` does, in any game but a campaign mission.
+  group: debug-build
   availability: *id002
   syntax: -XI
   _provenance:
@@ -2462,9 +2459,9 @@ launch_options:
 - id: launch:speed-build
   route_id: speed-build
   kind: launch
-  title: Accelerated timers
-  description: Enables accelerated recharge and construction timers.
-  audience: debug
+  title: Instant superweapon charge
+  description: Makes a superweapon finish charging one frame after it starts.
+  group: debug-build
   availability: *id002
   syntax: -XH
   _provenance:
@@ -2473,9 +2470,9 @@ launch_options:
 - id: launch:record
   route_id: record
   kind: launch
-  title: Multiplayer recording
-  description: Enables multiplayer recording.
-  audience: debug
+  title: Game recording
+  description: Records each game to `RECORD.BIN`, campaign missions included.
+  group: debug-build
   availability: *id002
   syntax: -XX
   _provenance:
@@ -2485,8 +2482,9 @@ launch_options:
   route_id: playback
   kind: launch
   title: Recording playback
-  description: Enables multiplayer recording playback.
-  audience: debug
+  description: Plays back `RECORD.BIN` in place of the main menu, but the playback writes an out-of-sync
+    report and exits on its first frame.
+  group: debug-build
   availability: *id002
   syntax: -XY
   _provenance:
@@ -2496,9 +2494,9 @@ launch_options:
   route_id: console-debug
   kind: launch
   title: Console debug output
-  description: Opens the debug output console. Debug builds always open it; this option opens it in release
-    builds.
-  audience: developer
+  description: Opens the debug console in a Release build. A Debug build opens it without this option,
+    except during a map capture.
+  group: testing
   availability: *id001
   syntax: -XC
   _provenance:
@@ -2508,8 +2506,9 @@ launch_options:
   route_id: event-debug
   kind: launch
   title: Event and packet debug
-  description: Enables event and packet debug output.
-  audience: debug
+  description: Writes the orders packed into each outgoing network packet, and each player's departure,
+    to the debug log.
+  group: debug-build
   availability: *id002
   syntax: -XP
   _provenance:
@@ -2519,8 +2518,8 @@ launch_options:
   route_id: quiet
   kind: launch
   title: Quiet mode
-  description: Enables quiet mode.
-  audience: developer
+  description: Mutes music, sound effects and EVA speech.
+  group: testing
   availability: *id001
   syntax: -XQ
   _provenance:

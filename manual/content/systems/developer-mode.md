@@ -17,15 +17,15 @@ related:
     id: project-status
 ---
 
-The debug keys, the benchmark overlay, the monochrome pages and assertions exist only in a Debug build. Both configurations write the debug log, crash reports, out-of-sync reports and the multiplayer statistics file, and both have the main-menu codes and the version dialog. [The command reference](/commands/) records which build has each command, control and launch option.
+The debug keys, the benchmark overlay, the monochrome pages and assertions exist only in a Debug build. Both configurations write the debug log, crash reports, out-of-sync reports and the multiplayer statistics file, and both have the main-menu codes and the version dialog. [The command reference](/commands/) records which build has each command and control, and the [command line options](/using/command-line/#debug-build) list the options only a Debug build accepts.
 
 ## Arming the debug keys
 
 The debug keys are the fixed in-game keys that only a Debug build has, such as the ones that grant money, force a win or spawn an ORCA. [The fixed controls](/commands/fixed-controls/) list them.
 
-A Debug build arms its debug keys when it is started with at least one command-line argument. A windowed-mode option, a resolution or a data directory arms them, and so does a stray word the game ignores. The [playtest option](/using/command-line/playtest/) arms the same keys and adds nothing else. The Visual Studio project starts the game under the debugger with `-DATADIR=`, so a Debug build launched that way has its debug keys armed.
+A Debug build arms its debug keys when it is started with at least one command-line argument. A windowed-mode option, a resolution or a data directory arms them, and so does a stray word the game ignores. The [playtest option](/using/command-line/#playtest) arms the same keys and adds nothing else. The Visual Studio project starts the game under the debugger with `-DATADIR=`, so a Debug build launched that way has its debug keys armed.
 
-The [help option](/using/command-line/help/) and an `-X` option with a letter the game does not recognize end the run before the game starts, so they arm nothing.
+The [help option](/using/command-line/#help) and an `-X` option with a letter the game does not recognize end the run before the game starts, so they arm nothing.
 
 :::caution[A Debug build started with no arguments has no debug keys]
 With no command-line argument, none of the debug keys respond, including the ones that grant money and force a win. No in-game control arms them later.
@@ -41,7 +41,7 @@ The [debug special dialog key](/commands/fixed-debug-special-dialog/) opens noth
 
 Both configurations write [the debug log](/using/debug-logging/) and send every line to an attached debugger.
 
-A Debug build also opens a console window titled `Debug Console` that shows the same lines as they are written. A Release build opens it only when started with [`-XC`](/using/command-line/console-debug).
+A Debug build also opens a console window titled `Debug Console` that shows the same lines as they are written. A Release build opens it only when started with [`-XC`](/using/command-line/#console-debug).
 
 ## Assertions
 
@@ -71,7 +71,7 @@ The window takes the mouse while the pointer is over it, even where it covers a 
 
 The monochrome pages are four pages of diagnostic text for a secondary monochrome display. They need a monochrome display driver, the `\\.\MONO` device. Without that device the pages can still be enabled, but nothing is drawn. If the device is present but refuses to clear a page, the pages switch off.
 
-The [monochrome launch option](/using/command-line/monochrome/) enables the pages. The [monochrome debug key](/commands/fixed-debug-monochrome/) switches them on and off. Separate debug keys step to the [previous](/commands/fixed-debug-previous-page/) and [next](/commands/fixed-debug-next-page/) page.
+The [monochrome launch option](/using/command-line/#monochrome) enables the pages. The [monochrome debug key](/commands/fixed-debug-monochrome/) switches them on and off. Separate debug keys step to the [previous](/commands/fixed-debug-previous-page/) and [next](/commands/fixed-debug-next-page/) page.
 
 While the pages are enabled, the page in view is redrawn once a second. The other pages are not drawn, except the stress page, which is updated every second even when another page is in view.
 
@@ -90,7 +90,7 @@ The [motion-capture debug key](/commands/fixed-debug-motion-capture/) raises a f
 
 ## Multiplayer statistics
 
-A multiplayer game started through the [client launch](/using/command-line/spawn/) writes `mpstats.txt` when it ends, in either configuration. LAN, skirmish and campaign games do not write the file.
+A multiplayer game started through the [client launch](/using/command-line/#spawn) writes `mpstats.txt` when it ends, in either configuration. LAN, skirmish and campaign games do not write the file.
 
 The file opens with the frame count, the average frame rate, the largest look-ahead the game reached, the latency and game-speed settings, and each local address. A block for each connected player follows. It gives the player's name and address, maximum and maximum-average round trip, resend count, frame-sync and command-count stalls, and packet loss as a count and as a percentage.
 
@@ -137,4 +137,4 @@ The version dialog opens from the graphical main menu's version entry and from [
 These Debug controls change nothing beyond what each entry says:
 
 - The [debug icon overlay key](/commands/fixed-debug-icon-overlay/) forces the whole screen to redraw. The overlay it switches is never drawn.
-- The [map-checking launch option](/using/command-line/check-map/) runs a check every frame, but the check examines nothing and always passes.
+- The [map-checking launch option](/using/command-line/#check-map) runs a check every frame, but the check examines nothing and always passes.

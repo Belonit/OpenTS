@@ -1,0 +1,152 @@
+---
+import { render } from 'astro:content';
+import { UI } from '../i18n/en.mjs';
+import { cachedCollection } from '../lib/collections';
+import {
+	REMOVED_OPTIONS_SLUG,
+	launchGroupSections,
+	removedLaunchOptions,
+	removedSwitch,
+} from '../lib/command-line';
+import { effectLabels, latestStateFor, lifecycleFor } from '../lib/lifecycle';
+import { withBase } from '../lib/paths';
+
+const changes = await cachedCollection('changes');
+const overlays = new Map((await cachedCollection('commands')).map((entry) => [entry.data.command_id, entry]));
+
+const sections = await Promise.all(launchGroupSections().map(async (section) => ({
+	...section,
+	entries: await Promise.all(section.options.map(async (record) => {
+		const overlay = overlays.get(record.id);
+		return {
+			record,
+			Content: overlay ? (await render(overlay)).Content : undefined,
+			events: lifecycleFor(changes, { type: 'command', id: record.id }),
+		};
+	})),
+})));
+const total = sections.reduce((count, section) => count + section.entries.length, 0);
+
+const removed = removedLaunchOptions()
+	.map((record) => ({
+		record,
+		switch: removedSwitch(record),
+		removal: latestStateFor(lifecycleFor(changes, { type: 'command', id: record.id })),
+	}))
+	.sort((left, right) => left.switch.localeCompare(right.switch));
+
+/* A summary marks a switch or file name with backticks; the odd pieces are code. */
+const codeSpans = (text: string) => text.split('`');
+/* Placeholders such as <path> are the part of the syntax the reader replaces. */
+const syntaxParts = (syntax: string) => syntax.split(/(<[^>]+>)/).filter(Boolean);
+const badgeClass = (effect: string) =>
+	effect === 'removed' ? 'ots-badge-removed' : effect === 'deprecated' ? 'ots-badge-deprecated' : 'ots-badge-change';
+---
+
+<div class="ots-launch-reference" data-launch-reference>
+	<div class="ots-reference-controls">
+		<label>
+			<span>{UI.commandLine.filter}</span>
+			<input type="search" data-launch-query placeholder={UI.commandLine.placeholder} autocomplete="off" />
+		</label>
+		<p class="ots-result-count" aria-live="polite"><strong data-launch-count>{total}</strong> {UI.commandLine.of} {total}</p>
+	</div>
+
+	{sections.map((section) => (
+		<section class="ots-launch-group" data-launch-group aria-labelledby={section.id}>
+			<h2 id={section.id}>{section.title}</h2>
+			{section.description && <p class="ots-compact">{section.description}</p>}
+			<div class="ots-launch-list">
+				{section.entries.map(({ record, Content, events }) => (
+					<div
+						class="ots-launch"
+						data-launch-row
+						data-search={[record.syntax, ...(record.aliases ?? []), record.title, record.description].join(' ').toLowerCase()}
+					>
+						<h3 class="ots-launch-switch" id={record.route_id}>
+							<a href={`#${record.route_id}`}><code>{syntaxParts(record.syntax).map((part) =>
+								part.startsWith('<') ? <var>{part}</var> : part)}</code></a>
+						</h3>
+						<div class="ots-launch-body">
+							<p class="ots-launch-name">
+								<span>{record.title}</span>
+								{events.map((event) => (
+									<a class={`ots-badge ${badgeClass(event.effect)}`} href={withBase(`/changes/${event.change.id}/`)}>
+										{effectLabels[event.effect]} in {event.release}
+									</a>
+								))}
+							</p>
+							<p>{codeSpans(record.description).map((part, index) => index % 2 === 1 ? <code>{part}</code> : part)}</p>
+							{Content && <Content />}
+							{record.aliases && record.aliases.length > 0 && (
+								<p class="ots-launch-also">{UI.commandLine.also} {record.aliases.map((alias, index) => (
+									<>{index > 0 && ', '}<code>{alias}</code></>
+								))}</p>
+							)}
+						</div>
+					</div>
+				))}
+			</div>
+		</section>
+	))}
+
+	{removed.length > 0 && (
+		<section class="ots-launch-group" data-launch-group aria-labelledby={REMOVED_OPTIONS_SLUG}>
+			<h2 id={REMOVED_OPTIONS_SLUG}>{UI.commandLine.removed}</h2>
+			<div class="ots-tablewrap">
+				<table>
+					<thead><tr><th>{UI.commandLine.removedOption}</th><th>{UI.commandLine.removedSummary}</th><th>{UI.commandLine.removedIn}</th></tr></thead>
+					<tbody>
+						{removed.map(({ record, switch: name, removal }) => (
+							<tr data-launch-row data-launch-removed data-search={[name, ...record.search_aliases, record.summary].join(' ').toLowerCase()}>
+								<td><a href={withBase(record.route)}><code>{name}</code></a></td>
+								<td>{record.summary}</td>
+								<td>{removal && <a href={withBase(`/changes/${removal.change.id}/`)}>{removal.release}</a>}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		</section>
+	)}
+
+	<p class="ots-empty" data-launch-empty hidden>{UI.commandLine.noMatches}</p>
+</div>
+
+<script>
+	function initializeLaunchReferences() {
+		for (const root of document.querySelectorAll('[data-launch-reference]')) {
+			if (root.hasAttribute('data-ready')) continue;
+			root.setAttribute('data-ready', '');
+			const query = root.querySelector('[data-launch-query]');
+			const count = root.querySelector('[data-launch-count]');
+			const empty = root.querySelector('[data-launch-empty]');
+			const rows = [...root.querySelectorAll('[data-launch-row]')];
+			const groups = [...root.querySelectorAll('[data-launch-group]')];
+			if (!(query instanceof HTMLInputElement)) continue;
+			query.value = new URLSearchParams(location.search).get('q') ?? '';
+
+			const apply = () => {
+				const value = query.value.trim().toLowerCase();
+				let visible = 0;
+				for (const row of rows) {
+					const show = !value || (row.getAttribute('data-search') ?? '').includes(value);
+					row.toggleAttribute('hidden', !show);
+					if (show && !row.hasAttribute('data-launch-removed')) visible++;
+				}
+				for (const group of groups) {
+					group.toggleAttribute('hidden', !group.querySelector('[data-launch-row]:not([hidden])'));
+				}
+				if (count) count.textContent = String(visible);
+				if (empty instanceof HTMLElement) empty.hidden = rows.some((row) => !row.hasAttribute('hidden'));
+				const next = new URLSearchParams(location.search);
+				value ? next.set('q', value) : next.delete('q');
+				history.replaceState(null, '', `${location.pathname}${next.size ? `?${next}` : ''}${location.hash}`);
+			};
+			query.addEventListener('input', apply);
+			apply();
+		}
+	}
+	document.addEventListener('astro:page-load', initializeLaunchReferences);
+	initializeLaunchReferences();
+</script>

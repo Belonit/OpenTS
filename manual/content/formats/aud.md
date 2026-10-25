@@ -35,7 +35,7 @@ A sound effect starts only when all of these hold:
 
 - the sound effect volume option is above zero, except for the test beep the voice volume control plays outside a game;
 - the volume the sound is played at, after any fade with distance, is above zero;
-- the game was not started with the [quiet launch option](/using/command-line/quiet/);
+- the game was not started with the [quiet launch option](/using/command-line/#quiet);
 - its SOUND.INI entry names at least one sample;
 - an audio device is available.
 

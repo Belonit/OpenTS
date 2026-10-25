@@ -2,9 +2,11 @@
 import { getCollection, render } from 'astro:content';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Breadcrumb from '../../components/Breadcrumb.astro';
+import CommandLineReference from '../../components/CommandLineReference.astro';
 import Feedback from '../../components/Feedback.astro';
 import RelatedResources from '../../components/RelatedResources.astro';
 import { UI } from '../../i18n/en.mjs';
+import { commandLineHeadings } from '../../lib/command-line';
 import { relatedResourcesFor } from '../../lib/related';
 import { siteConfig, sourceFileUrl } from '../../lib/site-config.mjs';
 import { usingCategoryTitle } from '../../lib/taxonomy';
@@ -18,6 +20,8 @@ export async function getStaticPaths() {
 
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
+// The command line page's options come from the command catalog, after its authored text.
+const commandLine = entry.id === 'command-line';
 const related = await relatedResourcesFor(
 	{ type: 'using', id: entry.id },
 	entry.data.related,
@@ -25,6 +29,7 @@ const related = await relatedResourcesFor(
 );
 const pageHeadings = [
 	...headings,
+	...(commandLine ? commandLineHeadings() : []),
 	...(related.length > 0 ? [{ depth: 2, slug: 'related-resources', text: 'Related resources' }] : []),
 	{ depth: 2, slug: 'authoritative-files', text: 'Authoritative files' },
 ];
@@ -37,6 +42,7 @@ const pageHeadings = [
 	]} />
 	<p class="ots-lede">{entry.data.summary}</p>
 	<Content />
+	{commandLine && <CommandLineReference />}
 	<RelatedResources resources={related} />
 	<section class="ots-authoritative-files" aria-labelledby="authoritative-files">
 		<h2 id="authoritative-files">Authoritative files</h2>

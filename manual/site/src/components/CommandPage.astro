@@ -7,13 +7,13 @@ import Feedback from './Feedback.astro';
 import LifecycleHistory from './LifecycleHistory.astro';
 import RelatedResources from './RelatedResources.astro';
 import { UI } from '../i18n/en.mjs';
-import { commandKindLabel, commandRoute, type CommandRecord } from '../lib/commands';
+import { commandKindLabel, commandRoute, type KeyCommandRecord } from '../lib/commands';
 import { historyHeading } from '../lib/lifecycle';
 import { relatedResourcesFor } from '../lib/related';
 import { cachedCollection } from '../lib/collections';
 
 interface Props {
-	record: CommandRecord;
+	record: KeyCommandRecord;
 	overlay?: CollectionEntry<'commands'>;
 	crumbs: Array<{ href: string; label: string }>;
 }

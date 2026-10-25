@@ -85,7 +85,7 @@ To find the object whose state differs, compare the checksum table. In each list
 
 ## Forcing a divergence on purpose
 
-[`-DESYNCTEST=<frame>`](/using/command-line/desync-test) corrupts this machine's checksum once, so the report can be checked on a pair of machines without waiting for a real divergence. Passing it on one machine is enough. When the corrupted checksum is compared, every machine in the session sees a mismatch and writes a report, which gives a pair to compare.
+[`-DESYNCTEST=<frame>`](/using/command-line/#desync-test) corrupts this machine's checksum once, so the report can be checked on a pair of machines without waiting for a real divergence. Passing it on one machine is enough. When the corrupted checksum is compared, every machine in the session sees a mismatch and writes a report, which gives a pair to compare.
 
 The corrupted checksum is compared only if it belongs to a frame whose checksum is sent, a multiple of the frame send rate. On any other frame, no machine sees the corruption and the test writes no report.
 

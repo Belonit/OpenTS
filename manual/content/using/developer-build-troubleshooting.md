@@ -32,6 +32,6 @@ Builds write their runnable files to `build/bin/<configuration>/` and copy nothi
 
 ## The executable cannot initialize game data
 
-Name the game data directory with [`-DATADIR=<path>`](/using/command-line/data-directory/). Point it at a legitimate Tiberian Sun installation or a copy of its data; the repository and the CMake build directory contain no game assets. A relative path is read from the directory that holds the executable.
+Name the game data directory with [`-DATADIR=<path>`](/using/command-line/#data-directory). Point it at a legitimate Tiberian Sun installation or a copy of its data; the repository and the CMake build directory contain no game assets. A relative path is read from the directory that holds the executable.
 
 If the named path does not exist or is not a directory, the game shows a message that the data directory cannot be used, and exits.
