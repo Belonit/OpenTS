@@ -221,8 +221,7 @@ void Test_Incompressible_Block(void)
 
 
 // Every way of cutting a stream short that leaves a partial block behind has to read as damage.
-// Cutting it on a block boundary does not: the blocks that remain are whole, which is why the
-// terrain readers also require the pack's own terminator.
+// Cutting it on a block boundary does not: the blocks that remain are whole.
 void Test_Cut_Stream(void)
 {
 	int const size = BLOCK * 2 + 500;

@@ -2328,21 +2328,25 @@ bool MapClass::Read_Binary_3(Straw & straw)
 /// Cells the map no longer has room for are read past and thrown away.
 /// </summary>
 /// <param name="straw">The straw supplying the compressed map data.</param>
-/// <returns>bool; Was the map read? False if the data was damaged or ended before its
-/// terminator, in which case the cells read before that point are still in place.</returns>
+/// <returns>bool; Was the map read? False if the data was damaged or ended partway through
+/// a cell coordinate, in which case the cells read before that point are still in place.</returns>
 bool MapClass::Read_Binary_4(Straw & straw)
 {
 	LZOStraw decomp(LZOStraw::DECOMPRESS);
 	decomp.Get_From(&straw);
 
-	// A pack that runs out before its CELL_NONE terminator was cut short, even when every
-	// block it did carry decompressed.
-	bool terminated = false;
+	// Some map editors end the records with the stream rather than a CELL_NONE record, and
+	// the original game accepted both.
+	bool complete = false;
 	Cell cell;
 
-	while (decomp.Get(&cell, sizeof(cell)) == sizeof(cell)) {
-		if (cell == CELL_NONE) {
-			terminated = true;
+	for (;;) {
+		int const count = decomp.Get(&cell, sizeof(cell));
+		if (count == 0 || (count == sizeof(cell) && cell == CELL_NONE)) {
+			complete = true;
+			break;
+		}
+		if (count != sizeof(cell)) {
 			break;
 		}
 		CellClass * cellptr = &(*this)[cell];
@@ -2358,7 +2362,7 @@ bool MapClass::Read_Binary_4(Straw & straw)
 		}
 	}
 	new (&BlubCell) CellClass;
-	return(terminated && !decomp.Is_Damaged());
+	return(complete && !decomp.Is_Damaged());
 }
 
 
@@ -2369,21 +2373,25 @@ bool MapClass::Read_Binary_4(Straw & straw)
 /// thrown away.
 /// </summary>
 /// <param name="straw">The straw supplying the compressed map data.</param>
-/// <returns>bool; Was the map read? False if the data was damaged or ended before its
-/// terminator, in which case the cells read before that point are still in place.</returns>
+/// <returns>bool; Was the map read? False if the data was damaged or ended partway through
+/// a cell coordinate, in which case the cells read before that point are still in place.</returns>
 bool MapClass::Read_Binary_5(Straw & straw)
 {
 	LZOStraw decomp(LZOStraw::DECOMPRESS);
 	decomp.Get_From(&straw);
 
-	// A pack that runs out before its CELL_NONE terminator was cut short, even when every
-	// block it did carry decompressed.
-	bool terminated = false;
+	// Some map editors end the records with the stream rather than a CELL_NONE record, and
+	// the original game accepted both.
+	bool complete = false;
 	Cell cell;
 
-	while (decomp.Get(&cell, sizeof(cell)) == sizeof(cell)) {
-		if (cell == CELL_NONE) {
-			terminated = true;
+	for (;;) {
+		int const count = decomp.Get(&cell, sizeof(cell));
+		if (count == 0 || (count == sizeof(cell) && cell == CELL_NONE)) {
+			complete = true;
+			break;
+		}
+		if (count != sizeof(cell)) {
 			break;
 		}
 		CellClass * cellptr = &(*this)[cell];
@@ -2400,7 +2408,7 @@ bool MapClass::Read_Binary_5(Straw & straw)
 		}
 	}
 	new (&BlubCell) CellClass;
-	return(terminated && !decomp.Is_Damaged());
+	return(complete && !decomp.Is_Damaged());
 }
 
 
