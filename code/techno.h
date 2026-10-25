@@ -739,6 +739,11 @@ class TechnoClass :	public RadioClass,
 		**	it renders 45 degree angles.
 		*/
 		static int const BodyShape[FACING_COUNT * 4];
+
+		/*
+		 * Event functions triggered by callbacks.
+		 */ 
+		void On_Promoted(bool silent);
 };
 
 inline bool TechnoClass::Is_Allowed_To_Leave_Map(void) const { return(false); }

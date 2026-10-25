@@ -3001,7 +3001,7 @@ static void Create_Units(bool official)
 				deployed_value += tech->Raw_Cost();
 
 				if (Scen->Special.IsInitialVeteran) {
-					tobj->Veterancy.Set_Elite(true);
+					tobj->Veterancy.Set_Elite(false);
 				}
 
 				if (!hptr->Is_Human_Player()) {
