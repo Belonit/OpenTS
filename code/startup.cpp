@@ -81,6 +81,7 @@
 #include "gamewindow.h"
 #include "globals.h"
 #include "goptions.h"
+#include "headless.h"
 #include "house.h"
 #include "houstype.h"
 #include "hover.h"
@@ -95,7 +96,6 @@
 #include "levitate.h"
 #include "light.h"
 #include "lightcon.h"
-#include "mapcapture.h"
 #include "mech.h"
 #include "misc.h"
 #include "mixfile.h"
@@ -505,15 +505,15 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 	bool const parsed = Parse_Command_Line(argc, argv);
 
 #ifdef _DEBUG
-	// Debug builds show the console without -XC, except to a capture run, which shows nothing.
-	if (!MapCapture::Is_Requested()) {
+	// Debug builds show the console without -XC, except to a headless run, which shows nothing.
+	if (!Headless::Is_Active()) {
 		Debug_Init_Console();
 	}
 #endif
 
-	if (parsed && MapCapture::Check_Request() && Apply_Game_Directories()) {
+	if (parsed && Headless::Check_Request() && Apply_Game_Directories()) {
 
-		if (!Debug_MultipleInstances && !MapCapture::Is_Requested() && !Claim_Single_Instance()) {
+		if (!Debug_MultipleInstances && !Headless::Is_Active() && !Claim_Single_Instance()) {
 			return(EXIT_SUCCESS);
 		}
 
@@ -561,8 +561,8 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 			WindowedMode = !Options.Fullscreen;
 		}
 
-		// A capture draws into surfaces of its own size, and its window is never shown.
-		if (MapCapture::Is_Requested()) {
+		// A headless run never shows its window, so the frame only has to be small and valid.
+		if (Headless::Is_Active()) {
 			WindowedMode = true;
 			Options.ScreenWidth = 640;
 			Options.ScreenHeight = 480;
@@ -596,7 +596,10 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 
 		Exception_Run_Post_Window_Test();
 
-		AudioEngine.Init();
+		// A headless run plays nothing, so it opens no audio device.
+		if (!Headless::Is_Active()) {
+			AudioEngine.Init();
+		}
 
 		int drawablewidth = 0;
 		int drawableheight = 0;
@@ -618,7 +621,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 
 		// A window that is never shown never gains the focus, and the loops that wait for it
 		// would never end.
-		if (MapCapture::Is_Requested()) {
+		if (Headless::Is_Active()) {
 			GameInFocus = true;
 		}
 
@@ -649,7 +652,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		**	Check for forced intro movie run disabling. If the conquer
 		**	configuration file says "no", then don't run the intro.
 		*/
-		if (!Special.IsFromInstall && !Spawner_Is_Requested() && !MapCapture::Is_Requested()) {
+		if (!Special.IsFromInstall && !Spawner_Is_Requested() && !Headless::Is_Active()) {
 			Special.IsFromInstall = ConfigINI.Get_Bool("Intro", "PlayIntro", true);
 		}
 
@@ -657,7 +660,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 		**	Regardless of whether we should run it or not, here we're
 		**	gonna change it to say "no" in the future.
 		*/
-		if (Special.IsFromInstall == true && !Spawner_Is_Requested() && !MapCapture::Is_Requested()) {
+		if (Special.IsFromInstall == true && !Spawner_Is_Requested() && !Headless::Is_Active()) {
 			ConfigINI.Put_Bool("Intro", "PlayIntro", false);
 
 			// Left closed, so that saving opens it for writing itself.
@@ -681,7 +684,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * , int )
 
 		Game_Window_Begin_Shutdown();
 
-		error_code = MapCapture::Is_Requested() ? MapCapture::Exit_Code() : EXIT_SUCCESS;
+		error_code = Headless::Is_Active() ? Headless::Exit_Code() : EXIT_SUCCESS;
 
 	} else {
 

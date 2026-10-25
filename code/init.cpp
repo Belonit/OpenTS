@@ -118,6 +118,7 @@
 #include "gamedlg.h"
 #include "getcpu.h"
 #include "globals.h"
+#include "headless.h"
 #include "houstype.h"
 #include "incdec.h"
 #include "infatype.h"
@@ -429,7 +430,7 @@ int Init_Game(int , char * [])
 	/*
 	**	Play the startup animation.
 	*/
-	if (!Spawner_Is_Requested() && !MapCapture::Is_Requested()) {
+	if (!Spawner_Is_Requested() && !Headless::Is_Active()) {
 		if (Special.IsFromInstall == true) {
 			DebugString("Playing first time intro sequence.\n");
 			Play_Movie("EVA.VQA", THEME_NONE, false);
@@ -922,8 +923,8 @@ restart:
 	*/
 	if (!Debug_Map) {
 
-		if (MapCapture::Is_Requested()) {
-			MapCapture::Run();
+		if (Headless::Is_Active()) {
+			Headless::Run();
 			return(false);
 		}
 

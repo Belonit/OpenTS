@@ -21,20 +21,18 @@
 #include "ccini.h"
 #include "dbgprint.h"
 #include "dsurface.h"
-#include "except.h"
 #include "globals.h"
+#include "headless.h"
 #include "house.h"
 #include "init.h"
 #include "mplayer.h"
 #include "png.h"
 #include "rawfile.h"
 #include "scenario.h"
-#include "sdl/sdlwindow.h"
 #include "session.h"
 #include "sidebar.h"
 #include "tactical.h"
 
-#include <cstdarg>
 #include <cstdio>
 #include <string>
 
@@ -48,44 +46,6 @@ namespace MapCapture
 
 		std::string MapName;
 		std::string OutputPath;
-		bool IsConsoleAttached = false;
-		int ExitCode = EXIT_FAILURE;
-
-
-		/// <summary>
-		/// Stops every dialog the run could show, and connects stderr to the console the game
-		/// was started from, when there is one.
-		/// </summary>
-		void Enter_Unattended(void)
-		{
-			static bool entered = false;
-			if (entered) {
-				return;
-			}
-			entered = true;
-
-			Exception_Set_Unattended(true);
-			Main_Window_Set_Unattended(true);
-			Debug_Quiet = true;
-
-			if (AttachConsole(ATTACH_PARENT_PROCESS)) {
-				FILE * stream = NULL;
-				IsConsoleAttached = freopen_s(&stream, "CONOUT$", "w", stderr) == 0;
-			}
-		}
-
-
-		void Failf(char const * format, ...)
-		{
-			char buffer[_MAX_PATH + 256];
-
-			va_list args;
-			va_start(args, format);
-			std::vsnprintf(buffer, sizeof(buffer), format, args);
-			va_end(args);
-
-			Fail(buffer);
-		}
 
 
 		/// <summary>
@@ -165,7 +125,7 @@ namespace MapCapture
 			// frames the whole LocalSize area.
 			Rect const view(0, 0, ISO_TILE_PIXEL_W * local.Width, ISO_TILE_PIXEL_H * (2 * local.Height + 9) / 2);
 			if (!view.Is_Valid()) {
-				Failf("The map's LocalSize %d,%d,%d,%d leaves nothing to draw.", local.X, local.Y, local.Width, local.Height);
+				Headless::Fail("The map's LocalSize %d,%d,%d,%d leaves nothing to draw.", local.X, local.Y, local.Width, local.Height);
 				return(false);
 			}
 
@@ -174,7 +134,7 @@ namespace MapCapture
 					|| CompositeSurface == NULL || TileSurface == NULL
 					|| ((DSurface *)CompositeSurface)->Get_Buffer() == NULL
 					|| ((DSurface *)TileSurface)->Get_Buffer() == NULL) {
-				Failf("No %dx%d drawing surface could be allocated.", view.Width, view.Height);
+				Headless::Fail("No %dx%d drawing surface could be allocated.", view.Width, view.Height);
 				return(false);
 			}
 
@@ -189,7 +149,7 @@ namespace MapCapture
 			RawFileClass file(OutputPath.c_str());
 			if (!Write_PNG_File(file, view.Width, view.Height, surface->Stride(), pixels)) {
 				file.Delete();
-				Failf("%s could not be written.", OutputPath.c_str());
+				Headless::Fail("%s could not be written.", OutputPath.c_str());
 				return(false);
 			}
 
@@ -197,122 +157,91 @@ namespace MapCapture
 				view.Width, view.Height, local.X, local.Y, local.Width, local.Height);
 			return(true);
 		}
+
+
+		bool Check(void)
+		{
+			if (MapName.empty() || OutputPath.empty()) {
+				Headless::Fail("A map capture needs both -CAPTUREMAP=<map> and -CAPTUREOUT=<png>.");
+				return(false);
+			}
+			return(true);
+		}
+
+
+		/// <summary>
+		/// Loads the requested map, draws its LocalSize area with no shroud and no interface,
+		/// and writes the PNG. A multiplayer map is loaded with one observer, so only Neutral
+		/// and Special objects remain; a campaign mission keeps every house it lists. No game
+		/// logic runs, so the frame is the scenario exactly as it starts.
+		/// </summary>
+		/// <returns>bool; Was the PNG written?</returns>
+		bool Run(void)
+		{
+			CCFileClass file(MapName.c_str());
+			if (!file.Is_Available()) {
+				Headless::Fail("The map %s was not found.", MapName.c_str());
+				return(false);
+			}
+
+			CCINIClass ini;
+			ini.Load(file, false);
+			bool const campaign = Is_Campaign_Map(ini);
+
+			// Firestorm adds to the base game's art and rules, so with it every map draws.
+			Disable_Addon(ADDON_ANY);
+			if (Addon_Installed(ADDON_FIRESTORM)) {
+				Enable_Addon(ADDON_FIRESTORM);
+				Set_Required_Addon(ADDON_FIRESTORM);
+			}
+
+			if (campaign) {
+				Seat_Campaign();
+			} else {
+				Seat_Observer();
+			}
+
+			CustomSeed = CAPTURE_SEED;
+			Init_Random();
+
+			std::snprintf(Scen->ScenarioName, sizeof(Scen->ScenarioName), "%s", MapName.c_str());
+			DebugString("MapCapture: loading %s as a %s map.\n", Scen->ScenarioName, campaign ? "campaign" : "multiplayer");
+
+			if (!Read_Scenario(Scen->ScenarioName)) {
+				Headless::Fail("The map %s could not be loaded.", MapName.c_str());
+				return(false);
+			}
+
+			if (campaign) {
+				Map.Reveal_The_Map(PlayerPtr, true);
+				Session.ObiWan = 1;
+			}
+
+			return(Render_And_Write());
+		}
+
+
+		Headless::Task const Task = { "MapCapture", Check, Run };
 	}
 
 
 	/// <summary>
-	/// Names the map a capture run draws. Any capture option puts the run in unattended mode
-	/// at once, so a failure later in startup shows no dialog either.
+	/// Names the map a capture run draws, which makes the run headless.
 	/// </summary>
 	void Request_Map(char const * name)
 	{
 		MapName = name;
-		Enter_Unattended();
+		Headless::Request(Task);
 	}
 
 
 	/// <summary>
-	/// Names the PNG a capture run writes, replacing any file already there. A relative path is
-	/// taken from the game's folder.
+	/// Names the PNG a capture run writes, replacing any file already there, which makes the
+	/// run headless. A relative path is taken from the game's folder.
 	/// </summary>
 	void Request_Output(char const * path)
 	{
 		OutputPath = path;
-		Enter_Unattended();
-	}
-
-
-	bool Is_Requested(void)
-	{
-		return(!MapName.empty() || !OutputPath.empty());
-	}
-
-
-	/// <summary>
-	/// Refuses a capture request that names only the map or only the output.
-	/// </summary>
-	/// <returns>bool; Can startup go on?</returns>
-	bool Check_Request(void)
-	{
-		if (Is_Requested() && (MapName.empty() || OutputPath.empty())) {
-			Fail("A map capture needs both -CAPTUREMAP=<map> and -CAPTUREOUT=<png>.");
-			return(false);
-		}
-		return(true);
-	}
-
-
-	/// <summary>
-	/// Records why the capture failed, in the debug log and on the console the game was
-	/// started from. The run exits with a failure code from then on.
-	/// </summary>
-	void Fail(char const * text)
-	{
-		ExitCode = EXIT_FAILURE;
-		DebugString("MapCapture: %s\n", text);
-
-		if (IsConsoleAttached) {
-			std::fprintf(stderr, "%s\n", text);
-			std::fflush(stderr);
-		}
-	}
-
-
-	/// <summary>
-	/// Loads the requested map, draws its LocalSize area with no shroud and no interface, and
-	/// writes the PNG. A multiplayer map is loaded with one observer, so only Neutral and
-	/// Special objects remain; a campaign mission keeps every house it lists. No game logic
-	/// runs, so the frame is the scenario exactly as it starts.
-	/// </summary>
-	void Run(void)
-	{
-		CCFileClass file(MapName.c_str());
-		if (!file.Is_Available()) {
-			Failf("The map %s was not found.", MapName.c_str());
-			return;
-		}
-
-		CCINIClass ini;
-		ini.Load(file, false);
-		bool const campaign = Is_Campaign_Map(ini);
-
-		// Firestorm adds to the base game's art and rules, so with it every map draws.
-		Disable_Addon(ADDON_ANY);
-		if (Addon_Installed(ADDON_FIRESTORM)) {
-			Enable_Addon(ADDON_FIRESTORM);
-			Set_Required_Addon(ADDON_FIRESTORM);
-		}
-
-		if (campaign) {
-			Seat_Campaign();
-		} else {
-			Seat_Observer();
-		}
-
-		CustomSeed = CAPTURE_SEED;
-		Init_Random();
-
-		std::snprintf(Scen->ScenarioName, sizeof(Scen->ScenarioName), "%s", MapName.c_str());
-		DebugString("MapCapture: loading %s as a %s map.\n", Scen->ScenarioName, campaign ? "campaign" : "multiplayer");
-
-		if (!Read_Scenario(Scen->ScenarioName)) {
-			Failf("The map %s could not be loaded.", MapName.c_str());
-			return;
-		}
-
-		if (campaign) {
-			Map.Reveal_The_Map(PlayerPtr, true);
-			Session.ObiWan = 1;
-		}
-
-		if (Render_And_Write()) {
-			ExitCode = EXIT_SUCCESS;
-		}
-	}
-
-
-	int Exit_Code(void)
-	{
-		return(ExitCode);
+		Headless::Request(Task);
 	}
 }
