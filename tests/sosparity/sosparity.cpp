@@ -12,13 +12,14 @@
 // removed; this replays each one and compares the decoded bytes and the stream state left
 // behind. Needs no game data.
 
-#include <cstdio>
 #include <cstring>
 
 #include "soscomp.h"
 #include "vqalib/cmp.h"
 
 #include "sosgolden.h"
+
+#include "doctest/doctest.h"
 
 namespace {
 
@@ -30,9 +31,6 @@ unsigned char SourceStore[SRCMAX + 16];
 unsigned char DestStore[DSTMAX];
 
 unsigned int Seed = 0;
-
-int Failures = 0;
-int Checked = 0;
 
 
 unsigned int Next_Random(void)
@@ -69,32 +67,22 @@ unsigned long long Dest_Hash(int bytes)
 }
 
 
-void Report(SosGoldenCase const & test, char const * what, long long expected, long long got)
+void Check_Value(char const * what, long long expected, long long got)
 {
-	char const * name = "sosCODEC";
-
-	if (test.Codec == 1) {
-		name = "General_sosCODEC";
-	} else if (test.Codec == 2) {
-		name = "VQA_sosCODEC";
-	}
-
-	std::printf("FAILED %s %d bit %d channel %d bytes align %d: %s expected %lld, got %lld\n",
-		name, test.BitSize, test.Channels, test.Bytes, test.SourceAlign, what, expected, got);
-	Failures++;
-}
-
-
-void Check(SosGoldenCase const & test, char const * what, long long expected, long long got)
-{
-	if (expected != got) {
-		Report(test, what, expected, got);
-	}
+	CHECK_MESSAGE(got == expected, what);
 }
 
 
 void Run_Case(SosGoldenCase const & test)
 {
+	char const * name = "sosCODEC";
+	if (test.Codec == 1) {
+		name = "General_sosCODEC";
+	} else if (test.Codec == 2) {
+		name = "VQA_sosCODEC";
+	}
+	INFO(name, " ", test.BitSize, " bit ", test.Channels, " channel ", test.Bytes, " bytes align ", test.SourceAlign);
+
 	Fill_Source(test.Seed);
 	std::memset(DestStore, GUARD, sizeof(DestStore));
 
@@ -105,12 +93,11 @@ void Run_Case(SosGoldenCase const & test)
 
 		VQA_sosCODECDecompressData(SourceStore, DestStore, (unsigned short)test.BitSize, (unsigned short)test.Channels, (unsigned long)test.Bytes, &info);
 
-		Check(test, "hash", (long long)test.Hash, (long long)Dest_Hash(test.Bytes));
-		Check(test, "predicted", test.Predicted, info.dwPredicted);
-		Check(test, "index", test.Index, info.wIndex);
-		Check(test, "predicted2", test.Predicted2, info.dwPredicted2);
-		Check(test, "index2", test.Index2, info.wIndex2);
-		Checked++;
+		Check_Value("hash", (long long)test.Hash, (long long)Dest_Hash(test.Bytes));
+		Check_Value("predicted", test.Predicted, info.dwPredicted);
+		Check_Value("index", test.Index, info.wIndex);
+		Check_Value("predicted2", test.Predicted2, info.dwPredicted2);
+		Check_Value("index2", test.Index2, info.wIndex2);
 		return;
 	}
 
@@ -138,23 +125,28 @@ void Run_Case(SosGoldenCase const & test)
 		returned = General_sosCODECDecompressData(&info, (unsigned long)test.Bytes);
 	}
 
-	Check(test, "hash", (long long)test.Hash, (long long)Dest_Hash(test.Bytes));
-	Check(test, "return", (long long)test.Returned, (long long)returned);
-	Check(test, "predicted", test.Predicted, info.Channels[0].Predicted);
-	Check(test, "index", test.Index, info.Channels[0].Index);
-	Check(test, "predicted2", test.Predicted2, info.Channels[1].Predicted);
-	Check(test, "index2", test.Index2, info.Channels[1].Index);
-	Checked++;
+	Check_Value("hash", (long long)test.Hash, (long long)Dest_Hash(test.Bytes));
+	Check_Value("return", (long long)test.Returned, (long long)returned);
+	Check_Value("predicted", test.Predicted, info.Channels[0].Predicted);
+	Check_Value("index", test.Index, info.Channels[0].Index);
+	Check_Value("predicted2", test.Predicted2, info.Channels[1].Predicted);
+	Check_Value("index2", test.Index2, info.Channels[1].Index);
 }
 
 }	// namespace
 
 
-namespace {
+TEST_CASE("SOS ADPCM decode matches the recorded assembly, in the bytes and the stream state left behind")
+{
+	for (int i = 0; i < SosGoldenCaseCount; i++) {
+		Run_Case(SosGoldenCases[i]);
+	}
+}
+
 
 // The assembly's countdown was tested only after being decremented, so these requests never
 // reached zero and ran away through both buffers. They must now decode nothing and return.
-void Check_Runaway_Inputs(void)
+TEST_CASE("a request the assembly's countdown ran away on decodes nothing and returns")
 {
 	int const bits[] = {8, 8, 16, 16, 8, 16};
 	int const channels[] = {1, 2, 1, 2, 2, 2};
@@ -184,29 +176,7 @@ void Check_Runaway_Inputs(void)
 			}
 		}
 
-		if (!untouched) {
-			std::printf("FAILED General_sosCODEC %d bit %d channel %d bytes wrote to the destination\n",
-				bits[i], channels[i], bytes[i]);
-			Failures++;
-		}
-
-		Checked++;
+		INFO("General_sosCODEC ", bits[i], " bit ", channels[i], " channel ", bytes[i], " bytes");
+		CHECK_MESSAGE(untouched, "the destination is untouched");
 	}
-}
-
-}	// namespace
-
-
-int main(void)
-{
-	for (int i = 0; i < SosGoldenCaseCount; i++) {
-		Run_Case(SosGoldenCases[i]);
-	}
-
-	Check_Runaway_Inputs();
-
-	std::printf("%-52s %s\n", "SOS ADPCM decode matches the recorded assembly", Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
 }

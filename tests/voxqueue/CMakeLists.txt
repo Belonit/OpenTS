@@ -8,4 +8,5 @@ opents_add_test(VoxQueue
         voxqueue.cpp
     INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
     DEFINITIONS WIN32 _WINDOWS _MBCS
+    DOCTEST
 )

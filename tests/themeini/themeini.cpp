@@ -15,9 +15,11 @@
 #include "theme.h"
 #include "xstraw.h"
 
+#include "doctest/doctest.h"
+
 #include <cmath>
-#include <cstdio>
 #include <cstring>
+#include <string>
 
 // The side list stands in for the one the rules declare.
 SideType SideClass::From_Name(char const * name)
@@ -29,23 +31,9 @@ SideType SideClass::From_Name(char const * name)
 
 namespace {
 
-int Failures = 0;
-int Checked = 0;
-
-
-void Check(bool condition, char const * what)
+float Distance(float value, float expect)
 {
-	Checked++;
-	if (!condition) {
-		Failures++;
-		std::printf("FAIL: %s\n", what);
-	}
-}
-
-
-bool Near(float value, float expect)
-{
-	return(std::fabs(value - expect) < 0.001f);
+	return(std::fabs(value - expect));
 }
 
 
@@ -65,99 +53,146 @@ ThemeControl Track(INIClass const & ini, char const * name)
 }
 
 
-void Test_Tiberian_Sun_Shape(void)
+struct TiberianSunFixture
 {
 	INIClass ini;
-	Read(ini,
-		"[Themes]\n"
-		"1=INTRO\n"
-		"[INTRO]\n"
-		"Name=Intro theme\n"
-		"Length=3.27\n"
-		"Normal=no\n"
-		"Repeat=yes\n");
 
+	TiberianSunFixture(void)
+	{
+		Read(ini,
+			"[Themes]\n"
+			"1=INTRO\n"
+			"[INTRO]\n"
+			"Name=Intro theme\n"
+			"Length=3.27\n"
+			"Normal=no\n"
+			"Repeat=yes\n");
+	}
+};
+
+
+struct NewKeysFixture
+{
+	INIClass ini;
+
+	NewKeysFixture(void)
+	{
+		Read(ini,
+			"[LOOSE]\n"
+			"Sound=MYTRACK\n"
+			"Volume=0.5\n"
+			"RequiredAddon=1\n"
+			"[PERCENT]\n"
+			"Volume=40\n"
+			"[JUNK]\n"
+			"Volume=loud\n");
+	}
+};
+
+
+struct SidesFixture
+{
+	INIClass ini;
+
+	SidesFixture(void)
+	{
+		Read(ini,
+			"[ONE]\n"
+			"Side=GDI\n"
+			"[TWO]\n"
+			"Side=Nod, GDI\n"
+			"[SOME]\n"
+			"Side=Bogus,Nod\n"
+			"[BAD]\n"
+			"Side=Bogus\n"
+			"[NONE]\n"
+			"Side=<none>\n");
+	}
+};
+
+}
+
+
+TEST_CASE_FIXTURE(TiberianSunFixture, "a Tiberian Sun track reads its title, length, and play flags")
+{
 	ThemeControl intro = Track(ini, "INTRO");
-	Check(std::strcmp(intro.Fullname, "Intro theme") == 0, "Name= is the title");
-	Check(Near(intro.Duration, 3.27f), "Length= is kept as written");
-	Check(!intro.Normal && intro.Repeat, "Normal= and Repeat= are read");
-	Check(intro.Sound[0] == '\0', "without Sound= the file is named after the section");
-	Check(Near(intro.Volume, 1.0f), "Volume= defaults to full");
-	Check(intro.RequiredAddon == 0, "RequiredAddon= defaults to none");
-	Check(intro.Owners.empty() && intro.Allows_Side(SIDE_GDI) && intro.Allows_Side(SIDE_NOD), "without Side= every side hears it");
+	CHECK_MESSAGE(std::string(intro.Fullname) == "Intro theme", "Name= is the title");
+	CHECK_MESSAGE(Distance(intro.Duration, 3.27f) < 0.001f, "Length= is kept as written");
+	CHECK_FALSE(intro.Normal);
+	CHECK(intro.Repeat);
+}
 
+
+TEST_CASE_FIXTURE(TiberianSunFixture, "the keys a Tiberian Sun track leaves out take their defaults")
+{
+	ThemeControl intro = Track(ini, "INTRO");
+	CHECK_MESSAGE(intro.Sound[0] == '\0', "without Sound= the file is named after the section");
+	CHECK_MESSAGE(Distance(intro.Volume, 1.0f) < 0.001f, "Volume= defaults to full");
+	CHECK_MESSAGE(intro.RequiredAddon == 0, "RequiredAddon= defaults to none");
+	CHECK_MESSAGE(intro.Owners.empty(), "without Side= every side hears it");
+	CHECK(intro.Allows_Side(SIDE_GDI));
+	CHECK(intro.Allows_Side(SIDE_NOD));
+}
+
+
+TEST_CASE_FIXTURE(TiberianSunFixture, "a track without a section reports it")
+{
 	ThemeControl missing;
 	std::strcpy(missing.Name, "NOSUCH");
-	Check(!missing.Fill_In(ini), "a track without a section reports it");
+	CHECK_FALSE(missing.Fill_In(ini));
 }
 
 
-void Test_New_Keys(void)
+TEST_CASE_FIXTURE(NewKeysFixture, "Sound=, Volume= and RequiredAddon= are read")
 {
-	INIClass ini;
-	Read(ini,
-		"[LOOSE]\n"
-		"Sound=MYTRACK\n"
-		"Volume=0.5\n"
-		"RequiredAddon=1\n"
-		"[PERCENT]\n"
-		"Volume=40\n"
-		"[JUNK]\n"
-		"Volume=loud\n");
-
 	ThemeControl loose = Track(ini, "LOOSE");
-	Check(std::strcmp(loose.Sound, "MYTRACK") == 0, "Sound= names the file");
-	Check(Near(loose.Volume, 0.5f), "Volume= as a fraction");
-	Check(loose.RequiredAddon == 1, "RequiredAddon= is read");
-	Check(Near(Track(ini, "PERCENT").Volume, 0.4f), "Volume= above 1 is a percentage");
-	Check(Near(Track(ini, "JUNK").Volume, 1.0f), "a Volume= that is not a number is ignored");
+	CHECK(std::string(loose.Sound) == "MYTRACK");
+	CHECK_MESSAGE(Distance(loose.Volume, 0.5f) < 0.001f, "Volume= as a fraction");
+	CHECK(loose.RequiredAddon == 1);
 }
 
 
-void Test_Sides(void)
+TEST_CASE_FIXTURE(NewKeysFixture, "a Volume= above 1 is a percentage, and one that is not a number is ignored")
 {
-	INIClass ini;
-	Read(ini,
-		"[ONE]\n"
-		"Side=GDI\n"
-		"[TWO]\n"
-		"Side=Nod, GDI\n"
-		"[SOME]\n"
-		"Side=Bogus,Nod\n"
-		"[BAD]\n"
-		"Side=Bogus\n"
-		"[NONE]\n"
-		"Side=<none>\n");
+	CHECK(Distance(Track(ini, "PERCENT").Volume, 0.4f) < 0.001f);
+	CHECK(Distance(Track(ini, "JUNK").Volume, 1.0f) < 0.001f);
+}
 
+
+TEST_CASE_FIXTURE(SidesFixture, "Side= names one side or a list, skipping a side the rules do not declare")
+{
 	ThemeControl one = Track(ini, "ONE");
-	Check(one.Allows_Side(SIDE_GDI) && !one.Allows_Side(SIDE_NOD), "one side");
-	ThemeControl two = Track(ini, "TWO");
-	Check(two.Owners.size() == 2 && two.Allows_Side(SIDE_GDI) && two.Allows_Side(SIDE_NOD) && !two.Allows_Side(SIDE_MUTANT), "a list of sides");
-	ThemeControl some = Track(ini, "SOME");
-	Check(some.Owners.size() == 1 && some.Allows_Side(SIDE_NOD), "an undeclared side in a list is skipped");
+	CHECK(one.Allows_Side(SIDE_GDI));
+	CHECK_FALSE(one.Allows_Side(SIDE_NOD));
 
+	ThemeControl two = Track(ini, "TWO");
+	CHECK(two.Owners.size() == 2u);
+	CHECK(two.Allows_Side(SIDE_GDI));
+	CHECK(two.Allows_Side(SIDE_NOD));
+	CHECK_FALSE(two.Allows_Side(SIDE_MUTANT));
+
+	ThemeControl some = Track(ini, "SOME");
+	CHECK(some.Owners.size() == 1u);
+	CHECK(some.Allows_Side(SIDE_NOD));
+}
+
+
+TEST_CASE_FIXTURE(SidesFixture, "a list naming no declared side keeps the sides before it")
+{
 	ThemeControl bad;
 	std::strcpy(bad.Name, "BAD");
 	bad.Owners.push_back(SIDE_NOD);
 	bad.Fill_In(ini);
-	Check(bad.Owners.size() == 1 && bad.Allows_Side(SIDE_NOD), "a list naming no declared side keeps the sides before it");
+	CHECK(bad.Owners.size() == 1u);
+	CHECK(bad.Allows_Side(SIDE_NOD));
+}
 
+
+TEST_CASE_FIXTURE(SidesFixture, "<none> allows every side")
+{
 	ThemeControl none;
 	std::strcpy(none.Name, "NONE");
 	none.Owners.push_back(SIDE_NOD);
 	none.Fill_In(ini);
-	Check(none.Owners.empty(), "<none> allows every side");
-}
-
-} // namespace
-
-
-int main(void)
-{
-	Test_Tiberian_Sun_Shape();
-	Test_New_Keys();
-	Test_Sides();
-
-	std::printf("themeini: %d checks, %d failures\n", Checked, Failures);
-	return(Failures == 0 ? 0 : 1);
+	CHECK(none.Owners.empty());
 }

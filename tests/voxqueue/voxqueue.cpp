@@ -13,23 +13,9 @@
 
 #include "voxqueue.h"
 
-#include <cstdio>
+#include "doctest/doctest.h"
 
 namespace {
-
-int Failures = 0;
-int Checked = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	Checked++;
-	if (!condition) {
-		Failures++;
-		std::printf("FAIL: %s\n", what);
-	}
-}
-
 
 VoxType Pop(VoxQueueClass & queue)
 {
@@ -38,105 +24,136 @@ VoxType Pop(VoxQueueClass & queue)
 	return(voice);
 }
 
+}
 
-void Test_Order(void)
+
+TEST_CASE("queued lines of equal priority play in order and do not cut")
 {
 	VoxQueueClass queue;
-	Check(!queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUE, VOX_NONE), "a queued line does not cut");
+	CHECK_FALSE(queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUE, VOX_NONE));
 	queue.Submit(VOX_UNIT_READY, 50, VOXC_QUEUE, VOX_NONE);
 	queue.Submit(VOX_LOW_POWER, 50, VOXC_QUEUE, VOX_NONE);
-	Check(queue.Count() == 3, "three waiting");
-	Check(Pop(queue) == VOX_CONSTRUCTION && Pop(queue) == VOX_UNIT_READY && Pop(queue) == VOX_LOW_POWER, "equal priorities play in order");
-	Check(queue.Count() == 0 && Pop(queue) == VOX_NONE, "empty afterwards");
+	CHECK(queue.Count() == 3);
+	CHECK(Pop(queue) == VOX_CONSTRUCTION);
+	CHECK(Pop(queue) == VOX_UNIT_READY);
+	CHECK(Pop(queue) == VOX_LOW_POWER);
+	CHECK(queue.Count() == 0);
+	CHECK(Pop(queue) == VOX_NONE);
+}
 
+
+TEST_CASE("a higher priority line plays first, then the rest in order")
+{
+	VoxQueueClass queue;
 	queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUE, VOX_NONE);
 	queue.Submit(VOX_BASE_UNDER_ATTACK, 100, VOXC_QUEUE, VOX_NONE);
 	queue.Submit(VOX_UNIT_READY, 50, VOXC_QUEUE, VOX_NONE);
-	Check(Pop(queue) == VOX_BASE_UNDER_ATTACK, "higher priority first");
-	Check(Pop(queue) == VOX_CONSTRUCTION && Pop(queue) == VOX_UNIT_READY, "then the rest in order");
+	CHECK(Pop(queue) == VOX_BASE_UNDER_ATTACK);
+	CHECK(Pop(queue) == VOX_CONSTRUCTION);
+	CHECK(Pop(queue) == VOX_UNIT_READY);
 }
 
 
-void Test_Dedupe(void)
+TEST_CASE("a line already waiting or playing is not queued again, and no line is nothing")
 {
 	VoxQueueClass queue;
 	queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUE, VOX_NONE);
 	queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUE, VOX_NONE);
-	Check(queue.Count() == 1, "a waiting line is not queued twice");
+	CHECK_MESSAGE(queue.Count() == 1, "a waiting line is not queued twice");
+
 	queue.Submit(VOX_UNIT_READY, 50, VOXC_QUEUE, VOX_UNIT_READY);
-	Check(queue.Count() == 1 && !queue.Contains(VOX_UNIT_READY), "the playing line is not queued");
-	Check(!queue.Submit(VOX_NONE, 50, VOXC_QUEUE, VOX_NONE) && queue.Count() == 1, "no line is nothing");
+	CHECK_MESSAGE(queue.Count() == 1, "the playing line is not queued");
+	CHECK_FALSE(queue.Contains(VOX_UNIT_READY));
+
+	CHECK_FALSE(queue.Submit(VOX_NONE, 50, VOXC_QUEUE, VOX_NONE));
+	CHECK(queue.Count() == 1);
 }
 
 
-void Test_Cap(void)
+TEST_CASE("a full queue drops its lowest priority line, or its oldest of equals, and plays a critical line first")
 {
 	VoxQueueClass queue;
 	for (int i = 0; i < VoxQueueClass::MAX_PENDING; i++) {
 		queue.Submit((VoxType)(VOX_CONSTRUCTION + i), i == 3 ? 20 : 50, VOXC_QUEUE, VOX_NONE);
 	}
-	Check(queue.Count() == VoxQueueClass::MAX_PENDING, "full");
+	CHECK(queue.Count() == VoxQueueClass::MAX_PENDING);
+
 	queue.Submit(VOX_BASE_UNDER_ATTACK, 50, VOXC_QUEUE, VOX_NONE);
-	Check(queue.Count() == VoxQueueClass::MAX_PENDING, "still full");
-	Check(!queue.Contains((VoxType)(VOX_CONSTRUCTION + 3)) && queue.Contains(VOX_BASE_UNDER_ATTACK), "the lowest priority line was dropped");
+	CHECK_MESSAGE(queue.Count() == VoxQueueClass::MAX_PENDING, "the queue is still full");
+	CHECK_MESSAGE(!queue.Contains((VoxType)(VOX_CONSTRUCTION + 3)), "the lowest priority line was dropped");
+	CHECK(queue.Contains(VOX_BASE_UNDER_ATTACK));
 
 	queue.Submit(VOX_ACCOMPLISHED, 255, VOXC_CRITICAL, VOX_NONE);
-	Check(queue.Contains(VOX_ACCOMPLISHED) && !queue.Contains(VOX_CONSTRUCTION), "with equal priorities the oldest goes");
-	Check(Pop(queue) == VOX_ACCOMPLISHED, "critical plays first");
-
-	VoxQueueClass tiny;
-	for (int i = 0; i < VoxQueueClass::MAX_PENDING; i++) {
-		tiny.Submit((VoxType)(VOX_CONSTRUCTION + i), 255, VOXC_CRITICAL, VOX_NONE);
-	}
-	tiny.Submit(VOX_LOW_POWER, 50, VOXC_QUEUE, VOX_NONE);
-	Check(tiny.Count() == VoxQueueClass::MAX_PENDING && tiny.Contains(VOX_LOW_POWER) && !tiny.Contains(VOX_CONSTRUCTION), "a full queue of critical lines gives up its oldest");
+	CHECK(queue.Contains(VOX_ACCOMPLISHED));
+	CHECK_MESSAGE(!queue.Contains(VOX_CONSTRUCTION), "with equal priorities the oldest goes");
+	CHECK(Pop(queue) == VOX_ACCOMPLISHED);
 }
 
 
-void Test_Interrupts(void)
+TEST_CASE("a full queue of critical lines gives up its oldest")
+{
+	VoxQueueClass queue;
+	for (int i = 0; i < VoxQueueClass::MAX_PENDING; i++) {
+		queue.Submit((VoxType)(VOX_CONSTRUCTION + i), 255, VOXC_CRITICAL, VOX_NONE);
+	}
+	queue.Submit(VOX_LOW_POWER, 50, VOXC_QUEUE, VOX_NONE);
+	CHECK(queue.Count() == VoxQueueClass::MAX_PENDING);
+	CHECK(queue.Contains(VOX_LOW_POWER));
+	CHECK_FALSE(queue.Contains(VOX_CONSTRUCTION));
+}
+
+
+TEST_CASE("a line asked for now does not cut, but goes ahead of the queue")
 {
 	VoxQueueClass queue;
 	queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUE, VOX_NONE);
 	queue.Submit(VOX_UNIT_READY, 50, VOXC_QUEUE, VOX_NONE);
-	Check(!queue.Submit(VOX_INCOMING_TRANSMISSION, 50, VOXC_QUEUED_INTERRUPT, VOX_LOW_POWER), "a line asked for now does not cut");
-	Check(Pop(queue) == VOX_INCOMING_TRANSMISSION, "but it goes ahead of the queue");
-	Check(Pop(queue) == VOX_CONSTRUCTION, "the queue follows");
-
-	queue.Submit(VOX_LOW_POWER, 50, VOXC_QUEUE, VOX_NONE);
-	Check(queue.Submit(VOX_FAIL, 255, VOXC_INTERRUPT, VOX_CONSTRUCTION), "an interrupt cuts the playing line");
-	Check(queue.Count() == 1 && Pop(queue) == VOX_FAIL, "and empties the queue behind it");
-	Check(!queue.Submit(VOX_FAIL, 255, VOXC_INTERRUPT, VOX_NONE), "an interrupt with nothing playing cuts nothing");
-
-	queue.Clear();
-	queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUED_INTERRUPT, VOX_NONE);
-	queue.Submit(VOX_ACCOMPLISHED, 255, VOXC_CRITICAL, VOX_NONE);
-	Check(Pop(queue) == VOX_ACCOMPLISHED && Pop(queue) == VOX_CONSTRUCTION, "critical beats a line asked for now");
+	CHECK_FALSE(queue.Submit(VOX_INCOMING_TRANSMISSION, 50, VOXC_QUEUED_INTERRUPT, VOX_LOW_POWER));
+	CHECK(Pop(queue) == VOX_INCOMING_TRANSMISSION);
+	CHECK(Pop(queue) == VOX_CONSTRUCTION);
 }
 
 
-void Test_Standard(void)
+TEST_CASE("an interrupt cuts the playing line and empties the queue behind it")
 {
 	VoxQueueClass queue;
-	Check(!queue.Submit(VOX_CONSTRUCTION, 50, VOXC_STANDARD, VOX_NONE), "standard line queued");
-	queue.Submit(VOX_UNIT_READY, 50, VOXC_STANDARD, VOX_NONE);
-	Check(queue.Count() == 1 && queue.Contains(VOX_CONSTRUCTION), "an equal standard line is dropped");
-	queue.Submit(VOX_BASE_UNDER_ATTACK, 100, VOXC_STANDARD, VOX_NONE);
-	Check(queue.Count() == 1 && queue.Contains(VOX_BASE_UNDER_ATTACK), "a higher standard line replaces it");
 	queue.Submit(VOX_LOW_POWER, 50, VOXC_QUEUE, VOX_NONE);
-	Check(Pop(queue) == VOX_LOW_POWER && Pop(queue) == VOX_BASE_UNDER_ATTACK, "the standard slot plays after the queue");
+	CHECK(queue.Submit(VOX_FAIL, 255, VOXC_INTERRUPT, VOX_CONSTRUCTION));
+	CHECK(queue.Count() == 1);
+	CHECK(Pop(queue) == VOX_FAIL);
 }
 
-} // namespace
 
-
-int main(void)
+TEST_CASE("an interrupt with nothing playing cuts nothing")
 {
-	Test_Order();
-	Test_Dedupe();
-	Test_Cap();
-	Test_Interrupts();
-	Test_Standard();
+	VoxQueueClass queue;
+	CHECK_FALSE(queue.Submit(VOX_FAIL, 255, VOXC_INTERRUPT, VOX_NONE));
+}
 
-	std::printf("voxqueue: %d checks, %d failures\n", Checked, Failures);
-	return(Failures == 0 ? 0 : 1);
+
+TEST_CASE("a critical line beats a line asked for now")
+{
+	VoxQueueClass queue;
+	queue.Submit(VOX_CONSTRUCTION, 50, VOXC_QUEUED_INTERRUPT, VOX_NONE);
+	queue.Submit(VOX_ACCOMPLISHED, 255, VOXC_CRITICAL, VOX_NONE);
+	CHECK(Pop(queue) == VOX_ACCOMPLISHED);
+	CHECK(Pop(queue) == VOX_CONSTRUCTION);
+}
+
+
+TEST_CASE("the standard slot holds one line, replaced only by a higher one, and plays after the queue")
+{
+	VoxQueueClass queue;
+	CHECK_FALSE(queue.Submit(VOX_CONSTRUCTION, 50, VOXC_STANDARD, VOX_NONE));
+	queue.Submit(VOX_UNIT_READY, 50, VOXC_STANDARD, VOX_NONE);
+	CHECK_MESSAGE(queue.Count() == 1, "an equal standard line is dropped");
+	CHECK(queue.Contains(VOX_CONSTRUCTION));
+
+	queue.Submit(VOX_BASE_UNDER_ATTACK, 100, VOXC_STANDARD, VOX_NONE);
+	CHECK(queue.Count() == 1);
+	CHECK(queue.Contains(VOX_BASE_UNDER_ATTACK));
+
+	queue.Submit(VOX_LOW_POWER, 50, VOXC_QUEUE, VOX_NONE);
+	CHECK(Pop(queue) == VOX_LOW_POWER);
+	CHECK(Pop(queue) == VOX_BASE_UNDER_ATTACK);
 }

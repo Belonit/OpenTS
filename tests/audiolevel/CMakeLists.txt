@@ -8,4 +8,5 @@ opents_add_test(AudioLevel
         audio/audiolevel.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS
     FLOAT
+    DOCTEST
 )

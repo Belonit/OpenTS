@@ -17,26 +17,22 @@
 #include "audio/audiodecode.h"
 #include "soscomp.h"
 
-#include <cstdio>
+#include "doctest/doctest.h"
+
+#include <algorithm>
 #include <cstring>
 #include <vector>
 
 namespace {
 
-int Failures = 0;
-int Checked = 0;
-
 unsigned int Seed = 12345;
 
 
-void Check(bool condition, char const * what)
+// Every case draws the same random bytes whether it runs alone or after the others.
+struct Fixture
 {
-	Checked++;
-	if (!condition) {
-		Failures++;
-		std::printf("FAIL: %s\n", what);
-	}
-}
+	Fixture(void) { Seed = 12345; }
+};
 
 
 unsigned int Next_Random(void)
@@ -141,65 +137,124 @@ std::vector<int16_t> Reference_Sos(std::vector<std::vector<uint8_t>> const & chu
 }
 
 
-void Test_Sos(unsigned channels, unsigned bits, char const * label)
+// Six random SOS chunks in an AUD file, with the samples the codec gives for them.
+struct SosStream
 {
-	unsigned ratio = bits / 4;
-	std::vector<std::vector<uint8_t>> chunks;
-	std::vector<unsigned> sizes;
-	int totalcomp = 0;
-	for (int i = 0; i < 6; i++) {
-		unsigned comp = 256 + (Next_Random() % 400);
-		comp -= comp % 4;
-		chunks.push_back(Random_Bytes(comp));
-		sizes.push_back(comp * ratio);
-		totalcomp += comp;
+	unsigned Channels;
+	std::vector<std::vector<uint8_t>> Chunks;
+	std::vector<unsigned> Sizes;
+	std::vector<uint8_t> Blob;
+	std::vector<int16_t> Expect;
+	AUDHeaderType Header;
+
+	SosStream(unsigned channels, unsigned bits) :
+		Channels(channels)
+	{
+		unsigned ratio = bits / 4;
+		int totalcomp = 0;
+		for (int i = 0; i < 6; i++) {
+			unsigned comp = 256 + (Next_Random() % 400);
+			comp -= comp % 4;
+			Chunks.push_back(Random_Bytes(comp));
+			Sizes.push_back(comp * ratio);
+			totalcomp += comp;
+		}
+
+		Blob = Make_Header(22050, (channels == 2 ? AUD_FLAG_STEREO : 0) | (bits == 16 ? AUD_FLAG_16BIT : 0), AUD_CODEC_SOS, 0, 0);
+		for (size_t i = 0; i < Chunks.size(); i++) {
+			Append_Chunk(Blob, Chunks[i], Sizes[i]);
+		}
+		Patch_Size(Blob);
+		int32_t uncomp = (int32_t)(totalcomp * ratio);
+		std::memcpy(&Blob[6], &uncomp, sizeof(uncomp));
+
+		Expect = Reference_Sos(Chunks, Sizes, channels, bits, totalcomp);
+		REQUIRE_MESSAGE(Aud_Read_Header(Blob.data(), Blob.size(), Header), "the header reads");
 	}
 
-	std::vector<uint8_t> blob = Make_Header(22050, (channels == 2 ? AUD_FLAG_STEREO : 0) | (bits == 16 ? AUD_FLAG_16BIT : 0), AUD_CODEC_SOS, 0, 0);
-	for (size_t i = 0; i < chunks.size(); i++) {
-		Append_Chunk(blob, chunks[i], sizes[i]);
+	unsigned Expected_Frames(void) const { return((unsigned)(Expect.size() / Channels)); }
+};
+
+
+void Check_Sos(unsigned channels, unsigned bits)
+{
+	SosStream stream(channels, bits);
+
+	SUBCASE("the frame capacity bounds the decoded size, overshooting by no more than the chunk headers")
+	{
+		unsigned capacity = Aud_Frame_Capacity(stream.Header);
+		CHECK(capacity >= stream.Expected_Frames());
+		CHECK(capacity <= stream.Expected_Frames() + (unsigned)(stream.Chunks.size() * sizeof(AUDChunkHeaderType)) * 4);
 	}
-	Patch_Size(blob);
-	int32_t uncomp = (int32_t)(totalcomp * ratio);
-	std::memcpy(&blob[6], &uncomp, sizeof(uncomp));
 
-	std::vector<int16_t> expect = Reference_Sos(chunks, sizes, channels, bits, totalcomp);
-
-	AUDHeaderType header;
-	Check(Aud_Read_Header(blob.data(), blob.size(), header), label);
-	unsigned expectframes = (unsigned)(expect.size() / channels);
-	unsigned capacity = Aud_Frame_Capacity(header);
-	Check(capacity >= expectframes, "frame capacity is an upper bound on the decoded size");
-	Check(capacity <= expectframes + (unsigned)(chunks.size() * sizeof(AUDChunkHeaderType)) * 4, "frame capacity overshoots by no more than the chunk headers");
-
-	std::vector<int16_t> out(capacity * channels + 16, (int16_t)0x5A5A);
-	AudioPcmFormat format;
-	unsigned frames = Aud_Decode(blob.data(), blob.size(), out.data(), capacity, format);
-	Check(frames == expectframes, "every chunk decodes");
-	Check(format.Rate == 22050 && format.Channels == channels, "format reported");
-	Check(std::memcmp(out.data(), expect.data(), expect.size() * sizeof(int16_t)) == 0, "reader output equals the codec's own output");
-	Check(out[expect.size()] == (int16_t)0x5A5A, "reader writes only the decoded frames");
-
-	// A frame-sized decode must produce the same bytes chunk by chunk.
-	AudChunkDecoderClass decoder;
-	decoder.Init(header);
-	std::vector<int16_t> piecewise;
-	std::vector<int16_t> piece(decoder.Max_Chunk_Frames() * channels);
-	for (size_t i = 0; i < chunks.size(); i++) {
-		unsigned produced = decoder.Decode_Chunk(chunks[i].data(), (unsigned)chunks[i].size(), sizes[i], piece.data(), decoder.Max_Chunk_Frames());
-		Check(produced == sizes[i] / (channels * bits / 8), "chunk decoder reports the chunk's frames");
-		piecewise.insert(piecewise.end(), piece.begin(), piece.begin() + (size_t)produced * channels);
+	SUBCASE("the reader decodes every chunk to the codec's own output and writes nothing more")
+	{
+		unsigned capacity = Aud_Frame_Capacity(stream.Header);
+		std::vector<int16_t> out(capacity * channels + 16, (int16_t)0x5A5A);
+		AudioPcmFormat format;
+		unsigned frames = Aud_Decode(stream.Blob.data(), stream.Blob.size(), out.data(), capacity, format);
+		CHECK(frames == stream.Expected_Frames());
+		CHECK(format.Rate == 22050u);
+		CHECK(format.Channels == channels);
+		CHECK(std::equal(stream.Expect.begin(), stream.Expect.end(), out.begin()));
+		CHECK(out[stream.Expect.size()] == (int16_t)0x5A5A);
 	}
-	Check(piecewise == expect, "chunk-at-a-time decode equals the whole decode");
 
-	// Rewinding restarts the codec so the first chunk decodes the same again.
-	decoder.Rewind();
-	unsigned produced = decoder.Decode_Chunk(chunks[0].data(), (unsigned)chunks[0].size(), sizes[0], piece.data(), decoder.Max_Chunk_Frames());
-	Check(produced > 0 && std::memcmp(piece.data(), expect.data(), (size_t)produced * channels * sizeof(int16_t)) == 0, "rewind restarts the stream");
+	SUBCASE("a chunk-at-a-time decode equals the whole decode")
+	{
+		AudChunkDecoderClass decoder;
+		decoder.Init(stream.Header);
+		std::vector<int16_t> piecewise;
+		std::vector<int16_t> piece(decoder.Max_Chunk_Frames() * channels);
+		for (size_t i = 0; i < stream.Chunks.size(); i++) {
+			INFO("chunk ", i);
+			unsigned produced = decoder.Decode_Chunk(stream.Chunks[i].data(), (unsigned)stream.Chunks[i].size(), stream.Sizes[i], piece.data(), decoder.Max_Chunk_Frames());
+			CHECK(produced == stream.Sizes[i] / (channels * bits / 8));
+			piecewise.insert(piecewise.end(), piece.begin(), piece.begin() + (size_t)produced * channels);
+		}
+		CHECK(piecewise == stream.Expect);
+	}
+
+	SUBCASE("rewinding restarts the codec, so the first chunk decodes the same again")
+	{
+		AudChunkDecoderClass decoder;
+		decoder.Init(stream.Header);
+		std::vector<int16_t> piece(decoder.Max_Chunk_Frames() * channels);
+		for (size_t i = 0; i < stream.Chunks.size(); i++) {
+			decoder.Decode_Chunk(stream.Chunks[i].data(), (unsigned)stream.Chunks[i].size(), stream.Sizes[i], piece.data(), decoder.Max_Chunk_Frames());
+		}
+
+		decoder.Rewind();
+		unsigned produced = decoder.Decode_Chunk(stream.Chunks[0].data(), (unsigned)stream.Chunks[0].size(), stream.Sizes[0], piece.data(), decoder.Max_Chunk_Frames());
+		REQUIRE(produced > 0u);
+		CHECK(std::equal(piece.begin(), piece.begin() + (size_t)produced * channels, stream.Expect.begin()));
+	}
 }
 
 
-void Test_Sos_Uncompressed_Chunk(void)
+// silence x4, raw 10 20 30, four 2-bit deltas, two 4-bit deltas, one embedded 5-bit delta.
+uint8_t const DeltaStream[] = {
+	0xC3,
+	0x82, 10, 20, 30,
+	0x00, 0x4E,
+	0x40, 0x8F,
+	0xBE
+};
+unsigned char const DeltaExpect[] = {128, 128, 128, 128, 10, 20, 30, 30, 31, 29, 28, 36, 36, 34};
+
+uint8_t const ClampStream[] = {0x80, 0x01, 0x00, 0x00};
+unsigned char const ClampExpect[] = {1, 0, 0, 0, 0};
+
+}
+
+
+TEST_CASE_FIXTURE(Fixture, "SOS 16-bit mono chunks decode through the reader") { Check_Sos(1, 16); }
+TEST_CASE_FIXTURE(Fixture, "SOS 16-bit stereo chunks decode through the reader") { Check_Sos(2, 16); }
+TEST_CASE_FIXTURE(Fixture, "SOS 8-bit mono chunks decode through the reader") { Check_Sos(1, 8); }
+TEST_CASE_FIXTURE(Fixture, "SOS 8-bit stereo chunks decode through the reader") { Check_Sos(2, 8); }
+
+
+TEST_CASE_FIXTURE(Fixture, "an uncompressed SOS chunk is copied as is")
 {
 	std::vector<uint8_t> payload = Random_Bytes(512);
 	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
@@ -209,12 +264,12 @@ void Test_Sos_Uncompressed_Chunk(void)
 	std::vector<int16_t> out(512);
 	AudioPcmFormat format;
 	unsigned frames = Aud_Decode(blob.data(), blob.size(), out.data(), 512, format);
-	Check(frames == 256, "uncompressed chunk yields its frames");
-	Check(std::memcmp(out.data(), payload.data(), 512) == 0, "uncompressed chunk is copied as is");
+	CHECK(frames == 256u);
+	CHECK(std::memcmp(out.data(), payload.data(), 512) == 0);
 }
 
 
-void Test_Raw(void)
+TEST_CASE("raw 8-bit samples widen around silence and stay inside their frames")
 {
 	std::vector<uint8_t> blob = Make_Header(11025, 0, AUD_CODEC_PCM, 0, 0);
 	uint8_t samples[6] = {0, 128, 255, 64, 192, 1};
@@ -224,112 +279,153 @@ void Test_Raw(void)
 	std::vector<int16_t> out(16, (int16_t)0x7777);
 	AudioPcmFormat format;
 	unsigned frames = Aud_Decode(blob.data(), blob.size(), out.data(), 16, format);
-	Check(frames == 6, "raw 8-bit frames counted");
-	Check(format.Rate == 11025 && format.Channels == 1, "raw 8-bit format");
-	Check(out[0] == -32768 && out[1] == 0 && out[2] == 32512 && out[3] == -16384, "8-bit widens around silence");
-	Check(out[6] == (int16_t)0x7777, "raw decode stays inside its frames");
+	CHECK(frames == 6u);
+	CHECK(format.Rate == 11025u);
+	CHECK(format.Channels == 1u);
+	CHECK(out[0] == -32768);
+	CHECK(out[1] == 0);
+	CHECK(out[2] == 32512);
+	CHECK(out[3] == -16384);
+	CHECK(out[6] == (int16_t)0x7777);
+}
 
+
+TEST_CASE("raw 16-bit stereo samples pass through, clamped to the capacity")
+{
 	std::vector<uint8_t> stereo = Make_Header(44100, AUD_FLAG_STEREO | AUD_FLAG_16BIT, AUD_CODEC_PCM, 0, 0);
 	int16_t pairs[8] = {1, -1, 2, -2, 3, -3, 4, -4};
 	Append(stereo, pairs, sizeof(pairs));
 	Patch_Size(stereo);
-	frames = Aud_Decode(stereo.data(), stereo.size(), out.data(), 16, format);
-	Check(frames == 4 && format.Channels == 2 && format.Rate == 44100, "raw 16-bit stereo frames");
-	Check(std::memcmp(out.data(), pairs, sizeof(pairs)) == 0, "16-bit samples pass through");
+
+	std::vector<int16_t> out(16, (int16_t)0x7777);
+	AudioPcmFormat format;
+	unsigned frames = Aud_Decode(stereo.data(), stereo.size(), out.data(), 16, format);
+	CHECK(frames == 4u);
+	CHECK(format.Channels == 2u);
+	CHECK(format.Rate == 44100u);
+	CHECK(std::memcmp(out.data(), pairs, sizeof(pairs)) == 0);
 
 	frames = Aud_Decode(stereo.data(), stereo.size(), out.data(), 2, format);
-	Check(frames == 2, "raw decode clamps to the capacity");
+	CHECK_MESSAGE(frames == 2u, "the decode clamps to the capacity");
 }
 
 
-void Test_Westwood(void)
+TEST_CASE("a hand-built Westwood delta stream decodes to the expected samples")
 {
-	// silence x4, raw 10 20 30, four 2-bit deltas, two 4-bit deltas, one embedded 5-bit delta.
-	uint8_t stream[] = {
-		0xC3,
-		0x82, 10, 20, 30,
-		0x00, 0x4E,
-		0x40, 0x8F,
-		0xBE
-	};
-	unsigned char expect[] = {128, 128, 128, 128, 10, 20, 30, 30, 31, 29, 28, 36, 36, 34};
 	unsigned char out[32];
+	REQUIRE(Aud_Decode_Westwood(DeltaStream, sizeof(DeltaStream), out, sizeof(DeltaExpect)));
+	CHECK(std::memcmp(out, DeltaExpect, sizeof(DeltaExpect)) == 0);
+}
 
-	Check(Aud_Decode_Westwood(stream, sizeof(stream), out, sizeof(expect)), "hand-built delta stream decodes");
-	Check(std::memcmp(out, expect, sizeof(expect)) == 0, "delta stream produces the expected samples");
 
-	uint8_t clamp[] = {0x80, 0x01, 0x00, 0x00};
-	unsigned char clampexpect[] = {1, 0, 0, 0, 0};
-	Check(Aud_Decode_Westwood(clamp, sizeof(clamp), out, sizeof(clampexpect)), "clamping stream decodes");
-	Check(std::memcmp(out, clampexpect, sizeof(clampexpect)) == 0, "deltas clamp at zero");
+TEST_CASE("Westwood deltas clamp at zero")
+{
+	unsigned char out[32];
+	REQUIRE(Aud_Decode_Westwood(ClampStream, sizeof(ClampStream), out, sizeof(ClampExpect)));
+	CHECK(std::memcmp(out, ClampExpect, sizeof(ClampExpect)) == 0);
+}
 
-	Check(!Aud_Decode_Westwood(stream, sizeof(stream), out, sizeof(expect) + 1), "asking for more output than the stream holds fails");
-	Check(!Aud_Decode_Westwood(stream, 3, out, sizeof(expect)), "a truncated stream fails");
+
+TEST_CASE("a malformed Westwood delta stream fails")
+{
+	unsigned char out[32];
+	CHECK_MESSAGE(!Aud_Decode_Westwood(DeltaStream, sizeof(DeltaStream), out, sizeof(DeltaExpect) + 1), "asking for more output than the stream holds");
+	CHECK_MESSAGE(!Aud_Decode_Westwood(DeltaStream, 3, out, sizeof(DeltaExpect)), "a truncated stream");
 	uint8_t overrun[] = {0xBF};
-	Check(!Aud_Decode_Westwood(overrun, sizeof(overrun), out, 4), "a run past the output fails");
+	CHECK_MESSAGE(!Aud_Decode_Westwood(overrun, sizeof(overrun), out, 4), "a run past the output");
+}
 
-	// In place from the end of the buffer, as the VQA loader decodes a frame.
+
+// The VQA loader decodes a frame in place from the end of its buffer.
+TEST_CASE("a Westwood delta stream decodes in place from the end of the buffer")
+{
 	unsigned char inplace[64];
-	std::memcpy(inplace + sizeof(inplace) - sizeof(stream), stream, sizeof(stream));
-	Check(Aud_Decode_Westwood(inplace + sizeof(inplace) - sizeof(stream), sizeof(stream), inplace, sizeof(expect)), "decodes in place");
-	Check(std::memcmp(inplace, expect, sizeof(expect)) == 0, "in-place decode produces the expected samples");
+	std::memcpy(inplace + sizeof(inplace) - sizeof(DeltaStream), DeltaStream, sizeof(DeltaStream));
+	REQUIRE(Aud_Decode_Westwood(inplace + sizeof(inplace) - sizeof(DeltaStream), sizeof(DeltaStream), inplace, sizeof(DeltaExpect)));
+	CHECK(std::memcmp(inplace, DeltaExpect, sizeof(DeltaExpect)) == 0);
+}
 
-	// Through the reader, as a chunked codec 1 file.
+
+TEST_CASE("a chunked codec 1 file decodes every chunk, widening like raw 8-bit samples")
+{
 	std::vector<uint8_t> blob = Make_Header(22050, 0, AUD_CODEC_WESTWOOD, 0, 0);
-	Append_Chunk(blob, std::vector<uint8_t>(stream, stream + sizeof(stream)), sizeof(expect));
-	Append_Chunk(blob, std::vector<uint8_t>(clamp, clamp + sizeof(clamp)), sizeof(clampexpect));
+	Append_Chunk(blob, std::vector<uint8_t>(DeltaStream, DeltaStream + sizeof(DeltaStream)), sizeof(DeltaExpect));
+	Append_Chunk(blob, std::vector<uint8_t>(ClampStream, ClampStream + sizeof(ClampStream)), sizeof(ClampExpect));
 	Patch_Size(blob);
-	int32_t uncomp = sizeof(expect) + sizeof(clampexpect);
+	int32_t uncomp = sizeof(DeltaExpect) + sizeof(ClampExpect);
 	std::memcpy(&blob[6], &uncomp, sizeof(uncomp));
 
 	std::vector<int16_t> pcm(64);
 	AudioPcmFormat format;
 	unsigned frames = Aud_Decode(blob.data(), blob.size(), pcm.data(), 64, format);
-	Check(frames == (unsigned)uncomp, "codec 1 file decodes every chunk");
-	bool match = true;
-	for (unsigned i = 0; i < sizeof(expect); i++) {
-		if (pcm[i] != Widen(expect[i])) match = false;
+	REQUIRE(frames == (unsigned)uncomp);
+	for (unsigned i = 0; i < sizeof(DeltaExpect); i++) {
+		INFO("sample ", i);
+		CHECK(pcm[i] == Widen(DeltaExpect[i]));
 	}
-	for (unsigned i = 0; i < sizeof(clampexpect); i++) {
-		if (pcm[sizeof(expect) + i] != Widen(clampexpect[i])) match = false;
+	for (unsigned i = 0; i < sizeof(ClampExpect); i++) {
+		INFO("sample ", sizeof(DeltaExpect) + i);
+		CHECK(pcm[sizeof(DeltaExpect) + i] == Widen(ClampExpect[i]));
 	}
-	Check(match, "codec 1 samples widen like raw 8-bit ones");
 }
 
 
-void Test_Header_Rules(void)
+TEST_CASE("rates near 22050 play at 22050, and others are left alone")
 {
 	AUDHeaderType header;
 	std::vector<uint8_t> blob = Make_Header(22000, AUD_FLAG_16BIT, AUD_CODEC_SOS, 100, 400);
 	blob.resize(sizeof(AUDHeaderType) + 100);
-	Check(Aud_Read_Header(blob.data(), blob.size(), header), "valid header reads");
-	Check(Aud_Playback_Rate(header) == 22050, "rates just under 22050 play at 22050");
+	REQUIRE(Aud_Read_Header(blob.data(), blob.size(), header));
+
+	CHECK_MESSAGE(Aud_Playback_Rate(header) == 22050u, "just under");
 	header.Rate = 23999;
-	Check(Aud_Playback_Rate(header) == 22050, "rates just over 22050 play at 22050");
+	CHECK_MESSAGE(Aud_Playback_Rate(header) == 22050u, "just over");
 	header.Rate = 44100;
-	Check(Aud_Playback_Rate(header) == 44100, "44100 is left alone");
+	CHECK(Aud_Playback_Rate(header) == 44100u);
 	header.Rate = 20000;
-	Check(Aud_Playback_Rate(header) == 20000, "20000 is left alone");
-	Check(Aud_Blob_Bytes(header) == sizeof(AUDHeaderType) + 100, "blob size follows the header");
-	Check(Aud_Frame_Capacity(header) == 200, "SOS 16-bit capacity is four samples per byte");
-
-	Check(!Aud_Read_Header(blob.data(), blob.size() - 1, header), "a blob shorter than its header claims is rejected");
-	Check(Aud_Read_Header(blob.data(), 0, header), "size zero trusts the header");
-
-	std::vector<uint8_t> bad = Make_Header(22050, AUD_FLAG_16BIT, 33, 100, 400);
-	Check(!Aud_Read_Header(bad.data(), 0, header), "unknown codec is rejected");
-	bad = Make_Header(22050, 4, AUD_CODEC_SOS, 100, 400);
-	Check(!Aud_Read_Header(bad.data(), 0, header), "unknown flag bits are rejected");
-	bad = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_WESTWOOD, 100, 400);
-	Check(!Aud_Read_Header(bad.data(), 0, header), "16-bit delta files are rejected");
-	bad = Make_Header(22050, 0, AUD_CODEC_PCM, 0, 0);
-	Check(!Aud_Read_Header(bad.data(), 0, header), "an empty file is rejected");
-	Check(!Aud_Read_Header(nullptr, 0, header), "null data is rejected");
-	Check(!Aud_Read_Header(bad.data(), 4, header), "a fragment shorter than a header is rejected");
+	CHECK(Aud_Playback_Rate(header) == 20000u);
 }
 
 
-void Test_Bad_Chunks(void)
+TEST_CASE("the blob size and frame capacity follow the header")
+{
+	AUDHeaderType header;
+	std::vector<uint8_t> blob = Make_Header(22000, AUD_FLAG_16BIT, AUD_CODEC_SOS, 100, 400);
+	blob.resize(sizeof(AUDHeaderType) + 100);
+	REQUIRE(Aud_Read_Header(blob.data(), blob.size(), header));
+
+	CHECK(Aud_Blob_Bytes(header) == sizeof(AUDHeaderType) + 100);
+	CHECK_MESSAGE(Aud_Frame_Capacity(header) == 200u, "SOS 16-bit holds four samples per byte");
+}
+
+
+TEST_CASE("a blob shorter than its header claims is rejected, and size zero trusts the header")
+{
+	AUDHeaderType header;
+	std::vector<uint8_t> blob = Make_Header(22000, AUD_FLAG_16BIT, AUD_CODEC_SOS, 100, 400);
+	blob.resize(sizeof(AUDHeaderType) + 100);
+	CHECK_FALSE(Aud_Read_Header(blob.data(), blob.size() - 1, header));
+	CHECK(Aud_Read_Header(blob.data(), 0, header));
+}
+
+
+TEST_CASE("a header the reader cannot play is rejected")
+{
+	AUDHeaderType header;
+	std::vector<uint8_t> bad = Make_Header(22050, AUD_FLAG_16BIT, 33, 100, 400);
+	CHECK_MESSAGE(!Aud_Read_Header(bad.data(), 0, header), "an unknown codec");
+	bad = Make_Header(22050, 4, AUD_CODEC_SOS, 100, 400);
+	CHECK_MESSAGE(!Aud_Read_Header(bad.data(), 0, header), "unknown flag bits");
+	bad = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_WESTWOOD, 100, 400);
+	CHECK_MESSAGE(!Aud_Read_Header(bad.data(), 0, header), "a 16-bit delta file");
+	bad = Make_Header(22050, 0, AUD_CODEC_PCM, 0, 0);
+	CHECK_MESSAGE(!Aud_Read_Header(bad.data(), 0, header), "an empty file");
+	CHECK_MESSAGE(!Aud_Read_Header(nullptr, 0, header), "null data");
+	CHECK_MESSAGE(!Aud_Read_Header(bad.data(), 4, header), "a fragment shorter than a header");
+}
+
+
+TEST_CASE_FIXTURE(Fixture, "a bad chunk magic ends the sample after the good chunks, writing nothing past them")
 {
 	std::vector<uint8_t> good = Random_Bytes(256);
 	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
@@ -341,53 +437,86 @@ void Test_Bad_Chunks(void)
 
 	std::vector<int16_t> out(4096, (int16_t)0x1111);
 	AudioPcmFormat format;
-	unsigned frames = Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format);
-	Check(frames == 1024, "a bad magic ends the sample after the good chunks");
-	Check(out[1024] == (int16_t)0x1111, "nothing is written past the good chunks");
+	CHECK(Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format) == 1024u);
+	CHECK(out[1024] == (int16_t)0x1111);
+}
 
-	blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
+
+TEST_CASE_FIXTURE(Fixture, "an oversize chunk ends the sample")
+{
+	std::vector<uint8_t> good = Random_Bytes(256);
+	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
 	Append_Chunk(blob, good, 1024);
 	Append_Chunk(blob, good, AUD_MAX_CHUNK_UNCOMP_BYTES + 4);
 	Patch_Size(blob);
-	frames = Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format);
-	Check(frames == 512, "an oversize chunk ends the sample");
 
+	std::vector<int16_t> out(4096);
+	AudioPcmFormat format;
+	CHECK(Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format) == 512u);
+}
+
+
+TEST_CASE_FIXTURE(Fixture, "an oversize compressed chunk decodes nothing")
+{
 	std::vector<uint8_t> big = Random_Bytes(AUD_MAX_CHUNK_COMP_BYTES + 4);
-	blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
+	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
 	Append_Chunk(blob, big, 2048);
 	Patch_Size(blob);
-	frames = Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format);
-	Check(frames == 0, "an oversize compressed chunk decodes nothing");
 
-	blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
+	std::vector<int16_t> out(4096);
+	AudioPcmFormat format;
+	CHECK(Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format) == 0u);
+}
+
+
+TEST_CASE_FIXTURE(Fixture, "a blob shorter than its header claims decodes nothing")
+{
+	std::vector<uint8_t> good = Random_Bytes(256);
+	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
 	Append_Chunk(blob, good, 1024);
 	Append_Chunk(blob, good, 1024);
 	Patch_Size(blob);
 	blob.resize(blob.size() - 100);
-	frames = Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format);
-	Check(frames == 0, "a blob shorter than its header claims decodes nothing");
 
-	// The header is honest about the blob, but the last chunk claims more than is left.
-	blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
+	std::vector<int16_t> out(4096);
+	AudioPcmFormat format;
+	CHECK(Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format) == 0u);
+}
+
+
+// The header is honest about the blob, but the last chunk claims more than is left.
+TEST_CASE_FIXTURE(Fixture, "a chunk claiming more than the blob holds ends the sample")
+{
+	std::vector<uint8_t> good = Random_Bytes(256);
+	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
 	Append_Chunk(blob, good, 1024);
 	size_t lastchunk = blob.size();
 	Append_Chunk(blob, good, 1024);
 	Patch_Size(blob);
 	uint16_t claimed = 5000;
 	std::memcpy(&blob[lastchunk], &claimed, sizeof(claimed));
-	frames = Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format);
-	Check(frames == 512, "a chunk claiming more than the blob holds ends the sample");
 
-	blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
-	Append_Chunk(blob, good, 1024);
-	Append_Chunk(blob, good, 1024);
-	Patch_Size(blob);
-	frames = Aud_Decode(blob.data(), blob.size(), out.data(), 700, format);
-	Check(frames == 512, "a chunk that does not fit the capacity is not started");
+	std::vector<int16_t> out(4096);
+	AudioPcmFormat format;
+	CHECK(Aud_Decode(blob.data(), blob.size(), out.data(), 4096, format) == 512u);
 }
 
 
-void Test_Wav(void)
+TEST_CASE_FIXTURE(Fixture, "a chunk that does not fit the capacity is not started")
+{
+	std::vector<uint8_t> good = Random_Bytes(256);
+	std::vector<uint8_t> blob = Make_Header(22050, AUD_FLAG_16BIT, AUD_CODEC_SOS, 0, 0);
+	Append_Chunk(blob, good, 1024);
+	Append_Chunk(blob, good, 1024);
+	Patch_Size(blob);
+
+	std::vector<int16_t> out(4096);
+	AudioPcmFormat format;
+	CHECK(Aud_Decode(blob.data(), blob.size(), out.data(), 700, format) == 512u);
+}
+
+
+TEST_CASE("a WAV decodes through miniaudio, its samples passing through")
 {
 	int16_t samples[100];
 	for (int i = 0; i < 100; i++) {
@@ -419,30 +548,18 @@ void Test_Wav(void)
 
 	std::vector<int16_t> out;
 	AudioPcmFormat info;
-	Check(Audio_Decode_Other(wav.data(), wav.size(), out, info), "WAV decodes through miniaudio");
-	Check(info.Rate == 22050 && info.Channels == 1, "WAV format reported");
-	Check(out.size() == 100 && std::memcmp(out.data(), samples, sizeof(samples)) == 0, "WAV samples pass through");
-
-	std::vector<uint8_t> junk = Random_Bytes(300);
-	Check(!Audio_Decode_Other(junk.data(), junk.size(), out, info), "random bytes are not a known format");
+	REQUIRE(Audio_Decode_Other(wav.data(), wav.size(), out, info));
+	CHECK(info.Rate == 22050u);
+	CHECK(info.Channels == 1u);
+	REQUIRE(out.size() == 100u);
+	CHECK(std::memcmp(out.data(), samples, sizeof(samples)) == 0);
 }
 
-} // namespace
 
-
-int main(void)
+TEST_CASE_FIXTURE(Fixture, "random bytes are not a known format")
 {
-	Test_Sos(1, 16, "SOS 16-bit mono header reads");
-	Test_Sos(2, 16, "SOS 16-bit stereo header reads");
-	Test_Sos(1, 8, "SOS 8-bit mono header reads");
-	Test_Sos(2, 8, "SOS 8-bit stereo header reads");
-	Test_Sos_Uncompressed_Chunk();
-	Test_Raw();
-	Test_Westwood();
-	Test_Header_Rules();
-	Test_Bad_Chunks();
-	Test_Wav();
-
-	std::printf("auddecode: %d checks, %d failures\n", Checked, Failures);
-	return(Failures == 0 ? 0 : 1);
+	std::vector<uint8_t> junk = Random_Bytes(300);
+	std::vector<int16_t> out;
+	AudioPcmFormat info;
+	CHECK_FALSE(Audio_Decode_Other(junk.data(), junk.size(), out, info));
 }

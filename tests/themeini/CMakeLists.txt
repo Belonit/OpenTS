@@ -29,4 +29,5 @@ opents_add_test(ThemeIni
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
     UTF8
     STAMP
+    DOCTEST
 )

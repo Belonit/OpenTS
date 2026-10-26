@@ -13,4 +13,5 @@ opents_add_test(AudioCache
     DEFINITIONS WIN32 _WINDOWS _MBCS
     LIBRARIES miniaudio
     FLOAT
+    DOCTEST
 )

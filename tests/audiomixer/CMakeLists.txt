@@ -17,4 +17,5 @@ opents_add_test(AudioMixer
     DEFINITIONS WIN32 _WINDOWS _MBCS
     LIBRARIES miniaudio
     FLOAT
+    DOCTEST
 )
