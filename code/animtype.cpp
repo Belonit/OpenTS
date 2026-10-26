@@ -199,7 +199,7 @@ AnimTypeClass::~AnimTypeClass(void)
  *                                                                                             *
  * OUTPUT:  none                                                                               *
  *                                                                                             *
- * WARNINGS:   Call this routine when the theater changes.                                     *
+ * WARNINGS:   Call this routine after the rules are read for a scenario.                      *
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
@@ -235,7 +235,10 @@ void AnimTypeClass::Init(TheaterType theater)
 	} else {
 		for (index = ANIM_FIRST; index < AnimTypes.Count(); index++) {
 			AnimTypeClass * anim = AnimTypes[index];
-			if (anim->IsNewTheater && anim->ImageData == NULL) {
+
+			// A reread of the rules replaces the frame counts an image still in memory supplied, so
+			// the image supplies them again, as a change of theater does.
+			if (anim->IsNewTheater && (anim->ImageData == NULL || (!anim->IsDemandLoad && !anim->IsTheater))) {
 				anim->Load_Image(theater);
 			}
 		}
