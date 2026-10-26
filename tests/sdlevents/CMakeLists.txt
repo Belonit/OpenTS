@@ -10,4 +10,5 @@ opents_add_test(SDLEventsContract
     DEFINITIONS WIN32 _WINDOWS NOMINMAX
     LIBRARIES SDL3::SDL3-static
     UTF8
+    DOCTEST
 )

@@ -14,26 +14,13 @@
 
 #include "win.h"
 
+#include "doctest/doctest.h"
+
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_scancode.h>
 
-#include <cstdio>
-
 namespace {
-
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-76s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 int Key(SDL_Scancode scancode, SDL_Keycode keycode, SDL_Keymod modifiers = SDL_KMOD_NONE)
 {
@@ -85,100 +72,227 @@ struct TestLayout
 }
 
 
-int main(void)
+TEST_CASE("a letter key is its letter wherever the layout puts it")
 {
-	Check(Key(SDL_SCANCODE_A, SDLK_A) == 'A', "a letter key is its capital letter");
-	Check(Key(SDL_SCANCODE_Q, SDLK_A) == 'A', "the key an AZERTY layout prints A on is A");
-	Check(Key(SDL_SCANCODE_Y, SDLK_Z) == 'Z', "the key a QWERTZ layout prints Z on is Z");
-	Check(Key(SDL_SCANCODE_SEMICOLON, SDLK_M) == 'M', "a letter off the US letter keys is still that letter");
-	Check(Key(SDL_SCANCODE_1, SDLK_1) == '1' && Key(SDL_SCANCODE_0, SDLK_0) == '0', "a digit key is its digit");
-	Check(Key(SDL_SCANCODE_1, SDLK_AMPERSAND) == '1', "a digit key printing a symbol is still its digit");
-	Check(Key(SDL_SCANCODE_M, SDLK_COMMA) == VK_OEM_COMMA, "the key a layout prints a comma on is the comma key");
-	Check(Key(SDL_SCANCODE_RIGHTBRACKET, SDLK_PLUS) == VK_OEM_PLUS, "the key a layout prints a plus on is the plus key");
-	Check(Key(SDL_SCANCODE_EQUALS, SDLK_EQUALS) == VK_OEM_PLUS, "the US equals key is the plus key");
-	Check(Key(SDL_SCANCODE_MINUS, (SDL_Keycode)0xDF) == VK_OEM_MINUS, "without a scan code, a key printing a letter with no code keeps its US position");
-	Check(Key(SDL_SCANCODE_GRAVE, SDLK_GRAVE) == VK_OEM_3 && Key(SDL_SCANCODE_SLASH, SDLK_SLASH) == VK_OEM_2, "the other punctuation keys keep their US positions");
-	Check(Key(SDL_SCANCODE_NONUSBACKSLASH, SDLK_LESS) == VK_OEM_102, "the extra key beside left Shift is its own key");
+	CHECK_MESSAGE(Key(SDL_SCANCODE_A, SDLK_A) == 'A', "a letter key is its capital letter");
+	CHECK_MESSAGE(Key(SDL_SCANCODE_Q, SDLK_A) == 'A', "the key an AZERTY layout prints A on is A");
+	CHECK_MESSAGE(Key(SDL_SCANCODE_Y, SDLK_Z) == 'Z', "the key a QWERTZ layout prints Z on is Z");
+	CHECK_MESSAGE(Key(SDL_SCANCODE_SEMICOLON, SDLK_M) == 'M', "a letter off the US letter keys is still that letter");
+}
 
-	Check(Unprinted(SDL_SCANCODE_KP_7, SDL_KMOD_NUM) == VK_NUMPAD7, "a keypad digit with Num Lock on is the keypad digit");
-	Check(Unprinted(SDL_SCANCODE_KP_7) == VK_HOME, "the same key with Num Lock off is Home");
-	Check(Unprinted(SDL_SCANCODE_KP_7, (SDL_Keymod)(SDL_KMOD_NUM | SDL_KMOD_LSHIFT)) == VK_HOME, "and with Shift held is Home too");
-	Check(Unprinted(SDL_SCANCODE_KP_5) == VK_CLEAR && Unprinted(SDL_SCANCODE_KP_0) == VK_INSERT, "the keypad centre and zero are Clear and Insert without Num Lock");
-	Check(Unprinted(SDL_SCANCODE_KP_PERIOD, SDL_KMOD_NUM) == VK_DECIMAL && Unprinted(SDL_SCANCODE_KP_PERIOD) == VK_DELETE, "the keypad point is the decimal key or Delete");
-	Check(Unprinted(SDL_SCANCODE_KP_ENTER) == VK_RETURN, "the keypad Enter is Enter");
-	Check(Unprinted(SDL_SCANCODE_KP_PLUS) == VK_ADD && Unprinted(SDL_SCANCODE_KP_MINUS) == VK_SUBTRACT, "the keypad operators are the keypad's own keys");
-	Check(Unprinted(SDL_SCANCODE_KP_MULTIPLY) == VK_MULTIPLY && Unprinted(SDL_SCANCODE_KP_DIVIDE) == VK_DIVIDE, "whether or not Num Lock is on");
 
-	Check(Unprinted(SDL_SCANCODE_LSHIFT) == VK_SHIFT && Unprinted(SDL_SCANCODE_RSHIFT) == VK_SHIFT, "either Shift is Shift");
-	Check(Unprinted(SDL_SCANCODE_LCTRL) == VK_CONTROL && Unprinted(SDL_SCANCODE_RCTRL) == VK_CONTROL, "either Ctrl is Ctrl");
-	Check(Unprinted(SDL_SCANCODE_LALT) == VK_MENU && Unprinted(SDL_SCANCODE_RALT) == VK_MENU, "either Alt is Alt");
-	Check(Unprinted(SDL_SCANCODE_LGUI) == VK_LWIN && Unprinted(SDL_SCANCODE_RGUI) == VK_RWIN, "the Windows keys keep their sides");
+TEST_CASE("a digit key is its digit, even when it prints a symbol")
+{
+	CHECK(Key(SDL_SCANCODE_1, SDLK_1) == '1');
+	CHECK(Key(SDL_SCANCODE_0, SDLK_0) == '0');
+	CHECK(Key(SDL_SCANCODE_1, SDLK_AMPERSAND) == '1');
+}
 
-	Check(Unprinted(SDL_SCANCODE_F1) == VK_F1 && Unprinted(SDL_SCANCODE_F12) == VK_F12, "the function keys run from F1 to F12");
-	Check(Unprinted(SDL_SCANCODE_F13) == VK_F13 && Unprinted(SDL_SCANCODE_F24) == VK_F24, "and on from F13 to F24");
-	Check(Unprinted(SDL_SCANCODE_PAGEUP) == VK_PRIOR && Unprinted(SDL_SCANCODE_PAGEDOWN) == VK_NEXT, "Page Up and Page Down are Prior and Next");
-	Check(Unprinted(SDL_SCANCODE_LEFT) == VK_LEFT && Unprinted(SDL_SCANCODE_DOWN) == VK_DOWN, "the arrows are the arrows");
-	Check(Unprinted(SDL_SCANCODE_ESCAPE) == VK_ESCAPE && Unprinted(SDL_SCANCODE_BACKSPACE) == VK_BACK, "Escape and Backspace are Escape and Back");
-	Check(Key(SDL_SCANCODE_RETURN, SDLK_RETURN) == VK_RETURN && Key(SDL_SCANCODE_SPACE, SDLK_SPACE) == VK_SPACE, "Enter and Space are Return and Space");
-	Check(Unprinted(SDL_SCANCODE_SCROLLLOCK) == VK_SCROLL && Unprinted(SDL_SCANCODE_PAUSE) == VK_PAUSE, "Scroll Lock and Pause are their own keys");
-	Check(Unprinted(SDL_SCANCODE_PRINTSCREEN) == VK_SNAPSHOT, "Print Screen is the snapshot key");
-	Check(Unprinted(SDL_SCANCODE_CAPSLOCK) == VK_CAPITAL && Unprinted(SDL_SCANCODE_NUMLOCKCLEAR) == VK_NUMLOCK, "Caps Lock and Num Lock are their own keys");
-	Check(Unprinted(SDL_SCANCODE_LANG1) == 0, "a key Windows has no code for is dropped");
 
-	bool named = true;
+TEST_CASE("the comma and plus keys follow what the layout prints on them")
+{
+	CHECK(Key(SDL_SCANCODE_M, SDLK_COMMA) == VK_OEM_COMMA);
+	CHECK(Key(SDL_SCANCODE_RIGHTBRACKET, SDLK_PLUS) == VK_OEM_PLUS);
+	CHECK_MESSAGE(Key(SDL_SCANCODE_EQUALS, SDLK_EQUALS) == VK_OEM_PLUS, "the US equals key is the plus key");
+}
+
+
+TEST_CASE("without a scan code, the other punctuation keys keep their US positions")
+{
+	CHECK_MESSAGE(Key(SDL_SCANCODE_MINUS, (SDL_Keycode)0xDF) == VK_OEM_MINUS, "a key printing a letter with no code");
+	CHECK(Key(SDL_SCANCODE_GRAVE, SDLK_GRAVE) == VK_OEM_3);
+	CHECK(Key(SDL_SCANCODE_SLASH, SDLK_SLASH) == VK_OEM_2);
+}
+
+
+TEST_CASE("the extra key beside left Shift is its own key")
+{
+	CHECK(Key(SDL_SCANCODE_NONUSBACKSLASH, SDLK_LESS) == VK_OEM_102);
+}
+
+
+TEST_CASE("a keypad digit follows Num Lock, and Shift makes it a navigation key")
+{
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_KP_7, SDL_KMOD_NUM) == VK_NUMPAD7, "Num Lock on");
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_KP_7) == VK_HOME, "Num Lock off");
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_KP_7, (SDL_Keymod)(SDL_KMOD_NUM | SDL_KMOD_LSHIFT)) == VK_HOME, "Num Lock on with Shift held");
+}
+
+
+TEST_CASE("the keypad centre and zero are Clear and Insert without Num Lock")
+{
+	CHECK(Unprinted(SDL_SCANCODE_KP_5) == VK_CLEAR);
+	CHECK(Unprinted(SDL_SCANCODE_KP_0) == VK_INSERT);
+}
+
+
+TEST_CASE("the keypad point is the decimal key or Delete")
+{
+	CHECK(Unprinted(SDL_SCANCODE_KP_PERIOD, SDL_KMOD_NUM) == VK_DECIMAL);
+	CHECK(Unprinted(SDL_SCANCODE_KP_PERIOD) == VK_DELETE);
+}
+
+
+TEST_CASE("the keypad Enter is Enter")
+{
+	CHECK(Unprinted(SDL_SCANCODE_KP_ENTER) == VK_RETURN);
+}
+
+
+TEST_CASE("the keypad operators are the keypad's own keys whether or not Num Lock is on")
+{
+	CHECK(Unprinted(SDL_SCANCODE_KP_PLUS) == VK_ADD);
+	CHECK(Unprinted(SDL_SCANCODE_KP_MINUS) == VK_SUBTRACT);
+	CHECK(Unprinted(SDL_SCANCODE_KP_MULTIPLY) == VK_MULTIPLY);
+	CHECK(Unprinted(SDL_SCANCODE_KP_DIVIDE) == VK_DIVIDE);
+}
+
+
+TEST_CASE("either side of Shift, Ctrl and Alt is the modifier, and the Windows keys keep their sides")
+{
+	CHECK(Unprinted(SDL_SCANCODE_LSHIFT) == VK_SHIFT);
+	CHECK(Unprinted(SDL_SCANCODE_RSHIFT) == VK_SHIFT);
+	CHECK(Unprinted(SDL_SCANCODE_LCTRL) == VK_CONTROL);
+	CHECK(Unprinted(SDL_SCANCODE_RCTRL) == VK_CONTROL);
+	CHECK(Unprinted(SDL_SCANCODE_LALT) == VK_MENU);
+	CHECK(Unprinted(SDL_SCANCODE_RALT) == VK_MENU);
+	CHECK(Unprinted(SDL_SCANCODE_LGUI) == VK_LWIN);
+	CHECK(Unprinted(SDL_SCANCODE_RGUI) == VK_RWIN);
+}
+
+
+TEST_CASE("the function keys run from F1 to F24")
+{
+	CHECK(Unprinted(SDL_SCANCODE_F1) == VK_F1);
+	CHECK(Unprinted(SDL_SCANCODE_F12) == VK_F12);
+	CHECK(Unprinted(SDL_SCANCODE_F13) == VK_F13);
+	CHECK(Unprinted(SDL_SCANCODE_F24) == VK_F24);
+}
+
+
+TEST_CASE("the navigation and editing keys are their Windows keys")
+{
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_PAGEUP) == VK_PRIOR, "Page Up is Prior");
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_PAGEDOWN) == VK_NEXT, "Page Down is Next");
+	CHECK(Unprinted(SDL_SCANCODE_LEFT) == VK_LEFT);
+	CHECK(Unprinted(SDL_SCANCODE_DOWN) == VK_DOWN);
+	CHECK(Unprinted(SDL_SCANCODE_ESCAPE) == VK_ESCAPE);
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_BACKSPACE) == VK_BACK, "Backspace is Back");
+	CHECK(Key(SDL_SCANCODE_RETURN, SDLK_RETURN) == VK_RETURN);
+	CHECK(Key(SDL_SCANCODE_SPACE, SDLK_SPACE) == VK_SPACE);
+}
+
+
+TEST_CASE("the lock, Pause and Print Screen keys are their own keys")
+{
+	CHECK(Unprinted(SDL_SCANCODE_SCROLLLOCK) == VK_SCROLL);
+	CHECK(Unprinted(SDL_SCANCODE_PAUSE) == VK_PAUSE);
+	CHECK_MESSAGE(Unprinted(SDL_SCANCODE_PRINTSCREEN) == VK_SNAPSHOT, "Print Screen is the snapshot key");
+	CHECK(Unprinted(SDL_SCANCODE_CAPSLOCK) == VK_CAPITAL);
+	CHECK(Unprinted(SDL_SCANCODE_NUMLOCKCLEAR) == VK_NUMLOCK);
+}
+
+
+TEST_CASE("a key Windows has no code for is dropped")
+{
+	CHECK(Unprinted(SDL_SCANCODE_LANG1) == 0);
+}
+
+
+TEST_CASE("every letter key named by SDL is its letter when its layout prints none")
+{
 	for (int letter = 0; letter < 26; letter++) {
 		char name[2] = { (char)('A' + letter), '\0' };
+		INFO("letter ", name);
 		SDL_Scancode scancode = SDL_GetScancodeFromName(name);
-		named = named && Unprinted(scancode) == 'A' + letter;
+		CHECK(Unprinted(scancode) == 'A' + letter);
 	}
-	Check(named, "every letter key named by SDL is its letter when its layout prints none");
+}
 
+
+TEST_CASE("a scan code leaves the function, arrow, modifier and Pause keys their fixed codes")
+{
 	HKL const current = GetKeyboardLayout(0);
-	Check(Scanned(SDL_SCANCODE_F1, 0x3B, current) == VK_F1 && Scanned(SDL_SCANCODE_UP, 0xE048, current) == VK_UP, "a scan code leaves the function and arrow keys their fixed codes");
-	Check(Scanned(SDL_SCANCODE_KP_8, 0x48, current, SDL_KMOD_NUM) == VK_NUMPAD8 && Scanned(SDL_SCANCODE_KP_8, 0x48, current) == VK_UP, "and the keypad still follows Num Lock");
-	Check(Scanned(SDL_SCANCODE_RSHIFT, 0x36, current) == VK_SHIFT && Scanned(SDL_SCANCODE_RCTRL, 0xE01D, current) == VK_CONTROL, "and either side of a modifier is still the modifier");
-	Check(Scanned(SDL_SCANCODE_PAUSE, 0xE046, current) == VK_PAUSE, "and Pause is Pause");
+	CHECK(Scanned(SDL_SCANCODE_F1, 0x3B, current) == VK_F1);
+	CHECK(Scanned(SDL_SCANCODE_UP, 0xE048, current) == VK_UP);
+	CHECK(Scanned(SDL_SCANCODE_RSHIFT, 0x36, current) == VK_SHIFT);
+	CHECK(Scanned(SDL_SCANCODE_RCTRL, 0xE01D, current) == VK_CONTROL);
+	CHECK(Scanned(SDL_SCANCODE_PAUSE, 0xE046, current) == VK_PAUSE);
+}
 
-	bool native = true;
+
+TEST_CASE("with a scan code, the keypad still follows Num Lock")
+{
+	HKL const current = GetKeyboardLayout(0);
+	CHECK(Scanned(SDL_SCANCODE_KP_8, 0x48, current, SDL_KMOD_NUM) == VK_NUMPAD8);
+	CHECK(Scanned(SDL_SCANCODE_KP_8, 0x48, current) == VK_UP);
+}
+
+
+TEST_CASE("a character key takes the code the active layout gives its scan code")
+{
+	HKL const current = GetKeyboardLayout(0);
 	for (unsigned int raw = 0x02; raw <= 0x35; raw++) {
 		UINT const expected = MapVirtualKeyExW(raw, MAPVK_VSC_TO_VK_EX, current);
 		if (expected >= 'A' && expected <= 'Z') {
-			native = native && Scanned(SDL_SCANCODE_A, raw, current) == (int)expected;
+			INFO("scan code ", raw);
+			CHECK(Scanned(SDL_SCANCODE_A, raw, current) == (int)expected);
 		}
 	}
-	Check(native, "a character key takes the code the active layout gives its scan code");
+}
 
-	{
-		TestLayout german(0x0407, L"00000407");
-		if (german.Layout != NULL && MapVirtualKeyExW(0x0C, MAPVK_VSC_TO_VK_EX, german.Layout) == 0xDB) {
-			Check(Scanned(SDL_SCANCODE_MINUS, 0x0C, german.Layout) == 0xDB, "on a German layout, the sharp s key keeps its own code");
-			Check(Scanned(SDL_SCANCODE_SLASH, 0x35, german.Layout) == VK_OEM_MINUS, "and the minus key keeps the minus code");
-			Check(Scanned(SDL_SCANCODE_SEMICOLON, 0x27, german.Layout) == 0xC0 && Scanned(SDL_SCANCODE_LEFTBRACKET, 0x1A, german.Layout) == 0xBA, "and the umlaut keys keep theirs");
-			Check(Scanned(SDL_SCANCODE_Y, 0x15, german.Layout) == 'Z' && Scanned(SDL_SCANCODE_Z, 0x2C, german.Layout) == 'Y', "and the Z and Y keys swap");
-			Check(Virtual_Key_Name(0xDB, german.Layout) == "\xC3\x9F" && Virtual_Key_Name(0xC0, german.Layout) == "\xC3\x96", "and those keys are named by what German prints on them");
-		} else {
-			std::printf("%-76s %s\n", "the German layout checks", "skipped: the system has no German layout");
-		}
+
+TEST_CASE("on a German layout, the keys keep the German codes and names")
+{
+	TestLayout german(0x0407, L"00000407");
+	if (german.Layout == NULL || MapVirtualKeyExW(0x0C, MAPVK_VSC_TO_VK_EX, german.Layout) != 0xDB) {
+		MESSAGE("skipped: the system has no German layout");
+		return;
 	}
 
-	{
-		TestLayout us(0x0409, L"00000409");
-		if (us.Layout != NULL) {
-			Check(Virtual_Key_Name('A', us.Layout) == "A" && Virtual_Key_Name('7', us.Layout) == "7", "a letter or digit key is named by what it prints");
-			Check(Virtual_Key_Name(VK_OEM_COMMA, us.Layout) == ",", "a punctuation key is named by what it prints");
-		} else {
-			std::printf("%-76s %s\n", "the US layout checks", "skipped: the system has no US layout");
-		}
+	CHECK_MESSAGE(Scanned(SDL_SCANCODE_MINUS, 0x0C, german.Layout) == 0xDB, "the sharp s key keeps its own code");
+	CHECK_MESSAGE(Scanned(SDL_SCANCODE_SLASH, 0x35, german.Layout) == VK_OEM_MINUS, "the minus key keeps the minus code");
+	CHECK_MESSAGE(Scanned(SDL_SCANCODE_SEMICOLON, 0x27, german.Layout) == 0xC0, "the umlaut keys keep theirs");
+	CHECK_MESSAGE(Scanned(SDL_SCANCODE_LEFTBRACKET, 0x1A, german.Layout) == 0xBA, "the umlaut keys keep theirs");
+	CHECK_MESSAGE(Scanned(SDL_SCANCODE_Y, 0x15, german.Layout) == 'Z', "the Z and Y keys swap");
+	CHECK_MESSAGE(Scanned(SDL_SCANCODE_Z, 0x2C, german.Layout) == 'Y', "the Z and Y keys swap");
+	CHECK_MESSAGE(Virtual_Key_Name(0xDB, german.Layout) == "\xC3\x9F", "the keys are named by what German prints on them");
+	CHECK_MESSAGE(Virtual_Key_Name(0xC0, german.Layout) == "\xC3\x96", "the keys are named by what German prints on them");
+}
+
+
+TEST_CASE("on a US layout, a key is named by what it prints")
+{
+	TestLayout us(0x0409, L"00000409");
+	if (us.Layout == NULL) {
+		MESSAGE("skipped: the system has no US layout");
+		return;
 	}
 
-	// A key the layout prints nothing on takes the English name SDL gives its position.
-	Check(Virtual_Key_Name(VK_NUMPAD7) == "Keypad 7", "a keypad digit is named as the keypad's");
-	Check(Virtual_Key_Name(VK_HOME) == "Home" && Virtual_Key_Name(VK_INSERT) == "Insert", "a navigation key is named after the main block's key");
-	Check(Virtual_Key_Name(VK_F1) == "F1" && Virtual_Key_Name(VK_F12) == "F12", "a function key is named by its number");
-	Check(Virtual_Key_Name(VK_RETURN) == "Return" && Virtual_Key_Name(VK_SPACE) == "Space", "Enter and Space have SDL's names");
-	Check(Virtual_Key_Name(VK_SHIFT) == "Shift" && Virtual_Key_Name(VK_CONTROL) == "Ctrl" && Virtual_Key_Name(VK_MENU) == "Alt", "the modifiers are named without a side");
-	Check(Virtual_Key_Name(0).empty() && Virtual_Key_Name(0xFF).empty(), "a code no key produces has no name");
+	CHECK(Virtual_Key_Name('A', us.Layout) == "A");
+	CHECK(Virtual_Key_Name('7', us.Layout) == "7");
+	CHECK(Virtual_Key_Name(VK_OEM_COMMA, us.Layout) == ",");
+}
 
-	std::printf("\n%s\n", Failures == 0 ? "PASSED" : "FAILED");
-	return(Failures == 0 ? 0 : 1);
+
+// A key the layout prints nothing on takes the English name SDL gives its position.
+TEST_CASE("a key that prints nothing takes SDL's name for its position")
+{
+	CHECK_MESSAGE(Virtual_Key_Name(VK_NUMPAD7) == "Keypad 7", "a keypad digit is named as the keypad's");
+	CHECK_MESSAGE(Virtual_Key_Name(VK_HOME) == "Home", "a navigation key is named after the main block's key");
+	CHECK(Virtual_Key_Name(VK_INSERT) == "Insert");
+	CHECK(Virtual_Key_Name(VK_F1) == "F1");
+	CHECK(Virtual_Key_Name(VK_F12) == "F12");
+	CHECK(Virtual_Key_Name(VK_RETURN) == "Return");
+	CHECK(Virtual_Key_Name(VK_SPACE) == "Space");
+	CHECK_MESSAGE(Virtual_Key_Name(VK_SHIFT) == "Shift", "the modifiers are named without a side");
+	CHECK(Virtual_Key_Name(VK_CONTROL) == "Ctrl");
+	CHECK(Virtual_Key_Name(VK_MENU) == "Alt");
+}
+
+
+TEST_CASE("a code no key produces has no name")
+{
+	CHECK(Virtual_Key_Name(0).empty());
+	CHECK(Virtual_Key_Name(0xFF).empty());
 }

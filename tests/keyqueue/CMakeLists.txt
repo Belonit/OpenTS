@@ -6,4 +6,5 @@ opents_add_test(KeyQueue
     ENGINE
         keyboard.cpp
     DEFINITIONS WIN32 _WINDOWS NOMINMAX
+    DOCTEST
 )

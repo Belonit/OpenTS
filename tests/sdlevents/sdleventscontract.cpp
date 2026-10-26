@@ -13,26 +13,14 @@
 
 #include "win.h"
 
+#include "doctest/doctest.h"
+
 #include <SDL3/SDL_events.h>
 
-#include <cstdio>
 #include <cstring>
 #include <vector>
 
 namespace {
-
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-76s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 SDL_Event Event_Of(Uint32 type)
 {
@@ -51,9 +39,22 @@ std::vector<WindowEvent> Translate(SDL_Event const & event, float pixeldensity =
 }
 
 
-bool One(std::vector<WindowEvent> const & events, WindowEventType type)
+// Translates an event that must produce exactly one window event of the given type.
+WindowEvent Translate_One(SDL_Event const & event, WindowEventType type, float pixeldensity = 1.0f, int modifiers = 0)
 {
-	return(events.size() == 1 && events[0].Type == type);
+	std::vector<WindowEvent> events = Translate(event, pixeldensity, modifiers);
+	REQUIRE(events.size() == 1);
+	REQUIRE(events[0].Type == type);
+	return(events[0]);
+}
+
+
+SDL_Event Motion(float x, float y)
+{
+	SDL_Event event = Event_Of(SDL_EVENT_MOUSE_MOTION);
+	event.motion.x = x;
+	event.motion.y = y;
+	return(event);
 }
 
 
@@ -69,6 +70,18 @@ SDL_Event Button(bool down, Uint8 button, Uint8 clicks, float x, float y)
 }
 
 
+SDL_Event Wheel(float x, float y, SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL)
+{
+	SDL_Event event = Event_Of(SDL_EVENT_MOUSE_WHEEL);
+	event.wheel.x = x;
+	event.wheel.y = y;
+	event.wheel.direction = direction;
+	event.wheel.mouse_x = 30.0f;
+	event.wheel.mouse_y = 40.0f;
+	return(event);
+}
+
+
 SDL_Event Key(bool down, SDL_Scancode scancode, SDL_Keycode keycode, SDL_Keymod modifiers, bool repeat = false)
 {
 	SDL_Event event = Event_Of(down ? SDL_EVENT_KEY_DOWN : SDL_EVENT_KEY_UP);
@@ -80,112 +93,241 @@ SDL_Event Key(bool down, SDL_Scancode scancode, SDL_Keycode keycode, SDL_Keymod 
 	return(event);
 }
 
+
+SDL_Event Resize(int width, int height)
+{
+	SDL_Event event = Event_Of(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
+	event.window.data1 = width;
+	event.window.data2 = height;
+	return(event);
+}
+
 }
 
 
-int main(void)
+TEST_CASE("a mouse move lands on the pixel it is over")
 {
-	SDL_Event motion = Event_Of(SDL_EVENT_MOUSE_MOTION);
-	motion.motion.x = 12.75f;
-	motion.motion.y = 34.0f;
-	std::vector<WindowEvent> events = Translate(motion);
-	Check(One(events, WINDOW_EVENT_MOUSE_MOVE) && events[0].X == 12 && events[0].Y == 34, "a mouse move lands on the pixel it is over");
+	WindowEvent move = Translate_One(Motion(12.75f, 34.0f), WINDOW_EVENT_MOUSE_MOVE);
+	CHECK(move.X == 12);
+	CHECK(move.Y == 34);
+}
 
-	events = Translate(motion, 2.0f);
-	Check(One(events, WINDOW_EVENT_MOUSE_MOVE) && events[0].X == 25 && events[0].Y == 68, "a window with a pixel density of two doubles the position");
 
-	motion.motion.x = -0.5f;
-	events = Translate(motion);
-	Check(One(events, WINDOW_EVENT_MOUSE_MOVE) && events[0].X == -1, "a position left of the client area stays outside it");
+TEST_CASE("a window with a pixel density of two doubles the position")
+{
+	WindowEvent move = Translate_One(Motion(12.75f, 34.0f), WINDOW_EVENT_MOUSE_MOVE, 2.0f);
+	CHECK(move.X == 25);
+	CHECK(move.Y == 68);
+}
 
-	events = Translate(Button(true, SDL_BUTTON_LEFT, 1, 5.0f, 6.0f));
-	Check(One(events, WINDOW_EVENT_MOUSE_DOWN) && events[0].Button == WINDOW_BUTTON_LEFT && events[0].Clicks == 1 && events[0].X == 5 && events[0].Y == 6, "a left press is a single click where it happened");
 
-	events = Translate(Button(true, SDL_BUTTON_LEFT, 1, 5.0f, 6.0f), 1.0f, WINDOW_MOD_SHIFT);
-	Check(One(events, WINDOW_EVENT_MOUSE_DOWN) && events[0].Modifiers == WINDOW_MOD_SHIFT, "and carries the modifiers held");
+TEST_CASE("a position left of the client area stays outside it")
+{
+	CHECK(Translate_One(Motion(-0.5f, 34.0f), WINDOW_EVENT_MOUSE_MOVE).X == -1);
+}
 
-	events = Translate(Button(true, SDL_BUTTON_RIGHT, 2, 0.0f, 0.0f));
-	Check(One(events, WINDOW_EVENT_MOUSE_DOWN) && events[0].Button == WINDOW_BUTTON_RIGHT && events[0].Clicks == 2, "the second press of a run of clicks is a double click");
 
-	events = Translate(Button(true, SDL_BUTTON_MIDDLE, 3, 0.0f, 0.0f));
-	Check(One(events, WINDOW_EVENT_MOUSE_DOWN) && events[0].Clicks == 1, "the third press starts over, as Windows counts them");
+TEST_CASE("a left press is a single click where it happened")
+{
+	WindowEvent press = Translate_One(Button(true, SDL_BUTTON_LEFT, 1, 5.0f, 6.0f), WINDOW_EVENT_MOUSE_DOWN);
+	CHECK(press.Button == WINDOW_BUTTON_LEFT);
+	CHECK(press.Clicks == 1);
+	CHECK(press.X == 5);
+	CHECK(press.Y == 6);
+}
 
-	events = Translate(Button(true, SDL_BUTTON_X2, 4, 0.0f, 0.0f));
-	Check(One(events, WINDOW_EVENT_MOUSE_DOWN) && events[0].Button == WINDOW_BUTTON_X2 && events[0].Clicks == 2, "and the fourth is double again, on the second extra button too");
 
-	events = Translate(Button(false, SDL_BUTTON_LEFT, 2, 0.0f, 0.0f));
-	Check(One(events, WINDOW_EVENT_MOUSE_UP) && events[0].Clicks == 1, "a release is never a double click");
+TEST_CASE("a press carries the modifiers held")
+{
+	WindowEvent press = Translate_One(Button(true, SDL_BUTTON_LEFT, 1, 5.0f, 6.0f), WINDOW_EVENT_MOUSE_DOWN, 1.0f, WINDOW_MOD_SHIFT);
+	CHECK(press.Modifiers == WINDOW_MOD_SHIFT);
+}
 
-	events = Translate(Button(true, 9, 1, 0.0f, 0.0f));
-	Check(events.empty(), "a button beyond the fifth is dropped");
 
-	SDL_Event wheel = Event_Of(SDL_EVENT_MOUSE_WHEEL);
-	wheel.wheel.y = -2.0f;
-	wheel.wheel.mouse_x = 30.0f;
-	wheel.wheel.mouse_y = 40.0f;
-	events = Translate(wheel);
-	Check(One(events, WINDOW_EVENT_MOUSE_WHEEL) && events[0].Wheel == -2.0f && !events[0].Horizontal && events[0].X == 30 && events[0].Y == 40, "two notches toward the player are -2 on the vertical wheel, where the mouse is");
+TEST_CASE("a run of clicks alternates single and double clicks, as Windows counts them")
+{
+	WindowEvent second = Translate_One(Button(true, SDL_BUTTON_RIGHT, 2, 0.0f, 0.0f), WINDOW_EVENT_MOUSE_DOWN);
+	CHECK(second.Button == WINDOW_BUTTON_RIGHT);
+	CHECK_MESSAGE(second.Clicks == 2, "the second press is a double click");
 
-	wheel.wheel.direction = SDL_MOUSEWHEEL_FLIPPED;
-	events = Translate(wheel);
-	Check(One(events, WINDOW_EVENT_MOUSE_WHEEL) && events[0].Wheel == 2.0f, "a flipped wheel is turned back the way the hand moved");
+	WindowEvent third = Translate_One(Button(true, SDL_BUTTON_MIDDLE, 3, 0.0f, 0.0f), WINDOW_EVENT_MOUSE_DOWN);
+	CHECK_MESSAGE(third.Clicks == 1, "the third press starts over");
 
-	wheel.wheel.direction = SDL_MOUSEWHEEL_NORMAL;
-	wheel.wheel.x = 1.0f;
-	wheel.wheel.y = 0.5f;
-	events = Translate(wheel);
-	Check(events.size() == 2 && !events[0].Horizontal && events[0].Wheel == 0.5f && events[1].Horizontal && events[1].Wheel == 1.0f, "a diagonal turn is a vertical turn and then a horizontal one");
+	WindowEvent fourth = Translate_One(Button(true, SDL_BUTTON_X2, 4, 0.0f, 0.0f), WINDOW_EVENT_MOUSE_DOWN);
+	CHECK_MESSAGE(fourth.Button == WINDOW_BUTTON_X2, "the second extra button counts the same way");
+	CHECK_MESSAGE(fourth.Clicks == 2, "the fourth press is double again");
+}
 
-	events = Translate(Key(true, SDL_SCANCODE_A, SDLK_A, (SDL_Keymod)(SDL_KMOD_LSHIFT | SDL_KMOD_RCTRL)), 1.0f, WINDOW_MOD_SHIFT | WINDOW_MOD_CTRL);
-	Check(One(events, WINDOW_EVENT_KEY_DOWN) && events[0].VirtualKey == 'A' && events[0].Modifiers == (WINDOW_MOD_SHIFT | WINDOW_MOD_CTRL), "a key press carries its virtual key and the modifiers held");
-	Check(events.size() == 1 && !events[0].Repeat && !events[0].System, "and is neither a repeat nor a system key");
 
-	events = Translate(Key(true, SDL_SCANCODE_A, SDLK_A, SDL_KMOD_NONE, true));
-	Check(One(events, WINDOW_EVENT_KEY_DOWN) && events[0].Repeat, "a held key's repeat is marked as one");
+TEST_CASE("a release is never a double click")
+{
+	CHECK(Translate_One(Button(false, SDL_BUTTON_LEFT, 2, 0.0f, 0.0f), WINDOW_EVENT_MOUSE_UP).Clicks == 1);
+}
 
-	events = Translate(Key(false, SDL_SCANCODE_A, SDLK_A, SDL_KMOD_NONE, true));
-	Check(One(events, WINDOW_EVENT_KEY_UP) && !events[0].Repeat, "a release is never a repeat");
 
-	events = Translate(Key(true, SDL_SCANCODE_F4, SDLK_F4, SDL_KMOD_LALT), 1.0f, WINDOW_MOD_ALT);
-	Check(One(events, WINDOW_EVENT_KEY_DOWN) && events[0].System && events[0].Modifiers == WINDOW_MOD_ALT, "a key pressed with Alt held is a system key");
+TEST_CASE("a button beyond the fifth is dropped")
+{
+	CHECK(Translate(Button(true, 9, 1, 0.0f, 0.0f)).empty());
+}
 
-	events = Translate(Key(true, SDL_SCANCODE_F10, SDLK_F10, SDL_KMOD_NONE));
-	Check(One(events, WINDOW_EVENT_KEY_DOWN) && events[0].System, "F10 is a system key on its own");
 
-	events = Translate(Key(true, SDL_SCANCODE_Q, SDLK_Q, (SDL_Keymod)(SDL_KMOD_LALT | SDL_KMOD_LCTRL)), 1.0f, WINDOW_MOD_CTRL | WINDOW_MOD_ALT);
-	Check(One(events, WINDOW_EVENT_KEY_DOWN) && !events[0].System, "a key pressed with Ctrl and Alt held is not a system key");
+TEST_CASE("two notches toward the player are -2 on the vertical wheel, where the mouse is")
+{
+	WindowEvent turn = Translate_One(Wheel(0.0f, -2.0f), WINDOW_EVENT_MOUSE_WHEEL);
+	CHECK(turn.Wheel == -2.0f);
+	CHECK_FALSE(turn.Horizontal);
+	CHECK(turn.X == 30);
+	CHECK(turn.Y == 40);
+}
 
-	events = Translate(Key(true, SDL_SCANCODE_LANG1, SDLK_UNKNOWN, SDL_KMOD_NONE));
-	Check(events.empty(), "a key Windows has no code for is dropped");
 
+TEST_CASE("a flipped wheel is turned back the way the hand moved")
+{
+	CHECK(Translate_One(Wheel(0.0f, -2.0f, SDL_MOUSEWHEEL_FLIPPED), WINDOW_EVENT_MOUSE_WHEEL).Wheel == 2.0f);
+}
+
+
+TEST_CASE("a diagonal turn is a vertical turn and then a horizontal one")
+{
+	std::vector<WindowEvent> events = Translate(Wheel(1.0f, 0.5f));
+	REQUIRE(events.size() == 2);
+	CHECK_FALSE(events[0].Horizontal);
+	CHECK(events[0].Wheel == 0.5f);
+	CHECK(events[1].Horizontal);
+	CHECK(events[1].Wheel == 1.0f);
+}
+
+
+TEST_CASE("a key press carries its virtual key and the modifiers held, and is neither a repeat nor a system key")
+{
+	WindowEvent press = Translate_One(Key(true, SDL_SCANCODE_A, SDLK_A, (SDL_Keymod)(SDL_KMOD_LSHIFT | SDL_KMOD_RCTRL)), WINDOW_EVENT_KEY_DOWN, 1.0f, WINDOW_MOD_SHIFT | WINDOW_MOD_CTRL);
+	CHECK(press.VirtualKey == 'A');
+	CHECK(press.Modifiers == (WINDOW_MOD_SHIFT | WINDOW_MOD_CTRL));
+	CHECK_FALSE(press.Repeat);
+	CHECK_FALSE(press.System);
+}
+
+
+TEST_CASE("a held key's repeat is marked as one")
+{
+	CHECK(Translate_One(Key(true, SDL_SCANCODE_A, SDLK_A, SDL_KMOD_NONE, true), WINDOW_EVENT_KEY_DOWN).Repeat);
+}
+
+
+TEST_CASE("a release is never a repeat")
+{
+	CHECK_FALSE(Translate_One(Key(false, SDL_SCANCODE_A, SDLK_A, SDL_KMOD_NONE, true), WINDOW_EVENT_KEY_UP).Repeat);
+}
+
+
+TEST_CASE("a key pressed with Alt held is a system key")
+{
+	WindowEvent press = Translate_One(Key(true, SDL_SCANCODE_F4, SDLK_F4, SDL_KMOD_LALT), WINDOW_EVENT_KEY_DOWN, 1.0f, WINDOW_MOD_ALT);
+	CHECK(press.System);
+	CHECK(press.Modifiers == WINDOW_MOD_ALT);
+}
+
+
+TEST_CASE("F10 is a system key on its own")
+{
+	CHECK(Translate_One(Key(true, SDL_SCANCODE_F10, SDLK_F10, SDL_KMOD_NONE), WINDOW_EVENT_KEY_DOWN).System);
+}
+
+
+TEST_CASE("a key pressed with Ctrl and Alt held is not a system key")
+{
+	CHECK_FALSE(Translate_One(Key(true, SDL_SCANCODE_Q, SDLK_Q, (SDL_Keymod)(SDL_KMOD_LALT | SDL_KMOD_LCTRL)), WINDOW_EVENT_KEY_DOWN, 1.0f, WINDOW_MOD_CTRL | WINDOW_MOD_ALT).System);
+}
+
+
+TEST_CASE("a key Windows has no code for is dropped")
+{
+	CHECK(Translate(Key(true, SDL_SCANCODE_LANG1, SDLK_UNKNOWN, SDL_KMOD_NONE)).empty());
+}
+
+
+TEST_CASE("typed text arrives one character at a time")
+{
 	SDL_Event text = Event_Of(SDL_EVENT_TEXT_INPUT);
 	text.text.text = "a\xD0\x9F\xF0\x9F\x98\x80";
-	events = Translate(text);
-	Check(events.size() == 3 && events[0].Type == WINDOW_EVENT_TEXT && events[0].Text == 'a' && events[1].Text == 0x041F && events[2].Text == 0x1F600, "typed text arrives one character at a time");
+	std::vector<WindowEvent> events = Translate(text);
+	REQUIRE(events.size() == 3);
+	CHECK(events[0].Type == WINDOW_EVENT_TEXT);
+	CHECK(events[0].Text == 'a');
+	CHECK(events[1].Text == 0x041F);
+	CHECK(events[2].Text == 0x1F600);
+}
 
+
+TEST_CASE("empty text is no character")
+{
+	SDL_Event text = Event_Of(SDL_EVENT_TEXT_INPUT);
 	text.text.text = "";
-	Check(Translate(text).empty(), "empty text is no character");
+	CHECK(Translate(text).empty());
+}
 
-	events = Translate(Event_Of(SDL_EVENT_WINDOW_FOCUS_LOST));
-	Check(events.size() == 2 && events[0].Type == WINDOW_EVENT_CAPTURE_LOST && events[1].Type == WINDOW_EVENT_FOCUS_LOST, "losing the focus loses the capture first");
-	Check(One(Translate(Event_Of(SDL_EVENT_WINDOW_FOCUS_GAINED)), WINDOW_EVENT_FOCUS_GAINED), "gaining the focus is a gain of focus");
 
-	SDL_Event resize = Event_Of(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
-	resize.window.data1 = 800;
-	resize.window.data2 = 600;
-	events = Translate(resize);
-	Check(One(events, WINDOW_EVENT_RESIZED) && events[0].Width == 800 && events[0].Height == 600, "a new pixel size is a resize to that size");
-	resize.window.data2 = 0;
-	Check(Translate(resize).empty(), "a size with no area is not a resize");
-	Check(Translate(Event_Of(SDL_EVENT_WINDOW_RESIZED)).empty(), "a size in window coordinates is left to the pixel size");
+TEST_CASE("losing the focus loses the capture first")
+{
+	std::vector<WindowEvent> events = Translate(Event_Of(SDL_EVENT_WINDOW_FOCUS_LOST));
+	REQUIRE(events.size() == 2);
+	CHECK(events[0].Type == WINDOW_EVENT_CAPTURE_LOST);
+	CHECK(events[1].Type == WINDOW_EVENT_FOCUS_LOST);
+}
 
-	Check(One(Translate(Event_Of(SDL_EVENT_WINDOW_EXPOSED)), WINDOW_EVENT_EXPOSED), "an exposed window is exposed");
-	Check(One(Translate(Event_Of(SDL_EVENT_WINDOW_DISPLAY_CHANGED)), WINDOW_EVENT_DISPLAY_CHANGED), "a window moving to another display changes the display");
-	Check(One(Translate(Event_Of(SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED)), WINDOW_EVENT_DISPLAY_CHANGED), "a display changing mode changes the display");
-	Check(One(Translate(Event_Of(SDL_EVENT_WINDOW_CLOSE_REQUESTED)), WINDOW_EVENT_CLOSE_REQUESTED), "the close button asks to close");
-	Check(One(Translate(Event_Of(SDL_EVENT_QUIT)), WINDOW_EVENT_CLOSE_REQUESTED), "a request to quit asks to close");
-	Check(Translate(Event_Of(SDL_EVENT_WINDOW_MOUSE_ENTER)).empty(), "an event the game does not use produces nothing");
 
-	std::printf("\n%s\n", Failures == 0 ? "PASSED" : "FAILED");
-	return(Failures == 0 ? 0 : 1);
+TEST_CASE("gaining the focus is a gain of focus")
+{
+	Translate_One(Event_Of(SDL_EVENT_WINDOW_FOCUS_GAINED), WINDOW_EVENT_FOCUS_GAINED);
+}
+
+
+TEST_CASE("a new pixel size is a resize to that size")
+{
+	WindowEvent resize = Translate_One(Resize(800, 600), WINDOW_EVENT_RESIZED);
+	CHECK(resize.Width == 800);
+	CHECK(resize.Height == 600);
+}
+
+
+TEST_CASE("a size with no area is not a resize")
+{
+	CHECK(Translate(Resize(800, 0)).empty());
+}
+
+
+TEST_CASE("a size in window coordinates is left to the pixel size")
+{
+	CHECK(Translate(Event_Of(SDL_EVENT_WINDOW_RESIZED)).empty());
+}
+
+
+TEST_CASE("window and display changes become their window events")
+{
+	SUBCASE("an exposed window is exposed")
+	{
+		Translate_One(Event_Of(SDL_EVENT_WINDOW_EXPOSED), WINDOW_EVENT_EXPOSED);
+	}
+	SUBCASE("a window moving to another display changes the display")
+	{
+		Translate_One(Event_Of(SDL_EVENT_WINDOW_DISPLAY_CHANGED), WINDOW_EVENT_DISPLAY_CHANGED);
+	}
+	SUBCASE("a display changing mode changes the display")
+	{
+		Translate_One(Event_Of(SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED), WINDOW_EVENT_DISPLAY_CHANGED);
+	}
+	SUBCASE("the close button asks to close")
+	{
+		Translate_One(Event_Of(SDL_EVENT_WINDOW_CLOSE_REQUESTED), WINDOW_EVENT_CLOSE_REQUESTED);
+	}
+	SUBCASE("a request to quit asks to close")
+	{
+		Translate_One(Event_Of(SDL_EVENT_QUIT), WINDOW_EVENT_CLOSE_REQUESTED);
+	}
+}
+
+
+TEST_CASE("an event the game does not use produces nothing")
+{
+	CHECK(Translate(Event_Of(SDL_EVENT_WINDOW_MOUSE_ENTER)).empty());
 }

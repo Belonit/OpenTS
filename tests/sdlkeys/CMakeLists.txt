@@ -7,4 +7,5 @@ opents_add_test(SDLKeysContract
         sdl/sdlkeys.cpp
     DEFINITIONS WIN32 _WINDOWS NOMINMAX
     LIBRARIES SDL3::SDL3-static
+    DOCTEST
 )

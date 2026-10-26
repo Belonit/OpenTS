@@ -15,26 +15,14 @@
 #include "win.h"
 #include "windowevent.hh"
 
+#include "doctest/doctest.h"
+
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keyboard.h>
 
-#include <cstdio>
 #include <initializer_list>
 
 namespace {
-
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-76s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 Uint64 Clock = 0;
 
@@ -69,71 +57,133 @@ void Windows_Holds(std::initializer_list<int> keys)
 	SetKeyboardState(state);
 }
 
+
+// Windows' key state and SDL's lock state belong to the process, so each case starts with
+// nothing held and no lock on.
+struct Fixture
+{
+	SDLInputStateClass input;
+
+	Fixture(void)
+	{
+		Windows_Holds({});
+		SDL_SetModState(SDL_KMOD_NONE);
+	}
+};
+
 }
 
 
-int main(void)
+TEST_CASE_FIXTURE(Fixture, "a Shift press holds Shift and the side it was pressed on, and its release lets both go")
 {
-	Windows_Holds({});
-	SDLInputStateClass input;
-
 	Press(input, Key(true, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT, SDL_KMOD_LSHIFT));
-	Check(input.Key_Down(VK_SHIFT) && input.Key_Down(VK_LSHIFT) && !input.Key_Down(VK_RSHIFT) && input.Modifiers() == WINDOW_MOD_SHIFT, "a Shift press holds Shift and the side it was pressed on");
-	Press(input, Key(false, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT));
-	Check(!input.Key_Down(VK_SHIFT) && !input.Key_Down(VK_LSHIFT) && input.Modifiers() == 0, "and its release lets both go");
+	CHECK(input.Key_Down(VK_SHIFT));
+	CHECK(input.Key_Down(VK_LSHIFT));
+	CHECK_FALSE(input.Key_Down(VK_RSHIFT));
+	CHECK(input.Modifiers() == WINDOW_MOD_SHIFT);
 
-	// Windows shows the Left Ctrl it presses for AltGr only while the Right Alt press is queued.
+	Press(input, Key(false, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT));
+	CHECK_FALSE(input.Key_Down(VK_SHIFT));
+	CHECK_FALSE(input.Key_Down(VK_LSHIFT));
+	CHECK(input.Modifiers() == 0);
+}
+
+
+// Windows shows the Left Ctrl it presses for AltGr only while the Right Alt press is queued.
+TEST_CASE_FIXTURE(Fixture, "a Right Alt queued while Windows shows Left Ctrl is AltGr, and Ctrl is released with it")
+{
 	SDL_KeyboardEvent altgr = Key(true, SDL_SCANCODE_RALT, SDLK_RALT, SDL_KMOD_RALT);
 	Windows_Holds({ VK_CONTROL, VK_LCONTROL });
 	input.Note_Queued_Key(altgr);
 	Windows_Holds({});
 	input.Track_Key(altgr);
-	Check(input.Key_Down(VK_CONTROL) && input.Key_Down(VK_LCONTROL) && input.Modifiers() == (WINDOW_MOD_CTRL | WINDOW_MOD_ALT), "a Right Alt queued while Windows shows Left Ctrl is AltGr, with its Ctrl");
-	Press(input, Key(false, SDL_SCANCODE_RALT, SDLK_RALT));
-	Check(!input.Key_Down(VK_CONTROL) && input.Modifiers() == 0, "and Ctrl is released with AltGr");
+	CHECK(input.Key_Down(VK_CONTROL));
+	CHECK(input.Key_Down(VK_LCONTROL));
+	CHECK(input.Modifiers() == (WINDOW_MOD_CTRL | WINDOW_MOD_ALT));
 
+	Press(input, Key(false, SDL_SCANCODE_RALT, SDLK_RALT));
+	CHECK_FALSE(input.Key_Down(VK_CONTROL));
+	CHECK(input.Modifiers() == 0);
+}
+
+
+TEST_CASE_FIXTURE(Fixture, "a Right Alt queued without Windows showing Left Ctrl is Alt alone")
+{
 	Press(input, Key(true, SDL_SCANCODE_RALT, SDLK_RALT, SDL_KMOD_RALT));
-	Check(!input.Key_Down(VK_CONTROL) && input.Key_Down(VK_RMENU) && input.Modifiers() == WINDOW_MOD_ALT, "a Right Alt queued without it is Alt alone");
-	Press(input, Key(false, SDL_SCANCODE_RALT, SDLK_RALT));
+	CHECK_FALSE(input.Key_Down(VK_CONTROL));
+	CHECK(input.Key_Down(VK_RMENU));
+	CHECK(input.Modifiers() == WINDOW_MOD_ALT);
+}
 
+
+TEST_CASE_FIXTURE(Fixture, "the lock keys are read again whenever the window regains the focus")
+{
 	SDL_SetModState(SDL_KMOD_CAPS);
 	input.Focus_Gained();
-	Check(input.Key_Toggled(VK_CAPITAL) && (input.Modifiers() & WINDOW_MOD_CAPS) != 0, "the lock keys are read again when the window regains the focus");
+	CHECK(input.Key_Toggled(VK_CAPITAL));
+	CHECK((input.Modifiers() & WINDOW_MOD_CAPS) != 0);
+
 	SDL_SetModState(SDL_KMOD_NONE);
 	input.Focus_Gained();
-	Check(!input.Key_Toggled(VK_CAPITAL), "and again when a lock goes off");
+	CHECK_MESSAGE(!input.Key_Toggled(VK_CAPITAL), "a lock that went off is read off");
+}
 
-	// SDL reports no key still held after it resets the keyboard, and drops such a key's release.
+
+// SDL reports no key still held after it resets the keyboard, and drops such a key's release.
+TEST_CASE_FIXTURE(Fixture, "a Shift Windows holds as the window gains the focus is held until Windows releases it")
+{
 	Windows_Holds({ VK_SHIFT, VK_LSHIFT });
 	input.Focus_Gained();
-	Check(input.Key_Down(VK_SHIFT) && input.Key_Down(VK_LSHIFT) && !input.Key_Down(VK_RSHIFT) && input.Modifiers() == WINDOW_MOD_SHIFT, "a Shift Windows holds as the window gains the focus is held");
+	CHECK(input.Key_Down(VK_SHIFT));
+	CHECK(input.Key_Down(VK_LSHIFT));
+	CHECK_FALSE(input.Key_Down(VK_RSHIFT));
+	CHECK(input.Modifiers() == WINDOW_MOD_SHIFT);
+
 	Windows_Holds({});
 	input.Drop_Released_Keys();
-	Check(input.Modifiers() == 0, "and released for the next event once Windows releases it");
+	CHECK_MESSAGE(input.Modifiers() == 0, "it is released for the next event once Windows releases it");
+
 	Windows_Holds({ VK_SHIFT, VK_LSHIFT });
 	input.Focus_Gained();
 	Windows_Holds({});
-	Check(!input.Key_Down(VK_SHIFT), "and read released at once, with no event");
+	CHECK_MESSAGE(!input.Key_Down(VK_SHIFT), "it is read released at once, with no event");
+}
 
+
+TEST_CASE_FIXTURE(Fixture, "losing the focus releases a key held into the window")
+{
 	Windows_Holds({ VK_SHIFT, VK_LSHIFT });
 	input.Focus_Gained();
 	input.Focus_Lost();
-	Check(!input.Key_Down(VK_SHIFT), "losing the focus releases it");
+	CHECK_FALSE(input.Key_Down(VK_SHIFT));
+}
 
+
+TEST_CASE_FIXTURE(Fixture, "once SDL reports a key held into the window, only SDL's release lets it go")
+{
 	Windows_Holds({ VK_SHIFT, VK_LSHIFT });
 	input.Focus_Gained();
 	Press(input, Key(true, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT, SDL_KMOD_LSHIFT));
 	Windows_Holds({});
-	Check(input.Key_Down(VK_SHIFT), "once SDL reports the key, Windows no longer releases it");
-	Press(input, Key(false, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT));
-	Check(!input.Key_Down(VK_SHIFT), "and SDL's release does");
+	CHECK_MESSAGE(input.Key_Down(VK_SHIFT), "Windows no longer releases it");
 
+	Press(input, Key(false, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT));
+	CHECK_MESSAGE(!input.Key_Down(VK_SHIFT), "SDL's release does");
+}
+
+
+TEST_CASE_FIXTURE(Fixture, "a modifier Windows holds after a window drag is held")
+{
 	Windows_Holds({ VK_MENU, VK_RMENU });
 	input.Hold_Windows_Keys();
-	Check(input.Key_Down(VK_MENU) && input.Key_Down(VK_RMENU) && !input.Key_Down(VK_LMENU), "a modifier Windows holds after a window drag is held");
-	Windows_Holds({});
-	input.Drop_Released_Keys();
+	CHECK(input.Key_Down(VK_MENU));
+	CHECK(input.Key_Down(VK_RMENU));
+	CHECK_FALSE(input.Key_Down(VK_LMENU));
+}
 
+
+TEST_CASE_FIXTURE(Fixture, "a Right Alt pressed with a Left Ctrl held into the window is not AltGr")
+{
 	Windows_Holds({ VK_CONTROL, VK_LCONTROL });
 	input.Focus_Gained();
 	SDL_KeyboardEvent ralt = Key(true, SDL_SCANCODE_RALT, SDLK_RALT, SDL_KMOD_RALT);
@@ -141,37 +191,44 @@ int main(void)
 	Windows_Holds({});
 	input.Drop_Released_Keys();
 	input.Track_Key(ralt);
-	Check(!input.Key_Down(VK_CONTROL) && input.Modifiers() == WINDOW_MOD_ALT, "a Right Alt pressed with a Left Ctrl held into the window is not AltGr");
-	Press(input, Key(false, SDL_SCANCODE_RALT, SDLK_RALT));
+	CHECK_FALSE(input.Key_Down(VK_CONTROL));
+	CHECK(input.Modifiers() == WINDOW_MOD_ALT);
+}
 
+
+TEST_CASE_FIXTURE(Fixture, "any key Windows holds as the window gains the focus is held, and SDL takes it over")
+{
 	Windows_Holds({ 'A' });
 	input.Focus_Gained();
-	Check(input.Key_Down('A') && input.Modifiers() == 0, "any key Windows holds as the window gains the focus is held");
+	CHECK(input.Key_Down('A'));
+	CHECK(input.Modifiers() == 0);
 	Windows_Holds({});
-	Check(!input.Key_Down('A'), "and released when Windows releases it");
+	CHECK_MESSAGE(!input.Key_Down('A'), "it is released when Windows releases it");
+
 	Windows_Holds({ 'A' });
 	input.Focus_Gained();
 	SDL_KeyboardEvent a = Key(true, SDL_SCANCODE_A, SDLK_A);
 	input.Note_Queued_Key(a);
-	Check(input.Track_Key(a), "its first press from SDL continues the key held into the window");
+	CHECK_MESSAGE(input.Track_Key(a), "its first press from SDL continues the key held into the window");
 	Windows_Holds({});
-	Check(input.Key_Down('A'), "and from then on SDL reports it");
+	CHECK_MESSAGE(input.Key_Down('A'), "from then on SDL reports it");
 	a = Key(false, SDL_SCANCODE_A, SDLK_A);
 	Press(input, a);
-	Check(!input.Key_Down('A'), "including its release");
+	CHECK_MESSAGE(!input.Key_Down('A'), "including its release");
+
 	SDL_KeyboardEvent b = Key(true, SDL_SCANCODE_B, SDLK_B);
 	input.Note_Queued_Key(b);
-	Check(!input.Track_Key(b), "a key pressed after the window gains the focus is a new press");
-	Press(input, Key(false, SDL_SCANCODE_B, SDLK_B));
+	CHECK_MESSAGE(!input.Track_Key(b), "a key pressed after the window gains the focus is a new press");
+}
 
+
+TEST_CASE_FIXTURE(Fixture, "releasing one Shift held into the window leaves the other held")
+{
 	Windows_Holds({ VK_SHIFT, VK_LSHIFT, VK_RSHIFT });
 	input.Focus_Gained();
 	Press(input, Key(true, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT, SDL_KMOD_LSHIFT));
 	Press(input, Key(false, SDL_SCANCODE_LSHIFT, SDLK_LSHIFT));
-	Check(input.Key_Down(VK_SHIFT) && input.Key_Down(VK_RSHIFT) && !input.Key_Down(VK_LSHIFT), "releasing one Shift held into the window leaves the other held");
-	Windows_Holds({});
-	input.Drop_Released_Keys();
-
-	std::printf("\n%s\n", Failures == 0 ? "PASSED" : "FAILED");
-	return(Failures == 0 ? 0 : 1);
+	CHECK(input.Key_Down(VK_SHIFT));
+	CHECK(input.Key_Down(VK_RSHIFT));
+	CHECK_FALSE(input.Key_Down(VK_LSHIFT));
 }
