@@ -1006,7 +1006,7 @@ bool Net2Remote_Connect(void)
 			do {
 				Call_Back();
 				int retcode = Ipx.Get_Global_Message(&Session.GPacket, sizeof(Session.GPacket), &Session.GPacketlen, &Session.GAddress, &Session.GProductID);
-				if (retcode && Session.GProductID == IPXGlobalConnClass::COMMAND_AND_CONQUER2) {
+				if (retcode && Session.GProductID == IPXGlobalConnClass::OPENTS) {
 					for (int i = 1; i < Session.Players.Count(); i++) {
 						if (Session.Players[i]->Address == Session.GAddress) {
 							if (!responses[i]) {
@@ -1502,7 +1502,7 @@ static void Get_Join_Responses(void)
 	//------------------------------------------------------------------------
 	for (Call_Back(); (rc = Ipx.Get_Global_Message (&Session.GPacket, sizeof(Session.GPacket),
 		&Session.GPacketlen, &Session.GAddress, &Session.GProductID)) != 0; Call_Back()) {
-		if (Session.GProductID != IPXGlobalConnClass::COMMAND_AND_CONQUER2) {
+		if (Session.GProductID != IPXGlobalConnClass::OPENTS) {
 			continue;
 		}
 

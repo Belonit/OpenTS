@@ -425,11 +425,15 @@ IPXManagerClass Ipx(
 	MAX_IPX_PACKET_SIZE,
 	160,                                        // # entries in Global Queue
 	32,                                         // # entries in Private Queues
-	IPXGlobalConnClass::COMMAND_AND_CONQUER2);  // Product ID #
+	IPXGlobalConnClass::OPENTS);                // Product ID #
 
 // A global packet travels whole in one datagram, and the socket layer refuses one longer
 // than its queue entry.
 static_assert(std::max(sizeof(GlobalPacketType), sizeof(RemoteFileTransferType) - 32) + sizeof(GlobalHeaderType) <= WS_INTERNET_BUFFER_LEN, "the global channel packet outgrew the socket queue entry");
+
+// A change to either size needs a new IPXGlobalConnClass::OPENTS value before these are updated.
+static_assert(sizeof(GlobalPacketType) == 1059, "the global packet layout changed; change IPXGlobalConnClass::OPENTS");
+static_assert(sizeof(RemoteFileTransferType) == 487, "the file transfer packet layout changed; change IPXGlobalConnClass::OPENTS");
 
 
 bool VisceroidsAsSnoBees = false;

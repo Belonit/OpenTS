@@ -648,7 +648,7 @@ void IPX_Call_Back(void)
 	if (!Session.NetOpen) {
 		while (Ipx.Get_Global_Message (&Session.GPacket, sizeof(Session.GPacket), &Session.GPacketlen, &Session.GAddress, &Session.GProductID)) {
 
-			if (Session.GProductID == IPXGlobalConnClass::COMMAND_AND_CONQUER2) {
+			if (Session.GProductID == IPXGlobalConnClass::OPENTS) {
 				int sender_index = -1;
 				NetGlobal::DecodeError resolution_error = NetGlobal::DecodeError::SENDER_NOT_MEMBER;
 				NodeNameType * sender = Session_Member_From_Address(Session.GAddress, sender_index, resolution_error);
