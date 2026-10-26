@@ -23,6 +23,8 @@
 #include "xpipe.h"
 #include "xstraw.h"
 
+#include "doctest/doctest.h"
+
 namespace {
 
 int const BLOCK = 1024 * 8;
@@ -39,22 +41,12 @@ unsigned char Unpacked[SRCMAX + 64];
 
 unsigned int Seed = 1;
 
-int Failures = 0;
-
 
 unsigned int Next_Random(void)
 {
 	Seed = Seed * 1103515245u + 12345u;
 	return(Seed >> 8);
 }
-
-
-void Report(char const * what, bool ok)
-{
-	std::printf("%-64s %s\n", what, ok ? "ok" : "FAILED");
-	if (!ok) Failures++;
-}
-
 
 void Fill_Random(unsigned char * data, int size)
 {
@@ -130,7 +122,17 @@ int Compress_Stream(unsigned char const * source, int size)
 
 
 // A whole stream must come back byte for byte, and the straw must not call that damaged.
-void Test_Round_Trip(void)
+// Each case runs in its own process under CTest, so each starts the library itself.
+struct LzoFixture
+{
+	LzoFixture(void)
+	{
+		REQUIRE(lzo_init() == LZO_E_OK);
+	}
+};
+
+
+TEST_CASE_FIXTURE(LzoFixture, "a pipe to straw round trip")
 {
 	int const size = BLOCK * 3 + 100;
 
@@ -152,16 +154,18 @@ void Test_Round_Trip(void)
 	unsigned char extra[16];
 	int const beyond = decomp.Get(extra, sizeof(extra));
 
-	Report("pipe to straw round trip",
-		got == size && beyond == 0 && std::memcmp(Source, Unpacked, size) == 0
-		&& Guard_Intact(size) && !decomp.Is_Damaged());
+	CHECK_MESSAGE(got == size, "pipe to straw round trip");
+	CHECK_MESSAGE(beyond == 0, "pipe to straw round trip");
+	CHECK_MESSAGE(std::memcmp(Source, Unpacked, size) == 0, "pipe to straw round trip");
+	CHECK_MESSAGE(Guard_Intact(size), "pipe to straw round trip");
+	CHECK_MESSAGE(!decomp.Is_Damaged(), "pipe to straw round trip");
 	std::printf("  %d bytes in %d blocks, largest block %d bytes, a block's worst case is %d\n",
 		size, blocks, largest, WORST_CASE);
 }
 
 
 // The reverse pairing, fed to the pipe in odd sized pieces so headers straddle calls.
-void Test_Straw_To_Pipe(void)
+TEST_CASE_FIXTURE(LzoFixture, "a straw to pipe round trip in odd sized pieces")
 {
 	int const size = BLOCK * 2 + 777;
 
@@ -186,14 +190,15 @@ void Test_Straw_To_Pipe(void)
 	}
 	got += decomp.Flush();
 
-	Report("straw to pipe round trip in odd sized pieces",
-		got == size && std::memcmp(Source, Unpacked, size) == 0 && Guard_Intact(size));
+	CHECK_MESSAGE(got == size, "straw to pipe round trip in odd sized pieces");
+	CHECK_MESSAGE(std::memcmp(Source, Unpacked, size) == 0, "straw to pipe round trip in odd sized pieces");
+	CHECK_MESSAGE(Guard_Intact(size), "straw to pipe round trip in odd sized pieces");
 }
 
 
 // A whole block of random bytes is the input the compressor cannot shrink. Both classes have to
 // carry the expansion rather than assume a block compresses into a block.
-void Test_Incompressible_Block(void)
+TEST_CASE_FIXTURE(LzoFixture, "a block that will not compress round trips and stays in its buffer")
 {
 	int const size = BLOCK;
 
@@ -213,16 +218,18 @@ void Test_Incompressible_Block(void)
 
 	int const got = decomp.Get(Unpacked, size);
 
-	Report("a block that will not compress round trips and stays in its buffer",
-		got == size && largest > BLOCK && std::memcmp(Source, Unpacked, size) == 0
-		&& Guard_Intact(size) && !decomp.Is_Damaged());
+	CHECK_MESSAGE(got == size, "a block that will not compress round trips and stays in its buffer");
+	CHECK_MESSAGE(largest > BLOCK, "a block that will not compress round trips and stays in its buffer");
+	CHECK_MESSAGE(std::memcmp(Source, Unpacked, size) == 0, "a block that will not compress round trips and stays in its buffer");
+	CHECK_MESSAGE(Guard_Intact(size), "a block that will not compress round trips and stays in its buffer");
+	CHECK_MESSAGE(!decomp.Is_Damaged(), "a block that will not compress round trips and stays in its buffer");
 	std::printf("  %d bytes of random data compressed to %d\n", size, largest);
 }
 
 
 // Every way of cutting a stream short that leaves a partial block behind has to read as damage.
 // Cutting it on a block boundary does not: the blocks that remain are whole.
-void Test_Cut_Stream(void)
+TEST_CASE_FIXTURE(LzoFixture, "the straw separates the end of a stream from a cut one")
 {
 	int const size = BLOCK * 2 + 500;
 
@@ -268,13 +275,13 @@ void Test_Cut_Stream(void)
 		}
 	}
 
-	Report("the straw separates the end of a stream from a cut one", ok);
+	CHECK_MESSAGE(ok, "the straw separates the end of a stream from a cut one");
 }
 
 
 // Headers the compressor cannot have written. The straw has to stop at each without letting the
 // decompressor write past the block it decompresses into.
-void Test_Bad_Headers(void)
+TEST_CASE_FIXTURE(LzoFixture, "the straw yields nothing behind a header the compressor cannot write")
 {
 	int const payload = 600;
 
@@ -320,14 +327,14 @@ void Test_Bad_Headers(void)
 		}
 	}
 
-	Report("the straw yields nothing behind a header the compressor cannot write", ok);
+	CHECK_MESSAGE(ok, "the straw yields nothing behind a header the compressor cannot write");
 }
 
 
 // LZO1X carries no checksum, so a corrupted block that still decodes to its claimed length
 // cannot be told from an intact one. What has to hold instead is the bound: every corruption
 // either reads as damaged or yields what the header claimed, and neither exceeds a block.
-void Test_Corrupted_Block(void)
+TEST_CASE_FIXTURE(LzoFixture, "a corrupted block stays inside a block whether or not it is caught")
 {
 	int const payload = 4000;
 	int const ceiling = BLOCK * 2;
@@ -381,7 +388,7 @@ void Test_Corrupted_Block(void)
 		Packed[4 + index] = saved;
 	}
 
-	Report("a corrupted block stays inside a block whether or not it is caught", ok);
+	CHECK_MESSAGE(ok, "a corrupted block stays inside a block whether or not it is caught");
 	std::printf("  %d corruptions rejected, %d still decoded to their claimed length\n", damaged, decoded);
 }
 
@@ -389,7 +396,7 @@ void Test_Corrupted_Block(void)
 // The pipe accumulates a block's compressed bytes into its own buffer before decompressing, so
 // an oversized header has to be refused there rather than at the decompressor. The block size
 // is small enough that an unguarded run lands far past the allocation.
-void Test_Oversized_Block_Header(void)
+TEST_CASE_FIXTURE(LzoFixture, "the pipe refuses a block larger than it can accumulate")
 {
 	int const block = 1024;
 	int const claimed = 40000;
@@ -413,28 +420,8 @@ void Test_Oversized_Block_Header(void)
 	}
 	put += pipe.Flush();
 
-	Report("the pipe refuses a block larger than it can accumulate", put == 0 && Guard_Intact(0));
+	CHECK_MESSAGE(put == 0, "the pipe refuses a block larger than it can accumulate");
+	CHECK_MESSAGE(Guard_Intact(0), "the pipe refuses a block larger than it can accumulate");
 }
 
 }	// namespace
-
-
-int main(void)
-{
-	if (lzo_init() != LZO_E_OK) {
-		std::printf("lzo_init failed\n");
-		return(1);
-	}
-
-	Test_Round_Trip();
-	Test_Straw_To_Pipe();
-	Test_Incompressible_Block();
-	Test_Cut_Stream();
-	Test_Bad_Headers();
-	Test_Corrupted_Block();
-	Test_Oversized_Block_Header();
-
-	std::printf("%d failures\n", Failures);
-
-	return(Failures == 0 ? 0 : 1);
-}

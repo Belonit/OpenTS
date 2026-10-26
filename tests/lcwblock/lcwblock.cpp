@@ -21,6 +21,8 @@
 #include "xpipe.h"
 #include "xstraw.h"
 
+#include "doctest/doctest.h"
+
 namespace {
 
 int const BLOCK = 1024 * 8;
@@ -38,22 +40,12 @@ unsigned char Unpacked[SRCMAX];
 
 unsigned int Seed = 1;
 
-int Failures = 0;
-
 
 unsigned int Next_Random(void)
 {
 	Seed = Seed * 1103515245u + 12345u;
 	return(Seed >> 8);
 }
-
-
-void Report(char const * what, bool ok)
-{
-	std::printf("%-64s %s\n", what, ok ? "ok" : "FAILED");
-	if (!ok) Failures++;
-}
-
 
 void Fill_Random(unsigned char * data, int size)
 {
@@ -113,7 +105,7 @@ void Fill_Shape(int shape, unsigned char * data, int size)
 
 // Every shape at every small size, then the block sizes the classes use, must compress into
 // LCW_Comp_Bound bytes and expand back exactly.
-void Test_Bound(void)
+TEST_CASE("the compressed output stays within LCW_Comp_Bound")
 {
 	int const sizes[] = {1000, 4095, 4096, 4097, BLOCK - 1, BLOCK, BLOCK + 1, BLOCK * 2};
 
@@ -152,7 +144,7 @@ void Test_Bound(void)
 		}
 	}
 
-	Report("compressed output stays within LCW_Comp_Bound", ok);
+	CHECK_MESSAGE(ok, "compressed output stays within LCW_Comp_Bound");
 	std::printf("  largest %d byte block: %d bytes from shape %d, bound %d, old buffers %d and %d\n",
 		BLOCK, worst_block, worst_block_shape, LCW_Comp_Bound(BLOCK), OLD_READ_BUFFER, OLD_WRITE_BUFFER);
 }
@@ -178,7 +170,7 @@ int Largest_Block(unsigned char const * stream, int length, int & blocks)
 
 // LCWPipe compresses and LCWStraw expands, the pairing the overlay packs use. The adversarial
 // blocks compress to more than either class allocated before.
-void Test_Pipe_To_Straw(void)
+TEST_CASE("a pipe to straw round trip of blocks larger than the old buffers")
 {
 	int const size = BLOCK * 3 + 100;
 
@@ -207,14 +199,16 @@ void Test_Pipe_To_Straw(void)
 	unsigned char extra[16];
 	int const beyond = decomp.Get(extra, sizeof(extra));
 
-	Report("pipe to straw round trip of blocks larger than the old buffers",
-		got == size && beyond == 0 && std::memcmp(Source, Unpacked, size) == 0 && largest > OLD_WRITE_BUFFER);
+	CHECK_MESSAGE(got == size, "pipe to straw round trip of blocks larger than the old buffers");
+	CHECK_MESSAGE(beyond == 0, "pipe to straw round trip of blocks larger than the old buffers");
+	CHECK_MESSAGE(std::memcmp(Source, Unpacked, size) == 0, "pipe to straw round trip of blocks larger than the old buffers");
+	CHECK_MESSAGE(largest > OLD_WRITE_BUFFER, "pipe to straw round trip of blocks larger than the old buffers");
 	std::printf("  %d bytes in %d blocks, largest block %d bytes\n", size, blocks, largest);
 }
 
 
 // The reverse pairing, fed to the pipe in odd sized pieces so headers straddle calls.
-void Test_Straw_To_Pipe(void)
+TEST_CASE("a straw to pipe round trip in odd sized pieces")
 {
 	int const size = BLOCK * 2 + 777;
 
@@ -244,8 +238,9 @@ void Test_Straw_To_Pipe(void)
 	int blocks = 0;
 	int const largest = Largest_Block(Packed, packed, blocks);
 
-	Report("straw to pipe round trip in odd sized pieces",
-		got == size && std::memcmp(Source, Unpacked, size) == 0 && largest > OLD_WRITE_BUFFER);
+	CHECK_MESSAGE(got == size, "straw to pipe round trip in odd sized pieces");
+	CHECK_MESSAGE(std::memcmp(Source, Unpacked, size) == 0, "straw to pipe round trip in odd sized pieces");
+	CHECK_MESSAGE(largest > OLD_WRITE_BUFFER, "straw to pipe round trip in odd sized pieces");
 }
 
 
@@ -273,7 +268,7 @@ int Build_Legacy_Stream(unsigned char * stream, unsigned char const * message, i
 
 // Both readers must take the header's word for the block's size, yield the one byte, and
 // carry on with the block after it.
-void Test_Legacy_Block(void)
+TEST_CASE("a legacy one byte block reads as one byte through a straw and through a pipe")
 {
 	static unsigned char const message[] = "overlay pack written by the original compressor";
 	int const length = sizeof(message);
@@ -288,8 +283,9 @@ void Test_Legacy_Block(void)
 
 	int const got = decomp.Get(Unpacked, SRCMAX);
 
-	Report("straw reads a legacy one byte block as one byte",
-		got == 1 + length && Unpacked[0] == 0x7E && std::memcmp(&Unpacked[1], message, length) == 0);
+	CHECK_MESSAGE(got == 1 + length, "straw reads a legacy one byte block as one byte");
+	CHECK_MESSAGE(Unpacked[0] == 0x7E, "straw reads a legacy one byte block as one byte");
+	CHECK_MESSAGE(std::memcmp(&Unpacked[1], message, length) == 0, "straw reads a legacy one byte block as one byte");
 
 	std::memset(Unpacked, 0, sizeof(Unpacked));
 
@@ -300,15 +296,16 @@ void Test_Legacy_Block(void)
 	int put = pipe.Put(Packed, stream);
 	put += pipe.Flush();
 
-	Report("pipe reads a legacy one byte block as one byte",
-		put == 1 + length && Unpacked[0] == 0x7E && std::memcmp(&Unpacked[1], message, length) == 0);
+	CHECK_MESSAGE(put == 1 + length, "pipe reads a legacy one byte block as one byte");
+	CHECK_MESSAGE(Unpacked[0] == 0x7E, "pipe reads a legacy one byte block as one byte");
+	CHECK_MESSAGE(std::memcmp(&Unpacked[1], message, length) == 0, "pipe reads a legacy one byte block as one byte");
 }
 
 
 // Headers the compressor cannot produce: no compressed bytes, more than a block of output,
 // and more compressed bytes than a block can expand to. The straw stops at each; the pipe
 // passes the four header bytes through and picks up the block after them.
-void Test_Bad_Headers(void)
+TEST_CASE("the straw stops at a header the compressor cannot produce, and the pipe passes it through")
 {
 	static unsigned char const message[] = "the block after a bad header";
 	int const length = sizeof(message);
@@ -363,22 +360,8 @@ void Test_Bad_Headers(void)
 		}
 	}
 
-	Report("straw stops at a header the compressor cannot produce", straw_ok);
-	Report("pipe passes such a header through and resumes", pipe_ok);
+	CHECK_MESSAGE(straw_ok, "straw stops at a header the compressor cannot produce");
+	CHECK_MESSAGE(pipe_ok, "pipe passes such a header through and resumes");
 }
 
 }	// namespace
-
-
-int main(void)
-{
-	Test_Bound();
-	Test_Pipe_To_Straw();
-	Test_Straw_To_Pipe();
-	Test_Legacy_Block();
-	Test_Bad_Headers();
-
-	std::printf("%d failures\n", Failures);
-
-	return(Failures == 0 ? 0 : 1);
-}

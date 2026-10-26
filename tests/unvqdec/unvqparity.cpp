@@ -11,12 +11,13 @@
 // produced. The vectors in unvqgolden.h were recorded from that assembly before it was
 // removed. Needs no game data.
 
-#include <cstdio>
 #include <cstring>
 
 #include "vqalib/unvq.h"
 
 #include "unvqgolden.h"
+
+#include "doctest/doctest.h"
 
 extern "C" unsigned short * HicolorTable = 0;
 
@@ -33,9 +34,6 @@ unsigned char DestStore[DSTMAX];
 unsigned short HicolorStore[32768];
 
 unsigned int Seed = 0;
-
-int Failures = 0;
-int Checked = 0;
 
 
 unsigned int Next_Random(void)
@@ -93,7 +91,7 @@ int Span(UnVQGoldenCase const & test, int bytesperpixel, int rowsperblock)
 }	// namespace
 
 
-int main(void)
+TEST_CASE("UnVQ block decode matches the recorded assembly")
 {
 	HicolorTable = HicolorStore;
 
@@ -156,17 +154,8 @@ int main(void)
 
 		unsigned long long const hash = Hash(DestStore, span);
 
-		if (hash != test.Hash) {
-			std::printf("FAILED decoder %d blocks %lu rows %lu width %lu: expected %llu, got %llu\n",
-				test.Which, test.BlocksPerRow, test.NumRows, test.BufWidth, test.Hash, hash);
-			Failures++;
-		}
-
-		Checked++;
+		INFO("decoder ", test.Which, " blocks ", test.BlocksPerRow, " rows ", test.NumRows, " width ", test.BufWidth);
+		CHECK(hash == test.Hash);
 	}
 
-	std::printf("%-52s %s\n", "UnVQ block decode matches the recorded assembly", Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
 }

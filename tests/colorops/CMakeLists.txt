@@ -9,4 +9,5 @@ opents_add_test(ColorOps
     INCLUDES ${CMAKE_CURRENT_SOURCE_DIR}
     DEFINITIONS WIN32 _WINDOWS _MBCS
     FLOAT
+    DOCTEST
 )

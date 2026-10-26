@@ -14,7 +14,6 @@
 // dispatch never indexed, so until that table was repointed none of this code had ever run and
 // nothing would have noticed it drawing the wrong thing. Needs no game data.
 
-#include <cstdio>
 #include <cstring>
 #include <climits>
 
@@ -22,6 +21,8 @@
 #include "voxlib.h"
 
 #include "voxelgolden.h"
+
+#include "doctest/doctest.h"
 
 void __cdecl Draw_Voxel_Regular_Normals(VoxelFuncArgumentStruct * state);
 void __cdecl Draw_Voxel_Reverse_Normals(VoxelFuncArgumentStruct * state);
@@ -63,9 +64,6 @@ unsigned char EndOffsets[SPANMAX];
 unsigned char VoxelData[DATAMAX];
 
 unsigned int Seed = 0;
-
-int Failures = 0;
-int Checked = 0;
 
 
 unsigned int Next_Random(void)
@@ -210,7 +208,7 @@ void Setup(VoxelFuncArgumentStruct & arg)
 }	// namespace
 
 
-int main(void)
+TEST_CASE("voxel drawing matches the recorded assembly")
 {
 	for (int i = 0; i < VoxelGoldenCaseCount; i++) {
 		VoxelGoldenCase const & test = VoxelGoldenCases[i];
@@ -225,17 +223,8 @@ int main(void)
 
 		unsigned long long const hash = Hash(VoxelDrawBuffer, sizeof(VoxelDrawBuffer));
 
-		if (hash != test.Hash) {
-			std::printf("FAILED %-38s seed %u: expected %llu, got %llu\n",
-				Names[test.Which], test.Seed, test.Hash, hash);
-			Failures++;
-		}
-
-		Checked++;
+		INFO(Names[test.Which], " seed ", test.Seed);
+		CHECK(hash == test.Hash);
 	}
 
-	std::printf("%-52s %s\n", "Voxel drawing matches the recorded assembly", Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
 }

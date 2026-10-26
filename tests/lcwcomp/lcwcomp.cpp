@@ -14,12 +14,13 @@
 // Compressed blocks are written into save games, so the contract is the exact bytes emitted,
 // not merely that they expand again correctly. Both are checked here. Needs no game data.
 
-#include <cstdio>
 #include <cstring>
 
 #include "lcw.h"
 
 #include "lcwgolden.h"
+
+#include "doctest/doctest.h"
 
 namespace {
 
@@ -31,9 +32,6 @@ unsigned char Dest[DSTMAX];
 unsigned char Roundtrip[SRCMAX * 2];
 
 unsigned int Seed = 0;
-
-int Failures = 0;
-int Checked = 0;
 
 
 unsigned int Next_Random(void)
@@ -91,7 +89,7 @@ void Fill_Source(int shape, unsigned int seed, int size)
 }	// namespace
 
 
-int main(void)
+TEST_CASE("LCW compression matches the recorded vectors and round-trips")
 {
 	for (int i = 0; i < LcwCompGoldenCaseCount; i++) {
 		LcwCompGoldenCase const & test = LcwCompGoldenCases[i];
@@ -99,32 +97,17 @@ int main(void)
 		Fill_Source(test.Shape, test.Seed, test.Size);
 		std::memset(Dest, 0xA5, sizeof(Dest));
 
+		INFO("shape ", test.Shape, " size ", test.Size);
 		int const packed = LCW_Comp(Source, Dest, test.Size);
-
-		if (packed != test.Compressed) {
-			std::printf("FAILED shape %d size %d: compressed to %d bytes, expected %d\n",
-				test.Shape, test.Size, packed, test.Compressed);
-			Failures++;
-		} else if (Hash(Dest, packed) != test.Hash) {
-			std::printf("FAILED shape %d size %d: compressed bytes differ from the vectors\n",
-				test.Shape, test.Size);
-			Failures++;
+		CHECK(packed == test.Compressed);
+		if (packed == test.Compressed) {
+			CHECK_MESSAGE(Hash(Dest, packed) == test.Hash, "the compressed bytes match the vectors");
 		}
 
 		std::memset(Roundtrip, 0, sizeof(Roundtrip));
 		int const unpacked = LCW_Uncomp(Dest, Roundtrip, (unsigned long)test.Size);
-
-		if (unpacked != test.Size || std::memcmp(Roundtrip, Source, test.Size) != 0) {
-			std::printf("FAILED shape %d size %d: round trip returned %d bytes\n",
-				test.Shape, test.Size, unpacked);
-			Failures++;
-		}
-
-		Checked++;
+		CHECK_MESSAGE(unpacked == test.Size, "the round trip returns every byte");
+		CHECK_MESSAGE(std::memcmp(Roundtrip, Source, test.Size) == 0, "the round trip returns the source");
 	}
 
-	std::printf("%-52s %s\n", "LCW compression matches the recorded vectors", Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
 }

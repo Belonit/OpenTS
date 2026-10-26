@@ -13,10 +13,11 @@
 // with one another when they were recorded, so one set of vectors covers all of them.
 // Needs no game data.
 
-#include <cstdio>
 #include <cstring>
 
 #include "colorgolden.h"
+
+#include "doctest/doctest.h"
 
 extern "C" {
 void __cdecl Adjust_Color_565(void *pal, void *xlat, int r, int g, int b, int i, void *mask);
@@ -41,9 +42,6 @@ unsigned short ColorBuffer[512 * 512];
 int ColorTable[65536];
 
 unsigned int Seed = 0;
-
-int Failures = 0;
-int Checked = 0;
 
 
 unsigned int Next_Random(void)
@@ -105,7 +103,7 @@ Tint const Tints[] = {
 }	// namespace
 
 
-int main(void)
+TEST_CASE("color tinting matches the recorded assembly")
 {
 	for (int i = 0; i < AdjustGoldenCaseCount; i++) {
 		AdjustGoldenCase const & test = AdjustGoldenCases[i];
@@ -118,15 +116,14 @@ int main(void)
 
 		unsigned long long const hash = Hash(Translator, sizeof(Translator));
 
-		if (hash != test.Hash) {
-			std::printf("FAILED Adjust_Color_%s tint %d: expected %llu, got %llu\n",
-				ModeNames[test.Mode], test.Tint, test.Hash, hash);
-			Failures++;
-		}
-
-		Checked++;
+		INFO("Adjust_Color_", ModeNames[test.Mode], " tint ", test.Tint);
+		CHECK(hash == test.Hash);
 	}
+}
 
+
+TEST_CASE("color brightening matches the recorded assembly")
+{
 	for (int i = 0; i < BrightenGoldenCaseCount; i++) {
 		BrightenGoldenCase const & test = BrightenGoldenCases[i];
 
@@ -146,17 +143,8 @@ int main(void)
 
 		unsigned long long const hash = Hash(ColorBuffer, 512 * 512 * 2);
 
-		if (hash != test.Hash) {
-			std::printf("FAILED Brighten_Color_%s %dx%d: expected %llu, got %llu\n",
-				ModeNames[test.Mode], test.Width, test.Height, test.Hash, hash);
-			Failures++;
-		}
-
-		Checked++;
+		INFO("Brighten_Color_", ModeNames[test.Mode], " ", test.Width, "x", test.Height);
+		CHECK(hash == test.Hash);
 	}
 
-	std::printf("%-52s %s\n", "Color tinting and brightening match the assembly", Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
 }
