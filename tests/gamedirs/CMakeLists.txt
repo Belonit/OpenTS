@@ -34,4 +34,5 @@ opents_add_test(GameDirs
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
     UTF8
     STAMP
+    DOCTEST
 )

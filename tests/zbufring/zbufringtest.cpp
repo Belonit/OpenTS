@@ -27,12 +27,11 @@
 #include "surface.h"
 #include "zbuffer.h"
 
+#include "doctest/doctest.h"
+
 ABuffer * AlphaBuffer;
 
 namespace {
-
-int Failures = 0;
-int Checked = 0;
 
 /// The buffer covers this many entries. The width is even so that a full-width run takes
 /// the aligned path through Set, and neither dimension divides the other.
@@ -44,25 +43,10 @@ int const SPAN = BUFFER_W * BUFFER_H * BPP;
 
 unsigned short const MARKER = 0x1234;
 
-
-void Check(bool passed, char const * what)
-{
-	Checked++;
-	if (!passed) {
-		std::printf("FAILED %s\n", what);
-		Failures++;
-	}
-}
-
-
+// Checks an address by its distance from the start of the ring, which is what a failure prints.
 void Check_Offset(std::uintptr_t got, std::uintptr_t base, int expected, char const * what)
 {
-	Checked++;
-	if (got - base != (std::uintptr_t)expected) {
-		std::printf("FAILED %s: expected base+%d, got base+%lld\n",
-			what, expected, (long long)(got - base));
-		Failures++;
-	}
+	CHECK_MESSAGE((long long)(got - base) == expected, what);
 }
 
 
@@ -118,10 +102,10 @@ void Run(char const * name, unsigned short reset)
 	std::uintptr_t const end = (std::uintptr_t)buffer.Get_Buffer_End();
 
 	std::snprintf(what, sizeof(what), "%s: the ring spans one entry per covered pixel", name);
-	Check(end - base == (std::uintptr_t)SPAN, what);
+	CHECK_MESSAGE(end - base == (std::uintptr_t)SPAN, what);
 
 	std::snprintf(what, sizeof(what), "%s: the buffer reports the width it covers", name);
-	Check((int)buffer.Get_Buffer_Width() == BUFFER_W, what);
+	CHECK_MESSAGE((int)buffer.Get_Buffer_Width() == BUFFER_W, what);
 
 	/*
 	 * An address inside the ring is left alone; one that has walked off either end is
@@ -208,7 +192,8 @@ void Run(char const * name, unsigned short reset)
 		}
 
 		std::snprintf(what, sizeof(what), "%s: %s", name, test.Note);
-		Check(written == test.Written && outside == 0, what);
+		CHECK_MESSAGE(written == test.Written, what);
+		CHECK_MESSAGE(outside == 0, what);
 	}
 
 	/*
@@ -225,7 +210,7 @@ void Run(char const * name, unsigned short reset)
 
 		std::snprintf(what, sizeof(what), "%s: a full update after a pan of %d resets every entry",
 			name, pans[i]);
-		Check(Count_Entries(panned, reset) == BUFFER_W * BUFFER_H, what);
+		CHECK_MESSAGE(Count_Entries(panned, reset) == BUFFER_W * BUFFER_H, what);
 	}
 
 	/*
@@ -240,7 +225,7 @@ void Run(char const * name, unsigned short reset)
 	tail.Update(Rect(0, 0, BUFFER_W, BUFFER_H));
 
 	std::snprintf(what, sizeof(what), "%s: an update whose split leaves one entry does not reset it", name);
-	Check(Count_Entries(tail, reset) == BUFFER_W * BUFFER_H - 1, what);
+	CHECK_MESSAGE(Count_Entries(tail, reset) == BUFFER_W * BUFFER_H - 1, what);
 
 	/*
 	 * A pan slides the origin rather than moving the entries, so the point that was at the
@@ -277,23 +262,22 @@ void Run(char const * name, unsigned short reset)
 	wholesale.Pan(BUFFER_W + 1, 0, reset);
 
 	std::snprintf(what, sizeof(what), "%s: a pan past the width resets the whole buffer", name);
-	Check(Count_Entries(wholesale, reset) == BUFFER_W * BUFFER_H, what);
+	CHECK_MESSAGE(Count_Entries(wholesale, reset) == BUFFER_W * BUFFER_H, what);
 
 	std::snprintf(what, sizeof(what), "%s: a wholesale pan returns the bias to the middle", name);
-	Check((unsigned)wholesale.Get_Scroll() == 0x8000u, what);
+	CHECK_MESSAGE((unsigned)wholesale.Get_Scroll() == 0x8000u, what);
 }
 
 } // namespace
 
-
-int main(void)
+TEST_CASE("the depth buffer's ring folds addresses back by its span and resets what it exposes")
 {
 	Run<ZBuffer>("depth", 0xFFFF);
-	Run<ABuffer>("alpha", 0x007F);
-
-	std::printf("%-52s %s\n", "Ring addressing in the depth and alpha buffers",
-		Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
 }
+
+
+TEST_CASE("the alpha buffer's ring folds addresses back by its span and resets what it exposes")
+{
+	Run<ABuffer>("alpha", 0x007F);
+}
+

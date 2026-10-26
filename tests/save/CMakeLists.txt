@@ -11,4 +11,5 @@ opents_add_test(SaveTest
         savefile.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
     LIBRARIES lzo
+    DOCTEST
 )

@@ -14,7 +14,6 @@
 // Needs no game data.
 
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <type_traits>
 #include <vector>
@@ -30,22 +29,9 @@ class HouseClass
 
 #include "houseset.h"
 
+#include "doctest/doctest.h"
 
 namespace {
-
-int Failures = 0;
-int Checked = 0;
-
-
-void Check(bool passed, char const * what)
-{
-	Checked++;
-	if (!passed) {
-		std::printf("FAILED %s\n", what);
-		Failures++;
-	}
-}
-
 
 HouseClass House[HOUSE_MAX];
 
@@ -87,31 +73,44 @@ class CRCRecorder
 };
 
 
-void Check_Set(void)
+// Each house carries its own heap index, which is what the sets and arrays are keyed by.
+struct HouseFixture
+{
+	HouseFixture(void)
+	{
+		for (int index = 0; index < HOUSE_MAX; index++) {
+			House[index].HeapID = index;
+		}
+	}
+};
+
+
+TEST_CASE_FIXTURE(HouseFixture, "a house set marks each house, the ones past the thirty-second included")
 {
 	HouseSet set;
-	Check(!set.Any(), "a fresh set holds no house");
+	CHECK_MESSAGE(!set.Any(), "a fresh set holds no house");
 
 	set.Set(&House[0]);
 	set.Set(&House[40]);
 	set.Set(&House[HOUSE_MAX - 1]);
-	Check(set[&House[0]], "the first house is marked");
-	Check(set[&House[40]], "a house past the thirty-second is marked");
-	Check(set[&House[HOUSE_MAX - 1]], "the last house is marked");
-	Check(!set[&House[1]], "an unmarked house reads clear");
-	Check(!set[&House[8]], "a house one byte along reads clear");
-	Check(!set[static_cast<HouseClass const *>(nullptr)], "no house reads clear");
+	CHECK_MESSAGE(set[&House[0]], "the first house is marked");
+	CHECK_MESSAGE(set[&House[40]], "a house past the thirty-second is marked");
+	CHECK_MESSAGE(set[&House[HOUSE_MAX - 1]], "the last house is marked");
+	CHECK_MESSAGE(!set[&House[1]], "an unmarked house reads clear");
+	CHECK_MESSAGE(!set[&House[8]], "a house one byte along reads clear");
+	CHECK_MESSAGE(!set[static_cast<HouseClass const *>(nullptr)], "no house reads clear");
 
 	set.Clear(&House[40]);
-	Check(!set[&House[40]], "clearing a house removes only its mark");
-	Check(set[&House[0]] && set[&House[HOUSE_MAX - 1]], "clearing a house leaves the others");
+	CHECK_MESSAGE(!set[&House[40]], "clearing a house removes only its mark");
+	CHECK_MESSAGE(set[&House[0]], "clearing a house leaves the others");
+	CHECK_MESSAGE(set[&House[HOUSE_MAX - 1]], "clearing a house leaves the others");
 
 	set.Clear();
-	Check(!set.Any(), "clearing the set removes every mark");
+	CHECK_MESSAGE(!set.Any(), "clearing the set removes every mark");
 }
 
 
-void Check_Algebra(void)
+TEST_CASE_FIXTURE(HouseFixture, "house sets combine, and their parts join back into the whole")
 {
 	HouseSet mapped;
 	HouseSet visible;
@@ -121,41 +120,44 @@ void Check_Algebra(void)
 	visible.Set(&House[33]);
 
 	HouseSet stale = mapped & ~visible;
-	Check(stale[&House[2]] && stale[&House[50]], "mapped and not visible keeps the unseen houses");
-	Check(!stale[&House[33]], "mapped and not visible drops the house still seeing");
+	CHECK_MESSAGE(stale[&House[2]], "mapped and not visible keeps the unseen houses");
+	CHECK_MESSAGE(stale[&House[50]], "mapped and not visible keeps the unseen houses");
+	CHECK_MESSAGE(!stale[&House[33]], "mapped and not visible drops the house still seeing");
 
 	HouseSet both = stale | visible;
-	Check(both == mapped, "the parts join back into the whole");
-	Check(both != stale, "sets with different houses differ");
+	CHECK_MESSAGE(both == mapped, "the parts join back into the whole");
+	CHECK_MESSAGE(both != stale, "sets with different houses differ");
 
 	HouseSet copy = mapped;
 	copy &= visible;
-	Check(copy == visible, "&= keeps only the houses in both");
+	CHECK_MESSAGE(copy == visible, "&= keeps only the houses in both");
 	copy |= stale;
-	Check(copy == mapped, "|= adds the other houses");
+	CHECK_MESSAGE(copy == mapped, "|= adds the other houses");
 }
 
 
-void Check_Array(void)
+TEST_CASE_FIXTURE(HouseFixture, "a house array holds a value for each house, beyond what a byte holds too")
 {
 	HouseArray<std::uint16_t> counts;
-	Check(counts[&House[0]] == 0 && counts[&House[63]] == 0, "a fresh array holds zero for every house");
+	CHECK_MESSAGE(counts[&House[0]] == 0, "a fresh array holds zero for every house");
+	CHECK_MESSAGE(counts[&House[63]] == 0, "a fresh array holds zero for every house");
 
 	counts[&House[5]] += 2;
 	counts[&House[60]] = 300;
-	Check(counts[&House[5]] == 2, "a house keeps its own value");
-	Check(counts[&House[60]] == 300, "a value past what a byte holds survives");
-	Check(counts[&House[6]] == 0, "a neighbor's value is untouched");
+	CHECK_MESSAGE(counts[&House[5]] == 2, "a house keeps its own value");
+	CHECK_MESSAGE(counts[&House[60]] == 300, "a value past what a byte holds survives");
+	CHECK_MESSAGE(counts[&House[6]] == 0, "a neighbor's value is untouched");
 
 	HouseArray<std::uint16_t> const & view = counts;
-	Check(view[&House[60]] == 300, "a const array reads the same value");
+	CHECK_MESSAGE(view[&House[60]] == 300, "a const array reads the same value");
 
 	counts.Fill(7);
-	Check(counts[&House[0]] == 7 && counts[&House[63]] == 7, "filling sets every house");
+	CHECK_MESSAGE(counts[&House[0]] == 7, "filling sets every house");
+	CHECK_MESSAGE(counts[&House[63]] == 7, "filling sets every house");
 }
 
 
-void Check_Save(void)
+TEST_CASE_FIXTURE(HouseFixture, "a house set and array come back from a save, reading exactly what it wrote")
 {
 	HouseSet set;
 	set.Set(&House[1]);
@@ -175,10 +177,11 @@ void Check_Save(void)
 	set_back.Serialize(in);
 	counts_back.Serialize(in);
 
-	Check(set_back == set, "a set comes back from a save with every house");
-	Check(counts_back[&House[3]] == 9 && counts_back[&House[63]] == 1234, "an array comes back from a save with every value");
-	Check(in.Cursor == out.Bytes.size(), "a load reads exactly what the save wrote");
-	Check(out.Bytes.size() == sizeof(std::uint64_t) + sizeof(std::uint64_t) + 2 * sizeof(std::uint16_t), "an array saves only the houses that hold a value");
+	CHECK_MESSAGE(set_back == set, "a set comes back from a save with every house");
+	CHECK_MESSAGE(counts_back[&House[3]] == 9, "an array comes back from a save with every value");
+	CHECK_MESSAGE(counts_back[&House[63]] == 1234, "an array comes back from a save with every value");
+	CHECK_MESSAGE(in.Cursor == out.Bytes.size(), "a load reads exactly what the save wrote");
+	CHECK_MESSAGE(out.Bytes.size() == sizeof(std::uint64_t) + sizeof(std::uint64_t) + 2 * sizeof(std::uint16_t), "an array saves only the houses that hold a value");
 
 	HouseArray<std::uint16_t> stale;
 	stale[&House[7]] = 5;
@@ -186,11 +189,12 @@ void Check_Save(void)
 	again.Bytes = out.Bytes;
 	again.Cursor = sizeof(std::uint64_t);
 	stale.Serialize(again);
-	Check(stale[&House[7]] == 0 && stale[&House[63]] == 1234, "a load clears the houses the save left out");
+	CHECK_MESSAGE(stale[&House[7]] == 0, "a load clears the houses the save left out");
+	CHECK_MESSAGE(stale[&House[63]] == 1234, "a load clears the houses the save left out");
 }
 
 
-void Check_CRC(void)
+TEST_CASE_FIXTURE(HouseFixture, "a house set feeds the checksum both halves, apart")
 {
 	HouseSet low;
 	HouseSet high;
@@ -201,37 +205,17 @@ void Check_CRC(void)
 	CRCRecorder b;
 	low.Compute_CRC(a);
 	high.Compute_CRC(b);
-	Check(a.Values.size() == 2 && b.Values.size() == 2, "a set feeds the checksum both halves");
-	Check(a.Values != b.Values, "houses either side of the thirty-second reach the checksum apart");
+	REQUIRE_MESSAGE(a.Values.size() == 2, "a set feeds the checksum both halves");
+	CHECK_MESSAGE(b.Values.size() == 2, "a set feeds the checksum both halves");
+	CHECK_MESSAGE(a.Values != b.Values, "houses either side of the thirty-second reach the checksum apart");
 }
 
 
-void Check_Layout(void)
+TEST_CASE_FIXTURE(HouseFixture, "a house set is one 64-bit word and survives the raw copy cells are moved with")
 {
-	Check(std::is_trivially_copyable_v<HouseSet>, "a set survives the raw copy cells are moved with");
-	Check(std::is_trivially_copyable_v<HouseArray<std::uint16_t>>, "an array survives the raw copy cells are moved with");
-	Check(sizeof(HouseSet) == 8, "a set is one 64-bit word");
+	CHECK_MESSAGE(std::is_trivially_copyable_v<HouseSet>, "a set survives the raw copy cells are moved with");
+	CHECK_MESSAGE(std::is_trivially_copyable_v<HouseArray<std::uint16_t>>, "an array survives the raw copy cells are moved with");
+	CHECK_MESSAGE(sizeof(HouseSet) == 8, "a set is one 64-bit word");
 }
 
 } // namespace
-
-
-int main(void)
-{
-	for (int index = 0; index < HOUSE_MAX; index++) {
-		House[index].HeapID = index;
-	}
-
-	Check_Set();
-	Check_Algebra();
-	Check_Array();
-	Check_Save();
-	Check_CRC();
-	Check_Layout();
-
-	std::printf("%-52s %s\n", "House sets and arrays",
-		Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
-}

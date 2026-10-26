@@ -22,16 +22,15 @@
 
 #include "priority.h"
 
+#include "doctest/doctest.h"
+
 #include <cstdio>
 #include <cstring>
 #include <optional>
+#include <string>
 
 
 namespace {
-
-int Failures = 0;
-int Checked = 0;
-
 
 /// Stands in for a node the queue orders. It carries CellNode's contract rather than the
 /// type itself, which would drag the map and COM headers in behind it: the queue orders on
@@ -52,17 +51,6 @@ struct TestNode {
 
 /// Stands for the queue handing nothing back.
 int const EMPTY = -1;
-
-
-void Check(bool passed, char const * what)
-{
-	Checked++;
-	if (!passed) {
-		std::printf("FAILED %s\n", what);
-		Failures++;
-	}
-}
-
 
 /*
  * These three name the element behind whatever the queue handed back. Extraction and
@@ -145,15 +133,11 @@ void Check_Drain(Q & queue, char const * expected, char const * what)
 	char got[256];
 	Drain(queue, got, sizeof(got));
 
-	Checked++;
-	if (std::strcmp(got, expected) != 0) {
-		std::printf("FAILED %s\n    expected %s\n    got      %s\n", what, expected, got);
-		Failures++;
-	}
+	CHECK_MESSAGE(std::string(got) == expected, what);
 }
 
 
-void Check_Ordering(void)
+TEST_CASE("the queue counts what went in and hands nodes out in score order")
 {
 	{
 		PriorityQueueClass<TestNode> queue(64);
@@ -161,7 +145,7 @@ void Check_Ordering(void)
 		float const scores[8] = {5.0f, 1.0f, 8.0f, 3.0f, 7.0f, 2.0f, 6.0f, 4.0f};
 		Fill(queue, nodes, scores, 8);
 
-		Check(queue.Count() == 8, "the queue counts what went in");
+		CHECK_MESSAGE(queue.Count() == 8, "the queue counts what went in");
 		Check_Drain(queue, "2,6,4,8,1,7,5,3", "a shuffled set comes out in score order");
 	}
 
@@ -196,14 +180,14 @@ void Check_Ordering(void)
 	{
 		PriorityQueueClass<TestNode> queue(64);
 
-		Check(queue.Count() == 0, "a fresh queue counts nothing");
-		Check(Pop(queue) == EMPTY, "an empty queue hands nothing back");
-		Check(Pop(queue) == EMPTY, "an empty queue hands nothing back twice running");
+		CHECK_MESSAGE(queue.Count() == 0, "a fresh queue counts nothing");
+		CHECK_MESSAGE(Pop(queue) == EMPTY, "an empty queue hands nothing back");
+		CHECK_MESSAGE(Pop(queue) == EMPTY, "an empty queue hands nothing back twice running");
 	}
 }
 
 
-void Check_Ties(void)
+TEST_CASE("nodes sharing a score come out in a fixed order, and a negative zero ties with a positive one")
 {
 	{
 		PriorityQueueClass<TestNode> queue(64);
@@ -246,7 +230,7 @@ void Check_Ties(void)
 }
 
 
-void Check_Replace_Root(void)
+TEST_CASE("replacing the root hands back an offered node below it, or turns the root out for one above it")
 {
 	{
 		PriorityQueueClass<TestNode> queue(64);
@@ -254,8 +238,8 @@ void Check_Replace_Root(void)
 		offered.Element = 9;
 		offered.Score = 4.0f;
 
-		Check(Replace(queue, offered) == 9, "an empty queue hands the offered node straight back");
-		Check(queue.Count() == 0, "an empty queue stays empty");
+		CHECK_MESSAGE(Replace(queue, offered) == 9, "an empty queue hands the offered node straight back");
+		CHECK_MESSAGE(queue.Count() == 0, "an empty queue stays empty");
 	}
 
 	{
@@ -268,8 +252,8 @@ void Check_Replace_Root(void)
 		offered.Element = 9;
 		offered.Score = 2.0f;
 
-		Check(Replace(queue, offered) == 9, "a node below the root comes straight back");
-		Check(queue.Count() == 4, "a node below the root does not enter");
+		CHECK_MESSAGE(Replace(queue, offered) == 9, "a node below the root comes straight back");
+		CHECK_MESSAGE(queue.Count() == 4, "a node below the root does not enter");
 		Check_Drain(queue, "1,3,2,4", "the queue is untouched by a node below the root");
 	}
 
@@ -283,8 +267,8 @@ void Check_Replace_Root(void)
 		offered.Element = 9;
 		offered.Score = 6.5f;
 
-		Check(Replace(queue, offered) == 1, "a node above the root turns the root out");
-		Check(queue.Count() == 4, "replacing the root leaves the count alone");
+		CHECK_MESSAGE(Replace(queue, offered) == 1, "a node above the root turns the root out");
+		CHECK_MESSAGE(queue.Count() == 4, "replacing the root leaves the count alone");
 		Check_Drain(queue, "3,9,2,4", "the offered node takes its place in order");
 	}
 
@@ -298,13 +282,13 @@ void Check_Replace_Root(void)
 		offered.Element = 9;
 		offered.Score = 5.0f;
 
-		Check(Replace(queue, offered) == 1, "a node level with the root turns the root out");
+		CHECK_MESSAGE(Replace(queue, offered) == 1, "a node level with the root turns the root out");
 		Check_Drain(queue, "9,3,2,4", "a node level with the root takes its place");
 	}
 }
 
 
-void Check_Remove_Matching(void)
+TEST_CASE("a node removed from anywhere drops the count and leaves the rest in score order")
 {
 	float const scores[7] = {5.0f, 7.0f, 6.0f, 9.0f, 8.0f, 10.0f, 11.0f};
 
@@ -317,8 +301,8 @@ void Check_Remove_Matching(void)
 		wanted.Element = 7;
 		wanted.Score = 0.0f;
 
-		Check(queue.Remove_Matching(wanted) == true, "a node in the last slot is found");
-		Check(queue.Count() == 6, "removing a node drops the count");
+		CHECK_MESSAGE(queue.Remove_Matching(wanted) == true, "a node in the last slot is found");
+		CHECK_MESSAGE(queue.Count() == 6, "removing a node drops the count");
 		Check_Drain(queue, "1,3,2,5,4,6", "the rest come out in score order");
 	}
 
@@ -331,7 +315,7 @@ void Check_Remove_Matching(void)
 		wanted.Element = 1;
 		wanted.Score = 0.0f;
 
-		Check(queue.Remove_Matching(wanted) == true, "the node at the root is found");
+		CHECK_MESSAGE(queue.Remove_Matching(wanted) == true, "the node at the root is found");
 		Check_Drain(queue, "3,2,5,4,6,7", "the queue re-forms around a removed root");
 	}
 
@@ -344,7 +328,7 @@ void Check_Remove_Matching(void)
 		wanted.Element = 3;
 		wanted.Score = 0.0f;
 
-		Check(queue.Remove_Matching(wanted) == true, "a node in a middle slot is found");
+		CHECK_MESSAGE(queue.Remove_Matching(wanted) == true, "a node in a middle slot is found");
 		Check_Drain(queue, "1,2,5,4,6,7", "the queue re-forms around a removed middle node");
 	}
 
@@ -357,7 +341,7 @@ void Check_Remove_Matching(void)
 		wanted.Element = 2;
 		wanted.Score = 0.0f;
 
-		Check(queue.Remove_Matching(wanted) == true, "a node with a lighter parent is found");
+		CHECK_MESSAGE(queue.Remove_Matching(wanted) == true, "a node with a lighter parent is found");
 		Check_Drain(queue, "1,3,5,4,6,7", "the queue re-forms around it");
 	}
 
@@ -370,8 +354,8 @@ void Check_Remove_Matching(void)
 		wanted.Element = 99;
 		wanted.Score = 0.0f;
 
-		Check(queue.Remove_Matching(wanted) == false, "a node that is not held is not found");
-		Check(queue.Count() == 7, "a search that finds nothing removes nothing");
+		CHECK_MESSAGE(queue.Remove_Matching(wanted) == false, "a node that is not held is not found");
+		CHECK_MESSAGE(queue.Count() == 7, "a search that finds nothing removes nothing");
 		Check_Drain(queue, "1,3,2,5,4,6,7", "a search that finds nothing leaves the order alone");
 	}
 
@@ -390,13 +374,13 @@ void Check_Remove_Matching(void)
 		wanted.Element = 2;
 		wanted.Score = 0.0f;
 
-		Check(queue.Remove_Matching(wanted) == true, "one of two nodes sharing an element is found");
+		CHECK_MESSAGE(queue.Remove_Matching(wanted) == true, "one of two nodes sharing an element is found");
 		Check_Drain(queue, "1,3,2", "the queue walks its slots rather than the order they went in");
 	}
 }
 
 
-void Check_Clear(void)
+TEST_CASE("a cleared queue holds nothing and orders as a fresh one once refilled")
 {
 	PriorityQueueClass<TestNode> queue(64);
 	TestNode nodes[6];
@@ -405,15 +389,15 @@ void Check_Clear(void)
 	Fill(queue, nodes, scores, 6);
 	queue.Clear();
 
-	Check(queue.Count() == 0, "a cleared queue counts nothing");
-	Check(Pop(queue) == EMPTY, "a cleared queue hands nothing back");
+	CHECK_MESSAGE(queue.Count() == 0, "a cleared queue counts nothing");
+	CHECK_MESSAGE(Pop(queue) == EMPTY, "a cleared queue hands nothing back");
 
 	Fill(queue, nodes, scores, 6);
 	Check_Drain(queue, "4,2,6,1,5,3", "a refilled queue orders as a fresh one does");
 }
 
 
-void Check_Capacity(void)
+TEST_CASE("a queue grows past the slots it was built with and keeps its order")
 {
 	// The size a queue is built with is only how much room it takes up front.
 	PriorityQueueClass<TestNode> queue(8);
@@ -421,25 +405,8 @@ void Check_Capacity(void)
 	float const scores[10] = {9.0f, 8.0f, 7.0f, 6.0f, 5.0f, 4.0f, 3.0f, 2.0f, 1.0f, 0.0f};
 	Fill(queue, nodes, scores, 10);
 
-	Check(queue.Count() == 10, "a queue built with eight slots takes ten nodes");
+	CHECK_MESSAGE(queue.Count() == 10, "a queue built with eight slots takes ten nodes");
 	Check_Drain(queue, "10,9,8,7,6,5,4,3,2,1", "every node it took comes out in score order");
 }
 
 } // namespace
-
-
-int main(void)
-{
-	Check_Ordering();
-	Check_Ties();
-	Check_Replace_Root();
-	Check_Remove_Matching();
-	Check_Clear();
-	Check_Capacity();
-
-	std::printf("%-52s %s\n", "Priority queue extraction order",
-		Failures == 0 ? "ok" : "FAILED");
-	std::printf("checked %d cases, %d mismatches\n", Checked, Failures);
-
-	return(Failures == 0 ? 0 : 1);
-}

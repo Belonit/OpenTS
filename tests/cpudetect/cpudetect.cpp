@@ -13,27 +13,16 @@
 
 #include <windows.h>
 
-#include <cstdio>
 #include <cstring>
 #include <intrin.h>
+#include <string>
 
 #include "getcpu.h"
 #include "mpu.h"
 
+#include "doctest/doctest.h"
+
 namespace {
-
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-52s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 /*
  * The detection reads the base family field only, as the assembly did. An extended family is
@@ -47,50 +36,58 @@ int Reference_Family(void)
 }
 
 
-}	// namespace
-
-
-int main(void)
+std::string Reference_Vendor(void)
 {
 	int regs[4];
 	__cpuid(regs, 0);
 
-	char vendor[16];
+	char vendor[13];
 	std::memcpy(&vendor[0], &regs[1], 4);
 	std::memcpy(&vendor[4], &regs[3], 4);
 	std::memcpy(&vendor[8], &regs[2], 4);
 	vendor[12] = '\0';
+	return(vendor);
+}
 
-	int const maxleaf = regs[0];
-	Check(maxleaf >= 1, "CPUID reports leaf 1");
+}	// namespace
 
+
+TEST_CASE("CPUID reports leaf 1")
+{
+	int regs[4];
+	__cpuid(regs, 0);
+	CHECK(regs[0] >= 1);
+}
+
+
+TEST_CASE("the processor detection reports the family and vendor CPUID does")
+{
 	int const family = Reference_Family();
-
-	std::printf("Reported vendor '%s', family %d\n\n", vendor, family);
+	std::string const vendor = Reference_Vendor();
+	INFO("vendor '", vendor, "', family ", family);
 
 	int cpu_type = -1;
 	char reported[64];
 	std::memset(reported, 0, sizeof(reported));
-
 	Get_CPU_Type(cpu_type, reported, sizeof(reported) - 1);
 
-	Check(cpu_type == family, "Get_CPU_Type family matches CPUID");
-	Check(CPUType == (char)family, "CPUType global matches CPUID");
+	CHECK_MESSAGE(cpu_type == family, "Get_CPU_Type reports the family");
+	CHECK_MESSAGE(CPUType == (char)family, "the CPUType global holds the family");
 
 	/*
 	 * CPU_Id writes the twelve vendor characters and then a space, so the buffer
 	 * Get_CPU_Type copies out is the vendor followed by that separator.
 	 */
-	char expected[16];
-	std::memcpy(expected, vendor, 12);
-	expected[12] = ' ';
-	expected[13] = '\0';
-	Check(std::strcmp(reported, expected) == 0, "Vendor string matches CPUID");
+	CHECK_MESSAGE(std::string(reported) == vendor + " ", "the vendor string is the vendor and a space");
+}
 
-	/*
-	 * The clock accumulator only ever counts up, so a later read cannot be the smaller of
-	 * the two once both halves are put back together.
-	 */
+
+/*
+ * The clock accumulator only ever counts up, so a later read cannot be the smaller of the two
+ * once both halves are put back together.
+ */
+TEST_CASE("the processor clock returns a running count that advances")
+{
 	unsigned int high1 = 0;
 	unsigned int const low1 = Get_CPU_Clock(high1);
 	unsigned int high2 = 0;
@@ -99,9 +96,6 @@ int main(void)
 	unsigned long long const stamp1 = ((unsigned long long)high1 << 32) | low1;
 	unsigned long long const stamp2 = ((unsigned long long)high2 << 32) | low2;
 
-	Check(stamp1 != 0, "Get_CPU_Clock returns a running count");
-	Check(stamp2 >= stamp1, "Get_CPU_Clock advances");
-
-	std::printf("\n%s\n", Failures == 0 ? "All checks passed." : "Some checks FAILED.");
-	return(Failures == 0 ? 0 : 1);
+	CHECK(stamp1 != 0u);
+	CHECK(stamp2 >= stamp1);
 }

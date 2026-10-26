@@ -22,23 +22,12 @@
 #include "gamedirs.h"
 #include "rawfile.h"
 
-namespace {
+#include "doctest/doctest.h"
 
-int Failures = 0;
+namespace {
 
 std::string Root;
 char OriginalDirectory[MAX_PATH];
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-62s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 void Check_List(std::vector<std::string> const & actual, std::vector<std::string> const & expected, char const * what)
 {
@@ -48,7 +37,7 @@ void Check_List(std::vector<std::string> const & actual, std::vector<std::string
 		same = actual[index] == expected[index];
 	}
 
-	Check(same, what);
+	CHECK_MESSAGE(same, what);
 
 	if (!same) {
 		std::printf("    got:");
@@ -126,7 +115,27 @@ void Reset(void)
 }
 
 
-void Test_Parsing(void)
+bool Make_Root(void);
+void Remove_Root(void);
+
+
+// Each case works in a tree of its own, made fresh before it and removed after it.
+struct RootFixture
+{
+	RootFixture(void)
+	{
+		GetCurrentDirectory(sizeof(OriginalDirectory), OriginalDirectory);
+		REQUIRE_MESSAGE(Make_Root(), "the working directory is created");
+	}
+
+	~RootFixture(void)
+	{
+		Remove_Root();
+	}
+};
+
+
+TEST_CASE_FIXTURE(RootFixture, "a folder list keeps its order, drops whitespace and repeats, and passes over the game's own directory")
 {
 	Check_List(Parse_Search_Folders("INI,MIX"), {"INI\\", "MIX\\"}, "a plain list keeps its order");
 	Check_List(Parse_Search_Folders("  INI  ,\tMIX "), {"INI\\", "MIX\\"}, "surrounding whitespace is dropped");
@@ -149,89 +158,84 @@ std::string Default_List(void)
 }
 
 
-void Test_Defaults(void)
+TEST_CASE_FIXTURE(RootFixture, "with nothing configured the default folders are searched")
 {
 	Reset();
 	Init_Search_Folders(Default_List().c_str());
 
-	Check(CDFileClass::Search_Path(0) != NULL && std::string(CDFileClass::Search_Path(0)) == "INI\\",
-		"with no configuration the INI folder is searched");
-	Check(CDFileClass::Search_Path(1) != NULL && std::string(CDFileClass::Search_Path(1)) == "MIX\\",
-		"with no configuration the MIX folder is searched");
-	Check(CDFileClass::Search_Path(2) != NULL && std::string(CDFileClass::Search_Path(2)) == "Maps\\",
-		"with no configuration the Maps folder is searched");
-	Check(CDFileClass::Search_Path(3) == NULL, "nothing else is searched");
+	CHECK_MESSAGE(CDFileClass::Search_Path(0) != nullptr, "with no configuration the INI folder is searched");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(0)) == "INI\\", "with no configuration the INI folder is searched");
+	CHECK_MESSAGE(CDFileClass::Search_Path(1) != nullptr, "with no configuration the MIX folder is searched");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(1)) == "MIX\\", "with no configuration the MIX folder is searched");
+	CHECK_MESSAGE(CDFileClass::Search_Path(2) != nullptr, "with no configuration the Maps folder is searched");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(2)) == "Maps\\", "with no configuration the Maps folder is searched");
+	CHECK_MESSAGE(CDFileClass::Search_Path(3) == nullptr, "nothing else is searched");
 }
 
 
-void Test_Configured_Folders(void)
+TEST_CASE_FIXTURE(RootFixture, "a configured list replaces the default folders")
 {
 	Reset();
 	Init_Search_Folders("Data,More");
 
-	Check(CDFileClass::Search_Path(0) != NULL && std::string(CDFileClass::Search_Path(0)) == "Data\\",
-		"a configured folder is searched");
-	Check(CDFileClass::Search_Path(1) != NULL && std::string(CDFileClass::Search_Path(1)) == "More\\",
-		"configured folders keep the order they are written in");
-	Check(CDFileClass::Search_Path(2) == NULL, "a configured list replaces the default folders");
+	CHECK_MESSAGE(CDFileClass::Search_Path(0) != nullptr, "a configured folder is searched");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(0)) == "Data\\", "a configured folder is searched");
+	CHECK_MESSAGE(CDFileClass::Search_Path(1) != nullptr, "configured folders keep the order they are written in");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(1)) == "More\\", "configured folders keep the order they are written in");
+	CHECK_MESSAGE(CDFileClass::Search_Path(2) == nullptr, "a configured list replaces the default folders");
 
 	// Naming only the game's own directory is how a deployment asks for no other folder.
 	Reset();
 	Init_Search_Folders(".");
 
-	Check(CDFileClass::Search_Path(0) == NULL, "naming only the game's own directory turns the default folders off");
+	CHECK_MESSAGE(CDFileClass::Search_Path(0) == nullptr, "naming only the game's own directory turns the default folders off");
 }
 
 
-void Test_Data_Directory(void)
+TEST_CASE_FIXTURE(RootFixture, "a data directory that exists is accepted")
 {
 	Reset();
 	Set_Data_Directory((Root + "\\Data").c_str());
 
-	Check(Apply_Game_Directories(), "a data directory that exists is accepted");
+	CHECK_MESSAGE(Apply_Game_Directories(), "a data directory that exists is accepted");
 	Init_Search_Folders("Sorted");
 
 	std::string const expected_data = Root + "\\Data\\";
 	std::string const expected_sorted = expected_data + "Sorted\\";
 
-	Check(CDFileClass::Search_Path(0) != NULL && std::string(CDFileClass::Search_Path(0)) == expected_data,
-		"the data directory itself is searched");
-	Check(CDFileClass::Search_Path(1) != NULL && std::string(CDFileClass::Search_Path(1)) == expected_sorted,
-		"a folder it configures is searched inside it");
+	CHECK_MESSAGE(CDFileClass::Search_Path(0) != nullptr, "the data directory itself is searched");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(0)) == expected_data, "the data directory itself is searched");
+	CHECK_MESSAGE(CDFileClass::Search_Path(1) != nullptr, "a folder it configures is searched inside it");
+	CHECK_MESSAGE(std::string(CDFileClass::Search_Path(1)) == expected_sorted, "a folder it configures is searched inside it");
 
 	Reset();
 	Set_Data_Directory((Root + "\\Missing").c_str());
-	Check(!Apply_Game_Directories(), "a data directory that is not there is refused");
+	CHECK_MESSAGE(!Apply_Game_Directories(), "a data directory that is not there is refused");
 }
 
 
-void Test_User_Directory(void)
+TEST_CASE_FIXTURE(RootFixture, "a user directory is created when it is not there yet")
 {
 	Reset();
 	Set_User_Directory((Root + "\\User\\Fresh").c_str());
 
-	Check(Apply_Game_Directories(), "a user directory is created when it is not there yet");
-	Check(GetFileAttributes((Root + "\\User\\Fresh").c_str()) != INVALID_FILE_ATTRIBUTES,
-		"the created user directory is on the disk");
+	CHECK_MESSAGE(Apply_Game_Directories(), "a user directory is created when it is not there yet");
+	CHECK_MESSAGE(GetFileAttributes((Root + "\\User\\Fresh").c_str()) != INVALID_FILE_ATTRIBUTES, "the created user directory is on the disk");
 
 	std::string const expected_user = Root + "\\User\\Fresh\\";
-	Check(CDFileClass::User_Path() != NULL && std::string(CDFileClass::User_Path()) == expected_user,
-		"the file layer is told where the player's own files go");
-	Check(CDFileClass::Search_Path(0) == NULL,
-		"the user directory is not one of the searched folders");
+	CHECK_MESSAGE(CDFileClass::User_Path() != nullptr, "the file layer is told where the player's own files go");
+	CHECK_MESSAGE(std::string(CDFileClass::User_Path()) == expected_user, "the file layer is told where the player's own files go");
+	CHECK_MESSAGE(CDFileClass::Search_Path(0) == nullptr, "the user directory is not one of the searched folders");
 
-	Check(User_File_Write_Name("SUN.INI") == expected_user + "SUN.INI",
-		"a file the game writes goes to the user directory");
+	CHECK_MESSAGE(User_File_Write_Name("SUN.INI") == expected_user + "SUN.INI", "a file the game writes goes to the user directory");
 
 	Reset();
-	Check(CDFileClass::User_Path() == NULL,
-		"with no user directory the file layer has none either");
-	Check(User_File_Write_Name("SUN.INI") == "SUN.INI",
-		"with no user directory a written file keeps its plain name");
+	CHECK_MESSAGE(CDFileClass::User_Path() == nullptr, "with no user directory the file layer has none either");
+	CHECK_MESSAGE(User_File_Write_Name("SUN.INI") == "SUN.INI", "with no user directory a written file keeps its plain name");
 }
 
 
-void Test_Search_Files(void)
+TEST_CASE_FIXTURE(RootFixture, "a file is found in the folders searched, in their order")
 {
 	Reset();
 
@@ -250,16 +254,14 @@ void Test_Search_Files(void)
 	 * another. Both walk the folders in the same order, so the game's own copy wins.
 	 */
 	CDFileClass found("ALPHA.MPR");
-	Check(std::string(found.File_Name()) == "ALPHA.MPR",
-		"opening a name the scan reported lands on the copy the scan saw");
+	CHECK_MESSAGE(std::string(found.File_Name()) == "ALPHA.MPR", "opening a name the scan reported lands on the copy the scan saw");
 
 	CDFileClass sorted("CHARLIE.MPR");
-	Check(std::string(sorted.File_Name()) == "MIX\\CHARLIE.MPR",
-		"a name held only by a searched folder opens from that folder");
+	CHECK_MESSAGE(std::string(sorted.File_Name()) == "MIX\\CHARLIE.MPR", "a name held only by a searched folder opens from that folder");
 }
 
 
-void Test_Writes_Do_Not_Search(void)
+TEST_CASE_FIXTURE(RootFixture, "a read-write open does not settle on a searched folder")
 {
 	Reset();
 	Write_File(Root + "\\MIX\\WRITTEN.DAT", "shipped");
@@ -274,14 +276,13 @@ void Test_Writes_Do_Not_Search(void)
 	std::string const written = file.File_Name();
 	file.Close();
 
-	Check(written == "WRITTEN.DAT", "a read-write open does not settle on a searched folder");
+	CHECK_MESSAGE(written == "WRITTEN.DAT", "a read-write open does not settle on a searched folder");
 
-	Check(GetFileAttributes((Root + "\\WRITTEN.DAT").c_str()) != INVALID_FILE_ATTRIBUTES,
-		"the written file is in the current directory");
+	CHECK_MESSAGE(GetFileAttributes((Root + "\\WRITTEN.DAT").c_str()) != INVALID_FILE_ATTRIBUTES, "the written file is in the current directory");
 
 	WIN32_FILE_ATTRIBUTE_DATA shipped;
 	GetFileAttributesEx((Root + "\\MIX\\WRITTEN.DAT").c_str(), GetFileExInfoStandard, &shipped);
-	Check(shipped.nFileSizeLow == 7, "the copy in the searched folder is untouched");
+	CHECK_MESSAGE(shipped.nFileSizeLow == 7, "the copy in the searched folder is untouched");
 }
 
 
@@ -290,7 +291,7 @@ void Test_Writes_Do_Not_Search(void)
  * search build a pathname out of two full paths. That pair does not have to fit in one, and
  * once it does not the search has to pass it over rather than build it anyway.
  */
-void Test_Long_Names(void)
+TEST_CASE_FIXTURE(RootFixture, "a scan passes over a folder it cannot build a name in")
 {
 	Reset();
 
@@ -306,12 +307,10 @@ void Test_Long_Names(void)
 	Write_File(absolute, "");
 
 	CDFileClass file(absolute.c_str());
-	Check(std::string(file.File_Name()) == absolute,
-		"a file named with its own directory is found while long folders are searched");
+	CHECK_MESSAGE(std::string(file.File_Name()) == absolute, "a file named with its own directory is found while long folders are searched");
 
 	CDFileClass missing((Root + "\\NOTHERE.MPR").c_str());
-	Check(std::string(missing.File_Name()) == Root + "\\NOTHERE.MPR",
-		"a name that no folder holds comes back as it was given");
+	CHECK_MESSAGE(std::string(missing.File_Name()) == Root + "\\NOTHERE.MPR", "a name that no folder holds comes back as it was given");
 
 	Check_List(Search_Files("*.MPR"), {"ALPHA.MPR"}, "a scan passes over a folder it cannot build a name in");
 }
@@ -321,7 +320,7 @@ void Test_Long_Names(void)
  * The file layer places what the game writes and finds what it reads. These are the rules a
  * caller never states, so they are checked here rather than at any one of them.
  */
-void Test_The_File_Layer_Places_Written_Files(void)
+TEST_CASE_FIXTURE(RootFixture, "the file layer places written files")
 {
 	Reset();
 	Set_User_Directory((Root + "\\User\\Own").c_str());
@@ -335,9 +334,9 @@ void Test_The_File_Layer_Places_Written_Files(void)
 	written.Write("mine", 4);
 	written.Close();
 
-	Check(std::string(written.File_Name()) == own + "OWN.DAT", "a written file is named in the user directory");
-	Check(File_Exists(own + "OWN.DAT"), "a written file is in the user directory");
-	Check(!File_Exists(Root + "\\OWN.DAT"), "a written file is not beside the game");
+	CHECK_MESSAGE(std::string(written.File_Name()) == own + "OWN.DAT", "a written file is named in the user directory");
+	CHECK_MESSAGE(File_Exists(own + "OWN.DAT"), "a written file is in the user directory");
+	CHECK_MESSAGE(!File_Exists(Root + "\\OWN.DAT"), "a written file is not beside the game");
 
 	/*
 	 * A second object, made once both copies exist, so that what answers is the search and
@@ -347,22 +346,22 @@ void Test_The_File_Layer_Places_Written_Files(void)
 	Write_File(own + "SHARED.DAT", "own");
 
 	CDFileClass shared("SHARED.DAT");
-	Check(Read_File(shared.File_Name()) == "own", "a read prefers the player's own copy");
+	CHECK_MESSAGE(Read_File(shared.File_Name()) == "own", "a read prefers the player's own copy");
 
 	// A created file is read back from where it was created, which is what a game storing
 	// its progress does every time it starts.
 	CDFileClass progress("PROGRESS.INI");
-	Check(!progress.Is_Available(), "a file the player has never had is not there yet");
+	CHECK_MESSAGE(!progress.Is_Available(), "a file the player has never had is not there yet");
 	progress.Create();
 	progress.Close();
 
 	CDFileClass reopened("PROGRESS.INI");
-	Check(reopened.Is_Available(), "a created file is found again");
-	Check(std::string(reopened.File_Name()) == own + "PROGRESS.INI", "a created file is found in the user directory");
+	CHECK_MESSAGE(reopened.Is_Available(), "a created file is found again");
+	CHECK_MESSAGE(std::string(reopened.File_Name()) == own + "PROGRESS.INI", "a created file is found in the user directory");
 }
 
 
-void Test_The_File_Layer_Deletes_Only_The_Player_Copy(void)
+TEST_CASE_FIXTURE(RootFixture, "the file layer deletes only the player copy")
 {
 	Reset();
 	Set_User_Directory((Root + "\\User\\Own").c_str());
@@ -377,11 +376,11 @@ void Test_The_File_Layer_Deletes_Only_The_Player_Copy(void)
 	CDFileClass discard("GONE.DAT");
 	discard.Delete();
 
-	Check(!File_Exists(own + "GONE.DAT"), "the player's own copy is thrown away");
-	Check(File_Exists(Root + "\\MIX\\GONE.DAT"), "the copy a deployment ships is left alone");
+	CHECK_MESSAGE(!File_Exists(own + "GONE.DAT"), "the player's own copy is thrown away");
+	CHECK_MESSAGE(File_Exists(Root + "\\MIX\\GONE.DAT"), "the copy a deployment ships is left alone");
 
 	CDFileClass again("GONE.DAT");
-	Check(Read_File(again.File_Name()) == "shipped", "what a deployment ships answers once the player's copy is gone");
+	CHECK_MESSAGE(Read_File(again.File_Name()) == "shipped", "what a deployment ships answers once the player's copy is gone");
 }
 
 
@@ -390,7 +389,7 @@ void Test_The_File_Layer_Deletes_Only_The_Player_Copy(void)
  * over the top. Throwing the player's away has to leave the deployment's alone, or the reset
  * takes with it the very defaults it is meant to fall back on.
  */
-void Test_Resetting_Keeps_The_Shipped_Default(void)
+TEST_CASE_FIXTURE(RootFixture, "resetting keeps the shipped default")
 {
 	Reset();
 	Set_User_Directory((Root + "\\User\\Own").c_str());
@@ -401,30 +400,28 @@ void Test_Resetting_Keeps_The_Shipped_Default(void)
 
 	// A player who has never saved their own asks for the defaults back.
 	CDFileClass untouched("KEYBOARD.INI");
-	Check(std::string(untouched.File_Name()) == "INI\\KEYBOARD.INI",
-		"a player with none of their own reads the shipped default");
+	CHECK_MESSAGE(std::string(untouched.File_Name()) == "INI\\KEYBOARD.INI", "a player with none of their own reads the shipped default");
 	untouched.Delete();
-	Check(File_Exists(Root + "\\INI\\KEYBOARD.INI"),
-		"a reset with nothing of the player's own leaves the shipped default");
+	CHECK_MESSAGE(File_Exists(Root + "\\INI\\KEYBOARD.INI"), "a reset with nothing of the player's own leaves the shipped default");
 
 	// And now one who has.
 	Write_File(Root + "\\User\\Own\\KEYBOARD.INI", "mine");
 
 	CDFileClass owned("KEYBOARD.INI");
-	Check(Read_File(owned.File_Name()) == "mine", "the player's own hotkeys are the ones read");
+	CHECK_MESSAGE(Read_File(owned.File_Name()) == "mine", "the player's own hotkeys are the ones read");
 	owned.Delete();
 
-	Check(!File_Exists(Root + "\\User\\Own\\KEYBOARD.INI"), "a reset throws the player's own away");
-	Check(File_Exists(Root + "\\INI\\KEYBOARD.INI"), "a reset leaves the shipped default");
+	CHECK_MESSAGE(!File_Exists(Root + "\\User\\Own\\KEYBOARD.INI"), "a reset throws the player's own away");
+	CHECK_MESSAGE(File_Exists(Root + "\\INI\\KEYBOARD.INI"), "a reset leaves the shipped default");
 
 	CDFileClass fallback("KEYBOARD.INI");
-	Check(Read_File(fallback.File_Name()) == "shipped", "the shipped default answers again after a reset");
+	CHECK_MESSAGE(Read_File(fallback.File_Name()) == "shipped", "the shipped default answers again after a reset");
 
 	DeleteFile((Root + "\\INI\\KEYBOARD.INI").c_str());
 }
 
 
-void Test_A_Name_With_A_Directory_Is_Left_Alone(void)
+TEST_CASE_FIXTURE(RootFixture, "a name with a directory is left alone")
 {
 	Reset();
 	Set_User_Directory((Root + "\\User\\Own").c_str());
@@ -435,13 +432,13 @@ void Test_A_Name_With_A_Directory_Is_Left_Alone(void)
 	rooted.Write("here", 4);
 	rooted.Close();
 
-	Check(std::string(rooted.File_Name()) == "MIX\\ROOTED.DAT", "a name with a directory keeps it");
-	Check(File_Exists(Root + "\\MIX\\ROOTED.DAT"), "a name with a directory is written where it says");
-	Check(!File_Exists(Root + "\\User\\Own\\ROOTED.DAT"), "a name with a directory is not moved");
+	CHECK_MESSAGE(std::string(rooted.File_Name()) == "MIX\\ROOTED.DAT", "a name with a directory keeps it");
+	CHECK_MESSAGE(File_Exists(Root + "\\MIX\\ROOTED.DAT"), "a name with a directory is written where it says");
+	CHECK_MESSAGE(!File_Exists(Root + "\\User\\Own\\ROOTED.DAT"), "a name with a directory is not moved");
 }
 
 
-void Test_Placing_A_File_Is_Repeatable(void)
+TEST_CASE_FIXTURE(RootFixture, "placing a file is repeatable")
 {
 	Reset();
 	Set_User_Directory((Root + "\\User\\Own").c_str());
@@ -455,7 +452,7 @@ void Test_Placing_A_File_Is_Repeatable(void)
 	file.Open(FileClass::WRITE);
 	file.Close();
 
-	Check(std::string(file.File_Name()) == once, "opening a file for writing twice names it the same place");
+	CHECK_MESSAGE(std::string(file.File_Name()) == once, "opening a file for writing twice names it the same place");
 
 	// The buffered path opens the file a second time itself, with read access added.
 	CDFileClass buffered("BUFFERED.DAT");
@@ -464,11 +461,11 @@ void Test_Placing_A_File_Is_Repeatable(void)
 	buffered.Write("cached", 6);
 	buffered.Close();
 
-	Check(File_Exists(Root + "\\User\\Own\\BUFFERED.DAT"), "a buffered write lands in the user directory");
+	CHECK_MESSAGE(File_Exists(Root + "\\User\\Own\\BUFFERED.DAT"), "a buffered write lands in the user directory");
 }
 
 
-void Test_Without_A_User_Directory_Nothing_Moves(void)
+TEST_CASE_FIXTURE(RootFixture, "without a user directory nothing moves")
 {
 	Reset();
 	Init_Search_Folders(Default_List().c_str());
@@ -480,18 +477,18 @@ void Test_Without_A_User_Directory_Nothing_Moves(void)
 	written.Write("here", 4);
 	written.Close();
 
-	Check(std::string(written.File_Name()) == "STILL.DAT", "a written file keeps its plain name");
-	Check(File_Exists(Root + "\\STILL.DAT"), "a written file lands beside the game");
-	Check(Read_File(Root + "\\MIX\\STILL.DAT") == "shipped", "a searched folder's copy is untouched");
+	CHECK_MESSAGE(std::string(written.File_Name()) == "STILL.DAT", "a written file keeps its plain name");
+	CHECK_MESSAGE(File_Exists(Root + "\\STILL.DAT"), "a written file lands beside the game");
+	CHECK_MESSAGE(Read_File(Root + "\\MIX\\STILL.DAT") == "shipped", "a searched folder's copy is untouched");
 
 	CDFileClass discard("STILL.DAT");
 	discard.Delete();
 
-	Check(!File_Exists(Root + "\\STILL.DAT"), "a delete takes the copy beside the game");
-	Check(File_Exists(Root + "\\MIX\\STILL.DAT"), "a delete leaves the searched folder's copy");
+	CHECK_MESSAGE(!File_Exists(Root + "\\STILL.DAT"), "a delete takes the copy beside the game");
+	CHECK_MESSAGE(File_Exists(Root + "\\MIX\\STILL.DAT"), "a delete leaves the searched folder's copy");
 
 	CDFileClass shipped("STILL.DAT");
-	Check(std::string(shipped.File_Name()) == "MIX\\STILL.DAT", "a read still falls through to the searched folders");
+	CHECK_MESSAGE(std::string(shipped.File_Name()) == "MIX\\STILL.DAT", "a read still falls through to the searched folders");
 }
 
 
@@ -499,15 +496,13 @@ void Test_Without_A_User_Directory_Nothing_Moves(void)
  * Saved games are the one thing the game both writes and browses, so they keep to a folder of
  * their own that is named outright rather than searched for.
  */
-void Test_Saved_Games_Folder(void)
+TEST_CASE_FIXTURE(RootFixture, "saved games go to their own folder in the user directory")
 {
 	Reset();
 	Init_Search_Folders(Default_List().c_str());
 
-	Check(Saved_Game_Name("SAVE0001.SAV") == "Saved Games\\SAVE0001.SAV",
-		"a saved game is named inside the folder saved games are kept in");
-	Check(File_Exists(Root + "\\Saved Games"),
-		"asking for a saved game makes the folder to keep it in");
+	CHECK_MESSAGE(Saved_Game_Name("SAVE0001.SAV") == "Saved Games\\SAVE0001.SAV", "a saved game is named inside the folder saved games are kept in");
+	CHECK_MESSAGE(File_Exists(Root + "\\Saved Games"), "asking for a saved game makes the folder to keep it in");
 
 	for (int index = 0; ; index++) {
 		char const * path = CDFileClass::Search_Path(index);
@@ -515,8 +510,7 @@ void Test_Saved_Games_Folder(void)
 			break;
 		}
 
-		Check(std::string(path).find("Saved Games") == std::string::npos,
-			"the folder saved games are kept in is not one of the searched folders");
+		CHECK_MESSAGE(std::string(path).find("Saved Games") == std::string::npos, "the folder saved games are kept in is not one of the searched folders");
 	}
 
 	Reset();
@@ -524,17 +518,14 @@ void Test_Saved_Games_Folder(void)
 	Apply_Game_Directories();
 
 	std::string const expected = Root + "\\User\\Saves\\Saved Games";
-	Check(Saved_Game_Name("SAVE0002.SAV") == expected + "\\SAVE0002.SAV",
-		"a user directory takes the saved games with it");
-	Check(File_Exists(expected),
-		"the folder is made inside the user directory");
+	CHECK_MESSAGE(Saved_Game_Name("SAVE0002.SAV") == expected + "\\SAVE0002.SAV", "a user directory takes the saved games with it");
+	CHECK_MESSAGE(File_Exists(expected), "the folder is made inside the user directory");
 
 	/*
 	 * A pattern is named the same way a file is, since the listing scans the one folder rather
 	 * than every folder the game reads from.
 	 */
-	Check(Saved_Game_Name("*.SAV") == expected + "\\*.SAV",
-		"a pattern is named in the same folder the saved games are");
+	CHECK_MESSAGE(Saved_Game_Name("*.SAV") == expected + "\\*.SAV", "a pattern is named in the same folder the saved games are");
 }
 
 
@@ -542,15 +533,13 @@ void Test_Saved_Games_Folder(void)
  * Screen captures keep to a folder of their own on the same terms, except that the folder is
  * made on every request rather than once, so removing it mid-session costs nothing.
  */
-void Test_Screenshots_Folder(void)
+TEST_CASE_FIXTURE(RootFixture, "screenshots go to their own folder in the user directory")
 {
 	Reset();
 	Init_Search_Folders(Default_List().c_str());
 
-	Check(Screenshot_Name("SCRN0000.pcx") == "Screenshots\\SCRN0000.pcx",
-		"a capture is named inside the folder screen captures are kept in");
-	Check(File_Exists(Root + "\\Screenshots"),
-		"asking for a capture makes the folder to keep it in");
+	CHECK_MESSAGE(Screenshot_Name("SCRN0000.pcx") == "Screenshots\\SCRN0000.pcx", "a capture is named inside the folder screen captures are kept in");
+	CHECK_MESSAGE(File_Exists(Root + "\\Screenshots"), "asking for a capture makes the folder to keep it in");
 
 	for (int index = 0; ; index++) {
 		char const * path = CDFileClass::Search_Path(index);
@@ -558,8 +547,7 @@ void Test_Screenshots_Folder(void)
 			break;
 		}
 
-		Check(std::string(path).find("Screenshots") == std::string::npos,
-			"the folder screen captures are kept in is not one of the searched folders");
+		CHECK_MESSAGE(std::string(path).find("Screenshots") == std::string::npos, "the folder screen captures are kept in is not one of the searched folders");
 	}
 
 	Reset();
@@ -567,16 +555,13 @@ void Test_Screenshots_Folder(void)
 	Apply_Game_Directories();
 
 	std::string const expected = Root + "\\User\\Shots\\Screenshots";
-	Check(Screenshot_Name("SCRN0001.png") == expected + "\\SCRN0001.png",
-		"a user directory takes the captures with it");
-	Check(File_Exists(expected),
-		"the folder is made inside the user directory");
+	CHECK_MESSAGE(Screenshot_Name("SCRN0001.png") == expected + "\\SCRN0001.png", "a user directory takes the captures with it");
+	CHECK_MESSAGE(File_Exists(expected), "the folder is made inside the user directory");
 
 	Remove_Directory(expected);
-	Check(!File_Exists(expected), "the folder can be taken away while the game runs");
-	Check(Screenshot_Name("SCRN0002.png") == expected + "\\SCRN0002.png",
-		"and naming the next capture still answers");
-	Check(File_Exists(expected), "which makes the folder again");
+	CHECK_MESSAGE(!File_Exists(expected), "the folder can be taken away while the game runs");
+	CHECK_MESSAGE(Screenshot_Name("SCRN0002.png") == expected + "\\SCRN0002.png", "and naming the next capture still answers");
+	CHECK_MESSAGE(File_Exists(expected), "which makes the folder again");
 }
 
 
@@ -611,40 +596,4 @@ void Remove_Root(void)
 	system(command);
 }
 
-}
-
-
-int main(void)
-{
-	GetCurrentDirectory(sizeof(OriginalDirectory), OriginalDirectory);
-
-	if (!Make_Root()) {
-		std::printf("could not create the working directory\n");
-		return(1);
-	}
-
-	std::printf("Working in %s\n\n", Root.c_str());
-
-	Test_Parsing();
-	Test_Defaults();
-	Test_Configured_Folders();
-	Test_Data_Directory();
-	Test_User_Directory();
-	Test_Search_Files();
-	Test_Writes_Do_Not_Search();
-	Test_Long_Names();
-	Test_The_File_Layer_Places_Written_Files();
-	Test_The_File_Layer_Deletes_Only_The_Player_Copy();
-	Test_Resetting_Keeps_The_Shipped_Default();
-	Test_A_Name_With_A_Directory_Is_Left_Alone();
-	Test_Placing_A_File_Is_Repeatable();
-	Test_Without_A_User_Directory_Nothing_Moves();
-	Test_Saved_Games_Folder();
-	Test_Screenshots_Folder();
-
-	Reset();
-	Remove_Root();
-
-	std::printf("\n%s\n", Failures == 0 ? "All checks passed." : "There were failures.");
-	return(Failures == 0 ? 0 : 1);
 }

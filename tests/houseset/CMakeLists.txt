@@ -5,4 +5,5 @@ opents_add_test(HouseSet
     NAME houseset
     SOURCES housesettest.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
+    DOCTEST
 )

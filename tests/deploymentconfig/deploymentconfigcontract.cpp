@@ -21,25 +21,14 @@
 #include "deploymentconfig.h"
 #include "rawfile.h"
 
-namespace {
+#include "doctest/doctest.h"
 
-int Failures = 0;
+namespace {
 
 std::string Root;
 char OriginalDirectory[MAX_PATH];
 
 char const * const DefaultList = "INI,MIX,Maps";
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-62s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 // The file object keeps the name pointer it is handed rather than copying it, so the string
 // it points into has to outlive it.
@@ -100,26 +89,46 @@ void Remove_Root(void)
 }
 
 
-void Test_Defaults(void)
+bool Make_Root(void);
+void Remove_Root(void);
+
+
+// Each case works in a tree of its own, made fresh before it and removed after it.
+struct RootFixture
+{
+	RootFixture(void)
+	{
+		GetCurrentDirectory(sizeof(OriginalDirectory), OriginalDirectory);
+		REQUIRE_MESSAGE(Make_Root(), "the working directory is created");
+	}
+
+	~RootFixture(void)
+	{
+		Remove_Root();
+	}
+};
+
+
+TEST_CASE_FIXTURE(RootFixture, "with no file the INI, MIX and Maps folders are searched and there is nothing to read")
 {
 	DeploymentConfigClass config;
 
-	Check(config.SearchPaths == DefaultList, "with no file the INI, MIX and Maps folders are searched");
-	Check(DeploymentConfig.SearchPaths == DefaultList, "the game's own copy starts from the same defaults");
+	CHECK_MESSAGE(config.SearchPaths == DefaultList, "with no file the INI, MIX and Maps folders are searched");
+	CHECK_MESSAGE(DeploymentConfig.SearchPaths == DefaultList, "the game's own copy starts from the same defaults");
 
-	Check(!config.Read_File(""), "with no file there is nothing to read");
-	Check(config.SearchPaths == DefaultList, "and the default stands");
+	CHECK_MESSAGE(!config.Read_File(""), "with no file there is nothing to read");
+	CHECK_MESSAGE(config.SearchPaths == DefaultList, "and the default stands");
 }
 
 
-void Test_Search_Paths(void)
+TEST_CASE_FIXTURE(RootFixture, "a file beside the game is read, and the folders it names replace the default")
 {
 	DeploymentConfigClass config;
 
 	Write_File(Root + "\\OPENTS.INI", "[Paths]\nSearchPaths=Data,More\n");
 
-	Check(config.Read_File(""), "a file beside the game is read");
-	Check(config.SearchPaths == "Data,More", "the folders it names replace the default");
+	CHECK_MESSAGE(config.Read_File(""), "a file beside the game is read");
+	CHECK_MESSAGE(config.SearchPaths == "Data,More", "the folders it names replace the default");
 
 	/*
 	 * The reader passes over an entry with nothing after the equals sign, so a written key
@@ -128,28 +137,28 @@ void Test_Search_Paths(void)
 	 */
 	Write_File(Root + "\\OPENTS.INI", "[Paths]\nSearchPaths=\n");
 
-	Check(config.Read_File(""), "a file with an empty list is still read");
-	Check(config.SearchPaths == DefaultList, "and the empty list leaves the default in force");
+	CHECK_MESSAGE(config.Read_File(""), "a file with an empty list is still read");
+	CHECK_MESSAGE(config.SearchPaths == DefaultList, "and the empty list leaves the default in force");
 
 	Remove_File(Root + "\\OPENTS.INI");
 }
 
 
-void Test_Where_The_File_Is_Looked_For(void)
+TEST_CASE_FIXTURE(RootFixture, "the file is looked for beside the game, then in INI, then in MIX")
 {
 	DeploymentConfigClass config;
 
 	Write_File(Root + "\\MIX\\OPENTS.INI", "[Paths]\nSearchPaths=FromMix\n");
 	config.Read_File("");
-	Check(config.SearchPaths == "FromMix", "a file in the MIX folder is found");
+	CHECK_MESSAGE(config.SearchPaths == "FromMix", "a file in the MIX folder is found");
 
 	Write_File(Root + "\\INI\\OPENTS.INI", "[Paths]\nSearchPaths=FromIni\n");
 	config.Read_File("");
-	Check(config.SearchPaths == "FromIni", "a file in the INI folder is read ahead of one in MIX");
+	CHECK_MESSAGE(config.SearchPaths == "FromIni", "a file in the INI folder is read ahead of one in MIX");
 
 	Write_File(Root + "\\OPENTS.INI", "[Paths]\nSearchPaths=Beside\n");
 	config.Read_File("");
-	Check(config.SearchPaths == "Beside", "a file beside the game is read ahead of both");
+	CHECK_MESSAGE(config.SearchPaths == "Beside", "a file beside the game is read ahead of both");
 
 	Remove_File(Root + "\\OPENTS.INI");
 	Remove_File(Root + "\\INI\\OPENTS.INI");
@@ -157,23 +166,23 @@ void Test_Where_The_File_Is_Looked_For(void)
 }
 
 
-void Test_The_Directory_Named(void)
+TEST_CASE_FIXTURE(RootFixture, "the file is read from the directory named, and what it names is taken from there")
 {
 	DeploymentConfigClass config;
 	std::string const data = Root + "\\Data\\";
 
 	Write_File(data + "OPENTS.INI", "[Paths]\nSearchPaths=Sorted\n");
 
-	Check(config.Read_File(data.c_str()), "the file is read from the directory named");
-	Check(config.SearchPaths == "Sorted", "and what it names is taken from there");
+	CHECK_MESSAGE(config.Read_File(data.c_str()), "the file is read from the directory named");
+	CHECK_MESSAGE(config.SearchPaths == "Sorted", "and what it names is taken from there");
 
 	Remove_File(data + "OPENTS.INI");
 
-	Check(!config.Read_File(data.c_str()), "a file beside the game is not read for a directory named");
+	CHECK_MESSAGE(!config.Read_File(data.c_str()), "a file beside the game is not read for a directory named");
 }
 
 
-void Test_A_Read_Starts_Over(void)
+TEST_CASE_FIXTURE(RootFixture, "a read starts over, so with the file gone every setting returns to its default")
 {
 	DeploymentConfigClass config;
 
@@ -181,48 +190,48 @@ void Test_A_Read_Starts_Over(void)
 	config.Read_File("");
 	Remove_File(Root + "\\OPENTS.INI");
 
-	Check(!config.Read_File(""), "with the file gone there is nothing to read");
-	Check(config.SearchPaths == DefaultList, "and every setting returns to its default");
+	CHECK_MESSAGE(!config.Read_File(""), "with the file gone there is nothing to read");
+	CHECK_MESSAGE(config.SearchPaths == DefaultList, "and every setting returns to its default");
 }
 
 
-void Test_Carry_Scenario_File(void)
+TEST_CASE_FIXTURE(RootFixture, "a save carries the scenario file only when the file asks for it")
 {
 	DeploymentConfigClass config;
 
-	Check(!config.CarryScenarioFile, "with no file a save carries no scenario file");
+	CHECK_MESSAGE(!config.CarryScenarioFile, "with no file a save carries no scenario file");
 
 	Write_File(Root + "\\OPENTS.INI", "[Paths]\nSearchPaths=Data\n");
 	config.Read_File("");
-	Check(!config.CarryScenarioFile, "a file that does not ask for it leaves it off");
+	CHECK_MESSAGE(!config.CarryScenarioFile, "a file that does not ask for it leaves it off");
 
 	Write_File(Root + "\\OPENTS.INI", "[Saves]\nCarryScenarioFile=yes\n");
 	config.Read_File("");
-	Check(config.CarryScenarioFile, "a file asking for it turns it on");
+	CHECK_MESSAGE(config.CarryScenarioFile, "a file asking for it turns it on");
 
 	Write_File(Root + "\\OPENTS.INI", "[Saves]\nCarryScenarioFile=no\n");
 	config.Read_File("");
-	Check(!config.CarryScenarioFile, "a file refusing it turns it off again");
+	CHECK_MESSAGE(!config.CarryScenarioFile, "a file refusing it turns it off again");
 
 	Write_File(Root + "\\OPENTS.INI", "[Saves]\nCarryScenarioFile=yes\n");
 	config.Read_File("");
 	Remove_File(Root + "\\OPENTS.INI");
 	config.Read_File("");
-	Check(!config.CarryScenarioFile, "with the file gone it is off");
+	CHECK_MESSAGE(!config.CarryScenarioFile, "with the file gone it is off");
 }
 
 
-void Test_File_Names(void)
+TEST_CASE_FIXTURE(RootFixture, "with no file the rules, multiplayer rules and settings come from their shipped files")
 {
 	DeploymentConfigClass config;
 
-	Check(config.RulesFile == "RULES.INI", "with no file the rules come from RULES.INI");
-	Check(config.MultiplayerRulesFile == "MPLAYER.INI", "and the multiplayer rules from MPLAYER.INI");
-	Check(config.SettingsFile == "SUN.INI", "and a player's settings from SUN.INI");
+	CHECK_MESSAGE(config.RulesFile == "RULES.INI", "with no file the rules come from RULES.INI");
+	CHECK_MESSAGE(config.MultiplayerRulesFile == "MPLAYER.INI", "and the multiplayer rules from MPLAYER.INI");
+	CHECK_MESSAGE(config.SettingsFile == "SUN.INI", "and a player's settings from SUN.INI");
 
 	Write_File(Root + "\\OPENTS.INI", "[Paths]\nSearchPaths=Data\n");
 	config.Read_File("");
-	Check(config.ArtFile == "ART.INI", "a file that names none of them leaves the defaults");
+	CHECK_MESSAGE(config.ArtFile == "ART.INI", "a file that names none of them leaves the defaults");
 
 	Write_File(Root + "\\OPENTS.INI",
 			"[Files]\nRules=dtarules.ini\nArt=dtaart.ini\nAI=dtaai.ini\nSound=dtasound.ini\n"
@@ -230,102 +239,74 @@ void Test_File_Names(void)
 			"MultiplayerRules=dtamplayer.ini\n"
 			"Tutorial=dtatutorial.ini\nUI=dtaui.ini\nSettings=Settings.ini\n");
 	config.Read_File("");
-	Check(config.RulesFile == "dtarules.ini", "a name it writes for the rules is taken");
-	Check(config.ArtFile == "dtaart.ini", "and for the artwork");
-	Check(config.AIFile == "dtaai.ini", "and for the AI");
-	Check(config.SoundFile == "dtasound.ini", "and for the sounds");
-	Check(config.ThemeFile == "dtatheme.ini", "and for the music");
-	Check(config.BattleFile == "dtabattle.ini", "and for the campaigns");
-	Check(config.LanguageRulesFile == "dtalang.ini", "and for the translated rules");
-	Check(config.MultiplayerRulesFile == "dtamplayer.ini", "and for the multiplayer rules");
-	Check(config.TutorialFile == "dtatutorial.ini", "and for the tutorial text");
-	Check(config.UIFile == "dtaui.ini", "and for the interface");
-	Check(config.SettingsFile == "Settings.ini", "and for a player's settings");
-	Check(config.ArtExpansionFile == "ARTFS.INI", "an expansion file it leaves alone keeps its name");
+	CHECK_MESSAGE(config.RulesFile == "dtarules.ini", "a name it writes for the rules is taken");
+	CHECK_MESSAGE(config.ArtFile == "dtaart.ini", "and for the artwork");
+	CHECK_MESSAGE(config.AIFile == "dtaai.ini", "and for the AI");
+	CHECK_MESSAGE(config.SoundFile == "dtasound.ini", "and for the sounds");
+	CHECK_MESSAGE(config.ThemeFile == "dtatheme.ini", "and for the music");
+	CHECK_MESSAGE(config.BattleFile == "dtabattle.ini", "and for the campaigns");
+	CHECK_MESSAGE(config.LanguageRulesFile == "dtalang.ini", "and for the translated rules");
+	CHECK_MESSAGE(config.MultiplayerRulesFile == "dtamplayer.ini", "and for the multiplayer rules");
+	CHECK_MESSAGE(config.TutorialFile == "dtatutorial.ini", "and for the tutorial text");
+	CHECK_MESSAGE(config.UIFile == "dtaui.ini", "and for the interface");
+	CHECK_MESSAGE(config.SettingsFile == "Settings.ini", "and for a player's settings");
+	CHECK_MESSAGE(config.ArtExpansionFile == "ARTFS.INI", "an expansion file it leaves alone keeps its name");
 
 	Remove_File(Root + "\\OPENTS.INI");
 	config.Read_File("");
-	Check(config.RulesFile == "RULES.INI", "with the file gone the names return to the defaults");
-	Check(config.SettingsFile == "SUN.INI", "every one of them");
+	CHECK_MESSAGE(config.RulesFile == "RULES.INI", "with the file gone the names return to the defaults");
+	CHECK_MESSAGE(config.SettingsFile == "SUN.INI", "every one of them");
 }
 
 
-void Test_Expansion_File_Names(void)
+TEST_CASE_FIXTURE(RootFixture, "the expansion rules have their shipped names, and a name the file writes is taken")
 {
 	DeploymentConfigClass config;
 
-	Check(config.RulesExpansionFile == "FIRESTRM.INI", "with no file the expansion rules are FIRESTRM.INI");
-	Check(config.MultiplayerRulesExpansionFile == "MPLAYERFS.INI", "and the expansion multiplayer rules are MPLAYERFS.INI");
+	CHECK_MESSAGE(config.RulesExpansionFile == "FIRESTRM.INI", "with no file the expansion rules are FIRESTRM.INI");
+	CHECK_MESSAGE(config.MultiplayerRulesExpansionFile == "MPLAYERFS.INI", "and the expansion multiplayer rules are MPLAYERFS.INI");
 
 	Write_File(Root + "\\OPENTS.INI",
 			"[Files]\nRulesExpansion=fsrules.ini\nArtExpansion=fsart.ini\nAIExpansion=fsai.ini\n"
 			"SoundExpansion=fssound.ini\nThemeExpansion=fstheme.ini\nBattleExpansion=fsbattle.ini\n"
 			"LanguageRulesExpansion=fslang.ini\nMultiplayerRulesExpansion=fsmplayer.ini\n");
 	config.Read_File("");
-	Check(config.RulesExpansionFile == "fsrules.ini", "a name it writes for the expansion rules is taken");
-	Check(config.ArtExpansionFile == "fsart.ini", "and for the expansion artwork");
-	Check(config.AIExpansionFile == "fsai.ini", "and for the expansion AI");
-	Check(config.SoundExpansionFile == "fssound.ini", "and for the expansion sounds");
-	Check(config.ThemeExpansionFile == "fstheme.ini", "and for the expansion music");
-	Check(config.BattleExpansionFile == "fsbattle.ini", "and for the expansion campaigns");
-	Check(config.LanguageRulesExpansionFile == "fslang.ini", "and for the translated expansion rules");
-	Check(config.MultiplayerRulesExpansionFile == "fsmplayer.ini", "and for the expansion multiplayer rules");
-	Check(config.RulesFile == "RULES.INI", "while the base files stand where it names none of them");
+	CHECK_MESSAGE(config.RulesExpansionFile == "fsrules.ini", "a name it writes for the expansion rules is taken");
+	CHECK_MESSAGE(config.ArtExpansionFile == "fsart.ini", "and for the expansion artwork");
+	CHECK_MESSAGE(config.AIExpansionFile == "fsai.ini", "and for the expansion AI");
+	CHECK_MESSAGE(config.SoundExpansionFile == "fssound.ini", "and for the expansion sounds");
+	CHECK_MESSAGE(config.ThemeExpansionFile == "fstheme.ini", "and for the expansion music");
+	CHECK_MESSAGE(config.BattleExpansionFile == "fsbattle.ini", "and for the expansion campaigns");
+	CHECK_MESSAGE(config.LanguageRulesExpansionFile == "fslang.ini", "and for the translated expansion rules");
+	CHECK_MESSAGE(config.MultiplayerRulesExpansionFile == "fsmplayer.ini", "and for the expansion multiplayer rules");
+	CHECK_MESSAGE(config.RulesFile == "RULES.INI", "while the base files stand where it names none of them");
 
 	Remove_File(Root + "\\OPENTS.INI");
 	config.Read_File("");
-	Check(config.RulesExpansionFile == "FIRESTRM.INI", "with the file gone they return to the defaults");
+	CHECK_MESSAGE(config.RulesExpansionFile == "FIRESTRM.INI", "with the file gone they return to the defaults");
 }
 
 
-void Test_Palette_Names(void)
+TEST_CASE_FIXTURE(RootFixture, "the scheme and starting palettes have their shipped names, and names the file writes are taken")
 {
 	DeploymentConfigClass config;
 
-	Check(config.SchemePaletteFile == "UNITSNO.PAL", "with no file the scheme palette is UNITSNO.PAL");
-	Check(config.GamePaletteFile == "TEMPERAT.PAL", "and the starting palette TEMPERAT.PAL");
+	CHECK_MESSAGE(config.SchemePaletteFile == "UNITSNO.PAL", "with no file the scheme palette is UNITSNO.PAL");
+	CHECK_MESSAGE(config.GamePaletteFile == "TEMPERAT.PAL", "and the starting palette TEMPERAT.PAL");
 
 	Write_File(Root + "\\OPENTS.INI", "[Palettes]\nScheme=UNITTEM.PAL\nGame=DESERT.PAL\n");
 	config.Read_File("");
-	Check(config.SchemePaletteFile == "UNITTEM.PAL", "the names it writes are taken");
-	Check(config.GamePaletteFile == "DESERT.PAL", "both of them");
+	CHECK_MESSAGE(config.SchemePaletteFile == "UNITTEM.PAL", "the names it writes are taken");
+	CHECK_MESSAGE(config.GamePaletteFile == "DESERT.PAL", "both of them");
 
 	Write_File(Root + "\\OPENTS.INI", "[Palettes]\nScheme=UNITTEM.PAL\n");
 	config.Read_File("");
-	Check(config.GamePaletteFile == "TEMPERAT.PAL", "and one named alone leaves the other at its default");
+	CHECK_MESSAGE(config.GamePaletteFile == "TEMPERAT.PAL", "and one named alone leaves the other at its default");
 
 	Remove_File(Root + "\\OPENTS.INI");
 	config.Read_File("");
-	Check(config.SchemePaletteFile == "UNITSNO.PAL", "with the file gone both return to the defaults");
-	Check(config.GamePaletteFile == "TEMPERAT.PAL", "as they stand in Tiberian Sun");
+	CHECK_MESSAGE(config.SchemePaletteFile == "UNITSNO.PAL", "with the file gone both return to the defaults");
+	CHECK_MESSAGE(config.GamePaletteFile == "TEMPERAT.PAL", "as they stand in Tiberian Sun");
 }
 
-}
-
-
-int main(void)
-{
-	GetCurrentDirectory(sizeof(OriginalDirectory), OriginalDirectory);
-
-	if (!Make_Root()) {
-		std::printf("could not create the working directory\n");
-		return(1);
-	}
-
-	std::printf("Working in %s\n\n", Root.c_str());
-
-	Test_Defaults();
-	Test_Search_Paths();
-	Test_Where_The_File_Is_Looked_For();
-	Test_The_Directory_Named();
-	Test_A_Read_Starts_Over();
-	Test_Carry_Scenario_File();
-	Test_File_Names();
-	Test_Expansion_File_Names();
-	Test_Palette_Names();
-
-	Remove_Root();
-
-	std::printf("\n%s\n", Failures == 0 ? "All checks passed." : "There were failures.");
-	return(Failures == 0 ? 0 : 1);
 }

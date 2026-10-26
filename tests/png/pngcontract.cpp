@@ -7,7 +7,6 @@
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
 
-#include <cstdio>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -16,16 +15,7 @@
 
 #include "png.h"
 
-static int Failures = 0;
-
-
-static void Check(bool condition, char const * what)
-{
-	if (!condition) {
-		Failures++;
-		std::printf("FAIL: %s\n", what);
-	}
-}
+#include "doctest/doctest.h"
 
 
 // An in-memory file, so the encoder is tested without the file layer or a temporary folder.
@@ -109,7 +99,7 @@ static bool Split_Chunks(std::vector<unsigned char> const & file, std::vector<Ch
 }
 
 
-static void Test_A_Picture_Round_Trips(void)
+TEST_CASE("a picture round-trips through a PNG")
 {
 	int const width = 37;
 	int const height = 11;
@@ -126,30 +116,30 @@ static void Test_A_Picture_Round_Trips(void)
 	}
 
 	MemoryFileClass file;
-	Check(Write_PNG_File(file, width, height, stride, (unsigned short const *)source.data()),
-		"a picture is written");
-	Check(!file.Is_Open(), "and the file this routine opened is closed again");
+	CHECK_MESSAGE(Write_PNG_File(file, width, height, stride, (unsigned short const *)source.data()), "a picture is written");
+	CHECK_MESSAGE(!file.Is_Open(), "and the file this routine opened is closed again");
 
 	std::vector<ChunkStruct> chunks;
-	Check(Split_Chunks(file.Bytes, chunks), "the signature is there and the chunks span the file exactly");
-	Check(chunks.size() >= 3, "there is a header, a picture and an end");
+	CHECK_MESSAGE(Split_Chunks(file.Bytes, chunks), "the signature is there and the chunks span the file exactly");
+	CHECK_MESSAGE(chunks.size() >= 3, "there is a header, a picture and an end");
 
 	for (ChunkStruct const & chunk : chunks) {
-		Check(chunk.CrcAgrees, "every chunk carries a checksum that agrees with it");
+		CHECK_MESSAGE(chunk.CrcAgrees, "every chunk carries a checksum that agrees with it");
 	}
 
-	Check(chunks.front().Name == "IHDR", "the header comes first");
-	Check(chunks.back().Name == "IEND", "the end comes last");
-	Check(chunks.back().Data.empty(), "and carries nothing");
+	CHECK_MESSAGE(chunks.front().Name == "IHDR", "the header comes first");
+	CHECK_MESSAGE(chunks.back().Name == "IEND", "the end comes last");
+	CHECK_MESSAGE(chunks.back().Data.empty(), "and carries nothing");
 
 	std::vector<unsigned char> const & header = chunks.front().Data;
-	Check(header.size() == 13, "the header is the size the format fixes");
-	Check((int)Big_Endian(&header[0]) == width, "the header states the width");
-	Check((int)Big_Endian(&header[4]) == height, "the header states the height");
-	Check(header[8] == 8, "eight bits a component");
-	Check(header[9] == 2, "three components and no palette");
-	Check(header[10] == 0 && header[11] == 0 && header[12] == 0,
-		"deflated, filtered the one way the format allows, and not interlaced");
+	CHECK_MESSAGE(header.size() == 13, "the header is the size the format fixes");
+	CHECK_MESSAGE((int)Big_Endian(&header[0]) == width, "the header states the width");
+	CHECK_MESSAGE((int)Big_Endian(&header[4]) == height, "the header states the height");
+	CHECK_MESSAGE(header[8] == 8, "eight bits a component");
+	CHECK_MESSAGE(header[9] == 2, "three components and no palette");
+	CHECK_MESSAGE(header[10] == 0, "deflated, filtered the one way the format allows, and not interlaced");
+	CHECK_MESSAGE(header[11] == 0, "deflated, filtered the one way the format allows, and not interlaced");
+	CHECK_MESSAGE(header[12] == 0, "deflated, filtered the one way the format allows, and not interlaced");
 
 	std::vector<unsigned char> deflated;
 	for (ChunkStruct const & chunk : chunks) {
@@ -157,16 +147,14 @@ static void Test_A_Picture_Round_Trips(void)
 			deflated.insert(deflated.end(), chunk.Data.begin(), chunk.Data.end());
 		}
 	}
-	Check(!deflated.empty(), "the picture reaches the file");
-	Check(deflated.size() < (size_t)width * height * 3,
-		"and is smaller deflated than the pixels it came from");
+	CHECK_MESSAGE(!deflated.empty(), "the picture reaches the file");
+	CHECK_MESSAGE(deflated.size() < (size_t)width * height * 3, "and is smaller deflated than the pixels it came from");
 
 	size_t const rowsize = (size_t)width * 3;
 	std::vector<unsigned char> raw((rowsize + 1) * height);
 	mz_ulong produced = (mz_ulong)raw.size();
-	Check(mz_uncompress(raw.data(), &produced, deflated.data(), (mz_ulong)deflated.size()) == MZ_OK,
-		"the picture inflates");
-	Check(produced == raw.size(), "back to one filter byte and one row of pixels per line");
+	CHECK_MESSAGE(mz_uncompress(raw.data(), &produced, deflated.data(), (mz_ulong)deflated.size()) == MZ_OK, "the picture inflates");
+	CHECK_MESSAGE(produced == raw.size(), "back to one filter byte and one row of pixels per line");
 
 	std::vector<unsigned char> prior(rowsize, 0);
 	bool matches = true;
@@ -191,32 +179,17 @@ static void Test_A_Picture_Round_Trips(void)
 			matches = prior[x * 3] == red && prior[x * 3 + 1] == green && prior[x * 3 + 2] == blue;
 		}
 	}
-	Check(matches, "and every pixel comes back the colour it went in, the padding ignored");
+	CHECK_MESSAGE(matches, "and every pixel comes back the colour it went in, the padding ignored");
 }
 
 
-static void Test_A_Picture_With_Nothing_In_It_Is_Refused(void)
+TEST_CASE("a picture with nothing in it is refused")
 {
 	unsigned short pixel = 0;
 	MemoryFileClass file;
 
-	Check(!Write_PNG_File(file, 0, 4, 2, &pixel), "no width is refused");
-	Check(!Write_PNG_File(file, 4, 0, 8, &pixel), "no height is refused");
-	Check(!Write_PNG_File(file, 4, 4, 8, NULL), "no pixels are refused");
-	Check(file.Bytes.empty(), "and none of them reaches the file");
-}
-
-
-int main(void)
-{
-	Test_A_Picture_Round_Trips();
-	Test_A_Picture_With_Nothing_In_It_Is_Refused();
-
-	if (Failures != 0) {
-		std::printf("%d check(s) failed.\n", Failures);
-		return(1);
-	}
-
-	std::printf("PNG contract verified.\n");
-	return(0);
+	CHECK_MESSAGE(!Write_PNG_File(file, 0, 4, 2, &pixel), "no width is refused");
+	CHECK_MESSAGE(!Write_PNG_File(file, 4, 0, 8, &pixel), "no height is refused");
+	CHECK_MESSAGE(!Write_PNG_File(file, 4, 4, 8, NULL), "no pixels are refused");
+	CHECK_MESSAGE(file.Bytes.empty(), "and none of them reaches the file");
 }

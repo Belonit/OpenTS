@@ -9,4 +9,5 @@ opents_add_test(PngWrite
         ${CMAKE_SOURCE_DIR}/thirdparty/bgfx.cmake/bimg/3rdparty/tinyexr/deps
     LIBRARIES bimg
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
+    DOCTEST
 )

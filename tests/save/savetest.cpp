@@ -2,10 +2,12 @@
 // the compressed content block, and every way the reader refuses a file that is not a
 // whole, intact save of a version it knows.
 //
-// Every file it touches it creates itself, in a scratch directory named by the first
-// argument or the working directory, so it reads no game data and leaves nothing behind.
+// Every file it touches it creates itself, in the working directory, so it reads no game data,
+// and each case deletes what it wrote.
 
 #include "savefile.h"
+
+#include "doctest/doctest.h"
 
 #include <lzo/lzo1x.h>
 
@@ -14,27 +16,12 @@
 #include <string>
 #include <vector>
 
-static int Failures = 0;
-static int Checks = 0;
 static std::string Scratch;
-
-
-static void Check(char const * name, bool condition)
-{
-	Checks++;
-	if (condition) return;
-	Failures++;
-	printf("FAIL %s\n", name);
-}
-
 
 static void Check_Result(char const * name, SaveFileClass::ResultType actual, SaveFileClass::ResultType expected)
 {
-	Checks++;
-	if (actual == expected) return;
-	Failures++;
-	printf("FAIL %s: got \"%s\", expected \"%s\"\n", name,
-		SaveFileClass::Result_Text(actual), SaveFileClass::Result_Text(expected));
+	INFO(name, ": got \"", SaveFileClass::Result_Text(actual), "\", expected \"", SaveFileClass::Result_Text(expected), "\"");
+	CHECK(actual == expected);
 }
 
 
@@ -138,24 +125,46 @@ static void Check_Fields(char const * prefix, SaveFileClass const & save)
 	int value = 0;
 	FILETIME when = {};
 
-	Check((std::string(prefix) + ": title present").c_str(), save.Get_String(FIELD_TITLE, text, sizeof(text)));
-	Check((std::string(prefix) + ": title text").c_str(), strcmp(text, "GDI 04: Eviction Notice") == 0);
-	Check((std::string(prefix) + ": house present").c_str(), save.Get_String(FIELD_HOUSE, text, sizeof(text)));
-	Check((std::string(prefix) + ": house text").c_str(), strcmp(text, "GDI") == 0);
-	Check((std::string(prefix) + ": version present").c_str(), save.Get_Int(FIELD_VERSION, &value));
-	Check((std::string(prefix) + ": version value").c_str(), value == 0x00010203);
-	Check((std::string(prefix) + ": time present").c_str(), save.Get_Time(FIELD_WHEN, &when));
-	Check((std::string(prefix) + ": time value").c_str(),
-		when.dwLowDateTime == 0x12345678u && when.dwHighDateTime == 0x01D2C3B4u);
-	Check((std::string(prefix) + ": a missing field is absent").c_str(), !save.Get_String(FIELD_MISSING, text, sizeof(text)));
-	Check((std::string(prefix) + ": a field is not found under another kind").c_str(), !save.Get_Int(FIELD_TITLE, &value));
+	CHECK_MESSAGE(save.Get_String(FIELD_TITLE, text, sizeof(text)), (std::string(prefix) + ": title present"));
+	CHECK_MESSAGE(strcmp(text, "GDI 04: Eviction Notice") == 0, (std::string(prefix) + ": title text"));
+	CHECK_MESSAGE(save.Get_String(FIELD_HOUSE, text, sizeof(text)), (std::string(prefix) + ": house present"));
+	CHECK_MESSAGE(strcmp(text, "GDI") == 0, (std::string(prefix) + ": house text"));
+	CHECK_MESSAGE(save.Get_Int(FIELD_VERSION, &value), (std::string(prefix) + ": version present"));
+	CHECK_MESSAGE(value == 0x00010203, (std::string(prefix) + ": version value"));
+	CHECK_MESSAGE(save.Get_Time(FIELD_WHEN, &when), (std::string(prefix) + ": time present"));
+	CHECK_MESSAGE(when.dwLowDateTime == 0x12345678u, (std::string(prefix) + ": time value"));
+	CHECK_MESSAGE(when.dwHighDateTime == 0x01D2C3B4u, (std::string(prefix) + ": time value"));
+	CHECK_MESSAGE(!save.Get_String(FIELD_MISSING, text, sizeof(text)), (std::string(prefix) + ": a missing field is absent"));
+	CHECK_MESSAGE(!save.Get_Int(FIELD_TITLE, &value), (std::string(prefix) + ": a field is not found under another kind"));
 
-	Check((std::string(prefix) + ": a short buffer is clipped").c_str(),
-		save.Get_String(FIELD_TITLE, text, 4) && strcmp(text, "GDI") == 0);
+	CHECK_MESSAGE(save.Get_String(FIELD_TITLE, text, 4), (std::string(prefix) + ": a short buffer is clipped"));
+	CHECK_MESSAGE(strcmp(text, "GDI") == 0, (std::string(prefix) + ": a short buffer is clipped"));
 }
 
 
-static void Test_Round_Trip(void)
+// The files the cases write, deleted after each one.
+static char const * const ScratchFiles[] = { "ROUNDTRIP.SAV", "NOISE.SAV", "EMPTY.SAV", "REPLACE.SAV",
+	"LIMITS.SAV", "PLAIN.SAV", "GOOD.SAV", "DAMAGED.SAV" };
+
+
+struct SaveFixture
+{
+	SaveFixture(void)
+	{
+		REQUIRE(lzo_init() == LZO_E_OK);
+		Scratch = ".";
+	}
+
+	~SaveFixture(void)
+	{
+		for (char const * name : ScratchFiles) {
+			DeleteFileA(Scratch_Path(name).c_str());
+		}
+	}
+};
+
+
+TEST_CASE_FIXTURE(SaveFixture, "a save round-trips its fields and compressed content, leaving no temporary file")
 {
 	std::string const path = Scratch_Path("ROUNDTRIP.SAV");
 	std::vector<unsigned char> const content = Prose(300000);
@@ -163,36 +172,40 @@ static void Test_Round_Trip(void)
 	SaveFileClass written;
 	Fill(written, content);
 	Check_Result("round trip: write", written.Write(path.c_str()), SaveFileClass::RESULT_OK);
-	Check("round trip: no temporary file is left behind", !File_Exists((path + ".tmp").c_str()));
+	CHECK_MESSAGE(!File_Exists((path + ".tmp").c_str()), "round trip: no temporary file is left behind");
 
 	std::vector<unsigned char> const image = Read_Whole_File(path.c_str());
-	Check("round trip: the prose was compressed", !image.empty() && image.size() < content.size() / 4);
+	REQUIRE_MESSAGE(!image.empty(), "round trip: the prose was compressed");
+	CHECK_MESSAGE(image.size() < content.size() / 4, "round trip: the prose was compressed");
 
 	SaveFileClass read;
 	Check_Result("round trip: read", read.Read(path.c_str()), SaveFileClass::RESULT_OK);
 	Check_Fields("round trip", read);
-	Check("round trip: content reads back whole", read.Content == content);
+	CHECK_MESSAGE(read.Content == content, "round trip: content reads back whole");
 
 	SaveFileClass listed;
 	Check_Result("round trip: fields alone", listed.Read_Fields(path.c_str()), SaveFileClass::RESULT_OK);
 	Check_Fields("fields alone", listed);
-	Check("fields alone: no content is read", listed.Content.empty());
+	CHECK_MESSAGE(listed.Content.empty(), "fields alone: no content is read");
 }
 
 
-static void Test_Cuts(void)
+TEST_CASE_FIXTURE(SaveFixture, "a field read into a short buffer is cut on a character boundary")
 {
 	SaveFileClass save;
 	save.Set_String(FIELD_TITLE, "ab\xC3\xA9" "cd");
 
 	char text[8];
-	Check("cuts: a cut never splits a character", save.Get_String(FIELD_TITLE, text, 4) && strcmp(text, "ab") == 0);
-	Check("cuts: a cut after a character keeps it whole", save.Get_String(FIELD_TITLE, text, 5) && strcmp(text, "ab\xC3\xA9") == 0);
-	Check("cuts: a buffer that fits keeps everything", save.Get_String(FIELD_TITLE, text, 8) && strcmp(text, "ab\xC3\xA9" "cd") == 0);
+	CHECK_MESSAGE(save.Get_String(FIELD_TITLE, text, 4), "cuts: a cut never splits a character");
+	CHECK_MESSAGE(strcmp(text, "ab") == 0, "cuts: a cut never splits a character");
+	CHECK_MESSAGE(save.Get_String(FIELD_TITLE, text, 5), "cuts: a cut after a character keeps it whole");
+	CHECK_MESSAGE(strcmp(text, "ab\xC3\xA9") == 0, "cuts: a cut after a character keeps it whole");
+	CHECK_MESSAGE(save.Get_String(FIELD_TITLE, text, 8), "cuts: a buffer that fits keeps everything");
+	CHECK_MESSAGE(strcmp(text, "ab\xC3\xA9" "cd") == 0, "cuts: a buffer that fits keeps everything");
 }
 
 
-static void Test_Incompressible(void)
+TEST_CASE_FIXTURE(SaveFixture, "content that does not compress is stored as it is and round-trips")
 {
 	std::string const path = Scratch_Path("NOISE.SAV");
 	std::vector<unsigned char> const content = Noise(70000, 7);
@@ -202,15 +215,15 @@ static void Test_Incompressible(void)
 	Check_Result("noise: write", written.Write(path.c_str()), SaveFileClass::RESULT_OK);
 
 	std::vector<unsigned char> const image = Read_Whole_File(path.c_str());
-	Check("noise: stored as it is when compression does not pay", image.size() >= content.size() + SaveFileClass::HEADER_SIZE);
+	CHECK_MESSAGE(image.size() >= content.size() + SaveFileClass::HEADER_SIZE, "noise: stored as it is when compression does not pay");
 
 	SaveFileClass read;
 	Check_Result("noise: read", read.Read(path.c_str()), SaveFileClass::RESULT_OK);
-	Check("noise: content reads back whole", read.Content == content);
+	CHECK_MESSAGE(read.Content == content, "noise: content reads back whole");
 }
 
 
-static void Test_Empty(void)
+TEST_CASE_FIXTURE(SaveFixture, "a save with no content is a header alone")
 {
 	std::string const path = Scratch_Path("EMPTY.SAV");
 
@@ -218,17 +231,17 @@ static void Test_Empty(void)
 	Check_Result("empty: write", written.Write(path.c_str()), SaveFileClass::RESULT_OK);
 
 	std::vector<unsigned char> const image = Read_Whole_File(path.c_str());
-	Check("empty: a header alone", image.size() == SaveFileClass::HEADER_SIZE);
+	CHECK_MESSAGE(image.size() == SaveFileClass::HEADER_SIZE, "empty: a header alone");
 
 	SaveFileClass read;
 	Check_Result("empty: read", read.Read(path.c_str()), SaveFileClass::RESULT_OK);
-	Check("empty: no content", read.Content.empty());
+	CHECK_MESSAGE(read.Content.empty(), "empty: no content");
 	char text[8];
-	Check("empty: no fields", !read.Get_String(FIELD_TITLE, text, sizeof(text)));
+	CHECK_MESSAGE(!read.Get_String(FIELD_TITLE, text, sizeof(text)), "empty: no fields");
 }
 
 
-static void Test_Overwrite(void)
+TEST_CASE_FIXTURE(SaveFixture, "a save written over another replaces it whole, along with a stale temporary file")
 {
 	std::string const path = Scratch_Path("REPLACE.SAV");
 
@@ -237,28 +250,28 @@ static void Test_Overwrite(void)
 	first.Set_String(FIELD_TITLE, "the earlier save");
 	Check_Result("replace: first write", first.Write(path.c_str()), SaveFileClass::RESULT_OK);
 
-	Check("replace: a stale temporary is planted", Write_Whole_File((path + ".tmp").c_str(), Noise(100, 3)));
+	CHECK_MESSAGE(Write_Whole_File((path + ".tmp").c_str(), Noise(100, 3)), "replace: a stale temporary is planted");
 
 	SaveFileClass second;
 	Fill(second, Noise(20000, 11));
 	second.Set_String(FIELD_TITLE, "the later save");
 	Check_Result("replace: second write", second.Write(path.c_str()), SaveFileClass::RESULT_OK);
-	Check("replace: the stale temporary is gone", !File_Exists((path + ".tmp").c_str()));
+	CHECK_MESSAGE(!File_Exists((path + ".tmp").c_str()), "replace: the stale temporary is gone");
 
 	SaveFileClass read;
 	Check_Result("replace: read", read.Read(path.c_str()), SaveFileClass::RESULT_OK);
 	char text[64];
-	Check("replace: the later save is the one on disk",
-		read.Get_String(FIELD_TITLE, text, sizeof(text)) && strcmp(text, "the later save") == 0);
-	Check("replace: the later content is the one on disk", read.Content == second.Content);
+	CHECK_MESSAGE(read.Get_String(FIELD_TITLE, text, sizeof(text)), "replace: the later save is the one on disk");
+	CHECK_MESSAGE(strcmp(text, "the later save") == 0, "replace: the later save is the one on disk");
+	CHECK_MESSAGE(read.Content == second.Content, "replace: the later content is the one on disk");
 
 	SaveFileClass rewritten;
 	rewritten.Set_String(FIELD_TITLE, "overwritten field");
 	rewritten.Set_String(FIELD_TITLE, "final field");
 	Check_Result("replace: field rewrite", rewritten.Write(path.c_str()), SaveFileClass::RESULT_OK);
 	Check_Result("replace: field rewrite read", read.Read_Fields(path.c_str()), SaveFileClass::RESULT_OK);
-	Check("replace: a field set twice keeps the last value",
-		read.Get_String(FIELD_TITLE, text, sizeof(text)) && strcmp(text, "final field") == 0);
+	CHECK_MESSAGE(read.Get_String(FIELD_TITLE, text, sizeof(text)), "replace: a field set twice keeps the last value");
+	CHECK_MESSAGE(strcmp(text, "final field") == 0, "replace: a field set twice keeps the last value");
 }
 
 
@@ -271,7 +284,7 @@ static void Put_U32(std::vector<unsigned char> & image, std::size_t at, unsigned
 }
 
 
-static void Test_Limits(void)
+TEST_CASE_FIXTURE(SaveFixture, "a field, table or content beyond its limit is refused, and the earlier save stays")
 {
 	std::string const path = Scratch_Path("LIMITS.SAV");
 
@@ -296,12 +309,12 @@ static void Test_Limits(void)
 	huge.Content.resize(0x10000001);
 	Check_Result("limits: content beyond its limit is refused", huge.Write(path.c_str()), SaveFileClass::RESULT_TOO_LARGE);
 
-	Check("limits: no temporary is left behind", !File_Exists((path + ".tmp").c_str()));
+	CHECK_MESSAGE(!File_Exists((path + ".tmp").c_str()), "limits: no temporary is left behind");
 	SaveFileClass read;
 	Check_Result("limits: the earlier save still reads", read.Read(path.c_str()), SaveFileClass::RESULT_OK);
 	char text[64];
-	Check("limits: the earlier save is the one on disk",
-		read.Get_String(FIELD_TITLE, text, sizeof(text)) && strcmp(text, "the save that stays") == 0);
+	CHECK_MESSAGE(read.Get_String(FIELD_TITLE, text, sizeof(text)), "limits: the earlier save is the one on disk");
+	CHECK_MESSAGE(strcmp(text, "the save that stays") == 0, "limits: the earlier save is the one on disk");
 }
 
 
@@ -346,7 +359,7 @@ static std::vector<unsigned char> Forge_Content(std::vector<unsigned char> const
 }
 
 
-static void Test_Refusals(void)
+TEST_CASE_FIXTURE(SaveFixture, "the reader refuses a file that is missing, not a save, of a later version, or damaged anywhere")
 {
 	SaveFileClass read;
 
@@ -365,7 +378,7 @@ static void Test_Refusals(void)
 	Fill(written, Prose(40000));
 	Check_Result("refuse: the reference save", written.Write(good.c_str()), SaveFileClass::RESULT_OK);
 	std::vector<unsigned char> const image = Read_Whole_File(good.c_str());
-	Check("refuse: the reference save is readable", !image.empty());
+	CHECK_MESSAGE(!image.empty(), "refuse: the reference save is readable");
 
 	std::string const damaged = Scratch_Path("DAMAGED.SAV");
 
@@ -391,7 +404,7 @@ static void Test_Refusals(void)
 		| ((unsigned int)image[14] << 16) | ((unsigned int)image[15] << 24);
 	unsigned int const content_length = (unsigned int)image[20] | ((unsigned int)image[21] << 8)
 		| ((unsigned int)image[22] << 16) | ((unsigned int)image[23] << 24);
-	Check("refuse: the reference save is compressed", (image[6] & 0x01) != 0);
+	CHECK_MESSAGE((image[6] & 0x01) != 0, "refuse: the reference save is compressed");
 	std::vector<unsigned char> const stored(image.begin() + content_offset, image.end());
 
 	Write_Whole_File(damaged.c_str(), Forge_Content(image, table, stored, content_length + 1));
@@ -415,7 +428,7 @@ static void Test_Refusals(void)
 	gapped.insert(gapped.begin() + content_offset, 8, 0);
 	Put_U32(gapped, 12, content_offset + 8);
 	Reseal_Header(gapped, table);
-	Check("refuse: the gapped image is longer", gapped.size() == image.size() + 8);
+	CHECK_MESSAGE(gapped.size() == image.size() + 8, "refuse: the gapped image is longer");
 	Write_Whole_File(damaged.c_str(), gapped);
 	Check_Result("refuse: a gap between the table and the content", read.Read(damaged.c_str()), SaveFileClass::RESULT_CORRUPT);
 	Check_Result("refuse: its fields", read.Read_Fields(damaged.c_str()), SaveFileClass::RESULT_CORRUPT);
@@ -446,40 +459,11 @@ static void Test_Refusals(void)
 		char name[80];
 		snprintf(name, sizeof(name), "refuse: a file cut at %u bytes", (unsigned int)cut);
 		SaveFileClass::ResultType const result = read.Read(damaged.c_str());
-		Check(name, result == SaveFileClass::RESULT_CORRUPT || (cut < 4 && result == SaveFileClass::RESULT_NOT_A_SAVE));
+		CHECK_MESSAGE((result == SaveFileClass::RESULT_CORRUPT || (cut < 4 && result == SaveFileClass::RESULT_NOT_A_SAVE)), name);
 	}
 
 	std::vector<unsigned char> appended = image;
 	appended.push_back(0);
 	Write_Whole_File(damaged.c_str(), appended);
 	Check_Result("refuse: a file with a trailing byte", read.Read(damaged.c_str()), SaveFileClass::RESULT_CORRUPT);
-}
-
-
-int main(int argc, char ** argv)
-{
-	if (lzo_init() != LZO_E_OK) {
-		printf("lzo_init failed\n");
-		return(2);
-	}
-
-	Scratch = (argc > 1) ? argv[1] : ".";
-	CreateDirectoryA(Scratch.c_str(), nullptr);
-
-	Test_Round_Trip();
-	Test_Cuts();
-	Test_Incompressible();
-	Test_Empty();
-	Test_Overwrite();
-	Test_Limits();
-	Test_Refusals();
-
-	char const * const names[] = { "ROUNDTRIP.SAV", "NOISE.SAV", "EMPTY.SAV", "REPLACE.SAV",
-		"LIMITS.SAV", "PLAIN.SAV", "GOOD.SAV", "DAMAGED.SAV" };
-	for (char const * name : names) {
-		DeleteFileA(Scratch_Path(name).c_str());
-	}
-
-	printf("%d checks, %d failures\n", Checks, Failures);
-	return(Failures == 0 ? 0 : 1);
 }
