@@ -50,4 +50,5 @@ opents_add_test(UIShell
     DEFINITIONS WIN32 _WINDOWS NOMINMAX "OPENTS_UI_DIR=\"${CMAKE_SOURCE_DIR}/ui\""
     LIBRARIES RmlUi::Core freetype imgui
     STAMP
+    DOCTEST
 )

@@ -14,4 +14,5 @@ opents_add_test(UILogic
         ui/rml/rmlfontsheet.cpp
         ui/rml/rmlrendermath.cpp
         videodirty.cpp
+    DOCTEST
 )

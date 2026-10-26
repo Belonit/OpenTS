@@ -14,136 +14,160 @@
 #include "ui/uireveal.h"
 #include "videodirty.h"
 
+#include "doctest/doctest.h"
+
 #include <array>
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <limits>
 #include <vector>
 
 namespace {
 
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-76s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
-
-void Test_Ownership(void)
+TEST_CASE("a press keeps the owner it started with, and closing a screen suppresses what the toolkits held")
 {
 	UIInputStateClass state;
 
-	Check(state.Gesture_Owner() == UI_INPUT_NONE && !state.Has_UI_Mouse() && !state.Any_Owned(), "the initial state holds no gesture");
-	Check(state.Press_Key(65, UI_INPUT_RML) == UI_INPUT_RML, "RmlUi owns the key it first pressed");
-	Check(state.Any_Owned(), "a held key counts as owned input");
-	Check(state.Press_Key(65, UI_INPUT_IMGUI) == UI_INPUT_RML, "a repeat keeps the first owner of a key");
-	Check(state.Release_Key(65) == UI_INPUT_RML, "a release returns the owner of its press");
-	Check(state.Release_Key(65) == UI_INPUT_NONE, "a second release has no owner");
-	Check(state.Press_Key(65, UI_INPUT_GAME) == UI_INPUT_GAME, "a later press of the same key can belong to the game");
-	Check(state.Press_Key(256, UI_INPUT_RML) == UI_INPUT_NONE && state.Key_Owner(256) == UI_INPUT_NONE, "a key out of range takes no owner");
-	Check(state.Release_Key(256) == UI_INPUT_NONE, "a release out of range is ignored");
+	CHECK_MESSAGE(state.Gesture_Owner() == UI_INPUT_NONE, "the initial state holds no gesture");
+	CHECK_MESSAGE(!state.Has_UI_Mouse(), "the initial state holds no gesture");
+	CHECK_MESSAGE(!state.Any_Owned(), "the initial state holds no gesture");
+	CHECK_MESSAGE(state.Press_Key(65, UI_INPUT_RML) == UI_INPUT_RML, "RmlUi owns the key it first pressed");
+	CHECK_MESSAGE(state.Any_Owned(), "a held key counts as owned input");
+	CHECK_MESSAGE(state.Press_Key(65, UI_INPUT_IMGUI) == UI_INPUT_RML, "a repeat keeps the first owner of a key");
+	CHECK_MESSAGE(state.Release_Key(65) == UI_INPUT_RML, "a release returns the owner of its press");
+	CHECK_MESSAGE(state.Release_Key(65) == UI_INPUT_NONE, "a second release has no owner");
+	CHECK_MESSAGE(state.Press_Key(65, UI_INPUT_GAME) == UI_INPUT_GAME, "a later press of the same key can belong to the game");
+	CHECK_MESSAGE(state.Press_Key(256, UI_INPUT_RML) == UI_INPUT_NONE, "a key out of range takes no owner");
+	CHECK_MESSAGE(state.Key_Owner(256) == UI_INPUT_NONE, "a key out of range takes no owner");
+	CHECK_MESSAGE(state.Release_Key(256) == UI_INPUT_NONE, "a release out of range is ignored");
 
-	Check(state.Press_Mouse(0, UI_INPUT_IMGUI) == UI_INPUT_IMGUI, "ImGui owns the button it first pressed");
-	Check(state.Press_Mouse(0, UI_INPUT_GAME) == UI_INPUT_IMGUI, "a move across the game cannot change a press's owner");
-	Check(state.Release_Mouse(0) == UI_INPUT_IMGUI, "a UI release stays a UI release outside the panel");
-	Check(state.Press_Mouse(0, UI_INPUT_GAME) == UI_INPUT_GAME, "the next press can go to the game");
-	Check(state.Press_Mouse(0, UI_INPUT_RML) == UI_INPUT_GAME, "a game drag cannot become a document drag");
-	Check(state.Release_Mouse(0) == UI_INPUT_GAME, "a game release keeps its owner");
-	Check(state.Press_Mouse(0, UI_INPUT_RML) == UI_INPUT_RML, "a fresh press can belong to RmlUi");
-	Check(state.Press_Mouse(1, UI_INPUT_RML) == UI_INPUT_RML, "a second held button joins the UI gesture");
-	Check(state.Release_Mouse(0) == UI_INPUT_RML && state.Has_UI_Mouse(), "releasing one button keeps the other's capture");
-	Check(state.Gesture_Owner() == UI_INPUT_RML, "the remaining button owns the pointer's motion");
-	Check(state.Release_Mouse(1) == UI_INPUT_RML && !state.Has_UI_Mouse(), "the capture ends with the last button");
-	Check(state.Press_Mouse(5, UI_INPUT_IMGUI) == UI_INPUT_NONE && state.Release_Mouse(5) == UI_INPUT_NONE, "a button out of range is ignored");
+	CHECK_MESSAGE(state.Press_Mouse(0, UI_INPUT_IMGUI) == UI_INPUT_IMGUI, "ImGui owns the button it first pressed");
+	CHECK_MESSAGE(state.Press_Mouse(0, UI_INPUT_GAME) == UI_INPUT_IMGUI, "a move across the game cannot change a press's owner");
+	CHECK_MESSAGE(state.Release_Mouse(0) == UI_INPUT_IMGUI, "a UI release stays a UI release outside the panel");
+	CHECK_MESSAGE(state.Press_Mouse(0, UI_INPUT_GAME) == UI_INPUT_GAME, "the next press can go to the game");
+	CHECK_MESSAGE(state.Press_Mouse(0, UI_INPUT_RML) == UI_INPUT_GAME, "a game drag cannot become a document drag");
+	CHECK_MESSAGE(state.Release_Mouse(0) == UI_INPUT_GAME, "a game release keeps its owner");
+	CHECK_MESSAGE(state.Press_Mouse(0, UI_INPUT_RML) == UI_INPUT_RML, "a fresh press can belong to RmlUi");
+	CHECK_MESSAGE(state.Press_Mouse(1, UI_INPUT_RML) == UI_INPUT_RML, "a second held button joins the UI gesture");
+	CHECK_MESSAGE(state.Release_Mouse(0) == UI_INPUT_RML, "releasing one button keeps the other's capture");
+	CHECK_MESSAGE(state.Has_UI_Mouse(), "releasing one button keeps the other's capture");
+	CHECK_MESSAGE(state.Gesture_Owner() == UI_INPUT_RML, "the remaining button owns the pointer's motion");
+	CHECK_MESSAGE(state.Release_Mouse(1) == UI_INPUT_RML, "the capture ends with the last button");
+	CHECK_MESSAGE(!state.Has_UI_Mouse(), "the capture ends with the last button");
+	CHECK_MESSAGE(state.Press_Mouse(5, UI_INPUT_IMGUI) == UI_INPUT_NONE, "a button out of range is ignored");
+	CHECK_MESSAGE(state.Release_Mouse(5) == UI_INPUT_NONE, "a button out of range is ignored");
 
 	state.Press_Key(66, UI_INPUT_IMGUI);
 	state.Press_Mouse(0, UI_INPUT_RML);
 	state.Press_Mouse(2, UI_INPUT_GAME);
-	Check(!state.Any_Suppressed(), "nothing is suppressed before a cancel");
+	CHECK_MESSAGE(!state.Any_Suppressed(), "nothing is suppressed before a cancel");
 	state.Cancel_UI();
-	Check(state.Key_Owner(65) == UI_INPUT_GAME && state.Mouse_Owner(2) == UI_INPUT_GAME, "closing a screen leaves the game's presses alone");
-	Check(state.Key_Owner(66) == UI_INPUT_SUPPRESSED && state.Mouse_Owner(0) == UI_INPUT_SUPPRESSED, "closing a screen suppresses what the toolkits held");
-	Check(state.Any_Suppressed(), "suppressed input is reported");
-	Check(state.Press_Key(66, UI_INPUT_GAME) == UI_INPUT_SUPPRESSED, "a repeat of a suppressed key stays suppressed");
-	Check(state.Release_Key(66) == UI_INPUT_SUPPRESSED && state.Release_Mouse(0) == UI_INPUT_SUPPRESSED, "a suppressed release never reaches the game");
-	Check(state.Press_Key(66, UI_INPUT_GAME) == UI_INPUT_GAME, "a fresh press works once the suppression ended");
+	CHECK_MESSAGE(state.Key_Owner(65) == UI_INPUT_GAME, "closing a screen leaves the game's presses alone");
+	CHECK_MESSAGE(state.Mouse_Owner(2) == UI_INPUT_GAME, "closing a screen leaves the game's presses alone");
+	CHECK_MESSAGE(state.Key_Owner(66) == UI_INPUT_SUPPRESSED, "closing a screen suppresses what the toolkits held");
+	CHECK_MESSAGE(state.Mouse_Owner(0) == UI_INPUT_SUPPRESSED, "closing a screen suppresses what the toolkits held");
+	CHECK_MESSAGE(state.Any_Suppressed(), "suppressed input is reported");
+	CHECK_MESSAGE(state.Press_Key(66, UI_INPUT_GAME) == UI_INPUT_SUPPRESSED, "a repeat of a suppressed key stays suppressed");
+	CHECK_MESSAGE(state.Release_Key(66) == UI_INPUT_SUPPRESSED, "a suppressed release never reaches the game");
+	CHECK_MESSAGE(state.Release_Mouse(0) == UI_INPUT_SUPPRESSED, "a suppressed release never reaches the game");
+	CHECK_MESSAGE(state.Press_Key(66, UI_INPUT_GAME) == UI_INPUT_GAME, "a fresh press works once the suppression ended");
 	state.Cancel_All();
-	Check(state.Release_Key(65) == UI_INPUT_SUPPRESSED && state.Release_Key(66) == UI_INPUT_SUPPRESSED, "losing focus suppresses every held key");
-	Check(state.Release_Mouse(2) == UI_INPUT_SUPPRESSED, "losing focus suppresses a game-owned button");
+	CHECK_MESSAGE(state.Release_Key(65) == UI_INPUT_SUPPRESSED, "losing focus suppresses every held key");
+	CHECK_MESSAGE(state.Release_Key(66) == UI_INPUT_SUPPRESSED, "losing focus suppresses every held key");
+	CHECK_MESSAGE(state.Release_Mouse(2) == UI_INPUT_SUPPRESSED, "losing focus suppresses a game-owned button");
 	state.Press_Key(67, UI_INPUT_RML);
 	state.Press_Mouse(3, UI_INPUT_IMGUI);
 	state.Reset();
-	Check(state.Key_Owner(67) == UI_INPUT_NONE && state.Mouse_Owner(3) == UI_INPUT_NONE && state.Gesture_Owner() == UI_INPUT_NONE && !state.Any_Owned(), "a reset forgets every owner");
+	CHECK_MESSAGE(state.Key_Owner(67) == UI_INPUT_NONE, "a reset forgets every owner");
+	CHECK_MESSAGE(state.Mouse_Owner(3) == UI_INPUT_NONE, "a reset forgets every owner");
+	CHECK_MESSAGE(state.Gesture_Owner() == UI_INPUT_NONE, "a reset forgets every owner");
+	CHECK_MESSAGE(!state.Any_Owned(), "a reset forgets every owner");
 }
 
 
-void Test_Reconciliation(void)
+TEST_CASE("reconciling a cancelled capture forgets only what is up, and delivery follows the owner of the press")
 {
 	UIInputStateClass state;
 	std::array<bool, UIInputStateClass::BUTTON_COUNT> released {};
 
 	state.Press_Mouse(0, UI_INPUT_GAME);
 	state.Reconcile_Cancelled_Mouse(released);
-	Check(state.Gesture_Owner() == UI_INPUT_GAME, "a physical release cannot forget a game gesture before its up message");
-	Check(!UI_Consumes_Input(state.Gesture_Owner()), "a game drag's motion stays the game's over a document");
-	Check(!UI_Consumes_Input(state.Release_Mouse(0)), "a game release reaches the game after the physical release");
+	CHECK_MESSAGE(state.Gesture_Owner() == UI_INPUT_GAME, "a physical release cannot forget a game gesture before its up message");
+	CHECK_MESSAGE(!UI_Consumes_Input(state.Gesture_Owner()), "a game drag's motion stays the game's over a document");
+	CHECK_MESSAGE(!UI_Consumes_Input(state.Release_Mouse(0)), "a game release reaches the game after the physical release");
 	state.Press_Mouse(0, UI_INPUT_IMGUI);
 	state.Reconcile_Cancelled_Mouse(released);
-	Check(state.Gesture_Owner() == UI_INPUT_IMGUI && UI_Consumes_Input(state.Release_Mouse(0)), "a physical release cannot hand a UI gesture to the game");
+	CHECK_MESSAGE(state.Gesture_Owner() == UI_INPUT_IMGUI, "a physical release cannot hand a UI gesture to the game");
+	CHECK_MESSAGE(UI_Consumes_Input(state.Release_Mouse(0)), "a physical release cannot hand a UI gesture to the game");
 
 	state.Press_Key(70, UI_INPUT_RML);
 	state.Press_Mouse(0, UI_INPUT_GAME);
 	state.Press_Mouse(1, UI_INPUT_GAME);
 	state.Cancel_Mouse();
-	Check(state.Key_Owner(70) == UI_INPUT_RML, "losing the capture leaves the keys alone");
+	CHECK_MESSAGE(state.Key_Owner(70) == UI_INPUT_RML, "losing the capture leaves the keys alone");
 	std::array<bool, UIInputStateClass::BUTTON_COUNT> oneheld {};
 	oneheld[1] = true;
 	state.Reconcile_Cancelled_Mouse(oneheld);
-	Check(state.Mouse_Owner(0) == UI_INPUT_NONE && state.Mouse_Owner(1) == UI_INPUT_SUPPRESSED, "only a cancelled button that is up is forgotten");
-	Check(!UI_Consumes_Input(state.Release_Mouse(0)), "a release the shell forgot after reconciliation is the game's");
-	Check(UI_Consumes_Input(state.Release_Mouse(1)), "a cancelled button still held keeps its release");
+	CHECK_MESSAGE(state.Mouse_Owner(0) == UI_INPUT_NONE, "only a cancelled button that is up is forgotten");
+	CHECK_MESSAGE(state.Mouse_Owner(1) == UI_INPUT_SUPPRESSED, "only a cancelled button that is up is forgotten");
+	CHECK_MESSAGE(!UI_Consumes_Input(state.Release_Mouse(0)), "a release the shell forgot after reconciliation is the game's");
+	CHECK_MESSAGE(UI_Consumes_Input(state.Release_Mouse(1)), "a cancelled button still held keeps its release");
 
 	std::array<bool, UIInputStateClass::KEY_COUNT> keysup {};
 	state.Press_Key(71, UI_INPUT_IMGUI);
 	state.Cancel_All();
 	keysup[70] = true;
 	state.Reconcile_Cancelled_Keys(keysup);
-	Check(state.Key_Owner(70) == UI_INPUT_SUPPRESSED && state.Key_Owner(71) == UI_INPUT_NONE, "only a cancelled key that is up is forgotten");
-	Check(!UI_Consumes_Input(UI_INPUT_GAME) && UI_Consumes_Input(UI_INPUT_RML) && UI_Consumes_Input(UI_INPUT_SUPPRESSED), "delivery follows the owner of the press, not the pointer's position");
-	Check(!UI_Consumes_Input(UI_INPUT_NONE), "input nobody owns is the game's");
+	CHECK_MESSAGE(state.Key_Owner(70) == UI_INPUT_SUPPRESSED, "only a cancelled key that is up is forgotten");
+	CHECK_MESSAGE(state.Key_Owner(71) == UI_INPUT_NONE, "only a cancelled key that is up is forgotten");
+	CHECK_MESSAGE(!UI_Consumes_Input(UI_INPUT_GAME), "delivery follows the owner of the press, not the pointer's position");
+	CHECK_MESSAGE(UI_Consumes_Input(UI_INPUT_RML), "delivery follows the owner of the press, not the pointer's position");
+	CHECK_MESSAGE(UI_Consumes_Input(UI_INPUT_SUPPRESSED), "delivery follows the owner of the press, not the pointer's position");
+	CHECK_MESSAGE(!UI_Consumes_Input(UI_INPUT_NONE), "input nobody owns is the game's");
 }
 
 
-void Test_Render_Math(void)
+TEST_CASE("a render byte count is the whole product, and fails on overflow or an empty allocation")
 {
 	std::uint32_t bytes = 0;
-	Check(UI_Render_Byte_Count(10, 24, bytes) && bytes == 240, "a byte count is the whole product");
-	Check(!UI_Render_Byte_Count(std::numeric_limits<std::size_t>::max(), 2, bytes) && bytes == 0, "a byte count that overflows fails");
-	Check(!UI_Render_Byte_Count(0, 4, bytes), "an empty allocation fails");
+	CHECK_MESSAGE(UI_Render_Byte_Count(10, 24, bytes), "a byte count is the whole product");
+	CHECK_MESSAGE(bytes == 240, "a byte count is the whole product");
+	CHECK_MESSAGE(!UI_Render_Byte_Count(std::numeric_limits<std::size_t>::max(), 2, bytes), "a byte count that overflows fails");
+	CHECK_MESSAGE(bytes == 0, "a byte count that overflows fails");
+	CHECK_MESSAGE(!UI_Render_Byte_Count(0, 4, bytes), "an empty allocation fails");
+}
 
+
+TEST_CASE("render indices must form whole triangles over the vertices")
+{
 	int const valid[] = { 2, 0, 1 };
 	int const negative[] = { -1, 0, 1 };
 	int const outside[] = { 0, 1, 3 };
 	int const incomplete[] = { 0, 1 };
-	Check(UI_Render_Index_Range(valid, 3), "whole triangles over the vertices pass");
-	Check(!UI_Render_Index_Range(negative, 3), "a negative index fails");
-	Check(!UI_Render_Index_Range(outside, 3), "an index past the last vertex fails");
-	Check(!UI_Render_Index_Range(incomplete, 3), "an incomplete triangle fails");
+	CHECK_MESSAGE(UI_Render_Index_Range(valid, 3), "whole triangles over the vertices pass");
+	CHECK_MESSAGE(!UI_Render_Index_Range(negative, 3), "a negative index fails");
+	CHECK_MESSAGE(!UI_Render_Index_Range(outside, 3), "an index past the last vertex fails");
+	CHECK_MESSAGE(!UI_Render_Index_Range(incomplete, 3), "an incomplete triangle fails");
+}
 
+
+TEST_CASE("a scissor rounds outward and clips into the target, and one that is outside, empty, non-finite or wrapping draws nothing")
+{
 	UIRenderClip clip;
-	Check(UI_Render_Clip_Rect(-2.4f, 1.2f, 12.1f, 25.7f, 100, 50, 10, 20, clip) && clip.X == 100 && clip.Y == 51 && clip.Width == 10 && clip.Height == 19, "a fractional scissor rounds outward, clips, and lands in the target");
-	Check(!UI_Render_Clip_Rect(-10.0f, 0.0f, -1.0f, 10.0f, 100, 50, 10, 20, clip), "a scissor outside the viewport draws nothing");
-	Check(!UI_Render_Clip_Rect(3.0f, 0.0f, 3.0f, 10.0f, 0, 0, 10, 20, clip), "an empty scissor draws nothing");
-	Check(!UI_Render_Clip_Rect(0.0f, 0.0f, std::numeric_limits<float>::infinity(), 10.0f, 0, 0, 10, 20, clip), "a non-finite scissor fails");
-	Check(!UI_Render_Clip_Rect(0.0f, 0.0f, 10.0f, 10.0f, 65530, 0, 10, 20, clip), "a scissor cannot wrap the 16-bit target coordinates");
+	CHECK_MESSAGE(UI_Render_Clip_Rect(-2.4f, 1.2f, 12.1f, 25.7f, 100, 50, 10, 20, clip), "a fractional scissor rounds outward, clips, and lands in the target");
+	CHECK_MESSAGE(clip.X == 100, "a fractional scissor rounds outward, clips, and lands in the target");
+	CHECK_MESSAGE(clip.Y == 51, "a fractional scissor rounds outward, clips, and lands in the target");
+	CHECK_MESSAGE(clip.Width == 10, "a fractional scissor rounds outward, clips, and lands in the target");
+	CHECK_MESSAGE(clip.Height == 19, "a fractional scissor rounds outward, clips, and lands in the target");
+	CHECK_MESSAGE(!UI_Render_Clip_Rect(-10.0f, 0.0f, -1.0f, 10.0f, 100, 50, 10, 20, clip), "a scissor outside the viewport draws nothing");
+	CHECK_MESSAGE(!UI_Render_Clip_Rect(3.0f, 0.0f, 3.0f, 10.0f, 0, 0, 10, 20, clip), "an empty scissor draws nothing");
+	CHECK_MESSAGE(!UI_Render_Clip_Rect(0.0f, 0.0f, std::numeric_limits<float>::infinity(), 10.0f, 0, 0, 10, 20, clip), "a non-finite scissor fails");
+	CHECK_MESSAGE(!UI_Render_Clip_Rect(0.0f, 0.0f, 10.0f, 10.0f, 65530, 0, 10, 20, clip), "a scissor cannot wrap the 16-bit target coordinates");
+}
 
+
+TEST_CASE("a rectangle copied out of a pitched image packs tightly, and one past the image fails")
+{
 	std::array<std::uint8_t, 48> pixels;
 	pixels.fill(0xEE);
 	for (int row = 0; row < 3; row++) {
@@ -152,29 +176,48 @@ void Test_Render_Math(void)
 		}
 	}
 	std::vector<std::uint8_t> packed;
-	Check(UI_Render_Copy_RGBA_Rect(pixels, 3, 3, 16, 1, 1, 2, 2, packed) && packed.size() == 16 && packed[0] == 16 && packed[8] == 28, "a rectangle out of a pitched image packs tightly");
-	Check(!UI_Render_Copy_RGBA_Rect(pixels, 3, 3, 16, 2, 2, 2, 2, packed), "a rectangle past the image fails");
-	Check(!UI_Render_Copy_RGBA_Rect(pixels, 3, 4, 16, 0, 0, 1, 1, packed), "an image larger than its bytes fails");
+	CHECK_MESSAGE(UI_Render_Copy_RGBA_Rect(pixels, 3, 3, 16, 1, 1, 2, 2, packed), "a rectangle out of a pitched image packs tightly");
+	REQUIRE_MESSAGE(packed.size() == 16, "a rectangle out of a pitched image packs tightly");
+	CHECK_MESSAGE(packed[0] == 16, "a rectangle out of a pitched image packs tightly");
+	CHECK_MESSAGE(packed[8] == 28, "a rectangle out of a pitched image packs tightly");
+	CHECK_MESSAGE(!UI_Render_Copy_RGBA_Rect(pixels, 3, 3, 16, 2, 2, 2, 2, packed), "a rectangle past the image fails");
+	CHECK_MESSAGE(!UI_Render_Copy_RGBA_Rect(pixels, 3, 4, 16, 0, 0, 1, 1, packed), "an image larger than its bytes fails");
 }
 
 
-void Test_Render_Transform(void)
+TEST_CASE("a fragment with no transform travels by its translation alone")
 {
 	float model[16];
 
 	UI_Render_Model_Matrix(nullptr, 10.0f, 20.0f, model);
-	Check(model[0] == 1.0f && model[5] == 1.0f && model[10] == 1.0f && model[15] == 1.0f && model[12] == 10.0f && model[13] == 20.0f,
-		  "a fragment with no transform travels by its translation alone");
+	CHECK_MESSAGE(model[0] == 1.0f, "a fragment with no transform travels by its translation alone");
+	CHECK_MESSAGE(model[5] == 1.0f, "a fragment with no transform travels by its translation alone");
+	CHECK_MESSAGE(model[10] == 1.0f, "a fragment with no transform travels by its translation alone");
+	CHECK_MESSAGE(model[15] == 1.0f, "a fragment with no transform travels by its translation alone");
+	CHECK_MESSAGE(model[12] == 10.0f, "a fragment with no transform travels by its translation alone");
+	CHECK_MESSAGE(model[13] == 20.0f, "a fragment with no transform travels by its translation alone");
+}
 
+
+TEST_CASE("a rotated fragment is translated in the rotated frame, and the transform's columns are left alone")
+{
+	float model[16];
 	float rotation[16] = {};
 	rotation[1] = 1.0f;
 	rotation[4] = -1.0f;
 	rotation[10] = 1.0f;
 	rotation[15] = 1.0f;
 	UI_Render_Model_Matrix(rotation, 10.0f, 20.0f, model);
-	Check(model[12] == -20.0f && model[13] == 10.0f, "a rotated fragment is translated in the rotated frame, not the screen's");
-	Check(model[1] == 1.0f && model[4] == -1.0f, "and the transform's columns are left alone");
+	CHECK_MESSAGE(model[12] == -20.0f, "a rotated fragment is translated in the rotated frame, not the screen's");
+	CHECK_MESSAGE(model[13] == 10.0f, "a rotated fragment is translated in the rotated frame, not the screen's");
+	CHECK_MESSAGE(model[1] == 1.0f, "and the transform's columns are left alone");
+	CHECK_MESSAGE(model[4] == -1.0f, "and the transform's columns are left alone");
+}
 
+
+TEST_CASE("a scaling transform scales the fragment's translation and keeps its own")
+{
+	float model[16];
 	float scaled[16] = {};
 	scaled[0] = 2.0f;
 	scaled[5] = 2.0f;
@@ -183,8 +226,14 @@ void Test_Render_Transform(void)
 	scaled[13] = 6.0f;
 	scaled[15] = 1.0f;
 	UI_Render_Model_Matrix(scaled, 10.0f, 20.0f, model);
-	Check(model[12] == 25.0f && model[13] == 46.0f, "a scaling transform scales the fragment's translation and keeps its own");
+	CHECK_MESSAGE(model[12] == 25.0f, "a scaling transform scales the fragment's translation and keeps its own");
+	CHECK_MESSAGE(model[13] == 46.0f, "a scaling transform scales the fragment's translation and keeps its own");
+}
 
+
+TEST_CASE("a perspective row reaches the fragment's translation too")
+{
+	float model[16];
 	float perspective[16] = {};
 	perspective[0] = 1.0f;
 	perspective[3] = 0.01f;
@@ -192,22 +241,32 @@ void Test_Render_Transform(void)
 	perspective[10] = 1.0f;
 	perspective[15] = 1.0f;
 	UI_Render_Model_Matrix(perspective, 10.0f, 20.0f, model);
-	Check(model[15] > 1.09f && model[15] < 1.11f, "a perspective row reaches the fragment's translation too");
+	CHECK_MESSAGE(model[15] > 1.09f, "a perspective row reaches the fragment's translation too");
+	CHECK_MESSAGE(model[15] < 1.11f, "a perspective row reaches the fragment's translation too");
 }
 
 
-void Test_Render_Mask(void)
+TEST_CASE("each mask operation gives its stencil step, and nesting past eight bits is refused")
 {
 	UIRenderMaskStep step;
 
-	Check(UI_Render_Mask_Step(UI_RENDER_MASK_SET, 7, step) && step.Clear && !step.Increment && step.Write == 1 && step.Reference == 1,
-		  "a mask that starts over clears whatever was there and keeps its own shape");
-	Check(UI_Render_Mask_Step(UI_RENDER_MASK_SET_INVERSE, 7, step) && step.Clear && !step.Increment && step.Write == 1 && step.Reference == 0,
-		  "an inverted mask writes the same shape and keeps everything but it");
-	Check(UI_Render_Mask_Step(UI_RENDER_MASK_INTERSECT, 1, step) && !step.Clear && step.Increment && step.Reference == 2,
-		  "a narrowing mask counts up from what is already there");
-	Check(UI_Render_Mask_Step(UI_RENDER_MASK_INTERSECT, 0, step) && step.Reference == 1, "and counts from nothing as well");
-	Check(!UI_Render_Mask_Step(UI_RENDER_MASK_INTERSECT, 255, step), "masks nested past what eight bits count are refused");
+	CHECK_MESSAGE(UI_Render_Mask_Step(UI_RENDER_MASK_SET, 7, step), "a mask that starts over clears whatever was there and keeps its own shape");
+	CHECK_MESSAGE(step.Clear, "a mask that starts over clears whatever was there and keeps its own shape");
+	CHECK_MESSAGE(!step.Increment, "a mask that starts over clears whatever was there and keeps its own shape");
+	CHECK_MESSAGE(step.Write == 1, "a mask that starts over clears whatever was there and keeps its own shape");
+	CHECK_MESSAGE(step.Reference == 1, "a mask that starts over clears whatever was there and keeps its own shape");
+	CHECK_MESSAGE(UI_Render_Mask_Step(UI_RENDER_MASK_SET_INVERSE, 7, step), "an inverted mask writes the same shape and keeps everything but it");
+	CHECK_MESSAGE(step.Clear, "an inverted mask writes the same shape and keeps everything but it");
+	CHECK_MESSAGE(!step.Increment, "an inverted mask writes the same shape and keeps everything but it");
+	CHECK_MESSAGE(step.Write == 1, "an inverted mask writes the same shape and keeps everything but it");
+	CHECK_MESSAGE(step.Reference == 0, "an inverted mask writes the same shape and keeps everything but it");
+	CHECK_MESSAGE(UI_Render_Mask_Step(UI_RENDER_MASK_INTERSECT, 1, step), "a narrowing mask counts up from what is already there");
+	CHECK_MESSAGE(!step.Clear, "a narrowing mask counts up from what is already there");
+	CHECK_MESSAGE(step.Increment, "a narrowing mask counts up from what is already there");
+	CHECK_MESSAGE(step.Reference == 2, "a narrowing mask counts up from what is already there");
+	CHECK_MESSAGE(UI_Render_Mask_Step(UI_RENDER_MASK_INTERSECT, 0, step), "and counts from nothing as well");
+	CHECK_MESSAGE(step.Reference == 1, "and counts from nothing as well");
+	CHECK_MESSAGE(!UI_Render_Mask_Step(UI_RENDER_MASK_INTERSECT, 255, step), "masks nested past what eight bits count are refused");
 }
 
 
@@ -234,59 +293,91 @@ std::vector<std::uint8_t> Build_PCX(int width, int height, int bytesperline, std
 }
 
 
-void Test_Image(void)
+TEST_CASE("a run-length PCX, an uncompressed one, and one with padded rows decode to the same pixels and palette")
 {
 	std::vector<std::uint8_t> palette = { 0, 0, 0, 255, 0, 0, 255, 0, 255, 255, 255, 255 };
 
 	std::vector<std::uint8_t> compressed = { 0xC4, 1, 0xC4, 3 };
 	UIImageIndexed image;
-	Check(UI_Decode_PCX(Build_PCX(4, 2, 4, compressed, palette), image), "an 8-bit run-length PCX decodes");
-	Check(image.Width == 4 && image.Height == 2 && image.Pixels.size() == 8, "and reports the size its header claims");
-	Check(image.Pixels[0] == 1 && image.Pixels[3] == 1 && image.Pixels[4] == 3 && image.Pixels[7] == 3, "a run fills its whole row");
-	Check(image.Palette[3] == 255 && image.Palette[4] == 0 && image.Palette[5] == 0, "and the palette comes off the end of the file");
+	CHECK_MESSAGE(UI_Decode_PCX(Build_PCX(4, 2, 4, compressed, palette), image), "an 8-bit run-length PCX decodes");
+	CHECK_MESSAGE(image.Width == 4, "and reports the size its header claims");
+	CHECK_MESSAGE(image.Height == 2, "and reports the size its header claims");
+	CHECK_MESSAGE(image.Pixels.size() == 8, "and reports the size its header claims");
+	CHECK_MESSAGE(image.Pixels[0] == 1, "a run fills its whole row");
+	CHECK_MESSAGE(image.Pixels[3] == 1, "a run fills its whole row");
+	CHECK_MESSAGE(image.Pixels[4] == 3, "a run fills its whole row");
+	CHECK_MESSAGE(image.Pixels[7] == 3, "a run fills its whole row");
+	CHECK_MESSAGE(image.Palette[3] == 255, "and the palette comes off the end of the file");
+	CHECK_MESSAGE(image.Palette[4] == 0, "and the palette comes off the end of the file");
+	CHECK_MESSAGE(image.Palette[5] == 0, "and the palette comes off the end of the file");
 
 	std::vector<std::uint8_t> literal = { 1, 1, 1, 1, 3, 3, 3, 3 };
 	UIImageIndexed plain;
-	Check(UI_Decode_PCX(Build_PCX(4, 2, 4, literal, palette), plain), "an uncompressed PCX decodes");
-	Check(plain.Pixels == image.Pixels, "and holds the same pixels the compressed one does");
+	CHECK_MESSAGE(UI_Decode_PCX(Build_PCX(4, 2, 4, literal, palette), plain), "an uncompressed PCX decodes");
+	CHECK_MESSAGE(plain.Pixels == image.Pixels, "and holds the same pixels the compressed one does");
 
 	std::vector<std::uint8_t> padded = { 1, 1, 1, 2, 3, 3, 3, 2 };
 	UIImageIndexed narrow;
-	Check(UI_Decode_PCX(Build_PCX(3, 2, 4, padded, palette), narrow), "a row padded past the picture decodes");
-	Check(narrow.Width == 3 && narrow.Pixels.size() == 6 && narrow.Pixels[2] == 1 && narrow.Pixels[3] == 3, "and the padding never reaches the picture");
+	CHECK_MESSAGE(UI_Decode_PCX(Build_PCX(3, 2, 4, padded, palette), narrow), "a row padded past the picture decodes");
+	CHECK_MESSAGE(narrow.Width == 3, "and the padding never reaches the picture");
+	REQUIRE_MESSAGE(narrow.Pixels.size() == 6, "and the padding never reaches the picture");
+	CHECK_MESSAGE(narrow.Pixels[2] == 1, "and the padding never reaches the picture");
+	CHECK_MESSAGE(narrow.Pixels[3] == 3, "and the padding never reaches the picture");
+}
+
+
+TEST_CASE("an indexed picture becomes four bytes a pixel, and a magenta pixel comes back clear")
+{
+	std::vector<std::uint8_t> palette = { 0, 0, 0, 255, 0, 0, 255, 0, 255, 255, 255, 255 };
+	std::vector<std::uint8_t> compressed = { 0xC4, 1, 0xC4, 3 };
+	UIImageIndexed image;
+	REQUIRE(UI_Decode_PCX(Build_PCX(4, 2, 4, compressed, palette), image));
 
 	std::vector<std::uint8_t> rgba;
-	Check(UI_Indexed_To_RGBA(image, rgba) && rgba.size() == 32, "an indexed picture becomes four bytes a pixel");
-	Check(rgba[0] == 255 && rgba[1] == 0 && rgba[2] == 0 && rgba[3] == 255, "an opaque pixel takes its palette color");
+	CHECK_MESSAGE(UI_Indexed_To_RGBA(image, rgba), "an indexed picture becomes four bytes a pixel");
+	CHECK_MESSAGE(rgba.size() == 32, "an indexed picture becomes four bytes a pixel");
+	CHECK_MESSAGE(rgba[0] == 255, "an opaque pixel takes its palette color");
+	CHECK_MESSAGE(rgba[1] == 0, "an opaque pixel takes its palette color");
+	CHECK_MESSAGE(rgba[2] == 0, "an opaque pixel takes its palette color");
+	CHECK_MESSAGE(rgba[3] == 255, "an opaque pixel takes its palette color");
 
 	UIImageIndexed keyed;
 	keyed.Width = 1;
 	keyed.Height = 1;
 	keyed.Pixels = { 2 };
 	std::memcpy(keyed.Palette, palette.data(), palette.size());
-	Check(UI_Indexed_To_RGBA(keyed, rgba) && rgba[3] == 0 && rgba[0] == 0 && rgba[1] == 0 && rgba[2] == 0,
-		  "a magenta pixel comes back clear, with no color left to bleed");
+	CHECK_MESSAGE(UI_Indexed_To_RGBA(keyed, rgba), "a magenta pixel comes back clear, with no color left to bleed");
+	CHECK_MESSAGE(rgba[3] == 0, "a magenta pixel comes back clear, with no color left to bleed");
+	CHECK_MESSAGE(rgba[0] == 0, "a magenta pixel comes back clear, with no color left to bleed");
+	CHECK_MESSAGE(rgba[1] == 0, "a magenta pixel comes back clear, with no color left to bleed");
+	CHECK_MESSAGE(rgba[2] == 0, "a magenta pixel comes back clear, with no color left to bleed");
+}
 
+
+TEST_CASE("a PCX that is empty, of another kind, without its palette, short of its rows, or with an empty run is refused")
+{
+	std::vector<std::uint8_t> palette = { 0, 0, 0, 255, 0, 0, 255, 0, 255, 255, 255, 255 };
+	std::vector<std::uint8_t> compressed = { 0xC4, 1, 0xC4, 3 };
 	UIImageIndexed rejected;
-	Check(!UI_Decode_PCX(std::span<std::uint8_t const>(), rejected), "no bytes at all is not a picture");
+	CHECK_MESSAGE(!UI_Decode_PCX(std::span<std::uint8_t const>(), rejected), "no bytes at all is not a picture");
 
 	std::vector<std::uint8_t> notpcx = Build_PCX(4, 2, 4, compressed, palette);
 	notpcx[0] = 11;
-	Check(!UI_Decode_PCX(notpcx, rejected), "a file that is not a PCX is refused");
+	CHECK_MESSAGE(!UI_Decode_PCX(notpcx, rejected), "a file that is not a PCX is refused");
 
 	std::vector<std::uint8_t> truecolor = Build_PCX(4, 2, 4, compressed, palette);
 	truecolor[65] = 3;
-	Check(!UI_Decode_PCX(truecolor, rejected), "so is a PCX of three planes, which this loader does not read");
+	CHECK_MESSAGE(!UI_Decode_PCX(truecolor, rejected), "so is a PCX of three planes, which this loader does not read");
 
 	std::vector<std::uint8_t> nomarker = Build_PCX(4, 2, 4, compressed, palette);
 	nomarker[nomarker.size() - 769] = 0;
-	Check(!UI_Decode_PCX(nomarker, rejected), "a PCX without its palette marker is refused");
+	CHECK_MESSAGE(!UI_Decode_PCX(nomarker, rejected), "a PCX without its palette marker is refused");
 
 	std::vector<std::uint8_t> truncated = { 0xC4, 1 };
-	Check(!UI_Decode_PCX(Build_PCX(4, 2, 4, truncated, palette), rejected), "a picture that claims more rows than it holds is refused");
+	CHECK_MESSAGE(!UI_Decode_PCX(Build_PCX(4, 2, 4, truncated, palette), rejected), "a picture that claims more rows than it holds is refused");
 
 	std::vector<std::uint8_t> emptyrun = { 0xC0, 1, 0xC4, 3 };
-	Check(!UI_Decode_PCX(Build_PCX(4, 2, 4, emptyrun, palette), rejected), "a run of no pixels is refused rather than read forever");
+	CHECK_MESSAGE(!UI_Decode_PCX(Build_PCX(4, 2, 4, emptyrun, palette), rejected), "a run of no pixels is refused rather than read forever");
 }
 
 
@@ -321,37 +412,69 @@ UIImageIndexed Build_Sheet(int glyphwidth, int glyphheight, int cellsperrow, int
 }
 
 
-void Test_Sheet_Font(void)
+TEST_CASE("a font measures its margins, cells and advances off its alpha sheet, and finds a character's cell")
 {
 	UIImageIndexed alpha = Build_Sheet(6, 8, 16, 16, 4, 255);
 	UISheetFontMetrics metrics;
 
-	Check(UI_Sheet_Font_Metrics(alpha, metrics), "a font measures off its alpha sheet");
-	Check(metrics.TopMargin == 1 && metrics.LeftMargin == 1, "the blank margins around a cell are found");
-	Check(metrics.GlyphWidth == 6 && metrics.GlyphHeight == 8, "and the inked area inside it");
-	Check(metrics.CellsPerRow == 16 && metrics.Cell_Width() == 7 && metrics.Cell_Height() == 9, "a row holds as many cells as the sheet is wide");
-	Check(metrics.Advance['A'] == 4, "a character advances by the columns it inks");
+	CHECK_MESSAGE(UI_Sheet_Font_Metrics(alpha, metrics), "a font measures off its alpha sheet");
+	CHECK_MESSAGE(metrics.TopMargin == 1, "the blank margins around a cell are found");
+	CHECK_MESSAGE(metrics.LeftMargin == 1, "the blank margins around a cell are found");
+	CHECK_MESSAGE(metrics.GlyphWidth == 6, "and the inked area inside it");
+	CHECK_MESSAGE(metrics.GlyphHeight == 8, "and the inked area inside it");
+	CHECK_MESSAGE(metrics.CellsPerRow == 16, "a row holds as many cells as the sheet is wide");
+	CHECK_MESSAGE(metrics.Cell_Width() == 7, "a row holds as many cells as the sheet is wide");
+	CHECK_MESSAGE(metrics.Cell_Height() == 9, "a row holds as many cells as the sheet is wide");
+	CHECK_MESSAGE(metrics.Advance['A'] == 4, "a character advances by the columns it inks");
 
 	int x = 0;
 	int y = 0;
-	Check(UI_Sheet_Font_Cell(metrics, alpha, 'A', x, y) && x == (66 % 16) * 7 && y == (66 / 16) * 9, "a character's cell is the one after it");
+	CHECK_MESSAGE(UI_Sheet_Font_Cell(metrics, alpha, 'A', x, y), "a character's cell is the one after it");
+	CHECK_MESSAGE(x == (66 % 16) * 7, "a character's cell is the one after it");
+	CHECK_MESSAGE(y == (66 / 16) * 9, "a character's cell is the one after it");
+}
+
+
+TEST_CASE("a character past the end of a sheet, or a space, has no cell and takes the blank advance")
+{
+	UIImageIndexed alpha = Build_Sheet(6, 8, 16, 16, 4, 255);
+	UISheetFontMetrics metrics;
+	REQUIRE(UI_Sheet_Font_Metrics(alpha, metrics));
+	int x = 0;
+	int y = 0;
 
 	UIImageIndexed shallow = Build_Sheet(6, 8, 16, 2, 4, 255);
 	UISheetFontMetrics shallowmetrics;
-	Check(UI_Sheet_Font_Metrics(shallow, shallowmetrics), "a short sheet still measures");
-	Check(!UI_Sheet_Font_Cell(shallowmetrics, shallow, 'A', x, y), "a character past the end of a sheet has no cell");
-	Check(!UI_Sheet_Font_Cell(metrics, alpha, ' ', x, y) && !UI_Sheet_Font_Cell(metrics, alpha, '\t', x, y), "a space is moved over rather than drawn, whatever its cell holds");
-	Check(shallowmetrics.Advance['A'] == 6 / 3 + 1, "and falls back to the blank advance, as a space does");
+	CHECK_MESSAGE(UI_Sheet_Font_Metrics(shallow, shallowmetrics), "a short sheet still measures");
+	CHECK_MESSAGE(!UI_Sheet_Font_Cell(shallowmetrics, shallow, 'A', x, y), "a character past the end of a sheet has no cell");
+	CHECK_MESSAGE(!UI_Sheet_Font_Cell(metrics, alpha, ' ', x, y), "a space is moved over rather than drawn, whatever its cell holds");
+	CHECK_MESSAGE(!UI_Sheet_Font_Cell(metrics, alpha, '\t', x, y), "a space is moved over rather than drawn, whatever its cell holds");
+	CHECK_MESSAGE(shallowmetrics.Advance['A'] == 6 / 3 + 1, "and falls back to the blank advance, as a space does");
+}
 
+
+TEST_CASE("a sheet with nothing inked cannot be measured")
+{
 	UIImageIndexed blank = Build_Sheet(6, 8, 16, 16, 4, 255);
 	blank.Pixels.assign(blank.Pixels.size(), 0);
 	UISheetFontMetrics blankmetrics;
-	Check(!UI_Sheet_Font_Metrics(blank, blankmetrics), "a sheet with nothing inked cannot be measured");
+	CHECK_MESSAGE(!UI_Sheet_Font_Metrics(blank, blankmetrics), "a sheet with nothing inked cannot be measured");
+}
 
-	Check(UI_Sheet_Font_Coverage(alpha, 0, 0) == 0, "the margin around a glyph covers nothing");
-	Check(UI_Sheet_Font_Coverage(alpha, 8, 1) == 255, "an inked pixel covers fully");
-	Check(UI_Sheet_Font_Coverage(alpha, -1, 0) == 0 && UI_Sheet_Font_Coverage(alpha, 0, 10000) == 0, "a pixel off the sheet covers nothing");
 
+TEST_CASE("a glyph covers fully where it is inked and nothing in its margin or off the sheet")
+{
+	UIImageIndexed alpha = Build_Sheet(6, 8, 16, 16, 4, 255);
+	CHECK_MESSAGE(UI_Sheet_Font_Coverage(alpha, 0, 0) == 0, "the margin around a glyph covers nothing");
+	CHECK_MESSAGE(UI_Sheet_Font_Coverage(alpha, 8, 1) == 255, "an inked pixel covers fully");
+	CHECK_MESSAGE(UI_Sheet_Font_Coverage(alpha, -1, 0) == 0, "a pixel off the sheet covers nothing");
+	CHECK_MESSAGE(UI_Sheet_Font_Coverage(alpha, 0, 10000) == 0, "a pixel off the sheet covers nothing");
+}
+
+
+TEST_CASE("a font's palette is remapped to a color with its shading kept, and built into an atlas with clear uninked pixels")
+{
+	UIImageIndexed alpha = Build_Sheet(6, 8, 16, 16, 4, 255);
 	std::uint8_t palette[768] = {};
 	for (int entry = 0; entry < 256; entry++) {
 		palette[entry * 3 + 1] = (std::uint8_t)entry;
@@ -359,12 +482,14 @@ void Test_Sheet_Font(void)
 
 	std::uint8_t remapped[768] = {};
 	UI_Sheet_Font_Remap(palette, 255, 0, 0, remapped);
-	Check(remapped[0] == 0 && remapped[1] == 0 && remapped[2] == 0, "the darkest entry of a font's palette stays dark");
-	Check(remapped[255 * 3] > remapped[128 * 3], "a lighter entry stays lighter, so the shading survives");
+	CHECK_MESSAGE(remapped[0] == 0, "the darkest entry of a font's palette stays dark");
+	CHECK_MESSAGE(remapped[1] == 0, "the darkest entry of a font's palette stays dark");
+	CHECK_MESSAGE(remapped[2] == 0, "the darkest entry of a font's palette stays dark");
+	CHECK_MESSAGE(remapped[255 * 3] > remapped[128 * 3], "a lighter entry stays lighter, so the shading survives");
 
 	std::uint8_t green[768] = {};
 	UI_Sheet_Font_Remap(palette, 0, 255, 0, green);
-	Check(std::memcmp(remapped, green, sizeof(remapped)) != 0, "asking for another color gives another palette");
+	CHECK_MESSAGE(std::memcmp(remapped, green, sizeof(remapped)) != 0, "asking for another color gives another palette");
 
 	UIImageIndexed index = Build_Sheet(6, 8, 16, 16, 4, 255);
 	for (std::size_t pixel = 0; pixel < index.Pixels.size(); pixel++) {
@@ -375,24 +500,28 @@ void Test_Sheet_Font(void)
 	std::memcpy(index.Palette, palette, sizeof(palette));
 
 	std::vector<std::uint8_t> atlas;
-	Check(UI_Sheet_Font_Atlas(index, alpha, remapped, atlas) && atlas.size() == index.Pixels.size() * 4, "an atlas is four bytes a pixel");
+	CHECK_MESSAGE(UI_Sheet_Font_Atlas(index, alpha, remapped, atlas), "an atlas is four bytes a pixel");
+	CHECK_MESSAGE(atlas.size() == index.Pixels.size() * 4, "an atlas is four bytes a pixel");
 
 	std::size_t inked = ((std::size_t)1 * index.Width + 8) * 4;
 	std::size_t empty = 0;
-	Check(atlas[inked + 3] == 255 && atlas[inked] == remapped[255 * 3], "an inked pixel takes its remapped color at full coverage");
-	Check(atlas[empty + 3] == 0 && atlas[empty] == 0, "a pixel the sheet does not cover is clear, with no color left to bleed");
+	CHECK_MESSAGE(atlas[inked + 3] == 255, "an inked pixel takes its remapped color at full coverage");
+	CHECK_MESSAGE(atlas[inked] == remapped[255 * 3], "an inked pixel takes its remapped color at full coverage");
+	CHECK_MESSAGE(atlas[empty + 3] == 0, "a pixel the sheet does not cover is clear, with no color left to bleed");
+	CHECK_MESSAGE(atlas[empty] == 0, "a pixel the sheet does not cover is clear, with no color left to bleed");
 
 	UIImageIndexed mismatched = Build_Sheet(6, 8, 8, 16, 4, 255);
-	Check(!UI_Sheet_Font_Atlas(mismatched, alpha, remapped, atlas), "two sheets of different sizes are not a font");
+	CHECK_MESSAGE(!UI_Sheet_Font_Atlas(mismatched, alpha, remapped, atlas), "two sheets of different sizes are not a font");
 }
 
 
-void Test_Magnify(void)
+TEST_CASE("a magnified picture repeats every pixel it came from, and a short picture or a factor of nothing is refused")
 {
 	std::uint8_t const picture[16] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
 	std::vector<std::uint8_t> result;
 
-	Check(UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 16), 2, 2, 3, result) && result.size() == 6 * 6 * 4, "a picture magnified three times over is nine times its size");
+	CHECK_MESSAGE(UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 16), 2, 2, 3, result), "a picture magnified three times over is nine times its size");
+	CHECK_MESSAGE(result.size() == 6 * 6 * 4, "a picture magnified three times over is nine times its size");
 	bool repeated = result.size() == 144;
 	for (int y = 0; y < 6 && repeated; y++) {
 		for (int x = 0; x < 6 && repeated; x++) {
@@ -400,25 +529,33 @@ void Test_Magnify(void)
 			repeated = std::memcmp(result.data() + (y * 6 + x) * 4, pixel, 4) == 0;
 		}
 	}
-	Check(repeated, "and every pixel of it is the one it came from, repeated");
+	CHECK_MESSAGE(repeated, "and every pixel of it is the one it came from, repeated");
 
-	Check(UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 16), 2, 2, 1, result) && result.size() == 16 && std::memcmp(result.data(), picture, 16) == 0, "one times over is the picture itself");
+	CHECK_MESSAGE(UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 16), 2, 2, 1, result), "one times over is the picture itself");
+	REQUIRE_MESSAGE(result.size() == 16, "one times over is the picture itself");
+	CHECK_MESSAGE(std::memcmp(result.data(), picture, 16) == 0, "one times over is the picture itself");
 
-	Check(!UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 12), 2, 2, 2, result) && result.empty(), "a picture short of its size is refused");
-	Check(!UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 16), 2, 2, 0, result), "as is a factor of nothing");
+	CHECK_MESSAGE(!UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 12), 2, 2, 2, result), "a picture short of its size is refused");
+	CHECK_MESSAGE(result.empty(), "a picture short of its size is refused");
+	CHECK_MESSAGE(!UI_Render_Magnify_RGBA(std::span<std::uint8_t const>(picture, 16), 2, 2, 0, result), "as is a factor of nothing");
 }
 
 
-void Test_Reveal(void)
+TEST_CASE("a screen is one step open the moment it appears, and opens a step per frame due")
 {
 	float const full = 300.0f;
 
-	Check(UI_Reveal_Width(full, 1.0f, 0, 0.0f) == 24.0f, "a screen is one step open the moment it appears, 12 each side");
-	Check(UI_Reveal_Width(full, 1.0f, 39, 24.0f) == 24.0f, "and stays there until the next frame falls due");
-	Check(UI_Reveal_Width(full, 1.0f, 40, 24.0f) == 48.0f, "which opens it another 24");
-	Check(UI_Reveal_Width(full, 1.0f, 10000, 24.0f) == 48.0f, "and no more than that however late the pass comes");
-	Check(UI_Reveal_Width(full, 1.0f, 10000, full) == full, "a screen open stays open");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 1.0f, 0, 0.0f) == 24.0f, "a screen is one step open the moment it appears, 12 each side");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 1.0f, 39, 24.0f) == 24.0f, "and stays there until the next frame falls due");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 1.0f, 40, 24.0f) == 48.0f, "which opens it another 24");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 1.0f, 10000, 24.0f) == 48.0f, "and no more than that however late the pass comes");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 1.0f, 10000, full) == full, "a screen open stays open");
+}
 
+
+TEST_CASE("a screen opens a step at a time, its second half quicker, in the quarter second the original took")
+{
+	float const full = 300.0f;
 	int first = 0;
 	int second = 0;
 	float shown = 0.0f;
@@ -437,19 +574,35 @@ void Test_Reveal(void)
 			second = elapsed - first;
 		}
 	}
-	Check(first > 0 && second > 0 && second < first, "a screen opens its second half quicker than its first");
-	Check(stepped && shown == full, "a screen only ever opens further, a step at a time, and ends open");
-	Check(first + second > 250 && first + second < 300, "and a 300 pixel screen takes the quarter second the original took");
+	CHECK_MESSAGE(first > 0, "a screen opens its second half quicker than its first");
+	CHECK_MESSAGE(second > 0, "a screen opens its second half quicker than its first");
+	CHECK_MESSAGE(second < first, "a screen opens its second half quicker than its first");
+	REQUIRE_MESSAGE(stepped, "a screen only ever opens further, a step at a time, and ends open");
+	CHECK_MESSAGE(shown == full, "a screen only ever opens further, a step at a time, and ends open");
+	CHECK_MESSAGE(first + second > 250, "and a 300 pixel screen takes the quarter second the original took");
+	CHECK_MESSAGE(first + second < 300, "and a 300 pixel screen takes the quarter second the original took");
+}
 
+
+TEST_CASE("a machine that cannot keep up shows every band of the reveal")
+{
+	float const full = 300.0f;
+	float shown = 0.0f;
 	int passes = 0;
 	shown = 0.0f;
 	while (shown < full && passes < 100) {
 		shown = UI_Reveal_Width(full, 1.0f, passes * 100, shown);
 		passes++;
 	}
-	Check(passes == 13, "a machine that cannot keep up shows every band of the reveal");
+	CHECK_MESSAGE(passes == 13, "a machine that cannot keep up shows every band of the reveal");
+}
 
-	Check(UI_Reveal_Width(full * 2.0f, 2.0f, 40, 48.0f) == 96.0f, "a screen drawn at twice the size opens twice as fast in pixels");
+
+TEST_CASE("a screen drawn at twice the size opens twice as fast in pixels and in the same time")
+{
+	float const full = 300.0f;
+	float shown = 0.0f;
+	CHECK_MESSAGE(UI_Reveal_Width(full * 2.0f, 2.0f, 40, 48.0f) == 96.0f, "a screen drawn at twice the size opens twice as fast in pixels");
 	shown = 0.0f;
 	bool opening = false;
 	for (int elapsed = 0; elapsed <= 300; elapsed++) {
@@ -458,82 +611,86 @@ void Test_Reveal(void)
 			opening = shown < full * 2.0f;
 		}
 	}
-	Check(opening && shown == full * 2.0f, "and still takes the same time to open");
-
-	Check(UI_Reveal_Width(0.0f, 1.0f, 0, 0.0f) == 0.0f, "a screen with no width is open already");
-	Check(UI_Reveal_Width(full, 0.0f, 40, 24.0f) == 48.0f, "a scale of nothing is read as one to one");
-	Check(UI_Reveal_Width(full, 1.0f, -5, 24.0f) == full, "a clock that went backwards opens the screen rather than hiding it");
-
-	Check(!UI_Reveal_Finished(306.0f, 1.0f, 285) && UI_Reveal_Finished(306.0f, 1.0f, 286),
-		"a screen its last band covers keeps its bars until the original's final wait ends");
-	Check(!UI_Reveal_Finished(full, 1.0f, 275) && UI_Reveal_Finished(full, 1.0f, 276),
-		"which ends with the last band when that band came after it");
-	Check(UI_Reveal_Finished(full * 2.0f, 2.0f, 276) && !UI_Reveal_Finished(full * 2.0f, 2.0f, 275),
-		"a screen drawn at twice the size finishes at the same time");
-	Check(UI_Reveal_Finished(full, 1.0f, -5) && UI_Reveal_Finished(0.0f, 1.0f, 0),
-		"a clock that went backwards, or a screen with no width, is finished at once");
+	REQUIRE_MESSAGE(opening, "and still takes the same time to open");
+	CHECK_MESSAGE(shown == full * 2.0f, "and still takes the same time to open");
 }
 
 
-void Test_Dirty_State(void)
+TEST_CASE("a screen with no width, a scale of nothing, or a clock that went backwards opens the screen")
+{
+	float const full = 300.0f;
+	CHECK_MESSAGE(UI_Reveal_Width(0.0f, 1.0f, 0, 0.0f) == 0.0f, "a screen with no width is open already");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 0.0f, 40, 24.0f) == 48.0f, "a scale of nothing is read as one to one");
+	CHECK_MESSAGE(UI_Reveal_Width(full, 1.0f, -5, 24.0f) == full, "a clock that went backwards opens the screen rather than hiding it");
+}
+
+
+TEST_CASE("a screen keeps its bars until the original's final wait ends")
+{
+	float const full = 300.0f;
+	CHECK_MESSAGE(!UI_Reveal_Finished(306.0f, 1.0f, 285), "a screen its last band covers keeps its bars until the original's final wait ends");
+	CHECK_MESSAGE(UI_Reveal_Finished(306.0f, 1.0f, 286), "a screen its last band covers keeps its bars until the original's final wait ends");
+	CHECK_MESSAGE(!UI_Reveal_Finished(full, 1.0f, 275), "which ends with the last band when that band came after it");
+	CHECK_MESSAGE(UI_Reveal_Finished(full, 1.0f, 276), "which ends with the last band when that band came after it");
+	CHECK_MESSAGE(UI_Reveal_Finished(full * 2.0f, 2.0f, 276), "a screen drawn at twice the size finishes at the same time");
+	CHECK_MESSAGE(!UI_Reveal_Finished(full * 2.0f, 2.0f, 275), "a screen drawn at twice the size finishes at the same time");
+	CHECK_MESSAGE(UI_Reveal_Finished(full, 1.0f, -5), "a clock that went backwards, or a screen with no width, is finished at once");
+	CHECK_MESSAGE(UI_Reveal_Finished(0.0f, 1.0f, 0), "a clock that went backwards, or a screen with no width, is finished at once");
+}
+
+
+TEST_CASE("the dirty marks decide what a present uploads, survive a refused present, and are cleared by a reset")
+
 {
 	VideoDirtyStateClass dirty;
 
-	Check(!dirty.Is_Dirty(), "nothing is owed at the start");
+	CHECK_MESSAGE(!dirty.Is_Dirty(), "nothing is owed at the start");
 
 	dirty.Mark_Overlay();
-	Check(dirty.Is_Dirty(), "an overlay mark makes a present due");
+	CHECK_MESSAGE(dirty.Is_Dirty(), "an overlay mark makes a present due");
 	VideoDirtySnapshotType first = dirty.Consume();
-	Check(!first.Game && first.Overlay && first.Upload, "the first present uploads the frame the renderer has never seen");
-	Check(!dirty.Is_Dirty(), "consuming takes the marks");
+	CHECK_MESSAGE(!first.Game, "the first present uploads the frame the renderer has never seen");
+	CHECK_MESSAGE(first.Overlay, "the first present uploads the frame the renderer has never seen");
+	CHECK_MESSAGE(first.Upload, "the first present uploads the frame the renderer has never seen");
+	CHECK_MESSAGE(!dirty.Is_Dirty(), "consuming takes the marks");
 
 	dirty.Upload_Completed();
 	dirty.Mark_Overlay();
 	VideoDirtySnapshotType overlay = dirty.Consume();
-	Check(overlay.Overlay && !overlay.Upload, "an overlay-only present leaves the uploaded frame alone");
+	CHECK_MESSAGE(overlay.Overlay, "an overlay-only present leaves the uploaded frame alone");
+	CHECK_MESSAGE(!overlay.Upload, "an overlay-only present leaves the uploaded frame alone");
 
 	dirty.Mark_Game();
 	VideoDirtySnapshotType game = dirty.Consume();
-	Check(game.Game && game.Upload, "a game mark uploads the frame");
+	CHECK_MESSAGE(game.Game, "a game mark uploads the frame");
+	CHECK_MESSAGE(game.Upload, "a game mark uploads the frame");
 
 	dirty.Mark_Game();
 	VideoDirtySnapshotType consumed = dirty.Consume();
 	dirty.Mark_Overlay();
-	Check(dirty.Is_Dirty(), "a mark raised while a present runs survives it");
+	CHECK_MESSAGE(dirty.Is_Dirty(), "a mark raised while a present runs survives it");
 	dirty.Restore(consumed);
 	VideoDirtySnapshotType restored = dirty.Consume();
-	Check(restored.Game && restored.Overlay, "restoring a refused present keeps the marks raised since");
+	CHECK_MESSAGE(restored.Game, "restoring a refused present keeps the marks raised since");
+	CHECK_MESSAGE(restored.Overlay, "restoring a refused present keeps the marks raised since");
 
 	dirty.Restore(VideoDirtySnapshotType { false, false, false });
-	Check(dirty.Is_Dirty() && dirty.Consume().Overlay, "a refused present with nothing marked is retried as an overlay present");
+	CHECK_MESSAGE(dirty.Is_Dirty(), "a refused present with nothing marked is retried as an overlay present");
+	CHECK_MESSAGE(dirty.Consume().Overlay, "a refused present with nothing marked is retried as an overlay present");
 
 	dirty.Upload_Completed();
 	dirty.Invalidate_Frame();
 	VideoDirtySnapshotType invalidated = dirty.Consume();
-	Check(invalidated.Game && invalidated.Upload, "a renderer that lost the frame gets it uploaded again");
+	CHECK_MESSAGE(invalidated.Game, "a renderer that lost the frame gets it uploaded again");
+	CHECK_MESSAGE(invalidated.Upload, "a renderer that lost the frame gets it uploaded again");
 
 	dirty.Mark_Game();
 	dirty.Reset();
 	VideoDirtySnapshotType reset = dirty.Consume();
-	Check(!dirty.Is_Dirty() && !reset.Game && !reset.Overlay && reset.Upload, "a reset forgets the marks and the upload");
+	CHECK_MESSAGE(!dirty.Is_Dirty(), "a reset forgets the marks and the upload");
+	CHECK_MESSAGE(!reset.Game, "a reset forgets the marks and the upload");
+	CHECK_MESSAGE(!reset.Overlay, "a reset forgets the marks and the upload");
+	CHECK_MESSAGE(reset.Upload, "a reset forgets the marks and the upload");
 }
 
-}
-
-
-int main(void)
-{
-	Test_Ownership();
-	Test_Reconciliation();
-	Test_Render_Math();
-	Test_Render_Transform();
-	Test_Render_Mask();
-	Test_Image();
-	Test_Sheet_Font();
-	Test_Reveal();
-	Test_Magnify();
-	Test_Dirty_State();
-
-	std::printf("\n%s\n", Failures == 0 ? "PASSED" : "FAILED");
-	return(Failures == 0 ? 0 : 1);
 }
