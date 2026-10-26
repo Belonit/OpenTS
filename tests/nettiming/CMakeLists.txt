@@ -7,6 +7,7 @@ opents_add_test(NetTiming
         nettiming.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS
     LIBRARIES winmm
+    DOCTEST
 )
 
 opents_add_test(NetConnection
@@ -22,6 +23,7 @@ opents_add_test(NetConnection
         nettiming.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
     LIBRARIES winmm
+    DOCTEST
 )
 
 set_source_files_properties("${CMAKE_SOURCE_DIR}/code/combuf.cpp" PROPERTIES

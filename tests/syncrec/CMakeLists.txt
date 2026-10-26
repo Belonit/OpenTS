@@ -8,4 +8,5 @@ opents_add_test(SyncRec
     ENGINE
         syncrec.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
+    DOCTEST
 )

@@ -9,4 +9,5 @@ opents_add_test(Desync
         desync.cpp
         mpload.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
+    DOCTEST
 )

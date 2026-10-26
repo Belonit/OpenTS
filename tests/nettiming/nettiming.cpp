@@ -10,10 +10,11 @@
 
 #include "nettiming.h"
 
+#include "doctest/doctest.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <initializer_list>
-#include <iostream>
 #include <limits>
 #include <optional>
 #include <sstream>
@@ -83,143 +84,154 @@ namespace
 	};
 
 
-	int Failures = 0;
-
-
-	template<typename Actual, typename Expected>
-	void Expect_Equal(std::string const & name, Actual const & actual, Expected const & expected)
-	{
-		if (actual == expected) {
-			return;
-		}
-
-		std::cerr << name << ": expected " << expected << ", got " << actual << '\n';
-		Failures++;
-	}
-
-
-	void Expect(std::string const & name, bool condition)
-	{
-		if (!condition) {
-			std::cerr << name << " failed\n";
-			Failures++;
-		}
-	}
-
-
-	void Test_Rtt_Estimator(void)
+	TEST_CASE("the RTT estimator smooths samples by an eighth and a quarter, keeps out a retransmitted one, and resets")
 	{
 		using namespace NetTiming;
 
 		RttEstimator estimator;
-		Expect("estimator starts empty", !estimator.Has_Sample());
-		Expect("first sample accepted", estimator.Add_Sample(100));
-		Expect_Equal("first smoothed RTT", estimator.Smoothed_Rtt(), 100u);
-		Expect_Equal("first variation", estimator.Rtt_Variation(), 50u);
-		Expect_Equal("first RTO", estimator.Retransmit_Timeout(), 300u);
+		CHECK_MESSAGE(!estimator.Has_Sample(), "estimator starts empty");
+		CHECK_MESSAGE(estimator.Add_Sample(100), "first sample accepted");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 100u, "first smoothed RTT");
+		CHECK_MESSAGE(estimator.Rtt_Variation() == 50u, "first variation");
+		CHECK_MESSAGE(estimator.Retransmit_Timeout() == 300u, "first RTO");
 
-		Expect("second sample accepted", estimator.Add_Sample(140));
-		Expect_Equal("alpha one eighth", estimator.Smoothed_Rtt(), 105u);
-		Expect_Equal("beta one quarter", estimator.Rtt_Variation(), 48u);
-		Expect_Equal("updated RTO", estimator.Retransmit_Timeout(), 297u);
+		CHECK_MESSAGE(estimator.Add_Sample(140), "second sample accepted");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 105u, "alpha one eighth");
+		CHECK_MESSAGE(estimator.Rtt_Variation() == 48u, "beta one quarter");
+		CHECK_MESSAGE(estimator.Retransmit_Timeout() == 297u, "updated RTO");
 
-		Expect("retransmitted sample rejected", !estimator.Add_Sample(900, true));
-		Expect_Equal("Karn keeps smoothed RTT", estimator.Smoothed_Rtt(), 105u);
-		Expect_Equal("Karn keeps RTO", estimator.Retransmit_Timeout(), 297u);
+		CHECK_MESSAGE(!estimator.Add_Sample(900, true), "retransmitted sample rejected");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 105u, "Karn keeps smoothed RTT");
+		CHECK_MESSAGE(estimator.Retransmit_Timeout() == 297u, "Karn keeps RTO");
+
+		estimator.Reset();
+		CHECK_MESSAGE(!estimator.Has_Sample(), "reset clears estimator");
+		CHECK_MESSAGE(estimator.Retransmit_Timeout() == MINIMUM_RTO, "reset restores RTO");
+	}
+
+
+	TEST_CASE("the RTO clamps to its minimum and maximum")
+	{
+		using namespace NetTiming;
 
 		RttEstimator minimum;
 		minimum.Add_Sample(0);
-		Expect_Equal("minimum RTO clamp", minimum.Retransmit_Timeout(), MINIMUM_RTO);
+		CHECK_MESSAGE(minimum.Retransmit_Timeout() == MINIMUM_RTO, "minimum RTO clamp");
 
 		RttEstimator maximum;
 		maximum.Add_Sample(2000);
-		Expect_Equal("maximum RTO clamp", maximum.Retransmit_Timeout(), MAXIMUM_RTO);
+		CHECK_MESSAGE(maximum.Retransmit_Timeout() == MAXIMUM_RTO, "maximum RTO clamp");
+	}
+
+
+	TEST_CASE("unequal links keep independent RTOs")
+	{
+		using namespace NetTiming;
 
 		RttEstimator fast_link;
 		RttEstimator slow_link;
 		fast_link.Add_Sample(50);
 		slow_link.Add_Sample(300);
-		Expect("unequal links keep independent RTOs", fast_link.Retransmit_Timeout() < slow_link.Retransmit_Timeout());
-
-		estimator.Reset();
-		Expect("reset clears estimator", !estimator.Has_Sample());
-		Expect_Equal("reset restores RTO", estimator.Retransmit_Timeout(), MINIMUM_RTO);
+		CHECK(fast_link.Retransmit_Timeout() < slow_link.Retransmit_Timeout());
 	}
 
 
-	void Test_Clock_And_Wrap(void)
+	TEST_CASE("an acknowledgement and a retry are timed across the clock wrap")
 	{
 		using namespace NetTiming;
 
 		FakeClock clock;
 		clock.Set(0x00000020u);
 		RttEstimator estimator;
-		Expect("wrap sample accepted", estimator.Acknowledge(0xfffffff0u, 1, clock));
-		Expect_Equal("wrap elapsed", estimator.Smoothed_Rtt(), 48u);
-		Expect("retransmitted acknowledgement ignored", !estimator.Acknowledge(0, 2, clock));
+		CHECK_MESSAGE(estimator.Acknowledge(0xfffffff0u, 1, clock), "wrap sample accepted");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 48u, "wrap elapsed");
+		CHECK_MESSAGE(!estimator.Acknowledge(0, 2, clock), "retransmitted acknowledgement ignored");
 
-		Expect("wrapped retry due", Retransmit_Is_Due(0xfffffff0u, 0x00000054u, 100, 0));
-		Expect("wrapped retry not early", !Retransmit_Is_Due(0xfffffff0u, 0x00000040u, 100, 0));
+		CHECK_MESSAGE(Retransmit_Is_Due(0xfffffff0u, 0x00000054u, 100, 0), "wrapped retry due");
+		CHECK_MESSAGE(!Retransmit_Is_Due(0xfffffff0u, 0x00000040u, 100, 0), "wrapped retry not early");
 	}
 
 
-	void Test_Retransmit_Backoff(void)
+	TEST_CASE("the retransmit delay doubles per retry, clamped to the RTO range and the connection timeout")
 	{
 		using namespace NetTiming;
 
-		Expect_Equal("base retry", Retransmit_Delay(100, 0), 100u);
-		Expect_Equal("first backoff", Retransmit_Delay(100, 1), 200u);
-		Expect_Equal("second backoff", Retransmit_Delay(100, 2), 400u);
-		Expect_Equal("third backoff", Retransmit_Delay(100, 3), 800u);
-		Expect_Equal("fourth backoff", Retransmit_Delay(100, 4), 1600u);
-		Expect_Equal("backoff saturation", Retransmit_Delay(100, 20), MAXIMUM_RTO);
-		Expect_Equal("base clamp", Retransmit_Delay(1, 0), MINIMUM_RTO);
-		Expect_Equal("connection timeout minimum", Connection_Timeout(0, MINIMUM_RTO), 2000u);
-		Expect_Equal("connection timeout follows RTT", Connection_Timeout(500, MINIMUM_RTO), 4250u);
-		Expect_Equal("connection timeout ceiling", Connection_Timeout(10000, MAXIMUM_RTO), 30000u);
-		Expect_Equal("backoff reaches connection timeout", Retransmit_Delay(500, 8, 4250), 4250u);
-
-		Expect_Equal("first retry keeps a small RTO", Initial_Retry_Timeout(300, 2000), 300u);
-		Expect_Equal("first retry is bounded by a quarter of the timeout", Initial_Retry_Timeout(1600, 2000), 500u);
-		Expect_Equal("first retry bound keeps the floor", Initial_Retry_Timeout(1600, 300), MINIMUM_RTO);
-		Expect_Equal("slow link keeps its RTO under a long timeout", Initial_Retry_Timeout(2055, Connection_Timeout(2015, 2055)), 2055u);
-		Expect_Equal("bounded first retry allows three sends before the timeout", Retransmit_Delay(500, 0) + Retransmit_Delay(500, 1), 1500u);
+		CHECK_MESSAGE(Retransmit_Delay(100, 0) == 100u, "base retry");
+		CHECK_MESSAGE(Retransmit_Delay(100, 1) == 200u, "first backoff");
+		CHECK_MESSAGE(Retransmit_Delay(100, 2) == 400u, "second backoff");
+		CHECK_MESSAGE(Retransmit_Delay(100, 3) == 800u, "third backoff");
+		CHECK_MESSAGE(Retransmit_Delay(100, 4) == 1600u, "fourth backoff");
+		CHECK_MESSAGE(Retransmit_Delay(100, 20) == MAXIMUM_RTO, "backoff saturation");
+		CHECK_MESSAGE(Retransmit_Delay(1, 0) == MINIMUM_RTO, "base clamp");
+		CHECK_MESSAGE(Retransmit_Delay(500, 8, 4250) == 4250u, "backoff reaches connection timeout");
 	}
 
 
-	void Test_Backoff_Timeout(void)
+	TEST_CASE("the connection timeout follows the RTT between its minimum and ceiling")
 	{
 		using namespace NetTiming;
 
-		Expect_Equal("backed off RTO extends the timeout", Connection_Timeout(10, 800), 3200u);
-		Expect_Equal("maximum RTO fits below the timeout ceiling", Connection_Timeout(10, MAXIMUM_RTO), 16000u);
-		Expect_Equal("large RTO calculation keeps the hard ceiling", Connection_Timeout(10, 0xffffffffu), MAXIMUM_CONNECTION_TIMEOUT);
+		CHECK_MESSAGE(Connection_Timeout(0, MINIMUM_RTO) == 2000u, "connection timeout minimum");
+		CHECK_MESSAGE(Connection_Timeout(500, MINIMUM_RTO) == 4250u, "connection timeout follows RTT");
+		CHECK_MESSAGE(Connection_Timeout(10000, MAXIMUM_RTO) == 30000u, "connection timeout ceiling");
+	}
+
+
+	TEST_CASE("the first retry keeps a small RTO, bounded by a quarter of the timeout")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(Initial_Retry_Timeout(300, 2000) == 300u, "first retry keeps a small RTO");
+		CHECK_MESSAGE(Initial_Retry_Timeout(1600, 2000) == 500u, "first retry is bounded by a quarter of the timeout");
+		CHECK_MESSAGE(Initial_Retry_Timeout(1600, 300) == MINIMUM_RTO, "first retry bound keeps the floor");
+		CHECK_MESSAGE(Initial_Retry_Timeout(2055, Connection_Timeout(2015, 2055)) == 2055u, "slow link keeps its RTO under a long timeout");
+		CHECK_MESSAGE(Retransmit_Delay(500, 0) + Retransmit_Delay(500, 1) == 1500u, "bounded first retry allows three sends before the timeout");
+	}
+
+
+	TEST_CASE("a backed off RTO extends the connection timeout under its hard ceiling")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(Connection_Timeout(10, 800) == 3200u, "backed off RTO extends the timeout");
+		CHECK_MESSAGE(Connection_Timeout(10, MAXIMUM_RTO) == 16000u, "maximum RTO fits below the timeout ceiling");
+		CHECK_MESSAGE(Connection_Timeout(10, 0xffffffffu) == MAXIMUM_CONNECTION_TIMEOUT, "large RTO calculation keeps the hard ceiling");
+	}
+
+
+	TEST_CASE("a packet captures the full backed off RTO and sends twice more before the extended timeout")
+	{
+		using namespace NetTiming;
 
 		for (Milliseconds rto : {100u, 500u, 800u, 1600u, MAXIMUM_RTO}) {
+			INFO("RTO ", rto);
 			Milliseconds const timeout = Connection_Timeout(10, rto);
 			Milliseconds const initial_retry = Initial_Retry_Timeout(rto, timeout);
-			Expect_Equal("packet captures the full backed off RTO", initial_retry, rto);
+			CHECK_MESSAGE(initial_retry == rto, "packet captures the full backed off RTO");
 
 			RetransmitState state{1000, 1000, initial_retry, 1};
 			RetryDecision decision = Evaluate_Retry(state, 1000 + rto, rto, timeout, true, true);
-			Expect("second transmission precedes the extended timeout", decision.Send && !decision.TimedOut);
+			CHECK_MESSAGE(decision.Send, "second transmission precedes the extended timeout");
+			CHECK_MESSAGE(!decision.TimedOut, "second transmission precedes the extended timeout");
 			state.LastSend += rto;
 			state.TransmissionCount++;
 			decision = Evaluate_Retry(state, 1000 + 3 * rto, rto, timeout, true, true);
-			Expect("third transmission precedes the extended timeout", decision.Send && !decision.TimedOut);
-			Expect("extended timeout still expires", Evaluate_Retry(state, 1000 + timeout, rto, timeout, true, true).TimedOut);
+			CHECK_MESSAGE(decision.Send, "third transmission precedes the extended timeout");
+			CHECK_MESSAGE(!decision.TimedOut, "third transmission precedes the extended timeout");
+			CHECK_MESSAGE(Evaluate_Retry(state, 1000 + timeout, rto, timeout, true, true).TimedOut, "extended timeout still expires");
 		}
 	}
 
 
-	void Test_Latency_Increase(void)
+	TEST_CASE("a link that slows down still produces a clean sample, with a bounded timeout")
 	{
 		using namespace NetTiming;
 
 		for (Milliseconds round_trip : {600u, 1500u}) {
+			INFO("round trip ", round_trip);
 			FakeTransport transport;
 			transport.Send(0);
-			Expect("latency increase starts from a measured fast link", transport.Acknowledge(10));
+			CHECK_MESSAGE(transport.Acknowledge(10), "latency increase starts from a measured fast link");
 
 			bool measured = false;
 			for (unsigned int packet = 0; packet < 10 && !measured; packet++) {
@@ -231,244 +243,321 @@ namespace
 				measured = transport.Acknowledge(sent_at + round_trip);
 			}
 
-			Expect("slower link eventually produces a clean sample", measured);
-			Expect("clean sample updates the stale fast-link RTT", transport.Rtt().Smoothed_Rtt() > 10);
-			Expect("clean sample arrives before the captured retry", transport.Base_Rto() > round_trip);
-			Expect("recovery keeps the connection timeout bounded", transport.Timeout() <= MAXIMUM_CONNECTION_TIMEOUT);
+			CHECK_MESSAGE(measured, "slower link eventually produces a clean sample");
+			CHECK_MESSAGE(transport.Rtt().Smoothed_Rtt() > 10, "clean sample updates the stale fast-link RTT");
+			CHECK_MESSAGE(transport.Base_Rto() > round_trip, "clean sample arrives before the captured retry");
+			CHECK_MESSAGE(transport.Timeout() <= MAXIMUM_CONNECTION_TIMEOUT, "recovery keeps the connection timeout bounded");
 		}
 	}
 
 
-	void Test_Retry_Decisions(void)
+	TEST_CASE("a new packet sends at once, and an adaptive one waits its captured RTO and then its backoff")
 	{
 		using namespace NetTiming;
 
 		RetransmitState state;
 		RetryDecision decision = Evaluate_Retry(state, 1000, 800, 2000, true, true);
-		Expect("new packet sends immediately", decision.Send && !decision.TimedOut);
+		CHECK_MESSAGE(decision.Send, "new packet sends immediately");
+		CHECK_MESSAGE(!decision.TimedOut, "new packet sends immediately");
 
 		state = {1000, 1000, 100, 1};
-		Expect("adaptive packet keeps captured RTO", !Evaluate_Retry(state, 1099, 800, 2000, true, true).Send);
-		Expect("adaptive packet sends at captured RTO", Evaluate_Retry(state, 1100, 800, 2000, true, true).Send);
+		CHECK_MESSAGE(!Evaluate_Retry(state, 1099, 800, 2000, true, true).Send, "adaptive packet keeps captured RTO");
+		CHECK_MESSAGE(Evaluate_Retry(state, 1100, 800, 2000, true, true).Send, "adaptive packet sends at captured RTO");
 
 		state = {1000, 1100, 100, 2};
-		Expect("adaptive retry waits through backoff", !Evaluate_Retry(state, 1299, 800, 2000, true, true).Send);
-		Expect("adaptive retry sends after backoff", Evaluate_Retry(state, 1300, 800, 2000, true, true).Send);
-
-		state = {1000, 1000, 100, 4};
-		Expect("fixed channel uses current retry delay", !Evaluate_Retry(state, 1399, 400, 2000, true, false).Send);
-		decision = Evaluate_Retry(state, 1400, 400, 2000, true, false);
-		Expect("fixed channel does not back off", decision.Send && !decision.TimedOut);
-
-		state = {1000, 1900, 100, 1};
-		decision = Evaluate_Retry(state, 3000, 100, 2000, true, true);
-		Expect("connection timeout flags the link", decision.TimedOut);
-		Expect("timed-out packet still retries when due", decision.Send);
-		decision = Evaluate_Retry(state, 3000, 100, 2000, false, true);
-		Expect("disabled connection timeout still retries", !decision.TimedOut && decision.Send);
-
-		state = {1000, 2950, 100, 1};
-		decision = Evaluate_Retry(state, 3000, 100, 2000, true, true);
-		Expect("timed-out packet waits for its backoff", decision.TimedOut && !decision.Send);
-
-		state = {1000, 5000, 100, 6};
-		Expect("timed-out packet waits for the connection timeout cap", !Evaluate_Retry(state, 6999, 100, 2000, true, true).Send);
-		Expect("timed-out packet retries at the connection timeout cap", Evaluate_Retry(state, 7000, 100, 2000, true, true).Send);
-
-		state = {0xffffff00u, 0xfffffff0u, 100, 1};
-		Expect("retry decision handles clock wrap", Evaluate_Retry(state, 0x00000054u, 800, 2000, true, true).Send);
+		CHECK_MESSAGE(!Evaluate_Retry(state, 1299, 800, 2000, true, true).Send, "adaptive retry waits through backoff");
+		CHECK_MESSAGE(Evaluate_Retry(state, 1300, 800, 2000, true, true).Send, "adaptive retry sends after backoff");
 	}
 
 
-	void Test_Loss_Jitter_And_Reordering(void)
+	TEST_CASE("a fixed channel uses the current retry delay and does not back off")
+	{
+		using namespace NetTiming;
+
+		RetransmitState const state{1000, 1000, 100, 4};
+		CHECK_MESSAGE(!Evaluate_Retry(state, 1399, 400, 2000, true, false).Send, "fixed channel uses current retry delay");
+		RetryDecision const decision = Evaluate_Retry(state, 1400, 400, 2000, true, false);
+		CHECK_MESSAGE(decision.Send, "fixed channel does not back off");
+		CHECK_MESSAGE(!decision.TimedOut, "fixed channel does not back off");
+	}
+
+
+	TEST_CASE("a connection timeout flags the link, but a packet still retries when its backoff allows")
+	{
+		using namespace NetTiming;
+
+		RetransmitState state{1000, 1900, 100, 1};
+		RetryDecision decision = Evaluate_Retry(state, 3000, 100, 2000, true, true);
+		CHECK_MESSAGE(decision.TimedOut, "connection timeout flags the link");
+		CHECK_MESSAGE(decision.Send, "timed-out packet still retries when due");
+		decision = Evaluate_Retry(state, 3000, 100, 2000, false, true);
+		CHECK_MESSAGE(!decision.TimedOut, "disabled connection timeout still retries");
+		CHECK_MESSAGE(decision.Send, "disabled connection timeout still retries");
+
+		state = {1000, 2950, 100, 1};
+		decision = Evaluate_Retry(state, 3000, 100, 2000, true, true);
+		CHECK_MESSAGE(decision.TimedOut, "timed-out packet waits for its backoff");
+		CHECK_MESSAGE(!decision.Send, "timed-out packet waits for its backoff");
+	}
+
+
+	TEST_CASE("a timed-out packet waits for the connection timeout cap")
+	{
+		using namespace NetTiming;
+
+		RetransmitState const state{1000, 5000, 100, 6};
+		CHECK_MESSAGE(!Evaluate_Retry(state, 6999, 100, 2000, true, true).Send, "timed-out packet waits for the connection timeout cap");
+		CHECK_MESSAGE(Evaluate_Retry(state, 7000, 100, 2000, true, true).Send, "timed-out packet retries at the connection timeout cap");
+	}
+
+
+	TEST_CASE("a retry decision handles the clock wrap")
+	{
+		using namespace NetTiming;
+
+		RetransmitState const state{0xffffff00u, 0xfffffff0u, 100, 1};
+		CHECK(Evaluate_Retry(state, 0x00000054u, 800, 2000, true, true).Send);
+	}
+
+
+	TEST_CASE("reordered acknowledgements both sample, and a duplicate ambiguous one is excluded")
 	{
 		using namespace NetTiming;
 
 		FakeClock clock;
 		RttEstimator reordered;
 		clock.Set(1200);
-		Expect("newer packet ACK samples first", reordered.Acknowledge(1100, 1, clock));
+		CHECK_MESSAGE(reordered.Acknowledge(1100, 1, clock), "newer packet ACK samples first");
 		clock.Set(1300);
-		Expect("older packet ACK can sample after reordering", reordered.Acknowledge(1000, 1, clock));
-		Expect_Equal("reordered samples keep alpha filter", reordered.Smoothed_Rtt(), 125u);
-		Expect_Equal("reordered samples keep beta filter", reordered.Rtt_Variation(), 88u);
+		CHECK_MESSAGE(reordered.Acknowledge(1000, 1, clock), "older packet ACK can sample after reordering");
+		CHECK_MESSAGE(reordered.Smoothed_Rtt() == 125u, "reordered samples keep alpha filter");
+		CHECK_MESSAGE(reordered.Rtt_Variation() == 88u, "reordered samples keep beta filter");
 
 		clock.Set(2000);
-		Expect("duplicate ambiguous ACK is excluded by Karn", !reordered.Acknowledge(1500, 2, clock));
-		Expect_Equal("ambiguous ACK leaves SRTT unchanged", reordered.Smoothed_Rtt(), 125u);
+		CHECK_MESSAGE(!reordered.Acknowledge(1500, 2, clock), "duplicate ambiguous ACK is excluded by Karn");
+		CHECK_MESSAGE(reordered.Smoothed_Rtt() == 125u, "ambiguous ACK leaves SRTT unchanged");
+	}
+
+
+	TEST_CASE("jitter raises the variation and keeps the RTO bounded")
+	{
+		using namespace NetTiming;
 
 		RttEstimator jitter;
 		for (Milliseconds sample : {20u, 400u, 35u, 350u, 40u}) {
 			jitter.Add_Sample(sample);
 		}
-		Expect("jitter raises variation", jitter.Rtt_Variation() > 0);
-		Expect("jittered RTO remains bounded", jitter.Retransmit_Timeout() >= MINIMUM_RTO && jitter.Retransmit_Timeout() <= MAXIMUM_RTO);
-
-		Expect("loss does not retransmit before the base RTO", !Retransmit_Is_Due(1000, 1099, 100, 0, 2000));
-		Expect("first loss retransmits at the base RTO", Retransmit_Is_Due(1000, 1100, 100, 0, 2000));
-		Expect("second loss waits for exponential backoff", !Retransmit_Is_Due(1100, 1299, 100, 1, 2000));
-		Expect("second loss retransmits at doubled RTO", Retransmit_Is_Due(1100, 1300, 100, 1, 2000));
-
-		FakeTransport clean_transport;
-		clean_transport.Send(1000);
-		Expect("fake transport accepts a clean ACK sample", clean_transport.Acknowledge(1080));
-		Expect_Equal("fake transport publishes clean RTT", clean_transport.Rtt().Smoothed_Rtt(), 80u);
-
-		FakeTransport lossy_transport;
-		lossy_transport.Send(1000);
-		Expect("fake transport retries a lost packet", lossy_transport.Retry(1100));
-		Expect("ambiguous first ACK seeds a provisional sample", lossy_transport.Acknowledge(1180));
-		Expect("provisional seed is the elapsed upper bound", lossy_transport.Rtt().Smoothed_Rtt() == 180u && lossy_transport.Rtt().Is_Provisional());
-		lossy_transport.Send(2000);
-		Expect_Equal("provisional seed paces the next packet", lossy_transport.Base_Rto(), 540u);
-		Expect("clean sample replaces the provisional seed", lossy_transport.Acknowledge(2080));
-		Expect_Equal("replaced smoothed RTT", lossy_transport.Rtt().Smoothed_Rtt(), 80u);
-		Expect_Equal("replaced variation", lossy_transport.Rtt().Rtt_Variation(), 40u);
-		Expect_Equal("replaced RTO", lossy_transport.Rtt().Retransmit_Timeout(), 240u);
-		Expect("replaced estimate is measured", !lossy_transport.Rtt().Is_Provisional());
+		CHECK_MESSAGE(jitter.Rtt_Variation() > 0, "jitter raises variation");
+		CHECK_MESSAGE(jitter.Retransmit_Timeout() >= MINIMUM_RTO, "jittered RTO remains bounded");
+		CHECK_MESSAGE(jitter.Retransmit_Timeout() <= MAXIMUM_RTO, "jittered RTO remains bounded");
 	}
 
 
-	void Test_Backoff_Persistence(void)
+	TEST_CASE("a lost packet retransmits at the base RTO, then after exponential backoff")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(!Retransmit_Is_Due(1000, 1099, 100, 0, 2000), "loss does not retransmit before the base RTO");
+		CHECK_MESSAGE(Retransmit_Is_Due(1000, 1100, 100, 0, 2000), "first loss retransmits at the base RTO");
+		CHECK_MESSAGE(!Retransmit_Is_Due(1100, 1299, 100, 1, 2000), "second loss waits for exponential backoff");
+		CHECK_MESSAGE(Retransmit_Is_Due(1100, 1300, 100, 1, 2000), "second loss retransmits at doubled RTO");
+	}
+
+
+	TEST_CASE("a clean acknowledgement publishes its RTT")
+	{
+		using namespace NetTiming;
+
+		FakeTransport clean_transport;
+		clean_transport.Send(1000);
+		CHECK_MESSAGE(clean_transport.Acknowledge(1080), "fake transport accepts a clean ACK sample");
+		CHECK_MESSAGE(clean_transport.Rtt().Smoothed_Rtt() == 80u, "fake transport publishes clean RTT");
+	}
+
+
+	TEST_CASE("an ambiguous first acknowledgement seeds a provisional sample that a clean one replaces")
+	{
+		using namespace NetTiming;
+
+		FakeTransport lossy_transport;
+		lossy_transport.Send(1000);
+		CHECK_MESSAGE(lossy_transport.Retry(1100), "fake transport retries a lost packet");
+		CHECK_MESSAGE(lossy_transport.Acknowledge(1180), "ambiguous first ACK seeds a provisional sample");
+		CHECK_MESSAGE(lossy_transport.Rtt().Smoothed_Rtt() == 180u, "provisional seed is the elapsed upper bound");
+		CHECK_MESSAGE(lossy_transport.Rtt().Is_Provisional(), "provisional seed is the elapsed upper bound");
+		lossy_transport.Send(2000);
+		CHECK_MESSAGE(lossy_transport.Base_Rto() == 540u, "provisional seed paces the next packet");
+		CHECK_MESSAGE(lossy_transport.Acknowledge(2080), "clean sample replaces the provisional seed");
+		CHECK_MESSAGE(lossy_transport.Rtt().Smoothed_Rtt() == 80u, "replaced smoothed RTT");
+		CHECK_MESSAGE(lossy_transport.Rtt().Rtt_Variation() == 40u, "replaced variation");
+		CHECK_MESSAGE(lossy_transport.Rtt().Retransmit_Timeout() == 240u, "replaced RTO");
+		CHECK_MESSAGE(!lossy_transport.Rtt().Is_Provisional(), "replaced estimate is measured");
+	}
+
+
+	TEST_CASE("the RTO backs off once per packet until a clean sample gets through")
 	{
 		using namespace NetTiming;
 
 		FakeTransport transport;
 		transport.Send(0);
-		Expect("fast link samples cleanly", transport.Acknowledge(10));
-		Expect_Equal("fast link floors the RTO", transport.Rtt().Retransmit_Timeout(), MINIMUM_RTO);
+		CHECK_MESSAGE(transport.Acknowledge(10), "fast link samples cleanly");
+		CHECK_MESSAGE(transport.Rtt().Retransmit_Timeout() == MINIMUM_RTO, "fast link floors the RTO");
 
 		// The link now takes 500 ms, so every packet is retransmitted before its ACK arrives.
 		transport.Send(1000);
-		Expect("first era retransmits at the floor RTO", transport.Retry(1100));
-		Expect_Equal("first era doubles the RTO", transport.Rtt().Retransmit_Timeout(), 200u);
-		Expect("same era retransmits again", transport.Retry(1300));
-		Expect_Equal("same era does not double twice", transport.Rtt().Retransmit_Timeout(), 200u);
-		Expect("ambiguous ACK is excluded", !transport.Acknowledge(1500));
+		CHECK_MESSAGE(transport.Retry(1100), "first era retransmits at the floor RTO");
+		CHECK_MESSAGE(transport.Rtt().Retransmit_Timeout() == 200u, "first era doubles the RTO");
+		CHECK_MESSAGE(transport.Retry(1300), "same era retransmits again");
+		CHECK_MESSAGE(transport.Rtt().Retransmit_Timeout() == 200u, "same era does not double twice");
+		CHECK_MESSAGE(!transport.Acknowledge(1500), "ambiguous ACK is excluded");
 
 		transport.Send(2000);
-		Expect_Equal("new packet captures the backed off RTO", transport.Base_Rto(), 200u);
-		Expect("second era retransmits", transport.Retry(2200));
-		Expect_Equal("second era doubles the RTO", transport.Rtt().Retransmit_Timeout(), 400u);
+		CHECK_MESSAGE(transport.Base_Rto() == 200u, "new packet captures the backed off RTO");
+		CHECK_MESSAGE(transport.Retry(2200), "second era retransmits");
+		CHECK_MESSAGE(transport.Rtt().Retransmit_Timeout() == 400u, "second era doubles the RTO");
 
 		transport.Send(3000);
-		Expect_Equal("third packet captures the backed off RTO", transport.Base_Rto(), 400u);
-		Expect("third era retransmits", transport.Retry(3400));
-		Expect_Equal("third era doubles the RTO", transport.Rtt().Retransmit_Timeout(), 800u);
+		CHECK_MESSAGE(transport.Base_Rto() == 400u, "third packet captures the backed off RTO");
+		CHECK_MESSAGE(transport.Retry(3400), "third era retransmits");
+		CHECK_MESSAGE(transport.Rtt().Retransmit_Timeout() == 800u, "third era doubles the RTO");
 
 		// The RTO now exceeds the real round trip, so a first transmission is acknowledged.
 		transport.Send(4000);
-		Expect("backed off RTO lets a clean sample through", transport.Acknowledge(4500));
-		Expect_Equal("recovered smoothed RTT", transport.Rtt().Smoothed_Rtt(), 71u);
-		Expect_Equal("recovered variation", transport.Rtt().Rtt_Variation(), 126u);
-		Expect_Equal("recovered RTO covers the slower link", transport.Rtt().Retransmit_Timeout(), 575u);
-		Expect("recovered estimate is measured", transport.Rtt().Has_Sample() && !transport.Rtt().Is_Provisional());
+		CHECK_MESSAGE(transport.Acknowledge(4500), "backed off RTO lets a clean sample through");
+		CHECK_MESSAGE(transport.Rtt().Smoothed_Rtt() == 71u, "recovered smoothed RTT");
+		CHECK_MESSAGE(transport.Rtt().Rtt_Variation() == 126u, "recovered variation");
+		CHECK_MESSAGE(transport.Rtt().Retransmit_Timeout() == 575u, "recovered RTO covers the slower link");
+		CHECK_MESSAGE(transport.Rtt().Has_Sample(), "recovered estimate is measured");
+		CHECK_MESSAGE(!transport.Rtt().Is_Provisional(), "recovered estimate is measured");
 	}
 
 
-	void Test_Provisional_Seed(void)
+	TEST_CASE("a provisional seed waits for a clean sample, which replaces it rather than blending")
 	{
 		using namespace NetTiming;
 
 		FakeClock clock;
 		RttEstimator estimator;
-		Expect("unsent packet never samples", !estimator.Acknowledge(0, 0, clock));
-		Expect("unsent acknowledgement leaves the estimator empty", !estimator.Has_Sample());
+		CHECK_MESSAGE(!estimator.Acknowledge(0, 0, clock), "unsent packet never samples");
+		CHECK_MESSAGE(!estimator.Has_Sample(), "unsent acknowledgement leaves the estimator empty");
 
 		clock.Set(2000);
-		Expect("two-second link seeds through a retransmitted ACK", estimator.Acknowledge(0, 2, clock));
-		Expect("seed is provisional", estimator.Has_Sample() && estimator.Is_Provisional());
-		Expect_Equal("seed smoothed RTT", estimator.Smoothed_Rtt(), 2000u);
-		Expect_Equal("seed RTO reaches the ceiling", estimator.Retransmit_Timeout(), MAXIMUM_RTO);
+		CHECK_MESSAGE(estimator.Acknowledge(0, 2, clock), "two-second link seeds through a retransmitted ACK");
+		CHECK_MESSAGE(estimator.Has_Sample(), "seed is provisional");
+		CHECK_MESSAGE(estimator.Is_Provisional(), "seed is provisional");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 2000u, "seed smoothed RTT");
+		CHECK_MESSAGE(estimator.Retransmit_Timeout() == MAXIMUM_RTO, "seed RTO reaches the ceiling");
 
 		clock.Set(4500);
-		Expect("second ambiguous ACK does not move a provisional seed", !estimator.Acknowledge(1000, 3, clock));
-		Expect_Equal("seed unchanged by a second ambiguous ACK", estimator.Smoothed_Rtt(), 2000u);
+		CHECK_MESSAGE(!estimator.Acknowledge(1000, 3, clock), "second ambiguous ACK does not move a provisional seed");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 2000u, "seed unchanged by a second ambiguous ACK");
 
 		clock.Set(6900);
-		Expect("clean sample replaces the seed", estimator.Acknowledge(5000, 1, clock));
-		Expect_Equal("clean sample replaces rather than blends", estimator.Smoothed_Rtt(), 1900u);
-		Expect("replaced seed is measured", !estimator.Is_Provisional());
+		CHECK_MESSAGE(estimator.Acknowledge(5000, 1, clock), "clean sample replaces the seed");
+		CHECK_MESSAGE(estimator.Smoothed_Rtt() == 1900u, "clean sample replaces rather than blends");
+		CHECK_MESSAGE(!estimator.Is_Provisional(), "replaced seed is measured");
 
 		clock.Set(9000);
-		Expect("Karn applies once the estimate is measured", !estimator.Acknowledge(7000, 2, clock));
-
-		RttEstimator backed_off;
-		clock.Set(300);
-		backed_off.Acknowledge(0, 2, clock);
-		Expect_Equal("provisional RTO", backed_off.Retransmit_Timeout(), 900u);
-		backed_off.Note_Retransmit(900);
-		Expect_Equal("provisional estimate backs off like a measured one", backed_off.Retransmit_Timeout(), 1800u);
-
-		backed_off.Reset();
-		Expect("reset clears the provisional flag", !backed_off.Is_Provisional() && !backed_off.Has_Sample());
+		CHECK_MESSAGE(!estimator.Acknowledge(7000, 2, clock), "Karn applies once the estimate is measured");
 	}
 
 
-	void Test_Note_Retransmit_Guards(void)
+	TEST_CASE("a provisional estimate backs off like a measured one, and a reset clears it")
+	{
+		using namespace NetTiming;
+
+		FakeClock clock;
+		RttEstimator backed_off;
+		clock.Set(300);
+		backed_off.Acknowledge(0, 2, clock);
+		CHECK_MESSAGE(backed_off.Retransmit_Timeout() == 900u, "provisional RTO");
+		backed_off.Note_Retransmit(900);
+		CHECK_MESSAGE(backed_off.Retransmit_Timeout() == 1800u, "provisional estimate backs off like a measured one");
+
+		backed_off.Reset();
+		CHECK_MESSAGE(!backed_off.Is_Provisional(), "reset clears the provisional flag");
+		CHECK_MESSAGE(!backed_off.Has_Sample(), "reset clears the provisional flag");
+	}
+
+
+	TEST_CASE("a retransmission does not invent a sample")
 	{
 		using namespace NetTiming;
 
 		RttEstimator unsampled;
 		unsampled.Note_Retransmit(MINIMUM_RTO);
-		Expect("retransmission does not invent a sample", !unsampled.Has_Sample());
-		Expect_Equal("unsampled RTO is unchanged", unsampled.Retransmit_Timeout(), MINIMUM_RTO);
+		CHECK_MESSAGE(!unsampled.Has_Sample(), "retransmission does not invent a sample");
+		CHECK_MESSAGE(unsampled.Retransmit_Timeout() == MINIMUM_RTO, "unsampled RTO is unchanged");
+	}
+
+
+	TEST_CASE("the backoff doubles the RTO up to its ceiling")
+	{
+		using namespace NetTiming;
 
 		RttEstimator ceiling;
 		ceiling.Add_Sample(300);
-		Expect_Equal("sampled RTO", ceiling.Retransmit_Timeout(), 900u);
+		CHECK_MESSAGE(ceiling.Retransmit_Timeout() == 900u, "sampled RTO");
 		ceiling.Note_Retransmit(900);
-		Expect_Equal("backoff doubles below the ceiling", ceiling.Retransmit_Timeout(), 1800u);
+		CHECK_MESSAGE(ceiling.Retransmit_Timeout() == 1800u, "backoff doubles below the ceiling");
 		ceiling.Note_Retransmit(1800);
-		Expect_Equal("backoff doubles again below the ceiling", ceiling.Retransmit_Timeout(), 3600u);
+		CHECK_MESSAGE(ceiling.Retransmit_Timeout() == 3600u, "backoff doubles again below the ceiling");
 		ceiling.Note_Retransmit(3600);
-		Expect_Equal("backoff clamps at the ceiling", ceiling.Retransmit_Timeout(), MAXIMUM_RTO);
+		CHECK_MESSAGE(ceiling.Retransmit_Timeout() == MAXIMUM_RTO, "backoff clamps at the ceiling");
 		ceiling.Note_Retransmit(MAXIMUM_RTO);
-		Expect_Equal("backoff stays at the ceiling", ceiling.Retransmit_Timeout(), MAXIMUM_RTO);
+		CHECK_MESSAGE(ceiling.Retransmit_Timeout() == MAXIMUM_RTO, "backoff stays at the ceiling");
+	}
 
-		// A packet captured during backoff can double a freshly lowered RTO once.
+
+	// A packet captured during backoff can double a freshly lowered RTO once.
+	TEST_CASE("a packet captured during backoff doubles a freshly lowered RTO once")
+	{
+		using namespace NetTiming;
+
 		RttEstimator recovered;
 		recovered.Add_Sample(300);
 		recovered.Note_Retransmit(900);
 		recovered.Add_Sample(300);
-		Expect_Equal("clean sample lowers the RTO", recovered.Retransmit_Timeout(), 752u);
+		CHECK_MESSAGE(recovered.Retransmit_Timeout() == 752u, "clean sample lowers the RTO");
 		recovered.Note_Retransmit(1800);
-		Expect_Equal("stale capture doubles the RTO once", recovered.Retransmit_Timeout(), 1504u);
+		CHECK_MESSAGE(recovered.Retransmit_Timeout() == 1504u, "stale capture doubles the RTO once");
 	}
 
 
-	void Test_Game_Speed_Frame_Rate(void)
+	TEST_CASE("each network game speed has its frame rate, and an unknown one is held to the fastest")
 	{
 		using namespace NetTiming;
 
 		unsigned int const expected[] = { 60u, 45u, 30u, 20u, 15u, 12u, 10u };
 		for (int speed = 0; speed < 7; speed++) {
-			Expect_Equal("speed " + std::to_string(speed) + " frame rate", Game_Speed_Frame_Rate(speed), expected[speed]);
+			CHECK_MESSAGE(Game_Speed_Frame_Rate(speed) == expected[speed], ("speed " + std::to_string(speed) + " frame rate"));
 		}
-		Expect_Equal("an unknown speed is held to the fastest rate", Game_Speed_Frame_Rate(7), 60u);
-		Expect_Equal("a negative speed is held to the fastest rate", Game_Speed_Frame_Rate(-1), 60u);
+		CHECK_MESSAGE(Game_Speed_Frame_Rate(7) == 60u, "an unknown speed is held to the fastest rate");
+		CHECK_MESSAGE(Game_Speed_Frame_Rate(-1) == 60u, "a negative speed is held to the fastest rate");
 	}
 
 
-	void Test_Solo_Game_Speed_Frame_Rate(void)
+	TEST_CASE("each solo game speed has its frame rate, and an unknown one runs unlimited")
 	{
 		using namespace NetTiming;
 
 		// Zero is no limit at all.
 		unsigned int const expected[] = { 0u, 60u, 45u, 30u, 20u, 15u, 10u };
 		for (int speed = 0; speed < 7; speed++) {
-			Expect_Equal("solo speed " + std::to_string(speed) + " frame rate", Solo_Game_Speed_Frame_Rate(speed), expected[speed]);
+			CHECK_MESSAGE(Solo_Game_Speed_Frame_Rate(speed) == expected[speed], ("solo speed " + std::to_string(speed) + " frame rate"));
 		}
-		Expect_Equal("an unknown solo speed runs unlimited", Solo_Game_Speed_Frame_Rate(7), 0u);
-		Expect_Equal("a negative solo speed runs unlimited", Solo_Game_Speed_Frame_Rate(-1), 0u);
+		CHECK_MESSAGE(Solo_Game_Speed_Frame_Rate(7) == 0u, "an unknown solo speed runs unlimited");
+		CHECK_MESSAGE(Solo_Game_Speed_Frame_Rate(-1) == 0u, "a negative solo speed runs unlimited");
 	}
 
 
-	void Test_Frame_Pacer(void)
+	TEST_CASE("the frame pacer spreads a second over the frames of each rate, a millisecond apart at most")
 	{
 		using namespace NetTiming;
 
 		for (unsigned int rate : { 60u, 45u, 30u, 20u, 15u, 12u, 10u, 7u }) {
+			INFO("rate ", rate);
 			FramePacer pacer;
 			Milliseconds total = 0;
 			Milliseconds shortest = 1000;
@@ -479,150 +568,190 @@ namespace
 				shortest = std::min(shortest, wait);
 				longest = std::max(longest, wait);
 			}
-			Expect_Equal(std::to_string(rate) + " frames last a second", total, 1000u);
-			Expect_Equal(std::to_string(rate) + " frames differ by a millisecond at most", longest - shortest <= 1, true);
+			CHECK_MESSAGE(total == 1000u, (std::to_string(rate) + " frames last a second"));
+			CHECK_MESSAGE(longest - shortest <= 1, (std::to_string(rate) + " frames differ by a millisecond at most"));
 		}
-
-		FramePacer pacer;
-		Expect_Equal("no rate means no wait", pacer.Next_Wait(0), 0u);
-		pacer.Next_Wait(60);
-		Expect_Equal("a change of rate starts the average again", pacer.Next_Wait(45), 22u);
 	}
 
 
-	void Test_Census(void)
+	TEST_CASE("the frame pacer waits for no rate, and starts its average again on a change of rate")
+	{
+		using namespace NetTiming;
+
+		FramePacer pacer;
+
+		CHECK_MESSAGE(pacer.Next_Wait(0) == 0u, "no rate means no wait");
+		pacer.Next_Wait(60);
+		CHECK_MESSAGE(pacer.Next_Wait(45) == 22u, "a change of rate starts the average again");
+	}
+
+
+	TEST_CASE("the census tracks active peers, keeps their freshest reports, and lets reports expire")
 	{
 		using namespace NetTiming;
 
 		TimingReportCensus census;
-		Expect("activate first peer", census.Set_Player_Active(1, true, 100));
-		Expect("activate second peer", census.Set_Player_Active(2, true, 100));
-		Expect("reject out of range peer", !census.Set_Player_Active(MAX_TIMING_PLAYERS, true, 100));
-		Expect("active membership is queryable", census.Is_Player_Active(1));
-		Expect("out of range membership is inactive", !census.Is_Player_Active(MAX_TIMING_PLAYERS));
-		Expect("record first peer", census.Record_Report(1, 12, 80, 100));
-		Expect("record second peer", census.Record_Report(2, 20, 180, 100));
-		Expect("accept RTT above retransmit clamp", census.Record_Report(2, 20, MAXIMUM_RTO + 1, 100));
-		Expect("reject process time beyond engine range", !census.Record_Report(2, MAXIMUM_PROCESS_MILLISECONDS + 1, 100, 150));
-		Expect("reject RTT beyond wire range", !census.Record_Report(2, 1, MAXIMUM_REPORTED_RTT + 1, 150));
+		CHECK_MESSAGE(census.Set_Player_Active(1, true, 100), "activate first peer");
+		CHECK_MESSAGE(census.Set_Player_Active(2, true, 100), "activate second peer");
+		CHECK_MESSAGE(!census.Set_Player_Active(MAX_TIMING_PLAYERS, true, 100), "reject out of range peer");
+		CHECK_MESSAGE(census.Is_Player_Active(1), "active membership is queryable");
+		CHECK_MESSAGE(!census.Is_Player_Active(MAX_TIMING_PLAYERS), "out of range membership is inactive");
+		CHECK_MESSAGE(census.Record_Report(1, 12, 80, 100), "record first peer");
+		CHECK_MESSAGE(census.Record_Report(2, 20, 180, 100), "record second peer");
+		CHECK_MESSAGE(census.Record_Report(2, 20, MAXIMUM_RTO + 1, 100), "accept RTT above retransmit clamp");
+		CHECK_MESSAGE(!census.Record_Report(2, MAXIMUM_PROCESS_MILLISECONDS + 1, 100, 150), "reject process time beyond engine range");
+		CHECK_MESSAGE(!census.Record_Report(2, 1, MAXIMUM_REPORTED_RTT + 1, 150), "reject RTT beyond wire range");
 
 		TimingCensus result = census.Inspect(200);
-		Expect_Equal("active peer count", result.ActivePlayers, 2u);
-		Expect_Equal("fresh process report count", result.FreshProcessReports, 2u);
-		Expect_Equal("fresh RTT report count", result.FreshRoundTripReports, 2u);
-		Expect_Equal("worst process time", result.WorstProcessMilliseconds, 20u);
-		Expect_Equal("unequal links publish worst", result.WorstRoundTrip, MAXIMUM_RTO + 1);
-		Expect("fresh process census complete", result.ProcessComplete);
-		Expect("fresh RTT census complete", result.RoundTripComplete);
-		Expect("fresh census is not conservative", !result.RequiresConservativeTiming);
+		CHECK_MESSAGE(result.ActivePlayers == 2u, "active peer count");
+		CHECK_MESSAGE(result.FreshProcessReports == 2u, "fresh process report count");
+		CHECK_MESSAGE(result.FreshRoundTripReports == 2u, "fresh RTT report count");
+		CHECK_MESSAGE(result.WorstProcessMilliseconds == 20u, "worst process time");
+		CHECK_MESSAGE(result.WorstRoundTrip == MAXIMUM_RTO + 1, "unequal links publish worst");
+		CHECK_MESSAGE(result.ProcessComplete, "fresh process census complete");
+		CHECK_MESSAGE(result.RoundTripComplete, "fresh RTT census complete");
+		CHECK_MESSAGE(!result.RequiresConservativeTiming, "fresh census is not conservative");
 		BalancedTimingPolicy aggregate;
 		TimingEvaluation const guest_degradation = aggregate.Evaluate(result, 60, 200);
-		Expect("a guest-to-guest slow path worsens the master policy", guest_degradation.Changed && guest_degradation.Rung == MAXIMUM_TIMING_RUNG);
+		CHECK_MESSAGE(guest_degradation.Changed, "a guest-to-guest slow path worsens the master policy");
+		CHECK_MESSAGE(guest_degradation.Rung == MAXIMUM_TIMING_RUNG, "a guest-to-guest slow path worsens the master policy");
 
 		result = census.Inspect(100 + REPORT_EXPIRY);
-		Expect("process reports expire on boundary", !result.ProcessComplete);
-		Expect("RTT reports expire on boundary", !result.RoundTripComplete);
-		Expect("expired established RTT holds instead of forcing conservative timing", !result.RequiresConservativeTiming);
-		Expect_Equal("expired process reports not fresh", result.FreshProcessReports, 0u);
-		Expect_Equal("expired RTT reports not fresh", result.FreshRoundTripReports, 0u);
-		Expect_Equal("expired process time excluded", result.WorstProcessMilliseconds, 0u);
+		CHECK_MESSAGE(!result.ProcessComplete, "process reports expire on boundary");
+		CHECK_MESSAGE(!result.RoundTripComplete, "RTT reports expire on boundary");
+		CHECK_MESSAGE(!result.RequiresConservativeTiming, "expired established RTT holds instead of forcing conservative timing");
+		CHECK_MESSAGE(result.FreshProcessReports == 0u, "expired process reports not fresh");
+		CHECK_MESSAGE(result.FreshRoundTripReports == 0u, "expired RTT reports not fresh");
+		CHECK_MESSAGE(result.WorstProcessMilliseconds == 0u, "expired process time excluded");
 
-		Expect("departed peer removed", census.Set_Player_Active(2, false, 700));
-		Expect("remaining peer refreshed", census.Record_Report(1, 15, 90, 700));
+		CHECK_MESSAGE(census.Set_Player_Active(2, false, 700), "departed peer removed");
+		CHECK_MESSAGE(census.Record_Report(1, 15, 90, 700), "remaining peer refreshed");
 		result = census.Inspect(700);
-		Expect("departure restores complete process census", result.ProcessComplete);
-		Expect("departure restores complete RTT census", result.RoundTripComplete);
-		Expect_Equal("departed peer excluded", result.ActivePlayers, 1u);
-		Expect_Equal("remaining peer wins census", result.WorstRoundTrip, 90u);
+		CHECK_MESSAGE(result.ProcessComplete, "departure restores complete process census");
+		CHECK_MESSAGE(result.RoundTripComplete, "departure restores complete RTT census");
+		CHECK_MESSAGE(result.ActivePlayers == 1u, "departed peer excluded");
+		CHECK_MESSAGE(result.WorstRoundTrip == 90u, "remaining peer wins census");
 
-		Expect("established unavailable RTT report accepted", census.Record_Report(1, 16, std::nullopt, 701));
+		CHECK_MESSAGE(census.Record_Report(1, 16, std::nullopt, 701), "established unavailable RTT report accepted");
 		result = census.Inspect(701);
-		Expect("unavailable RTT retains fresh process time", result.ProcessComplete && result.FreshProcessReports == 1);
-		Expect("established unavailable RTT is incomplete", !result.RoundTripComplete);
-		Expect("established unavailable RTT is not conservative", !result.RequiresConservativeTiming);
+		CHECK_MESSAGE(result.ProcessComplete, "unavailable RTT retains fresh process time");
+		CHECK_MESSAGE(result.FreshProcessReports == 1, "unavailable RTT retains fresh process time");
+		CHECK_MESSAGE(!result.RoundTripComplete, "established unavailable RTT is incomplete");
+		CHECK_MESSAGE(!result.RequiresConservativeTiming, "established unavailable RTT is not conservative");
+	}
+
+
+	TEST_CASE("a peer that never reports an RTT is tolerated until its report expires, then forces conservative timing")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus grace;
-		Expect("activate grace peer", grace.Set_Player_Active(3, true, 1000));
-		Expect("process-only initial report is accepted", grace.Record_Report(3, 30, std::nullopt, 1000));
-		result = grace.Inspect(1000 + REPORT_EXPIRY - 1);
-		Expect("process-only report remains complete before expiry", result.ProcessComplete);
-		Expect("missing initial RTT is tolerated before expiry", !result.RequiresConservativeTiming);
+		CHECK_MESSAGE(grace.Set_Player_Active(3, true, 1000), "activate grace peer");
+		CHECK_MESSAGE(grace.Record_Report(3, 30, std::nullopt, 1000), "process-only initial report is accepted");
+		TimingCensus result = grace.Inspect(1000 + REPORT_EXPIRY - 1);
+		CHECK_MESSAGE(result.ProcessComplete, "process-only report remains complete before expiry");
+		CHECK_MESSAGE(!result.RequiresConservativeTiming, "missing initial RTT is tolerated before expiry");
 		result = grace.Inspect(1000 + REPORT_EXPIRY);
-		Expect("never-valid RTT becomes conservative at exact expiry", result.RequiresConservativeTiming);
-		Expect("never-valid RTT remains incomplete", !result.RoundTripComplete);
-		Expect("process data expires with its report", !result.ProcessComplete);
-		Expect_Equal("stale process data retains synchronized FPS", Select_Desired_Frame_Rate(result, 42, 60), 42u);
+		CHECK_MESSAGE(result.RequiresConservativeTiming, "never-valid RTT becomes conservative at exact expiry");
+		CHECK_MESSAGE(!result.RoundTripComplete, "never-valid RTT remains incomplete");
+		CHECK_MESSAGE(!result.ProcessComplete, "process data expires with its report");
+		CHECK_MESSAGE(Select_Desired_Frame_Rate(result, 42, 60) == 42u, "stale process data retains synchronized FPS");
+	}
+
+
+	TEST_CASE("fresh process data sets the frame rate, held to the game speed")
+	{
+		using namespace NetTiming;
+
 		TimingCensus fresh_process;
 		fresh_process.WorstProcessMilliseconds = 50;
-		Expect_Equal("fresh process data respects game-speed FPS", Select_Desired_Frame_Rate(fresh_process, 42, 15), 15u);
+		CHECK_MESSAGE(Select_Desired_Frame_Rate(fresh_process, 42, 15) == 15u, "fresh process data respects game-speed FPS");
 		fresh_process.WorstProcessMilliseconds = 0;
-		Expect_Equal("zero process time permits 60 FPS", Select_Desired_Frame_Rate(fresh_process, 42, 60), 60u);
+		CHECK_MESSAGE(Select_Desired_Frame_Rate(fresh_process, 42, 60) == 60u, "zero process time permits 60 FPS");
+	}
+
+
+	TEST_CASE("an invalid report is rejected whole, and a peer removed and reactivated starts clean")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus atomic;
 		atomic.Set_Player_Active(4, true, 0);
-		Expect("atomic baseline report accepted", atomic.Record_Report(4, 25, 125, 10));
-		Expect("invalid process report rejected atomically", !atomic.Record_Report(4, MAXIMUM_PROCESS_MILLISECONDS + 1, 200, 20));
-		Expect("invalid RTT report rejected atomically", !atomic.Record_Report(4, 50, MAXIMUM_REPORTED_RTT + 1, 20));
-		result = atomic.Inspect(20);
-		Expect_Equal("invalid report preserves process time", result.WorstProcessMilliseconds, 25u);
-		Expect_Equal("invalid report preserves RTT", result.WorstRoundTrip, 125u);
-		Expect("removing a peer clears its complete report", atomic.Set_Player_Active(4, false, 30));
-		Expect_Equal("removed peer no longer contributes", atomic.Inspect(30).ActivePlayers, 0u);
-		Expect("reactivated peer starts with a clean report", atomic.Set_Player_Active(4, true, 40));
+		CHECK_MESSAGE(atomic.Record_Report(4, 25, 125, 10), "atomic baseline report accepted");
+		CHECK_MESSAGE(!atomic.Record_Report(4, MAXIMUM_PROCESS_MILLISECONDS + 1, 200, 20), "invalid process report rejected atomically");
+		CHECK_MESSAGE(!atomic.Record_Report(4, 50, MAXIMUM_REPORTED_RTT + 1, 20), "invalid RTT report rejected atomically");
+		TimingCensus result = atomic.Inspect(20);
+		CHECK_MESSAGE(result.WorstProcessMilliseconds == 25u, "invalid report preserves process time");
+		CHECK_MESSAGE(result.WorstRoundTrip == 125u, "invalid report preserves RTT");
+		CHECK_MESSAGE(atomic.Set_Player_Active(4, false, 30), "removing a peer clears its complete report");
+		CHECK_MESSAGE(atomic.Inspect(30).ActivePlayers == 0u, "removed peer no longer contributes");
+		CHECK_MESSAGE(atomic.Set_Player_Active(4, true, 40), "reactivated peer starts with a clean report");
 		result = atomic.Inspect(40);
-		Expect("reactivated peer has no inherited process report", !result.ProcessComplete);
-		Expect("reactivated peer receives fresh RTT grace", !result.RequiresConservativeTiming);
+		CHECK_MESSAGE(!result.ProcessComplete, "reactivated peer has no inherited process report");
+		CHECK_MESSAGE(!result.RequiresConservativeTiming, "reactivated peer receives fresh RTT grace");
 	}
 
 
-	void Test_Rungs(void)
+	TEST_CASE("each rung has aligned settings, starting from the bootstrap rung")
 	{
 		using namespace NetTiming;
 
-		Expect_Equal("initial FSR", Settings_For_Rung(INITIAL_TIMING_RUNG).FrameSendRate, 2u);
-		Expect_Equal("initial MaxAhead", Settings_For_Rung(INITIAL_TIMING_RUNG).MaxAhead, 6u);
-		Expect("default settings match the bootstrap rung", TimingSettings{} == Settings_For_Rung(INITIAL_TIMING_RUNG));
-		Expect_Equal("best rung MaxAhead", Settings_For_Rung(1).MaxAhead, 4u);
-		Expect_Equal("worst rung MaxAhead", Settings_For_Rung(10).MaxAhead, 30u);
-		Expect("rung settings valid", Timing_Settings_Are_Valid(Settings_For_Rung(10)));
-		Expect("below-rung minimum invalid", !Timing_Settings_Are_Valid({3, 6}));
-		Expect("legacy two-period horizon can source a transition", Timing_Transition_Source_Is_Valid({3, 6}));
-		Expect("unaligned settings invalid", !Timing_Settings_Are_Valid({3, 10}));
+		CHECK_MESSAGE(Settings_For_Rung(INITIAL_TIMING_RUNG).FrameSendRate == 2u, "initial FSR");
+		CHECK_MESSAGE(Settings_For_Rung(INITIAL_TIMING_RUNG).MaxAhead == 6u, "initial MaxAhead");
+		CHECK_MESSAGE(TimingSettings{} == Settings_For_Rung(INITIAL_TIMING_RUNG), "default settings match the bootstrap rung");
+		CHECK_MESSAGE(Settings_For_Rung(1).MaxAhead == 4u, "best rung MaxAhead");
+		CHECK_MESSAGE(Settings_For_Rung(10).MaxAhead == 30u, "worst rung MaxAhead");
+		CHECK_MESSAGE(Timing_Settings_Are_Valid(Settings_For_Rung(10)), "rung settings valid");
+		CHECK_MESSAGE(!Timing_Settings_Are_Valid({3, 6}), "below-rung minimum invalid");
+		CHECK_MESSAGE(Timing_Transition_Source_Is_Valid({3, 6}), "legacy two-period horizon can source a transition");
+		CHECK_MESSAGE(!Timing_Settings_Are_Valid({3, 10}), "unaligned settings invalid");
+	}
 
-		Expect_Equal("zero RTT selects best rung", Select_Timing_Settings(0, 60).FrameSendRate, 1u);
-		Expect_Equal("100 ms fits best rung", Select_Timing_Settings(100, 60).FrameSendRate, 1u);
-		Expect_Equal("101 ms advances a rung", Select_Timing_Settings(101, 60).FrameSendRate, 2u);
-		Expect_Equal("300 ms selects balanced rung", Select_Timing_Settings(300, 60).FrameSendRate, 5u);
+
+	TEST_CASE("the RTT selects the rung, and the highest one carries the horizon the RTT needs, up to its cap")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(Select_Timing_Settings(0, 60).FrameSendRate == 1u, "zero RTT selects best rung");
+		CHECK_MESSAGE(Select_Timing_Settings(100, 60).FrameSendRate == 1u, "100 ms fits best rung");
+		CHECK_MESSAGE(Select_Timing_Settings(101, 60).FrameSendRate == 2u, "101 ms advances a rung");
+		CHECK_MESSAGE(Select_Timing_Settings(300, 60).FrameSendRate == 5u, "300 ms selects balanced rung");
 		TimingSettings const high_rtt = Select_Timing_Settings(2000, 60);
-		Expect_Equal("two-second RTT selects highest FSR", high_rtt.FrameSendRate, 10u);
-		Expect_Equal("two-second RTT carries needed aligned MaxAhead", high_rtt.MaxAhead, 70u);
+		CHECK_MESSAGE(high_rtt.FrameSendRate == 10u, "two-second RTT selects highest FSR");
+		CHECK_MESSAGE(high_rtt.MaxAhead == 70u, "two-second RTT carries needed aligned MaxAhead");
 		TimingSettings const capped = Select_Timing_Settings(MAXIMUM_REPORTED_RTT, 60);
-		Expect_Equal("wire-maximum RTT selects highest FSR", capped.FrameSendRate, 10u);
-		Expect_Equal("highest rung caps at largest aligned horizon", capped.MaxAhead, 250u);
-
-		Expect("alignment rejects zero period", !Align_Max_Ahead(10, 0));
-		Expect_Equal("alignment reaches cap", *Align_Max_Ahead(249, 10), 250u);
-		Expect("alignment rejects over cap", !Align_Max_Ahead(250, 9));
+		CHECK_MESSAGE(capped.FrameSendRate == 10u, "wire-maximum RTT selects highest FSR");
+		CHECK_MESSAGE(capped.MaxAhead == 250u, "highest rung caps at largest aligned horizon");
 	}
 
 
-	void Test_Connection_Quality(void)
+	TEST_CASE("a horizon aligns up to a whole period under its cap")
 	{
 		using namespace NetTiming;
 
-		Expect("rung one reports fast", Connection_Quality_For_Settings(Settings_For_Rung(1)) == ConnectionQuality::Fast);
-		Expect("rung two reports fast", Connection_Quality_For_Settings(Settings_For_Rung(2)) == ConnectionQuality::Fast);
-		Expect("rung three reports normal", Connection_Quality_For_Settings(Settings_For_Rung(3)) == ConnectionQuality::Normal);
-		Expect("rung five reports normal", Connection_Quality_For_Settings(Settings_For_Rung(5)) == ConnectionQuality::Normal);
-		Expect("rung six reports poor", Connection_Quality_For_Settings(Settings_For_Rung(6)) == ConnectionQuality::Poor);
-		Expect("rung eight reports poor", Connection_Quality_For_Settings(Settings_For_Rung(8)) == ConnectionQuality::Poor);
-		Expect("rung nine reports bad", Connection_Quality_For_Settings(Settings_For_Rung(9)) == ConnectionQuality::Bad);
-		Expect("rung ten reports bad", Connection_Quality_For_Settings(Settings_For_Rung(10)) == ConnectionQuality::Bad);
-		Expect("bootstrap settings report fast", Connection_Quality_For_Settings({2, 6}) == ConnectionQuality::Fast);
-		Expect("fallback settings report normal", Connection_Quality_For_Settings({3, 9}) == ConnectionQuality::Normal);
-		Expect("extended conservative settings report bad", Connection_Quality_For_Settings({10, 250}) == ConnectionQuality::Bad);
-		Expect("invalid settings report bad", Connection_Quality_For_Settings({0, 0}) == ConnectionQuality::Bad);
-		Expect("extended fast-rung horizon reports bad", Connection_Quality_For_Settings({2, 8}) == ConnectionQuality::Bad);
+		CHECK_MESSAGE(!Align_Max_Ahead(10, 0), "alignment rejects zero period");
+		CHECK_MESSAGE(*Align_Max_Ahead(249, 10) == 250u, "alignment reaches cap");
+		CHECK_MESSAGE(!Align_Max_Ahead(250, 9), "alignment rejects over cap");
+	}
+
+
+	TEST_CASE("the connection quality follows the rung, and settings off the rungs report bad")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(1)) == ConnectionQuality::Fast, "rung one reports fast");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(2)) == ConnectionQuality::Fast, "rung two reports fast");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(3)) == ConnectionQuality::Normal, "rung three reports normal");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(5)) == ConnectionQuality::Normal, "rung five reports normal");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(6)) == ConnectionQuality::Poor, "rung six reports poor");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(8)) == ConnectionQuality::Poor, "rung eight reports poor");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(9)) == ConnectionQuality::Bad, "rung nine reports bad");
+		CHECK_MESSAGE(Connection_Quality_For_Settings(Settings_For_Rung(10)) == ConnectionQuality::Bad, "rung ten reports bad");
+		CHECK_MESSAGE(Connection_Quality_For_Settings({2, 6}) == ConnectionQuality::Fast, "bootstrap settings report fast");
+		CHECK_MESSAGE(Connection_Quality_For_Settings({3, 9}) == ConnectionQuality::Normal, "fallback settings report normal");
+		CHECK_MESSAGE(Connection_Quality_For_Settings({10, 250}) == ConnectionQuality::Bad, "extended conservative settings report bad");
+		CHECK_MESSAGE(Connection_Quality_For_Settings({0, 0}) == ConnectionQuality::Bad, "invalid settings report bad");
+		CHECK_MESSAGE(Connection_Quality_For_Settings({2, 8}) == ConnectionQuality::Bad, "extended fast-rung horizon reports bad");
 	}
 
 
@@ -632,77 +761,133 @@ namespace
 	}
 
 
-	void Test_Bootstrap_Cadence(void)
+	TEST_CASE("timing reports come at frames 32 and 64, then every 128 frames")
 	{
 		using namespace NetTiming;
 
-		Expect("frame zero does not report", !Report_Is_Due(0));
-		Expect("bootstrap reports at frame 32", Report_Is_Due(32));
-		Expect("bootstrap reports at frame 64", Report_Is_Due(64));
-		Expect("bootstrap does not add a frame 96 report", !Report_Is_Due(96));
-		Expect("normal reports start at frame 128", Report_Is_Due(128));
-		Expect("normal reports continue at frame 256", Report_Is_Due(256));
-		Expect("off-cadence reports remain disabled", !Report_Is_Due(385));
-
-		Expect("frame zero does not evaluate", !Evaluation_Is_Due(0));
-		Expect("reports alone do not evaluate at frame 32", !Evaluation_Is_Due(32));
-		Expect("bootstrap evaluates at frame 64", Evaluation_Is_Due(64));
-		Expect("bootstrap evaluates again at frame 128", Evaluation_Is_Due(128));
-		Expect("normal evaluations start at frame 256", Evaluation_Is_Due(256));
-		Expect("frame 384 is not an evaluation", !Evaluation_Is_Due(384));
-		Expect("normal evaluations continue at frame 512", Evaluation_Is_Due(512));
+		CHECK_MESSAGE(!Report_Is_Due(0), "frame zero does not report");
+		CHECK_MESSAGE(Report_Is_Due(32), "bootstrap reports at frame 32");
+		CHECK_MESSAGE(Report_Is_Due(64), "bootstrap reports at frame 64");
+		CHECK_MESSAGE(!Report_Is_Due(96), "bootstrap does not add a frame 96 report");
+		CHECK_MESSAGE(Report_Is_Due(128), "normal reports start at frame 128");
+		CHECK_MESSAGE(Report_Is_Due(256), "normal reports continue at frame 256");
+		CHECK_MESSAGE(!Report_Is_Due(385), "off-cadence reports remain disabled");
 	}
 
 
-	void Test_Bootstrap_Policy(void)
+	TEST_CASE("timing evaluations come at frames 64 and 128, then every 256 frames")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(!Evaluation_Is_Due(0), "frame zero does not evaluate");
+		CHECK_MESSAGE(!Evaluation_Is_Due(32), "reports alone do not evaluate at frame 32");
+		CHECK_MESSAGE(Evaluation_Is_Due(64), "bootstrap evaluates at frame 64");
+		CHECK_MESSAGE(Evaluation_Is_Due(128), "bootstrap evaluates again at frame 128");
+		CHECK_MESSAGE(Evaluation_Is_Due(256), "normal evaluations start at frame 256");
+		CHECK_MESSAGE(!Evaluation_Is_Due(384), "frame 384 is not an evaluation");
+		CHECK_MESSAGE(Evaluation_Is_Due(512), "normal evaluations continue at frame 512");
+	}
+
+
+	TEST_CASE("a new policy bootstraps at 2/6, and a low-latency census at frame 64 takes it straight to 1/4")
 	{
 		using namespace NetTiming;
 
 		TimingReportCensus low_reports;
 		low_reports.Set_Player_Active(1, true, 0);
 		BalancedTimingPolicy low;
-		Expect("new policy starts in bootstrap", low.Is_Bootstrapping());
-		Expect("bootstrap starts at 2/6", low.Current_Settings() == TimingSettings{2, 6});
+		CHECK_MESSAGE(low.Is_Bootstrapping(), "new policy starts in bootstrap");
+		CHECK_MESSAGE(low.Current_Settings() == (TimingSettings{2, 6}), "bootstrap starts at 2/6");
 		TimingEvaluation result = low.Evaluate(low_reports.Inspect(32), 60, 32);
-		Expect("bootstrap does not evaluate before frame 64", !result.Evaluated);
+		CHECK_MESSAGE(!result.Evaluated, "bootstrap does not evaluate before frame 64");
 		Record_One(low_reports, 0, 38);
 		result = low.Evaluate(low_reports.Inspect(64), 60, 64);
-		Expect("complete low-latency census finishes at frame 64", result.Evaluated && result.Changed && !low.Is_Bootstrapping());
-		Expect("low-latency bootstrap jumps directly to 1/4", low.Current_Settings() == TimingSettings{1, 4});
+		CHECK_MESSAGE(result.Evaluated, "complete low-latency census finishes at frame 64");
+		CHECK_MESSAGE(result.Changed, "complete low-latency census finishes at frame 64");
+		CHECK_MESSAGE(!low.Is_Bootstrapping(), "complete low-latency census finishes at frame 64");
+		CHECK_MESSAGE(low.Current_Settings() == (TimingSettings{1, 4}), "low-latency bootstrap jumps directly to 1/4");
 		result = low.Evaluate(low_reports.Inspect(255), 60, 255);
-		Expect("steady evaluation remains anchored before frame 256", !result.Evaluated);
+		CHECK_MESSAGE(!result.Evaluated, "steady evaluation remains anchored before frame 256");
 		Record_One(low_reports, 0, 256);
 		result = low.Evaluate(low_reports.Inspect(256), 60, 256);
-		Expect("steady evaluation is anchored at frame 256", result.Evaluated && !result.Changed);
+		CHECK_MESSAGE(result.Evaluated, "steady evaluation is anchored at frame 256");
+		CHECK_MESSAGE(!result.Changed, "steady evaluation is anchored at frame 256");
+	}
 
-		Expect("100 ms would select 1/4 without bootstrap headroom", Select_Timing_Settings(100, 60, false) == TimingSettings{1, 4});
-		Expect("100 ms retains 2/6 with bootstrap headroom", Select_Timing_Settings(100, 60, true) == TimingSettings{2, 6});
+
+	TEST_CASE("the bootstrap keeps headroom, so a marginal census completes it without leaving 2/6")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(Select_Timing_Settings(100, 60, false) == (TimingSettings{1, 4}), "100 ms would select 1/4 without bootstrap headroom");
+		CHECK_MESSAGE(Select_Timing_Settings(100, 60, true) == (TimingSettings{2, 6}), "100 ms retains 2/6 with bootstrap headroom");
 		TimingReportCensus marginal_reports;
 		marginal_reports.Set_Player_Active(1, true, 0);
 		Record_One(marginal_reports, 100, 38);
 		BalancedTimingPolicy marginal;
-		result = marginal.Evaluate(marginal_reports.Inspect(64), 60, 64);
-		Expect("marginal bootstrap completes without changing 2/6", result.Evaluated && !result.Changed && !marginal.Is_Bootstrapping());
+		TimingEvaluation const result = marginal.Evaluate(marginal_reports.Inspect(64), 60, 64);
+		CHECK_MESSAGE(result.Evaluated, "marginal bootstrap completes without changing 2/6");
+		CHECK_MESSAGE(!result.Changed, "marginal bootstrap completes without changing 2/6");
+		CHECK_MESSAGE(!marginal.Is_Bootstrapping(), "marginal bootstrap completes without changing 2/6");
+	}
+
+
+	TEST_CASE("a high-latency bootstrap worsens at once, then cools down before the normal hysteresis resumes, and a reset bootstraps again")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus high_reports;
 		high_reports.Set_Player_Active(1, true, 0);
 		Record_One(high_reports, 2000, 38);
 		BalancedTimingPolicy high;
-		result = high.Evaluate(high_reports.Inspect(64), 60, 64);
-		Expect("high-latency bootstrap worsens directly", result.Changed && high.Current_Settings() == TimingSettings{10, 90});
+		TimingEvaluation result = high.Evaluate(high_reports.Inspect(64), 60, 64);
+		CHECK_MESSAGE(result.Changed, "high-latency bootstrap worsens directly");
+		CHECK_MESSAGE(high.Current_Settings() == (TimingSettings{10, 90}), "high-latency bootstrap worsens directly");
+
+		for (std::uint32_t frame : {256u, 512u, 768u}) {
+			Record_One(high_reports, 0, frame);
+			result = high.Evaluate(high_reports.Inspect(frame), 60, frame);
+		}
+		CHECK_MESSAGE(!result.Changed, "bootstrap cooldown leaves only two good evaluations by frame 768");
+		CHECK_MESSAGE(high.Good_Evaluations() == 2, "bootstrap cooldown leaves only two good evaluations by frame 768");
+		Record_One(high_reports, 0, 1024);
+		result = high.Evaluate(high_reports.Inspect(1024), 60, 1024);
+		CHECK_MESSAGE(result.Changed, "normal hysteresis resumes after bootstrap cooldown");
+		CHECK_MESSAGE(high.Current_Settings() == (TimingSettings{9, 27}), "normal hysteresis resumes after bootstrap cooldown");
+
+		high.Reset();
+		CHECK_MESSAGE(high.Is_Bootstrapping(), "reset starts a new bootstrap");
+		CHECK_MESSAGE(high.Current_Settings() == (TimingSettings{2, 6}), "reset restores 2/6");
+	}
+
+
+	TEST_CASE("an incomplete census at frame 64 keeps the bootstrap open until a complete one at frame 128")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus delayed_reports;
 		delayed_reports.Set_Player_Active(1, true, 0);
 		delayed_reports.Record_Report(1, 10, std::nullopt, 38);
 		BalancedTimingPolicy delayed;
-		result = delayed.Evaluate(delayed_reports.Inspect(64), 60, 64);
-		Expect("incomplete frame 64 census keeps bootstrap open", result.Evaluated && !result.Changed && delayed.Is_Bootstrapping());
+		TimingEvaluation result = delayed.Evaluate(delayed_reports.Inspect(64), 60, 64);
+		CHECK_MESSAGE(result.Evaluated, "incomplete frame 64 census keeps bootstrap open");
+		CHECK_MESSAGE(!result.Changed, "incomplete frame 64 census keeps bootstrap open");
+		CHECK_MESSAGE(delayed.Is_Bootstrapping(), "incomplete frame 64 census keeps bootstrap open");
 		delayed_reports.Record_Report(1, 10, 0, 70);
 		result = delayed.Evaluate(delayed_reports.Inspect(100), 60, 100);
-		Expect("completed census waits for frame 128", !result.Evaluated && delayed.Is_Bootstrapping());
+		CHECK_MESSAGE(!result.Evaluated, "completed census waits for frame 128");
+		CHECK_MESSAGE(delayed.Is_Bootstrapping(), "completed census waits for frame 128");
 		result = delayed.Evaluate(delayed_reports.Inspect(128), 60, 128);
-		Expect("second bootstrap evaluation accepts a complete census", result.Evaluated && result.Changed && !delayed.Is_Bootstrapping());
-		Expect("frame 128 completion selects the measured target", delayed.Current_Settings() == TimingSettings{1, 4});
+		CHECK_MESSAGE(result.Evaluated, "second bootstrap evaluation accepts a complete census");
+		CHECK_MESSAGE(result.Changed, "second bootstrap evaluation accepts a complete census");
+		CHECK_MESSAGE(!delayed.Is_Bootstrapping(), "second bootstrap evaluation accepts a complete census");
+		CHECK_MESSAGE(delayed.Current_Settings() == (TimingSettings{1, 4}), "frame 128 completion selects the measured target");
+	}
+
+
+	TEST_CASE("a census still incomplete at frame 128 falls back to 3/9 at once")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus incomplete_reports;
 		incomplete_reports.Set_Player_Active(1, true, 0);
@@ -710,9 +895,17 @@ namespace
 		BalancedTimingPolicy incomplete;
 		incomplete.Evaluate(incomplete_reports.Inspect(64), 60, 64);
 		incomplete_reports.Record_Report(1, 10, std::nullopt, 70);
-		result = incomplete.Evaluate(incomplete_reports.Inspect(128), 60, 128);
-		Expect("incomplete final census falls back immediately", result.Evaluated && result.Changed && !incomplete.Is_Bootstrapping());
-		Expect("incomplete bootstrap falls back to 3/9", incomplete.Current_Settings() == TimingSettings{3, 9});
+		TimingEvaluation const result = incomplete.Evaluate(incomplete_reports.Inspect(128), 60, 128);
+		CHECK_MESSAGE(result.Evaluated, "incomplete final census falls back immediately");
+		CHECK_MESSAGE(result.Changed, "incomplete final census falls back immediately");
+		CHECK_MESSAGE(!incomplete.Is_Bootstrapping(), "incomplete final census falls back immediately");
+		CHECK_MESSAGE(incomplete.Current_Settings() == (TimingSettings{3, 9}), "incomplete bootstrap falls back to 3/9");
+	}
+
+
+	TEST_CASE("an RTT lost during the bootstrap falls back to 3/9")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus lost_reports;
 		lost_reports.Set_Player_Active(1, true, 0);
@@ -720,47 +913,54 @@ namespace
 		lost_reports.Record_Report(1, 10, 20, 38);
 		lost_reports.Record_Report(2, 10, std::nullopt, 38);
 		BalancedTimingPolicy lost;
-		result = lost.Evaluate(lost_reports.Inspect(64), 60, 64);
-		Expect("initial missing RTT keeps bootstrap open", result.Evaluated && !result.Changed && lost.Is_Bootstrapping());
+		TimingEvaluation result = lost.Evaluate(lost_reports.Inspect(64), 60, 64);
+		CHECK_MESSAGE(result.Evaluated, "initial missing RTT keeps bootstrap open");
+		CHECK_MESSAGE(!result.Changed, "initial missing RTT keeps bootstrap open");
+		CHECK_MESSAGE(lost.Is_Bootstrapping(), "initial missing RTT keeps bootstrap open");
 		lost_reports.Record_Report(1, 10, std::nullopt, 70);
 		result = lost.Evaluate(lost_reports.Inspect(128), 60, 128);
-		Expect("established RTT loss during bootstrap falls back to 3/9", result.Changed && lost.Current_Settings() == TimingSettings{3, 9});
+		CHECK_MESSAGE(result.Changed, "established RTT loss during bootstrap falls back to 3/9");
+		CHECK_MESSAGE(lost.Current_Settings() == (TimingSettings{3, 9}), "established RTT loss during bootstrap falls back to 3/9");
+	}
 
-		for (std::uint32_t frame : {256u, 512u, 768u}) {
-			Record_One(high_reports, 0, frame);
-			result = high.Evaluate(high_reports.Inspect(frame), 60, frame);
-		}
-		Expect("bootstrap cooldown leaves only two good evaluations by frame 768", !result.Changed && high.Good_Evaluations() == 2);
-		Record_One(high_reports, 0, 1024);
-		result = high.Evaluate(high_reports.Inspect(1024), 60, 1024);
-		Expect("normal hysteresis resumes after bootstrap cooldown", result.Changed && high.Current_Settings() == TimingSettings{9, 27});
 
-		high.Reset();
-		Expect("reset starts a new bootstrap", high.Is_Bootstrapping());
-		Expect("reset restores 2/6", high.Current_Settings() == TimingSettings{2, 6});
+	TEST_CASE("a policy taken over from a previous master does not bootstrap again")
+	{
+		using namespace NetTiming;
 
+		TimingReportCensus reports;
+		reports.Set_Player_Active(1, true, 0);
 		BalancedTimingPolicy handoff;
 		handoff.Reset_From({10, 70}, 0);
-		Expect("handoff does not regain bootstrap", !handoff.Is_Bootstrapping());
-		Record_One(high_reports, 0, 64);
-		result = handoff.Evaluate(high_reports.Inspect(64), 60, 64);
-		Expect("handoff ignores bootstrap evaluation", !result.Evaluated && handoff.Current_Settings() == TimingSettings{10, 70});
+		CHECK_MESSAGE(!handoff.Is_Bootstrapping(), "handoff does not regain bootstrap");
+		Record_One(reports, 0, 64);
+		TimingEvaluation const result = handoff.Evaluate(reports.Inspect(64), 60, 64);
+		CHECK_MESSAGE(!result.Evaluated, "handoff ignores bootstrap evaluation");
+		CHECK_MESSAGE(handoff.Current_Settings() == (TimingSettings{10, 70}), "handoff ignores bootstrap evaluation");
+	}
+
+
+	TEST_CASE("a bootstrap resumed mid-game counts its frames from where it resumed")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus resumed_reports;
 		resumed_reports.Set_Player_Active(1, true, 1024);
 		BalancedTimingPolicy resumed;
 		resumed.Reset(1024);
-		Expect_Equal("resumed bootstrap records its cadence origin", resumed.Cadence_Origin(), 1024u);
-		result = resumed.Evaluate(resumed_reports.Inspect(1056), 60, 1056);
-		Expect("resumed bootstrap does not evaluate after only 32 frames", !result.Evaluated);
+		CHECK_MESSAGE(resumed.Cadence_Origin() == 1024u, "resumed bootstrap records its cadence origin");
+		TimingEvaluation result = resumed.Evaluate(resumed_reports.Inspect(1056), 60, 1056);
+		CHECK_MESSAGE(!result.Evaluated, "resumed bootstrap does not evaluate after only 32 frames");
 		Record_One(resumed_reports, 0, 1062);
 		result = resumed.Evaluate(resumed_reports.Inspect(1088), 60, 1088);
-		Expect("resumed bootstrap evaluates after 64 frames", result.Evaluated && result.Changed && !resumed.Is_Bootstrapping());
-		Expect("resumed bootstrap selects its measured target", resumed.Current_Settings() == TimingSettings{1, 4});
+		CHECK_MESSAGE(result.Evaluated, "resumed bootstrap evaluates after 64 frames");
+		CHECK_MESSAGE(result.Changed, "resumed bootstrap evaluates after 64 frames");
+		CHECK_MESSAGE(!resumed.Is_Bootstrapping(), "resumed bootstrap evaluates after 64 frames");
+		CHECK_MESSAGE(resumed.Current_Settings() == (TimingSettings{1, 4}), "resumed bootstrap selects its measured target");
 	}
 
 
-	void Test_Hysteresis_And_Cooldown(void)
+	TEST_CASE("the policy improves one rung after three good evaluations, worsens at once, and descends one rung per evaluation")
 	{
 		using namespace NetTiming;
 
@@ -771,19 +971,55 @@ namespace
 
 		Record_One(reports, 0, 256);
 		TimingEvaluation result = policy.Evaluate(reports.Inspect(256), 60, 256);
-		Expect("first good evaluation does not change", !result.Changed);
+		CHECK_MESSAGE(!result.Changed, "first good evaluation does not change");
 		Record_One(reports, 0, 512);
 		result = policy.Evaluate(reports.Inspect(512), 60, 512);
-		Expect("second good evaluation does not change", !result.Changed);
+		CHECK_MESSAGE(!result.Changed, "second good evaluation does not change");
 		Record_One(reports, 0, 768);
 		result = policy.Evaluate(reports.Inspect(768), 60, 768);
-		Expect("third good evaluation improves one rung", result.Changed);
-		Expect_Equal("one-rung improvement", policy.Current_Rung(), 2u);
+		CHECK_MESSAGE(result.Changed, "third good evaluation improves one rung");
+		CHECK_MESSAGE(policy.Current_Rung() == 2u, "one-rung improvement");
 
 		Record_One(reports, 0, 800);
 		result = policy.Evaluate(reports.Inspect(800), 60, 800);
-		Expect("evaluation interval enforced", !result.Evaluated);
-		Expect_Equal("cooldown leaves rung", policy.Current_Rung(), 2u);
+		CHECK_MESSAGE(!result.Evaluated, "evaluation interval enforced");
+		CHECK_MESSAGE(policy.Current_Rung() == 2u, "cooldown leaves rung");
+
+		Record_One(reports, 2000, 1024);
+		result = policy.Evaluate(reports.Inspect(1024), 60, 1024);
+		CHECK_MESSAGE(result.Changed, "worsening is immediate");
+		CHECK_MESSAGE(policy.Current_Rung() == 10u, "worsening reaches required rung");
+		CHECK_MESSAGE(policy.Current_Settings().MaxAhead == 70u, "highest rung retains measured horizon");
+
+		for (std::uint32_t frame : {1280u, 1536u, 1792u}) {
+			Record_One(reports, 1300, frame);
+			result = policy.Evaluate(reports.Inspect(frame), 60, frame);
+		}
+		CHECK_MESSAGE(result.Changed, "same-rung horizon reduction uses hysteresis");
+		CHECK_MESSAGE(policy.Current_Settings().MaxAhead == 50u, "same-rung horizon retains aligned need");
+
+		Record_One(reports, 0, 2048);
+		result = policy.Evaluate(reports.Inspect(2048), 60, 2048);
+		CHECK_MESSAGE(result.Changed, "descent continues one rung per evaluation");
+		CHECK_MESSAGE(policy.Current_Settings() == (TimingSettings{9, 27}), "descent continues one rung per evaluation");
+		Record_One(reports, 0, 2304);
+		result = policy.Evaluate(reports.Inspect(2304), 60, 2304);
+		CHECK_MESSAGE(result.Changed, "descent keeps stepping while headroom holds");
+		CHECK_MESSAGE(policy.Current_Settings() == (TimingSettings{8, 24}), "descent keeps stepping while headroom holds");
+		Record_One(reports, 2000, 2560);
+		result = policy.Evaluate(reports.Inspect(2560), 60, 2560);
+		CHECK_MESSAGE(result.Changed, "worsening interrupts the descent");
+		CHECK_MESSAGE(policy.Current_Rung() == 10u, "worsening interrupts the descent");
+		Record_One(reports, 0, 2816);
+		result = policy.Evaluate(reports.Inspect(2816), 60, 2816);
+		CHECK_MESSAGE(!result.Changed, "worsening restores the three-evaluation requirement");
+		CHECK_MESSAGE(policy.Good_Evaluations() == 1, "worsening restores the three-evaluation requirement");
+	}
+
+
+	TEST_CASE("20 percent headroom blocks a marginal improvement")
+	{
+		using namespace NetTiming;
 
 		BalancedTimingPolicy headroom;
 		headroom.Reset_From({3, 9}, 0);
@@ -793,34 +1029,15 @@ namespace
 			Record_One(edge, 120, frame);
 			headroom.Evaluate(edge.Inspect(frame), 60, frame);
 		}
-		Expect_Equal("20 percent headroom blocks marginal improvement", headroom.Current_Rung(), 3u);
+		CHECK(headroom.Current_Rung() == 3u);
+	}
 
-		Record_One(reports, 2000, 1024);
-		result = policy.Evaluate(reports.Inspect(1024), 60, 1024);
-		Expect("worsening is immediate", result.Changed);
-		Expect_Equal("worsening reaches required rung", policy.Current_Rung(), 10u);
-		Expect_Equal("highest rung retains measured horizon", policy.Current_Settings().MaxAhead, 70u);
 
-		for (std::uint32_t frame : {1280u, 1536u, 1792u}) {
-			Record_One(reports, 1300, frame);
-			result = policy.Evaluate(reports.Inspect(frame), 60, frame);
-		}
-		Expect("same-rung horizon reduction uses hysteresis", result.Changed);
-		Expect_Equal("same-rung horizon retains aligned need", policy.Current_Settings().MaxAhead, 50u);
+	TEST_CASE("an evaluation without headroom holds the rung and ends the descent streak")
+	{
+		using namespace NetTiming;
 
-		Record_One(reports, 0, 2048);
-		result = policy.Evaluate(reports.Inspect(2048), 60, 2048);
-		Expect("descent continues one rung per evaluation", result.Changed && policy.Current_Settings() == TimingSettings{9, 27});
-		Record_One(reports, 0, 2304);
-		result = policy.Evaluate(reports.Inspect(2304), 60, 2304);
-		Expect("descent keeps stepping while headroom holds", result.Changed && policy.Current_Settings() == TimingSettings{8, 24});
-		Record_One(reports, 2000, 2560);
-		result = policy.Evaluate(reports.Inspect(2560), 60, 2560);
-		Expect("worsening interrupts the descent", result.Changed && policy.Current_Rung() == 10u);
-		Record_One(reports, 0, 2816);
-		result = policy.Evaluate(reports.Inspect(2816), 60, 2816);
-		Expect("worsening restores the three-evaluation requirement", !result.Changed && policy.Good_Evaluations() == 1);
-
+		TimingEvaluation result;
 		TimingReportCensus marginal_reports;
 		marginal_reports.Set_Player_Active(1, true, 0);
 		BalancedTimingPolicy marginal;
@@ -829,17 +1046,20 @@ namespace
 			Record_One(marginal_reports, 0, frame);
 			result = marginal.Evaluate(marginal_reports.Inspect(frame), 60, frame);
 		}
-		Expect("descent starts after three good evaluations", result.Changed && marginal.Current_Settings() == TimingSettings{4, 12});
+		CHECK_MESSAGE(result.Changed, "descent starts after three good evaluations");
+		CHECK_MESSAGE(marginal.Current_Settings() == (TimingSettings{4, 12}), "descent starts after three good evaluations");
 		Record_One(marginal_reports, 250, 1024);
 		result = marginal.Evaluate(marginal_reports.Inspect(1024), 60, 1024);
-		Expect("evaluation without headroom holds the rung", !result.Changed && marginal.Current_Settings() == TimingSettings{4, 12});
+		CHECK_MESSAGE(!result.Changed, "evaluation without headroom holds the rung");
+		CHECK_MESSAGE(marginal.Current_Settings() == (TimingSettings{4, 12}), "evaluation without headroom holds the rung");
 		Record_One(marginal_reports, 0, 1280);
 		result = marginal.Evaluate(marginal_reports.Inspect(1280), 60, 1280);
-		Expect("a held evaluation ends the descent streak", !result.Changed && marginal.Good_Evaluations() == 1);
+		CHECK_MESSAGE(!result.Changed, "a held evaluation ends the descent streak");
+		CHECK_MESSAGE(marginal.Good_Evaluations() == 1, "a held evaluation ends the descent streak");
 	}
 
 
-	void Test_Stale_And_Long_Term_Recovery(void)
+	TEST_CASE("an expired report holds the timing and discards the improvement evidence, until its peer departs")
 	{
 		using namespace NetTiming;
 
@@ -848,21 +1068,28 @@ namespace
 		BalancedTimingPolicy stale_policy;
 		stale_policy.Reset_From({3, 9}, 0);
 		TimingEvaluation result = stale_policy.Evaluate(stale.Inspect(0), 60, 0);
-		Expect("startup waits for a complete census", !result.Changed);
-		Expect_Equal("startup keeps initial rung", stale_policy.Current_Rung(), 3u);
+		CHECK_MESSAGE(!result.Changed, "startup waits for a complete census");
+		CHECK_MESSAGE(stale_policy.Current_Rung() == 3u, "startup keeps initial rung");
 
 		stale.Record_Report(1, 10, 100, 256);
 		stale_policy.Evaluate(stale.Inspect(256), 60, 256);
 		result = stale_policy.Evaluate(stale.Inspect(256 + REPORT_EXPIRY), 60, 256 + REPORT_EXPIRY);
-		Expect("expired established report holds the current timing", result.Evaluated && !result.Changed);
-		Expect_Equal("expired established report keeps the rung", stale_policy.Current_Rung(), 3u);
-		Expect_Equal("expired established report discards improvement evidence", stale_policy.Good_Evaluations(), 0u);
+		CHECK_MESSAGE(result.Evaluated, "expired established report holds the current timing");
+		CHECK_MESSAGE(!result.Changed, "expired established report holds the current timing");
+		CHECK_MESSAGE(stale_policy.Current_Rung() == 3u, "expired established report keeps the rung");
+		CHECK_MESSAGE(stale_policy.Good_Evaluations() == 0u, "expired established report discards improvement evidence");
 
 		stale.Set_Player_Active(1, false, 1024);
 		for (std::uint32_t frame : {1024u, 1280u, 1536u}) {
 			stale_policy.Evaluate(stale.Inspect(frame), 60, frame);
 		}
-		Expect_Equal("departed peer allows recovery", stale_policy.Current_Rung(), 2u);
+		CHECK_MESSAGE(stale_policy.Current_Rung() == 2u, "departed peer allows recovery");
+	}
+
+
+	TEST_CASE("an incomplete census still applies a worsening but never an improvement")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus partial;
 		partial.Set_Player_Active(1, true, 0);
@@ -872,12 +1099,21 @@ namespace
 		partial.Record_Report(2, 10, 50, 0);
 		partial.Record_Report(1, 10, 2000, 256);
 		partial.Record_Report(2, 10, std::nullopt, 256);
-		result = partial_policy.Evaluate(partial.Inspect(256), 60, 256);
-		Expect("incomplete census still applies a worsening", result.Changed && partial_policy.Current_Settings() == TimingSettings{10, 70});
+		TimingEvaluation result = partial_policy.Evaluate(partial.Inspect(256), 60, 256);
+		CHECK_MESSAGE(result.Changed, "incomplete census still applies a worsening");
+		CHECK_MESSAGE(partial_policy.Current_Settings() == (TimingSettings{10, 70}), "incomplete census still applies a worsening");
 		partial.Record_Report(1, 10, 0, 512);
 		partial.Record_Report(2, 10, std::nullopt, 512);
 		result = partial_policy.Evaluate(partial.Inspect(512), 60, 512);
-		Expect("incomplete census never improves", result.Evaluated && !result.Changed && partial_policy.Good_Evaluations() == 0);
+		CHECK_MESSAGE(result.Evaluated, "incomplete census never improves");
+		CHECK_MESSAGE(!result.Changed, "incomplete census never improves");
+		CHECK_MESSAGE(partial_policy.Good_Evaluations() == 0, "incomplete census never improves");
+	}
+
+
+	TEST_CASE("repeated degradation and recovery stays stable, and the descent continues past eight changes")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus reports;
 		reports.Set_Player_Active(1, true, 0);
@@ -896,15 +1132,15 @@ namespace
 			evaluate(0);
 			evaluate(0);
 		}
-		Expect_Equal("repeated degradation and recovery remains stable", policy.Current_Rung(), 9u);
+		CHECK_MESSAGE(policy.Current_Rung() == 9u, "repeated degradation and recovery remains stable");
 		evaluate(0);
 		evaluate(0);
 		evaluate(0);
-		Expect_Equal("descent continues after more than eight changes", policy.Current_Rung(), 6u);
+		CHECK_MESSAGE(policy.Current_Rung() == 6u, "descent continues after more than eight changes");
 	}
 
 
-	void Test_Stall_Feedback(void)
+	TEST_CASE("a long wait holds the timing and resets the improvement count, and quiet waiting allows the descent")
 	{
 		using namespace NetTiming;
 
@@ -914,65 +1150,72 @@ namespace
 		reports.Record_Report(1, 10, 0, 256, 50);
 		reports.Record_Report(2, 10, 0, 256, 400);
 		TimingCensus census = reports.Inspect(256);
-		Expect_Equal("census publishes the longest wait", census.WorstStallMilliseconds, 400u);
+		CHECK_MESSAGE(census.WorstStallMilliseconds == 400u, "census publishes the longest wait");
 
 		BalancedTimingPolicy policy;
 		policy.Reset_From({4, 12}, 0);
 		TimingEvaluation result = policy.Evaluate(census, 60, 256);
-		Expect("a long wait never steps the timing up", result.Evaluated && !result.Changed && policy.Current_Settings() == TimingSettings{4, 12});
-		Expect_Equal("a long wait resets the improvement count", policy.Good_Evaluations(), 0u);
+		CHECK_MESSAGE(result.Evaluated, "a long wait never steps the timing up");
+		CHECK_MESSAGE(!result.Changed, "a long wait never steps the timing up");
+		CHECK_MESSAGE(policy.Current_Settings() == (TimingSettings{4, 12}), "a long wait never steps the timing up");
+		CHECK_MESSAGE(policy.Good_Evaluations() == 0u, "a long wait resets the improvement count");
 
 		reports.Record_Report(1, 10, 0, 512, 0);
 		reports.Record_Report(2, 10, 0, 512, 200);
 		result = policy.Evaluate(reports.Inspect(512), 60, 512);
-		Expect("waiting above the improvement limit holds the timing", result.Evaluated && !result.Changed && policy.Good_Evaluations() == 0);
+		CHECK_MESSAGE(result.Evaluated, "waiting above the improvement limit holds the timing");
+		CHECK_MESSAGE(!result.Changed, "waiting above the improvement limit holds the timing");
+		CHECK_MESSAGE(policy.Good_Evaluations() == 0, "waiting above the improvement limit holds the timing");
 
 		for (std::uint32_t frame : {768u, 1024u, 1280u}) {
 			reports.Record_Report(1, 10, 0, frame, 0);
 			reports.Record_Report(2, 10, 0, frame, 20);
 			result = policy.Evaluate(reports.Inspect(frame), 60, frame);
 		}
-		Expect("quiet waiting allows the normal descent", result.Changed && policy.Current_Settings() == TimingSettings{3, 9});
+		CHECK_MESSAGE(result.Changed, "quiet waiting allows the normal descent");
+		CHECK_MESSAGE(policy.Current_Settings() == (TimingSettings{3, 9}), "quiet waiting allows the normal descent");
 
 		reports.Record_Report(1, 10, 0, 1536, 0);
 		reports.Record_Report(2, 10, 0, 1536, 150);
 		result = policy.Evaluate(reports.Inspect(1536), 60, 1536);
-		Expect("a wait during the descent ends the streak", result.Evaluated && !result.Changed && policy.Good_Evaluations() == 0);
+		CHECK_MESSAGE(result.Evaluated, "a wait during the descent ends the streak");
+		CHECK_MESSAGE(!result.Changed, "a wait during the descent ends the streak");
+		CHECK_MESSAGE(policy.Good_Evaluations() == 0, "a wait during the descent ends the streak");
 	}
 
 
-	void Test_Wait_Ledger(void)
+	TEST_CASE("the wait ledger adds each player's waits over a thirty-second window")
 	{
 		using namespace NetTiming;
 
 		WaitLedger ledger;
-		Expect_Equal("a new ledger has no waits", ledger.Recent(1, 5000), 0u);
+		CHECK_MESSAGE(ledger.Recent(1, 5000) == 0u, "a new ledger has no waits");
 
 		ledger.Add(1, 300, 10000);
 		ledger.Add(1, 200, 10999);
 		ledger.Add(2, 50, 10500);
-		Expect_Equal("waits in one second add up", ledger.Recent(1, 11000), 500u);
-		Expect_Equal("players are kept apart", ledger.Recent(2, 11000), 50u);
+		CHECK_MESSAGE(ledger.Recent(1, 11000) == 500u, "waits in one second add up");
+		CHECK_MESSAGE(ledger.Recent(2, 11000) == 50u, "players are kept apart");
 
 		ledger.Add(1, 400, 25000);
-		Expect_Equal("waits across seconds add up", ledger.Recent(1, 25000), 900u);
-		Expect_Equal("a wait still counts in the last second of the window", ledger.Recent(1, 39999), 900u);
-		Expect_Equal("a wait leaves the window after thirty seconds", ledger.Recent(1, 40000), 400u);
-		Expect_Equal("the newest wait leaves last", ledger.Recent(1, 55000), 0u);
+		CHECK_MESSAGE(ledger.Recent(1, 25000) == 900u, "waits across seconds add up");
+		CHECK_MESSAGE(ledger.Recent(1, 39999) == 900u, "a wait still counts in the last second of the window");
+		CHECK_MESSAGE(ledger.Recent(1, 40000) == 400u, "a wait leaves the window after thirty seconds");
+		CHECK_MESSAGE(ledger.Recent(1, 55000) == 0u, "the newest wait leaves last");
 
 		ledger.Add(1, 100, 70000);
-		Expect_Equal("a reused bucket drops its old second", ledger.Recent(1, 70000), 100u);
+		CHECK_MESSAGE(ledger.Recent(1, 70000) == 100u, "a reused bucket drops its old second");
 
 		ledger.Add(MAX_TIMING_PLAYERS, 100, 70000);
 		ledger.Add(static_cast<unsigned int>(-1), 100, 70000);
-		Expect_Equal("an out-of-range player reads as no wait", ledger.Recent(MAX_TIMING_PLAYERS, 70000), 0u);
+		CHECK_MESSAGE(ledger.Recent(MAX_TIMING_PLAYERS, 70000) == 0u, "an out-of-range player reads as no wait");
 
 		ledger.Reset();
-		Expect_Equal("reset clears every player", ledger.Recent(1, 70000) + ledger.Recent(2, 70000), 0u);
+		CHECK_MESSAGE(ledger.Recent(1, 70000) + ledger.Recent(2, 70000) == 0u, "reset clears every player");
 	}
 
 
-	void Test_Master_Handoff_State(void)
+	TEST_CASE("a handoff restores the authoritative settings and starts a cooldown that one good evaluation does not end")
 	{
 		using namespace NetTiming;
 
@@ -980,16 +1223,25 @@ namespace
 		reports.Set_Player_Active(1, true, 1000);
 		BalancedTimingPolicy policy;
 		policy.Reset_From({10, 70}, 1000);
-		Expect("handoff restores authoritative settings", policy.Current_Settings() == TimingSettings{10, 70});
-		Expect_Equal("handoff discards improvement evidence", policy.Good_Evaluations(), 0u);
+		CHECK_MESSAGE(policy.Current_Settings() == (TimingSettings{10, 70}), "handoff restores authoritative settings");
+		CHECK_MESSAGE(policy.Good_Evaluations() == 0u, "handoff discards improvement evidence");
 
 		Record_One(reports, 0, 1000);
 		TimingEvaluation result = policy.Evaluate(reports.Inspect(1000), 60, 1000);
-		Expect("handoff starts an evaluation cooldown", !result.Evaluated);
+		CHECK_MESSAGE(!result.Evaluated, "handoff starts an evaluation cooldown");
 		Record_One(reports, 0, 1256);
 		result = policy.Evaluate(reports.Inspect(1256), 60, 1256);
-		Expect("one good evaluation preserves the handoff target", result.Evaluated && !result.Changed && policy.Current_Settings() == TimingSettings{10, 70});
+		CHECK_MESSAGE(result.Evaluated, "one good evaluation preserves the handoff target");
+		CHECK_MESSAGE(!result.Changed, "one good evaluation preserves the handoff target");
+		CHECK_MESSAGE(policy.Current_Settings() == (TimingSettings{10, 70}), "one good evaluation preserves the handoff target");
+	}
 
+
+	TEST_CASE("a handoff at 10/250 improves one rung after hysteresis and keeps descending")
+	{
+		using namespace NetTiming;
+
+		TimingEvaluation result;
 		TimingReportCensus recovery_reports;
 		recovery_reports.Set_Player_Active(1, true, 0);
 		BalancedTimingPolicy recover;
@@ -998,11 +1250,20 @@ namespace
 			Record_One(recovery_reports, 0, frame);
 			result = recover.Evaluate(recovery_reports.Inspect(frame), 60, frame);
 		}
-		Expect("10/250 improves one rung after hysteresis", result.Changed && recover.Current_Settings() == TimingSettings{9, 27});
+		CHECK_MESSAGE(result.Changed, "10/250 improves one rung after hysteresis");
+		CHECK_MESSAGE(recover.Current_Settings() == (TimingSettings{9, 27}), "10/250 improves one rung after hysteresis");
 		Record_One(recovery_reports, 0, 1024);
 		result = recover.Evaluate(recovery_reports.Inspect(1024), 60, 1024);
-		Expect("10/250 keeps descending one rung per evaluation", result.Changed && recover.Current_Settings() == TimingSettings{8, 24});
+		CHECK_MESSAGE(result.Changed, "10/250 keeps descending one rung per evaluation");
+		CHECK_MESSAGE(recover.Current_Settings() == (TimingSettings{8, 24}), "10/250 keeps descending one rung per evaluation");
+	}
 
+
+	TEST_CASE("a handoff at 10/70 catches up toward 10/50 after hysteresis")
+	{
+		using namespace NetTiming;
+
+		TimingEvaluation result;
 		TimingReportCensus same_rung_reports;
 		same_rung_reports.Set_Player_Active(1, true, 0);
 		BalancedTimingPolicy same_rung;
@@ -1011,82 +1272,133 @@ namespace
 			Record_One(same_rung_reports, 1300, frame);
 			result = same_rung.Evaluate(same_rung_reports.Inspect(frame), 60, frame);
 		}
-		Expect("10/70 catches up toward 10/50 after hysteresis", result.Changed && same_rung.Current_Settings() == TimingSettings{10, 50});
+		CHECK_MESSAGE(result.Changed, "10/70 catches up toward 10/50 after hysteresis");
+		CHECK_MESSAGE(same_rung.Current_Settings() == (TimingSettings{10, 50}), "10/70 catches up toward 10/50 after hysteresis");
+	}
+
+
+	TEST_CASE("the adaptive policy recovers from a legacy two-period horizon")
+	{
+		using namespace NetTiming;
 
 		TimingReportCensus legacy_reports;
 		legacy_reports.Set_Player_Active(1, true, 0);
 		legacy_reports.Record_Report(1, 10, 200, 256);
 		BalancedTimingPolicy legacy;
 		legacy.Reset_From({3, 6}, 0);
-		result = legacy.Evaluate(legacy_reports.Inspect(256), 60, 256);
-		Expect("adaptive policy recovers from a legacy two-period horizon", result.Changed && legacy.Current_Settings() == TimingSettings{3, 9});
+		TimingEvaluation const result = legacy.Evaluate(legacy_reports.Inspect(256), 60, 256);
+		CHECK_MESSAGE(result.Changed, "adaptive policy recovers from a legacy two-period horizon");
+		CHECK_MESSAGE(legacy.Current_Settings() == (TimingSettings{3, 9}), "adaptive policy recovers from a legacy two-period horizon");
 	}
 
 
-	void Test_Staged_Decrease(void)
+	TEST_CASE("a decrease is staged to a frame both periods align on, then caught up one new period at a time")
 	{
 		using namespace NetTiming;
 
 		std::optional<StagedTimingUpdate> staged = Stage_Timing_Update({3, 9}, {1, 4}, 100);
-		Expect("decrease stages", staged && staged->Deferred);
-		Expect_Equal("old horizon and periods align", staged->ActivationFrame, 111u);
-		Expect_Equal("activation preserves most of the old horizon", staged->InitialMaxAhead, 6u);
-		Expect("staged update not early", !Timing_Update_Is_Due(110, staged->ActivationFrame));
-		Expect("staged update due", Timing_Update_Is_Due(111, staged->ActivationFrame));
-		Expect_Equal("first catch-up step removes one new period", *Next_Transition_Max_Ahead({1, 6}, {1, 4}), 5u);
-		Expect_Equal("second catch-up step reaches target", *Next_Transition_Max_Ahead({1, 5}, {1, 4}), 4u);
-		Expect_Equal("catch-up stays at target", *Next_Transition_Max_Ahead({1, 4}, {1, 4}), 4u);
+		REQUIRE_MESSAGE(staged, "decrease stages");
+		CHECK_MESSAGE(staged->Deferred, "decrease stages");
+		CHECK_MESSAGE(staged->ActivationFrame == 111u, "old horizon and periods align");
+		CHECK_MESSAGE(staged->InitialMaxAhead == 6u, "activation preserves most of the old horizon");
+		CHECK_MESSAGE(!Timing_Update_Is_Due(110, staged->ActivationFrame), "staged update not early");
+		CHECK_MESSAGE(Timing_Update_Is_Due(111, staged->ActivationFrame), "staged update due");
+		CHECK_MESSAGE(*Next_Transition_Max_Ahead({1, 6}, {1, 4}) == 5u, "first catch-up step removes one new period");
+		CHECK_MESSAGE(*Next_Transition_Max_Ahead({1, 5}, {1, 4}) == 4u, "second catch-up step reaches target");
+		CHECK_MESSAGE(*Next_Transition_Max_Ahead({1, 4}, {1, 4}) == 4u, "catch-up stays at target");
+	}
 
-		staged = Stage_Timing_Update({3, 9}, {2, 6}, 100);
-		Expect_Equal("both periods use LCM", staged->ActivationFrame, 114u);
-		Expect_Equal("adjacent decrease activates at target horizon", staged->InitialMaxAhead, 6u);
+
+	TEST_CASE("each kind of decrease activates at an aligned frame with a safe initial horizon")
+	{
+		using namespace NetTiming;
+
+		std::optional<StagedTimingUpdate> staged = Stage_Timing_Update({3, 9}, {2, 6}, 100);
+		REQUIRE(staged);
+		CHECK_MESSAGE(staged->ActivationFrame == 114u, "both periods use LCM");
+		CHECK_MESSAGE(staged->InitialMaxAhead == 6u, "adjacent decrease activates at target horizon");
 
 		staged = Stage_Timing_Update({10, 250}, {9, 27}, 100);
-		Expect_Equal("wide decrease aligns activation to both periods", staged->ActivationFrame, 360u);
-		Expect_Equal("wide decrease preserves a safe initial horizon", staged->InitialMaxAhead, 243u);
-		Expect_Equal("wide catch-up removes one new period", *Next_Transition_Max_Ahead({9, 243}, {9, 27}), 234u);
+		REQUIRE(staged);
+		CHECK_MESSAGE(staged->ActivationFrame == 360u, "wide decrease aligns activation to both periods");
+		CHECK_MESSAGE(staged->InitialMaxAhead == 243u, "wide decrease preserves a safe initial horizon");
+		CHECK_MESSAGE(*Next_Transition_Max_Ahead({9, 243}, {9, 27}) == 234u, "wide catch-up removes one new period");
 
 		staged = Stage_Timing_Update({10, 70}, {10, 50}, 100);
-		Expect_Equal("same-rate decrease drains at old horizon", staged->ActivationFrame, 170u);
-		Expect_Equal("same-rate decrease keeps one intermediate period", staged->InitialMaxAhead, 60u);
-		Expect_Equal("same-rate catch-up reaches requested horizon", *Next_Transition_Max_Ahead({10, 60}, {10, 50}), 50u);
+		REQUIRE(staged);
+		CHECK_MESSAGE(staged->ActivationFrame == 170u, "same-rate decrease drains at old horizon");
+		CHECK_MESSAGE(staged->InitialMaxAhead == 60u, "same-rate decrease keeps one intermediate period");
+		CHECK_MESSAGE(*Next_Transition_Max_Ahead({10, 60}, {10, 50}) == 50u, "same-rate catch-up reaches requested horizon");
 
 		staged = Stage_Timing_Update({9, 234}, {8, 24}, 360);
-		Expect("replacement decrease restages from effective settings", staged && staged->Deferred);
-		Expect_Equal("replacement decrease safely rebases its horizon", staged->InitialMaxAhead, 232u);
+		REQUIRE_MESSAGE(staged, "replacement decrease restages from effective settings");
+		CHECK_MESSAGE(staged->Deferred, "replacement decrease restages from effective settings");
+		CHECK_MESSAGE(staged->InitialMaxAhead == 232u, "replacement decrease safely rebases its horizon");
+	}
 
-		staged = Stage_Timing_Update({9, 243}, {10, 40}, 369);
-		Expect("mixed worsening keeps an aligned catch-up", staged && staged->Deferred);
-		Expect_Equal("mixed worsening activates at its event frame", staged->ActivationFrame, 369u);
-		Expect_Equal("mixed worsening preserves the effective horizon", staged->InitialMaxAhead, 250u);
+
+	TEST_CASE("a mixed worsening keeps an aligned catch-up whose command target never moves backward")
+	{
+		using namespace NetTiming;
+
+		std::optional<StagedTimingUpdate> staged = Stage_Timing_Update({9, 243}, {10, 40}, 369);
+		REQUIRE_MESSAGE(staged, "mixed worsening keeps an aligned catch-up");
+		CHECK_MESSAGE(staged->Deferred, "mixed worsening keeps an aligned catch-up");
+		CHECK_MESSAGE(staged->ActivationFrame == 369u, "mixed worsening activates at its event frame");
+		CHECK_MESSAGE(staged->InitialMaxAhead == 250u, "mixed worsening preserves the effective horizon");
 		std::optional<std::uint32_t> const first_boundary = Next_Send_Boundary(369, 10);
-		Expect("mixed worsening identifies its first new-rate send", first_boundary && *first_boundary == 370);
+		REQUIRE_MESSAGE(first_boundary, "mixed worsening identifies its first new-rate send");
+		CHECK_MESSAGE(*first_boundary == 370, "mixed worsening identifies its first new-rate send");
 		TimingTransitionState mixed{*staged, *first_boundary, true};
 		std::optional<TimingTransitionAdvance> mixed_step = Advance_Timing_Transition(mixed, {10, 250}, 370);
-		Expect("first new-rate send keeps the temporary horizon", mixed_step && !mixed_step->Changed && mixed_step->Settings == TimingSettings{10, 250});
+		REQUIRE_MESSAGE(mixed_step, "first new-rate send keeps the temporary horizon");
+		CHECK_MESSAGE(!mixed_step->Changed, "first new-rate send keeps the temporary horizon");
+		CHECK_MESSAGE(mixed_step->Settings == (TimingSettings{10, 250}), "first new-rate send keeps the temporary horizon");
 		mixed_step = Advance_Timing_Transition(mixed, mixed_step->Settings, 380);
-		Expect("following boundary drains one new period", mixed_step && mixed_step->Changed && mixed_step->Settings == TimingSettings{10, 240});
-		Expect("mixed replacement never moves the command target backward", 369u + 243u <= 370u + 250u && 370u + 250u <= 380u + 240u);
+		REQUIRE_MESSAGE(mixed_step, "following boundary drains one new period");
+		CHECK_MESSAGE(mixed_step->Changed, "following boundary drains one new period");
+		CHECK_MESSAGE(mixed_step->Settings == (TimingSettings{10, 240}), "following boundary drains one new period");
+		CHECK_MESSAGE(369u + 243u <= 370u + 250u, "mixed replacement never moves the command target backward");
+		CHECK_MESSAGE(370u + 250u <= 380u + 240u, "mixed replacement never moves the command target backward");
+	}
+
+
+	TEST_CASE("a worsening applies at once and replaces a pending decrease, and a conservative update cancels a catch-up")
+	{
+		using namespace NetTiming;
 
 		std::optional<StagedTimingUpdate> immediate = Stage_Timing_Update({1, 4}, {5, 15}, 100);
-		Expect("worsening applies immediately", immediate && !immediate->Deferred);
-		Expect_Equal("immediate frame", immediate->ActivationFrame, 100u);
-		Expect_Equal("immediate update uses requested horizon", immediate->InitialMaxAhead, 15u);
+		REQUIRE_MESSAGE(immediate, "worsening applies immediately");
+		CHECK_MESSAGE(!immediate->Deferred, "worsening applies immediately");
+		CHECK_MESSAGE(immediate->ActivationFrame == 100u, "immediate frame");
+		CHECK_MESSAGE(immediate->InitialMaxAhead == 15u, "immediate update uses requested horizon");
+		std::optional<StagedTimingUpdate> staged = Stage_Timing_Update({3, 9}, {1, 4}, 100);
 		staged = immediate;
-		Expect("an immediate worse update replaces a pending decrease", staged && !staged->Deferred && staged->Settings == TimingSettings{5, 15});
+		REQUIRE_MESSAGE(staged, "an immediate worse update replaces a pending decrease");
+		CHECK_MESSAGE(!staged->Deferred, "an immediate worse update replaces a pending decrease");
+		CHECK_MESSAGE(staged->Settings == (TimingSettings{5, 15}), "an immediate worse update replaces a pending decrease");
 
 		immediate = Stage_Timing_Update({9, 234}, {10, 250}, 360);
-		Expect("conservative update cancels catch-up immediately", immediate && !immediate->Deferred && immediate->InitialMaxAhead == 250);
+		REQUIRE_MESSAGE(immediate, "conservative update cancels catch-up immediately");
+		CHECK_MESSAGE(!immediate->Deferred, "conservative update cancels catch-up immediately");
+		CHECK_MESSAGE(immediate->InitialMaxAhead == 250, "conservative update cancels catch-up immediately");
+	}
 
-		Expect("zero-period staging rejected", !Stage_Timing_Update({0, 9}, {1, 4}, 100));
-		Expect("zero-period send boundary rejected", !Next_Send_Boundary(100, 0));
-		Expect("overflowing send boundary rejected", !Next_Send_Boundary((std::numeric_limits<std::uint32_t>::max)(), 10));
-		Expect("unaligned staging rejected", !Stage_Timing_Update({3, 10}, {1, 4}, 100));
+
+	TEST_CASE("staging rejects zero periods, unaligned settings, and overflow, but lets a legacy horizon recover at once")
+	{
+		using namespace NetTiming;
+
+		CHECK_MESSAGE(!Stage_Timing_Update({0, 9}, {1, 4}, 100), "zero-period staging rejected");
+		CHECK_MESSAGE(!Next_Send_Boundary(100, 0), "zero-period send boundary rejected");
+		CHECK_MESSAGE(!Next_Send_Boundary((std::numeric_limits<std::uint32_t>::max)(), 10), "overflowing send boundary rejected");
+		CHECK_MESSAGE(!Stage_Timing_Update({3, 10}, {1, 4}, 100), "unaligned staging rejected");
 		std::optional<StagedTimingUpdate> const legacy_recovery = Stage_Timing_Update({3, 6}, {3, 9}, 100);
-		Expect("legacy response horizon can recover immediately", legacy_recovery && !legacy_recovery->Deferred);
-		Expect("overflowing staging rejected", !Stage_Timing_Update({10, 30}, {9, 27}, (std::numeric_limits<std::uint32_t>::max)() - 10));
-		Expect("catch-up rejects mismatched send periods", !Next_Transition_Max_Ahead({9, 243}, {8, 24}));
-		Expect("catch-up rejects invalid effective settings", !Next_Transition_Max_Ahead({9, 242}, {9, 27}));
+		REQUIRE_MESSAGE(legacy_recovery, "legacy response horizon can recover immediately");
+		CHECK_MESSAGE(!legacy_recovery->Deferred, "legacy response horizon can recover immediately");
+		CHECK_MESSAGE(!Stage_Timing_Update({10, 30}, {9, 27}, (std::numeric_limits<std::uint32_t>::max)() - 10), "overflowing staging rejected");
+		CHECK_MESSAGE(!Next_Transition_Max_Ahead({9, 243}, {8, 24}), "catch-up rejects mismatched send periods");
+		CHECK_MESSAGE(!Next_Transition_Max_Ahead({9, 242}, {9, 27}), "catch-up rejects invalid effective settings");
 	}
 
 
@@ -1130,7 +1442,7 @@ namespace
 	}
 
 
-	void Test_Transition_Sequences(void)
+	TEST_CASE("a transition runs the same every time, reaches its requested settings, and never moves a command target backward")
 	{
 		using namespace NetTiming;
 
@@ -1139,18 +1451,27 @@ namespace
 			std::pair{TimingSettings{10, 70}, TimingSettings{10, 50}},
 			std::pair{TimingSettings{3, 9}, TimingSettings{2, 6}},
 			std::pair{TimingSettings{2, 6}, TimingSettings{1, 4}}}) {
+			INFO("from ", transition.first.FrameSendRate, "/", transition.first.MaxAhead, " to ", transition.second.FrameSendRate, "/", transition.second.MaxAhead);
 			TransitionTrace const first = Run_Transition(transition.first, transition.second, 100, 700);
 			TransitionTrace const repeat = Run_Transition(transition.first, transition.second, 100, 700);
-			Expect("repeated transition runs are deterministic", first == repeat);
-			Expect("a transition reaches its requested settings", !first.Changes.empty() && first.Changes.back().second == transition.second);
+			CHECK_MESSAGE(first == repeat, "repeated transition runs are deterministic");
+			REQUIRE_MESSAGE(!first.Changes.empty(), "a transition reaches its requested settings");
+			CHECK_MESSAGE(first.Changes.back().second == transition.second, "a transition reaches its requested settings");
 			bool nondecreasing = !first.CommandTargets.empty();
 			for (std::size_t index = 1; index < first.CommandTargets.size(); index++) {
 				nondecreasing = nondecreasing && first.CommandTargets[index] >= first.CommandTargets[index - 1];
 			}
-			Expect("transition command targets never move backward", nondecreasing);
+			CHECK_MESSAGE(nondecreasing, "transition command targets never move backward");
 		}
+	}
+
+
+	TEST_CASE("an active catch-up can be replaced safely, and at once by a fully conservative update")
+	{
+		using namespace NetTiming;
 
 		std::optional<StagedTimingUpdate> const plan = Stage_Timing_Update({10, 250}, {9, 27}, 100);
+		REQUIRE(plan);
 		TimingTransitionState state{*plan};
 		TimingSettings current{10, 250};
 		for (std::uint32_t frame = 100; frame <= 369; frame++) {
@@ -1160,9 +1481,12 @@ namespace
 			}
 		}
 		std::optional<StagedTimingUpdate> const replacement = Stage_Timing_Update(current, {8, 24}, 369);
-		Expect("an active catch-up can be safely replaced", replacement && replacement->Deferred && replacement->InitialMaxAhead >= current.MaxAhead - current.FrameSendRate);
+		REQUIRE_MESSAGE(replacement, "an active catch-up can be safely replaced");
+		CHECK_MESSAGE(replacement->Deferred, "an active catch-up can be safely replaced");
+		CHECK_MESSAGE(replacement->InitialMaxAhead >= current.MaxAhead - current.FrameSendRate, "an active catch-up can be safely replaced");
 		std::optional<StagedTimingUpdate> const conservative = Stage_Timing_Update(current, {10, 250}, 369);
-		Expect("a fully conservative replacement applies immediately", conservative && !conservative->Deferred);
+		REQUIRE_MESSAGE(conservative, "a fully conservative replacement applies immediately");
+		CHECK_MESSAGE(!conservative->Deferred, "a fully conservative replacement applies immediately");
 	}
 
 	struct RecordingEvent
@@ -1201,7 +1525,7 @@ namespace
 		for (int frame = 96; frame <= 159; frame++) {
 			if (transition) {
 				std::optional<TimingTransitionAdvance> const advance = Advance_Timing_Transition(*transition, current, frame);
-				Expect("recorded transition advances", advance.has_value());
+				CHECK_MESSAGE(advance.has_value(), "recorded transition advances");
 				if (!advance) {
 					return(trace);
 				}
@@ -1217,14 +1541,16 @@ namespace
 			if (playback) {
 				int count = 0;
 				recording.read(reinterpret_cast<char *>(&count), sizeof(count));
-				Expect("playback reads each execution batch", recording.good() && count >= 0 && count <= 10);
+				CHECK_MESSAGE(recording.good(), "playback reads each execution batch");
+				CHECK_MESSAGE(count >= 0, "playback reads each execution batch");
+				CHECK_MESSAGE(count <= 10, "playback reads each execution batch");
 				if (!recording.good() || count < 0 || count > 10) {
 					return(trace);
 				}
 				for (int index = 0; index < count; index++) {
 					RecordingEvent event{};
 					recording.read(reinterpret_cast<char *>(&event), sizeof(event));
-					Expect("playback reads a complete event", recording.good());
+					CHECK_MESSAGE(recording.good(), "playback reads a complete event");
 					event.IsExecuted = false;
 					events.push_back(event);
 				}
@@ -1253,12 +1579,12 @@ namespace
 				if (!Event_Is_Due(event.Frame, event.IsExecuted, frame)) {
 					continue;
 				}
-				Expect("recorded command remains eligible after the previous execution", event.Type == RecordingEvent::FRAME_INFO
-					|| event.Frame > previous_execution_frame);
+				CHECK_MESSAGE((event.Type == RecordingEvent::FRAME_INFO
+					|| event.Frame > previous_execution_frame), "recorded command remains eligible after the previous execution");
 				trace.push_back({frame, event});
 				if (event.Type == RecordingEvent::TIMING) {
 					std::optional<StagedTimingUpdate> const plan = Stage_Timing_Update(current, event.Settings, event.Frame);
-					Expect("recorded timing event can be scheduled", plan.has_value());
+					CHECK_MESSAGE(plan.has_value(), "recorded timing event can be scheduled");
 					if (!plan) {
 						return(trace);
 					}
@@ -1282,7 +1608,7 @@ namespace
 	}
 
 
-	void Test_Recorded_Transitions(void)
+	TEST_CASE("a recording of timing transitions plays back the same executions")
 	{
 		std::stringstream recording(std::ios::in | std::ios::out | std::ios::binary);
 		std::vector<RecordingEvent> events{
@@ -1301,12 +1627,12 @@ namespace
 		recording.seekg(0);
 		int first_batch_count = -1;
 		recording.read(reinterpret_cast<char *>(&first_batch_count), sizeof(first_batch_count));
-		Expect_Equal("recording keeps empty execution batches", first_batch_count, 0);
+		CHECK_MESSAGE(first_batch_count == 0, "recording keeps empty execution batches");
 		recording.seekg(0);
 		std::vector<RecordedExecution> const replay = Run_Recorded_Transitions(recording, true, {});
-		Expect("playback preserves transition and command execution", live == replay);
-		Expect("playback consumes exactly the recorded batches", recording.peek() == std::char_traits<char>::eof());
-		Expect_Equal("future and already executed events are excluded", live.size(), std::size_t{8});
+		CHECK_MESSAGE(live == replay, "playback preserves transition and command execution");
+		CHECK_MESSAGE(recording.peek() == std::char_traits<char>::eof(), "playback consumes exactly the recorded batches");
+		CHECK_MESSAGE(live.size() == std::size_t{8}, "future and already executed events are excluded");
 		bool first_skipped_command = false;
 		bool second_skipped_command = false;
 		bool retagged_command = false;
@@ -1322,69 +1648,30 @@ namespace
 				unchanged_frame_info = execution.Frame == 125 && execution.Event.Frame == 124;
 			}
 		}
-		Expect("3/9 to 2/6 recording preserves the skipped scheduled frame", first_skipped_command);
-		Expect("5/15 to 3/9 recording preserves the skipped scheduled frame", second_skipped_command);
-		Expect("worsening retags a command before recording its execution batch", retagged_command);
-		Expect("worsening does not retag frame information", unchanged_frame_info);
+		CHECK_MESSAGE(first_skipped_command, "3/9 to 2/6 recording preserves the skipped scheduled frame");
+		CHECK_MESSAGE(second_skipped_command, "5/15 to 3/9 recording preserves the skipped scheduled frame");
+		CHECK_MESSAGE(retagged_command, "worsening retags a command before recording its execution batch");
+		CHECK_MESSAGE(unchanged_frame_info, "worsening does not retag frame information");
 	}
 
 
-	void Test_Timing_Event_Values(void)
+	TEST_CASE("only the master may send timing events, and their values must be in range and aligned")
 	{
 		using namespace NetTiming;
 
-		Expect("the resolved master may send timing events", Timing_Authority_Is_Valid(2, 2));
-		Expect("a guest may not send timing events", !Timing_Authority_Is_Valid(3, 2));
-		Expect("legacy response time accepts its minimum", Response_Time_Is_Valid(2, 2, 0, false));
-		Expect("legacy response time preserves its byte range", Response_Time_Is_Valid(255, 2, 0, false));
-		Expect("compressed response time accepts two aligned periods", Response_Time_Is_Valid(6, 2, 3, true));
-		Expect("compressed response time rejects one period", !Response_Time_Is_Valid(3, 2, 3, true));
-		Expect("compressed response time rejects misalignment", !Response_Time_Is_Valid(7, 2, 3, true));
-		Expect("compressed response time enforces the scheduling cap", !Response_Time_Is_Valid(255, 2, 3, true));
-		Expect("timing values accept a balanced setting", Timing_Values_Are_Valid(60, 9, 3));
-		Expect("timing values reject zero desired FPS", !Timing_Values_Are_Valid(0, 9, 3));
-		Expect("timing values reject an unaligned horizon", !Timing_Values_Are_Valid(60, 10, 3));
-		Expect("timing values reject a horizon above the cap", !Timing_Values_Are_Valid(60, 251, 10));
+		CHECK_MESSAGE(Timing_Authority_Is_Valid(2, 2), "the resolved master may send timing events");
+		CHECK_MESSAGE(!Timing_Authority_Is_Valid(3, 2), "a guest may not send timing events");
+		CHECK_MESSAGE(Response_Time_Is_Valid(2, 2, 0, false), "legacy response time accepts its minimum");
+		CHECK_MESSAGE(Response_Time_Is_Valid(255, 2, 0, false), "legacy response time preserves its byte range");
+		CHECK_MESSAGE(Response_Time_Is_Valid(6, 2, 3, true), "compressed response time accepts two aligned periods");
+		CHECK_MESSAGE(!Response_Time_Is_Valid(3, 2, 3, true), "compressed response time rejects one period");
+		CHECK_MESSAGE(!Response_Time_Is_Valid(7, 2, 3, true), "compressed response time rejects misalignment");
+		CHECK_MESSAGE(!Response_Time_Is_Valid(255, 2, 3, true), "compressed response time enforces the scheduling cap");
+		CHECK_MESSAGE(Timing_Values_Are_Valid(60, 9, 3), "timing values accept a balanced setting");
+		CHECK_MESSAGE(!Timing_Values_Are_Valid(0, 9, 3), "timing values reject zero desired FPS");
+		CHECK_MESSAGE(!Timing_Values_Are_Valid(60, 10, 3), "timing values reject an unaligned horizon");
+		CHECK_MESSAGE(!Timing_Values_Are_Valid(60, 251, 10), "timing values reject a horizon above the cap");
 	}
 
 }
 
-
-int main(void)
-{
-	Test_Rtt_Estimator();
-	Test_Clock_And_Wrap();
-	Test_Retransmit_Backoff();
-	Test_Backoff_Timeout();
-	Test_Latency_Increase();
-	Test_Retry_Decisions();
-	Test_Loss_Jitter_And_Reordering();
-	Test_Backoff_Persistence();
-	Test_Provisional_Seed();
-	Test_Note_Retransmit_Guards();
-	Test_Game_Speed_Frame_Rate();
-	Test_Solo_Game_Speed_Frame_Rate();
-	Test_Frame_Pacer();
-	Test_Census();
-	Test_Rungs();
-	Test_Connection_Quality();
-	Test_Bootstrap_Cadence();
-	Test_Bootstrap_Policy();
-	Test_Hysteresis_And_Cooldown();
-	Test_Stale_And_Long_Term_Recovery();
-	Test_Stall_Feedback();
-	Test_Wait_Ledger();
-	Test_Master_Handoff_State();
-	Test_Staged_Decrease();
-	Test_Transition_Sequences();
-	Test_Recorded_Transitions();
-	Test_Timing_Event_Values();
-
-	if (Failures != 0) {
-		std::cerr << Failures << " network timing checks failed\n";
-		return(1);
-	}
-
-	std::cout << "All network timing checks passed\n";
-	return(0);
-}

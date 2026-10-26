@@ -9,4 +9,5 @@ opents_add_test(StatsContract
         packet.cpp
     DEFINITIONS WIN32 _WINDOWS _MBCS NOMINMAX
     LIBRARIES ws2_32
+    DOCTEST
 )

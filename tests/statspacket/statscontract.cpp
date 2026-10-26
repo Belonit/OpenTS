@@ -12,27 +12,16 @@
 
 #include "packet.h"
 
+#include "doctest/doctest.h"
+
 #include <cstdint>
-#include <cstdio>
 #include <cstring>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 namespace {
-
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-64s %s\n", what, condition ? "ok" : "FAILED");
-
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 struct LadderField
 {
@@ -77,20 +66,33 @@ std::uint32_t Ladder_U32(LadderField const & field)
 }
 
 
-void Test_Layout(void)
+// A packet of one field of each kind, built into the file the ladder reads.
+struct StatsFixture
 {
 	PacketClass stats;
-	stats.Add_Field("OOSY", (unsigned char)1);
-	stats.Add_Field("DURA", (unsigned int)0x01020304);
-	stats.Add_Field("CRD0", (int)-5);
-	stats.Add_Field("NAM0", "ab");
-	unsigned char counts[8] = {0, 0, 0, 2, 0, 0, 0, 0x10};
-	stats.Add_Field("UNB0", counts, (int)sizeof(counts));
-
+	std::unique_ptr<char[]> packet;
 	int size = 0;
-	char * packet = stats.Create_Comms_Packet(size);
 
-	// Fields leave in the reverse of the order they were added.
+	StatsFixture(void)
+	{
+		stats.Add_Field("OOSY", (unsigned char)1);
+		stats.Add_Field("DURA", (unsigned int)0x01020304);
+		stats.Add_Field("CRD0", (int)-5);
+		stats.Add_Field("NAM0", "ab");
+		unsigned char counts[8] = {0, 0, 0, 2, 0, 0, 0, 0x10};
+		stats.Add_Field("UNB0", counts, (int)sizeof(counts));
+		packet.reset(stats.Create_Comms_Packet(size));
+	}
+
+	std::map<std::string, LadderField> Fields(void) const { return(Ladder_Parse((unsigned char const *)packet.get(), size)); }
+};
+
+}
+
+
+// Fields leave in the reverse of the order they were added.
+TEST_CASE_FIXTURE(StatsFixture, "the file matches the ladder layout byte for byte, its size counting the header, fields and padding")
+{
 	unsigned char const expected[] = {
 		0x00, 0x44, 0x00, 0x00,
 		'U', 'N', 'B', '0', 0x00, 0x14, 0x00, 0x08, 0, 0, 0, 2, 0, 0, 0, 0x10,
@@ -100,56 +102,76 @@ void Test_Layout(void)
 		'O', 'O', 'S', 'Y', 0x00, 0x02, 0x00, 0x01, 0x01, 0, 0, 0,
 	};
 
-	Check(size == (int)sizeof(expected), "the size counts the header, fields and padding");
-	Check(size == (int)sizeof(expected) && std::memcmp(packet, expected, sizeof(expected)) == 0, "the bytes match the ladder layout");
+	REQUIRE(size == (int)sizeof(expected));
+	for (int i = 0; i < size; i++) {
+		INFO("byte ", i);
+		CHECK((unsigned char)packet[i] == expected[i]);
+	}
+}
 
-	std::map<std::string, LadderField> fields = Ladder_Parse((unsigned char const *)packet, size);
-	Check(fields.size() == 5, "the ladder reads every field");
-	Check(fields["OOSY"].type == 2 && fields["OOSY"].data.size() == 1 && fields["OOSY"].data[0] == 1, "a flag is a one-byte boolean");
-	Check(fields["DURA"].type == 6 && Ladder_U32(fields["DURA"]) == 0x01020304, "an unsigned value is big-endian");
-	Check(fields["CRD0"].type == 5 && Ladder_U32(fields["CRD0"]) == 0xFFFFFFFBu, "a signed value is big-endian");
-	Check(fields["NAM0"].type == 7 && fields["NAM0"].data.size() == 3 && fields["NAM0"].data[2] == 0, "a string carries its terminator");
-	Check(fields["UNB0"].type == 20 && fields["UNB0"].data.size() == 8 && fields["UNB0"].data[3] == 2, "a chunk travels unswapped");
 
-	// Building the packet swaps each field and swaps it back, so a second pass is identical.
+TEST_CASE_FIXTURE(StatsFixture, "the ladder reads every field with its type")
+{
+	std::map<std::string, LadderField> fields = Fields();
+	REQUIRE(fields.size() == 5u);
+
+	CHECK_MESSAGE(fields["OOSY"].type == 2u, "a flag is a one-byte boolean");
+	REQUIRE(fields["OOSY"].data.size() == 1u);
+	CHECK(fields["OOSY"].data[0] == 1);
+
+	CHECK_MESSAGE(fields["DURA"].type == 6u, "an unsigned value is big-endian");
+	CHECK(Ladder_U32(fields["DURA"]) == 0x01020304u);
+
+	CHECK_MESSAGE(fields["CRD0"].type == 5u, "a signed value is big-endian");
+	CHECK(Ladder_U32(fields["CRD0"]) == 0xFFFFFFFBu);
+
+	CHECK_MESSAGE(fields["NAM0"].type == 7u, "a string carries its terminator");
+	REQUIRE(fields["NAM0"].data.size() == 3u);
+	CHECK(fields["NAM0"].data[2] == 0);
+
+	CHECK_MESSAGE(fields["UNB0"].type == 20u, "a chunk travels unswapped");
+	REQUIRE(fields["UNB0"].data.size() == 8u);
+	CHECK(fields["UNB0"].data[3] == 2);
+}
+
+
+// Building the packet swaps each field and swaps it back, so a second pass is identical.
+TEST_CASE_FIXTURE(StatsFixture, "building the file twice gives the same bytes")
+{
 	int again_size = 0;
-	char * again = stats.Create_Comms_Packet(again_size);
-	Check(again_size == size && std::memcmp(again, packet, size) == 0, "building twice gives the same bytes");
-	delete [] again;
+	std::unique_ptr<char[]> again(stats.Create_Comms_Packet(again_size));
+	REQUIRE(again_size == size);
+	CHECK(std::memcmp(again.get(), packet.get(), size) == 0);
+}
 
-	PacketClass parsed(packet);
+
+TEST_CASE_FIXTURE(StatsFixture, "every field reads back from the parsed file")
+{
+	PacketClass parsed(packet.get());
 	unsigned char flag = 0;
 	unsigned int duration = 0;
 	int credits = 0;
 	char name[8] = {};
-	Check(parsed.Get_Field("OOSY", flag) && flag == 1, "a parsed flag reads back");
-	Check(parsed.Get_Field("DURA", duration) && duration == 0x01020304, "a parsed unsigned value reads back");
-	Check(parsed.Get_Field("CRD0", credits) && credits == -5, "a parsed signed value reads back");
-	Check(parsed.Get_Field("NAM0", name) && std::strcmp(name, "ab") == 0, "a parsed string reads back");
-
-	delete [] packet;
+	REQUIRE(parsed.Get_Field("OOSY", flag));
+	CHECK(flag == 1);
+	REQUIRE(parsed.Get_Field("DURA", duration));
+	CHECK(duration == 0x01020304u);
+	REQUIRE(parsed.Get_Field("CRD0", credits));
+	CHECK(credits == -5);
+	REQUIRE(parsed.Get_Field("NAM0", name));
+	CHECK(std::string(name) == "ab");
 }
 
 
-void Test_Empty_Chunk(void)
+TEST_CASE("an empty chunk is a bare field header, which the ladder reads as no counts")
 {
 	PacketClass stats;
 	stats.Add_Field("INB0", (void *)"", 0);
 
 	int size = 0;
-	char * packet = stats.Create_Comms_Packet(size);
-	std::map<std::string, LadderField> fields = Ladder_Parse((unsigned char const *)packet, size);
-	Check(size == 12, "an empty chunk is a bare field header");
-	Check(fields.count("INB0") == 1 && fields["INB0"].data.empty(), "the ladder reads an empty chunk as no counts");
-	delete [] packet;
-}
-
-}
-
-
-int main(void)
-{
-	Test_Layout();
-	Test_Empty_Chunk();
-	return(Failures == 0 ? 0 : 1);
+	std::unique_ptr<char[]> packet(stats.Create_Comms_Packet(size));
+	std::map<std::string, LadderField> fields = Ladder_Parse((unsigned char const *)packet.get(), size);
+	CHECK(size == 12);
+	REQUIRE(fields.count("INB0") == 1u);
+	CHECK(fields["INB0"].data.empty());
 }

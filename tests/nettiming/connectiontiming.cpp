@@ -10,8 +10,9 @@
 
 #include "connect.h"
 
+#include "doctest/doctest.h"
+
 #include <deque>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -131,59 +132,50 @@ namespace
 	};
 
 
-	int Failures = 0;
-
-
-	void Expect(std::string const & name, bool condition)
-	{
-		if (!condition) {
-			std::cerr << name << " failed\n";
-			Failures++;
-		}
-	}
-
-
 	void Establish_Rtt(ConnectionFixture & fixture)
 	{
 		int payload = 0;
-		Expect("first peer queues its initial packet", fixture.First.Send_Packet(&payload, sizeof(payload), true) != 0);
-		Expect("second peer queues its initial packet", fixture.Second.Send_Packet(&payload, sizeof(payload), true) != 0);
+		CHECK_MESSAGE(fixture.First.Send_Packet(&payload, sizeof(payload), true) != 0, "first peer queues its initial packet");
+		CHECK_MESSAGE(fixture.Second.Send_Packet(&payload, sizeof(payload), true) != 0, "second peer queues its initial packet");
 		fixture.Service();
 		fixture.Advance_To(10);
-		Expect("both connections measure the initial round trip", fixture.First.Rtt().Smoothed_Rtt() == 10 && fixture.Second.Rtt().Smoothed_Rtt() == 10);
+		CHECK_MESSAGE(fixture.First.Rtt().Smoothed_Rtt() == 10, "both connections measure the initial round trip");
+		CHECK_MESSAGE(fixture.Second.Rtt().Smoothed_Rtt() == 10, "both connections measure the initial round trip");
 	}
 
 
-	void Test_Unsampled_Retry(void)
+	TEST_CASE("a connection without an RTT sample keeps the legacy retry delay, and a retry alone does not sample")
 	{
 		ConnectionFixture fixture(2);
 		fixture.Transport.Connected = false;
 		int payload = 0;
 		fixture.First.Send_Packet(&payload, sizeof(payload), true);
 		fixture.Service();
-		Expect("initial send needs no elapsed clock time", fixture.First.Queue->Get_Send(0)->SendCount == 1);
+		CHECK_MESSAGE(fixture.First.Queue->Get_Send(0)->SendCount == 1, "initial send needs no elapsed clock time");
 		fixture.Advance_To(99);
-		Expect("unsampled connection retains its legacy retry delay", fixture.First.Queue->Get_Send(0)->SendCount == 1);
+		CHECK_MESSAGE(fixture.First.Queue->Get_Send(0)->SendCount == 1, "unsampled connection retains its legacy retry delay");
 		fixture.Advance_To(100);
-		Expect("unsampled connection retries after six engine ticks", fixture.First.Queue->Get_Send(0)->SendCount == 2);
-		Expect("retry alone does not establish RTT", !fixture.First.Rtt().Has_Sample());
+		CHECK_MESSAGE(fixture.First.Queue->Get_Send(0)->SendCount == 2, "unsampled connection retries after six engine ticks");
+		CHECK_MESSAGE(!fixture.First.Rtt().Has_Sample(), "retry alone does not establish RTT");
 	}
 
 
-	void Test_Saturated_Outage_Recovery(int capacity)
+	void Check_Saturated_Outage_Recovery(int capacity)
 	{
 		ConnectionFixture fixture(capacity);
 		Establish_Rtt(fixture);
-		Expect("read packets retain the latest sequence entry", fixture.First.Queue->Num_Receive() == 1 && fixture.Second.Queue->Num_Receive() == 1);
+		CHECK_MESSAGE(fixture.First.Queue->Num_Receive() == 1, "read packets retain the latest sequence entry");
+		CHECK_MESSAGE(fixture.Second.Queue->Num_Receive() == 1, "read packets retain the latest sequence entry");
 		fixture.Advance_To(100);
 		fixture.Transport.Connected = false;
 		for (int payload = 1; payload <= capacity; payload++) {
-			Expect("first peer fills its send queue", fixture.First.Send_Packet(&payload, sizeof(payload), true) != 0);
-			Expect("second peer fills its send queue", fixture.Second.Send_Packet(&payload, sizeof(payload), true) != 0);
+			CHECK_MESSAGE(fixture.First.Send_Packet(&payload, sizeof(payload), true) != 0, "first peer fills its send queue");
+			CHECK_MESSAGE(fixture.Second.Send_Packet(&payload, sizeof(payload), true) != 0, "second peer fills its send queue");
 		}
 		fixture.Service();
 		fixture.Advance_To(3000);
-		Expect("the outage times out both peers", fixture.First.Is_Bad() && fixture.Second.Is_Bad());
+		CHECK_MESSAGE(fixture.First.Is_Bad(), "the outage times out both peers");
+		CHECK_MESSAGE(fixture.Second.Is_Bad(), "the outage times out both peers");
 		fixture.Transport.Connected = true;
 		fixture.Advance_To(8000);
 
@@ -191,42 +183,37 @@ namespace
 		for (int payload = 0; payload <= capacity; payload++) {
 			expected.push_back(payload);
 		}
-		Expect("first peer receives the complete ordered backlog", fixture.First.Received == expected);
-		Expect("second peer receives the complete ordered backlog", fixture.Second.Received == expected);
-		Expect("restored connectivity drains both send queues", fixture.First.Queue->Num_Send() == 0 && fixture.Second.Queue->Num_Send() == 0);
-		Expect("both connections recover from timeout", !fixture.First.Is_Bad() && !fixture.Second.Is_Bad());
+		CHECK_MESSAGE(fixture.First.Received == expected, "first peer receives the complete ordered backlog");
+		CHECK_MESSAGE(fixture.Second.Received == expected, "second peer receives the complete ordered backlog");
+		CHECK_MESSAGE(fixture.First.Queue->Num_Send() == 0, "restored connectivity drains both send queues");
+		CHECK_MESSAGE(fixture.Second.Queue->Num_Send() == 0, "restored connectivity drains both send queues");
+		CHECK_MESSAGE(!fixture.First.Is_Bad(), "both connections recover from timeout");
+		CHECK_MESSAGE(!fixture.Second.Is_Bad(), "both connections recover from timeout");
 	}
 
 
-	void Test_Latency_Increase(void)
+	TEST_CASE("after a full outage, both peers time out, then recover and receive the complete ordered backlog")
+	{
+		SUBCASE("with two-packet queues") { Check_Saturated_Outage_Recovery(2); }
+		SUBCASE("with 32-packet queues") { Check_Saturated_Outage_Recovery(32); }
+	}
+
+
+	TEST_CASE("a link that slows down becomes measurable through the production retry capture and delivers every packet")
 	{
 		ConnectionFixture fixture(2);
 		Establish_Rtt(fixture);
 		fixture.Transport.OneWayDelay = 300;
 		for (int payload = 1; payload <= 12; payload++) {
-			Expect("slower link accepts another packet", fixture.First.Send_Packet(&payload, sizeof(payload), true) != 0);
+			CHECK_MESSAGE(fixture.First.Send_Packet(&payload, sizeof(payload), true) != 0, "slower link accepts another packet");
 			fixture.Service();
 			fixture.Advance_To(fixture.Clock.Now() + 1000);
 		}
-		Expect("production retry capture lets the slower link become measurable", fixture.First.Rtt().Smoothed_Rtt() > 100);
-		Expect("slower link obtains an unambiguous estimate", fixture.First.Rtt().Has_Sample() && !fixture.First.Rtt().Is_Provisional());
-		Expect("slower link delivers every packet", fixture.Second.Received.size() == 13);
-		Expect("slower link completes its acknowledgements", fixture.First.Queue->Num_Send() == 0);
+		CHECK_MESSAGE(fixture.First.Rtt().Smoothed_Rtt() > 100, "production retry capture lets the slower link become measurable");
+		CHECK_MESSAGE(fixture.First.Rtt().Has_Sample(), "slower link obtains an unambiguous estimate");
+		CHECK_MESSAGE(!fixture.First.Rtt().Is_Provisional(), "slower link obtains an unambiguous estimate");
+		CHECK_MESSAGE(fixture.Second.Received.size() == 13, "slower link delivers every packet");
+		CHECK_MESSAGE(fixture.First.Queue->Num_Send() == 0, "slower link completes its acknowledgements");
 	}
 }
 
-
-int main(void)
-{
-	Test_Unsampled_Retry();
-	Test_Saturated_Outage_Recovery(2);
-	Test_Saturated_Outage_Recovery(32);
-	Test_Latency_Increase();
-
-	if (Failures != 0) {
-		std::cerr << Failures << " connection timing checks failed\n";
-		return(1);
-	}
-	std::cout << "All connection timing checks passed\n";
-	return(0);
-}

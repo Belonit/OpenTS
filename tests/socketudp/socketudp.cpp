@@ -17,7 +17,8 @@
 #include "netsocket.h"
 #include "wspudp.h"
 
-#include <cstdio>
+#include "doctest/doctest.h"
+
 #include <cstring>
 #include <string>
 #include <vector>
@@ -44,18 +45,6 @@ std::unique_ptr<SocketClass> Socket_Create_Platform_Socket(void)
 }
 
 namespace {
-
-int Failures = 0;
-
-
-void Check(bool condition, char const * what)
-{
-	std::printf("%-72s %s\n", what, condition ? "ok" : "FAILED");
-	if (!condition) {
-		Failures++;
-	}
-}
-
 
 // A transport wired to a socket the test keeps hold of. Open_Socket is what
 // actually opens the injected socket, so the order here matters.
@@ -118,10 +107,36 @@ IPXAddressClass Peer(uint32_t ip, uint16_t port)
 }
 
 
-/// A send the socket refuses must cost the pass, not the queue. This is the
-/// case the transport cannot reach against a real socket, since a loopback
-/// send buffer never fills.
-void Test_Full_Socket_Keeps_The_Queue(void)
+unsigned short const TunnelUs = 7;
+unsigned short const TunnelThem = 9;
+
+
+// A harness speaking through the tunnel server as TunnelUs.
+struct TunnelHarness : Harness
+{
+	TunnelHarness(void)
+	{
+		Transport.Configure_Tunnel(TunnelUs, 0x0100007f, Socket_Network_Port(50000));
+	}
+
+	// Sends a payload to TunnelThem and returns it as the server would echo it to us.
+	std::vector<unsigned char> Echo(std::string const & payload)
+	{
+		std::vector<unsigned char> wire = Send(payload, IPXAddressClass(0, TunnelThem));
+		REQUIRE(wire.size() >= 4u);
+		wire[2] = static_cast<unsigned char>(TunnelUs & 0xff);
+		wire[3] = static_cast<unsigned char>(TunnelUs >> 8);
+		return(wire);
+	}
+};
+
+}
+
+
+// A send the socket refuses must cost the pass, not the queue. This is the case
+// the transport cannot reach against a real socket, since a loopback send buffer
+// never fills.
+TEST_CASE("a full socket sends nothing, and the queue survives the refused pass in order")
 {
 	Harness harness;
 	IPXAddressClass const peer = Peer(0x0100007f, 51000);
@@ -139,42 +154,38 @@ void Test_Full_Socket_Keeps_The_Queue(void)
 	harness.Transport.WriteTo(two, 6, &second, sizeof(second));
 
 	harness.Transport.Service();
-	Check(harness.Socket->Sent().empty(), "a full socket sends nothing");
+	CHECK(harness.Socket->Sent().empty());
 
 	harness.Socket->Set_Would_Block(false);
 	harness.Transport.Service();
 
-	Check(harness.Socket->Sent().size() == 2, "both packets survive the refused pass");
-
-	if (harness.Socket->Sent().size() == 2) {
-		std::vector<unsigned char> const & sent = harness.Socket->Sent()[0].Bytes;
-		bool const ordered = sent.size() == 5 + sizeof(unsigned int)
-			&& std::memcmp(sent.data() + sizeof(unsigned int), "first", 5) == 0;
-		Check(ordered, "the queue keeps its order across the refusal");
-	}
+	REQUIRE(harness.Socket->Sent().size() == 2u);
+	std::vector<unsigned char> const & sent = harness.Socket->Sent()[0].Bytes;
+	REQUIRE(sent.size() == 5 + sizeof(unsigned int));
+	CHECK_MESSAGE(std::memcmp(sent.data() + sizeof(unsigned int), "first", 5) == 0, "the first packet queued goes first");
 }
 
 
-/// A datagram the transport framed is one it accepts back.
-void Test_Round_Trip(void)
+TEST_CASE("a datagram the transport framed is one it accepts back")
 {
 	Harness harness;
 	IPXAddressClass const peer = Peer(0x0100007f, 51000);
 
 	std::vector<unsigned char> const wire = harness.Send("hello", peer);
-	Check(!wire.empty(), "a queued packet reaches the socket");
+	REQUIRE_MESSAGE(!wire.empty(), "the queued packet reaches the socket");
 
 	harness.Socket->Deliver(peer, wire.data(), static_cast<int>(wire.size()));
 	harness.Transport.Service();
 
 	std::vector<std::string> const got = harness.Drain();
-	Check(got.size() == 1 && got[0] == "hello", "a framed datagram is accepted back");
+	REQUIRE(got.size() == 1u);
+	CHECK(got[0] == "hello");
 }
 
 
-/// The drain is bounded so a flood cannot hold the frame, and what is left
-/// waits for the next pass rather than being lost.
-void Test_Drain_Is_Bounded(void)
+// The drain is bounded so a flood cannot hold the frame, and what is left waits
+// for the next pass rather than being lost.
+TEST_CASE("one pass takes no more than the buffer pool holds, and the rest waits for the next")
 {
 	Harness harness;
 	IPXAddressClass const peer = Peer(0x0100007f, 51000);
@@ -188,18 +199,18 @@ void Test_Drain_Is_Bounded(void)
 
 	harness.Transport.Service();
 	std::size_t const first_pass = harness.Drain().size();
-	Check(first_pass <= WS_MAX_STATIC_BUFFERS, "one pass takes no more than the buffer pool holds");
+	CHECK(first_pass <= (std::size_t)WS_MAX_STATIC_BUFFERS);
 
 	harness.Transport.Service();
 	std::size_t const second_pass = harness.Drain().size();
-	Check(first_pass + second_pass == static_cast<std::size_t>(flood), "the rest waits for the next pass");
+	CHECK(first_pass + second_pass == static_cast<std::size_t>(flood));
 }
 
 
-/// A transient failure mid-drain must not end the pass. Windows reports
-/// WSAECONNRESET routinely when a peer quits, and stopping there would strand
-/// everything queued behind it.
-void Test_Reset_Does_Not_End_The_Pass(void)
+// A transient failure mid-drain must not end the pass. Windows reports
+// WSAECONNRESET routinely when a peer quits, and stopping there would strand
+// everything queued behind it.
+TEST_CASE("a reset is cleared and the drain carries on")
 {
 	Harness harness;
 	IPXAddressClass const peer = Peer(0x0100007f, 51000);
@@ -212,12 +223,13 @@ void Test_Reset_Does_Not_End_The_Pass(void)
 	harness.Transport.Service();
 
 	std::vector<std::string> const got = harness.Drain();
-	Check(got.size() == 1 && got[0] == "after", "a reset is cleared and the drain carries on");
+	REQUIRE(got.size() == 1u);
+	CHECK(got[0] == "after");
 }
 
 
-/// A packet from one of our own addresses is our own broadcast coming back.
-void Test_Own_Address_Is_Discarded(void)
+// A packet from one of our own addresses is our own broadcast coming back.
+TEST_CASE("a packet from one of our own addresses is thrown away")
 {
 	uint32_t const mine = 0x0100007f;
 
@@ -229,12 +241,12 @@ void Test_Own_Address_Is_Discarded(void)
 	harness.Socket->Deliver(self, wire.data(), static_cast<int>(wire.size()));
 	harness.Transport.Service();
 
-	Check(harness.Drain().empty(), "a packet from one of our own addresses is thrown away");
+	CHECK(harness.Drain().empty());
 }
 
 
-/// Anything the admission layer rejects must not reach the game.
-void Test_Malformed_Is_Rejected(void)
+// Anything the admission layer rejects must not reach the game.
+TEST_CASE("a runt and a bad checksum are both refused, and the short datagram is counted as a drop")
 {
 	Harness harness;
 	IPXAddressClass const peer = Peer(0x0100007f, 51000);
@@ -247,58 +259,56 @@ void Test_Malformed_Is_Rejected(void)
 
 	harness.Transport.Service();
 
-	Check(harness.Drain().empty(), "a runt and a bad checksum are both refused");
-	Check(harness.Transport.Dropped_Packets(WinsockInterfaceClass::WS_DROP_RECEIVE_TOO_SHORT) >= 1,
-		"the short datagram is counted as a drop");
+	CHECK(harness.Drain().empty());
+	CHECK(harness.Transport.Dropped_Packets(WinsockInterfaceClass::WS_DROP_RECEIVE_TOO_SHORT) >= 1);
 }
 
 
-/// A tunnelled game names its players by tunnel ID, and the server is the only
-/// endpoint the socket ever sees.
-void Test_Tunnel_Framing(void)
+// A tunnelled game names its players by tunnel ID, and the server is the only
+// endpoint the socket ever sees.
+TEST_CASE("a tunnelled datagram leads with the sender and recipient")
 {
-	unsigned short const us = 7;
-	unsigned short const them = 9;
+	TunnelHarness harness;
+	std::vector<unsigned char> const wire = harness.Send("tunnelled", IPXAddressClass(0, TunnelThem));
+	REQUIRE(wire.size() >= 4u);
+	CHECK(wire[0] == (TunnelUs & 0xff));
+	CHECK(wire[1] == (TunnelUs >> 8));
+	CHECK(wire[2] == (TunnelThem & 0xff));
+	CHECK(wire[3] == (TunnelThem >> 8));
+}
 
-	Harness harness;
-	harness.Transport.Configure_Tunnel(us, 0x0100007f, Socket_Network_Port(50000));
 
-	IPXAddressClass const recipient(0, them);
-	std::vector<unsigned char> const wire = harness.Send("tunnelled", recipient);
-
-	bool const headed = wire.size() >= 4
-		&& wire[0] == (us & 0xff) && wire[1] == (us >> 8)
-		&& wire[2] == (them & 0xff) && wire[3] == (them >> 8);
-	Check(headed, "a tunnelled datagram leads with the sender and recipient");
-
-	// The server echoes it back with us as the recipient.
-	std::vector<unsigned char> ours(wire);
-	ours[2] = static_cast<unsigned char>(us & 0xff);
-	ours[3] = static_cast<unsigned char>(us >> 8);
-
+TEST_CASE("a tunnelled datagram the server echoes to us is accepted")
+{
+	TunnelHarness harness;
+	std::vector<unsigned char> const ours = harness.Echo("tunnelled");
 	harness.Socket->Deliver(IPXAddressClass(0, 0), ours.data(), static_cast<int>(ours.size()));
 	harness.Transport.Service();
-	Check(harness.Drain().size() == 1, "a tunnelled datagram addressed to us is accepted");
+	CHECK(harness.Drain().size() == 1u);
+}
 
-	// One for somebody else must be passed over, not treated as a failure.
-	std::vector<unsigned char> theirs(wire);
+
+// One for somebody else must be passed over, not treated as a failure.
+TEST_CASE("a tunnelled datagram for another tunnel ID is passed over")
+{
+	TunnelHarness harness;
+	std::vector<unsigned char> const theirs = harness.Send("tunnelled", IPXAddressClass(0, TunnelThem));
 	harness.Socket->Deliver(IPXAddressClass(0, 0), theirs.data(), static_cast<int>(theirs.size()));
 
-	std::vector<unsigned char> const mine = harness.Send("second", recipient);
-	std::vector<unsigned char> echoed(mine);
-	echoed[2] = static_cast<unsigned char>(us & 0xff);
-	echoed[3] = static_cast<unsigned char>(us >> 8);
+	std::vector<unsigned char> const echoed = harness.Echo("second");
 	harness.Socket->Deliver(IPXAddressClass(0, 0), echoed.data(), static_cast<int>(echoed.size()));
 
 	harness.Transport.Service();
 	std::vector<std::string> const got = harness.Drain();
-	Check(got.size() == 1 && got[0] == "second", "a datagram for another tunnel ID is passed over");
+	REQUIRE(got.size() == 1u);
+	CHECK(got[0] == "second");
 }
 
 
-/// Broadcasting reaches every network the machine sits on, and falls back on
-/// the blind broadcast when no network names one of its own.
-void Test_Broadcast_Addresses(void)
+// Enable_Broadcast only takes effect when the socket opens, so both transports
+// were opened without it; what matters here is that neither crashes and the
+// local address list came from the socket.
+TEST_CASE("every interface the socket reports is a local address")
 {
 	Harness with_networks({{0x0100007f, 0xff00007f}, {0x0200a8c0, 0xff00a8c0}});
 	with_networks.Transport.Enable_Broadcast(true);
@@ -306,27 +316,6 @@ void Test_Broadcast_Addresses(void)
 	Harness blind;
 	blind.Transport.Enable_Broadcast(true);
 
-	// Enable_Broadcast only takes effect when the socket opens, so both were
-	// opened without it; what matters here is that neither crashes and the
-	// local address list came from the socket.
-	Check(with_networks.Transport.Get_Num_Local_Addresses() == 2, "every reported interface is a local address");
-	Check(blind.Transport.Get_Num_Local_Addresses() == 0, "a socket naming no interface reports none");
-}
-
-}
-
-
-int main(void)
-{
-	Test_Full_Socket_Keeps_The_Queue();
-	Test_Round_Trip();
-	Test_Drain_Is_Bounded();
-	Test_Reset_Does_Not_End_The_Pass();
-	Test_Own_Address_Is_Discarded();
-	Test_Malformed_Is_Rejected();
-	Test_Tunnel_Framing();
-	Test_Broadcast_Addresses();
-
-	std::printf("\n%s\n", Failures == 0 ? "All checks passed." : "Some checks FAILED.");
-	return(Failures == 0 ? 0 : 1);
+	CHECK(with_networks.Transport.Get_Num_Local_Addresses() == 2);
+	CHECK_MESSAGE(blind.Transport.Get_Num_Local_Addresses() == 0, "a socket naming no interface reports none");
 }
