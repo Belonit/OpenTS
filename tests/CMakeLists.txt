@@ -109,6 +109,9 @@ function(opents_add_test target)
     endif()
 
     if(TEST_DOCTEST)
+        # Every test case adds its own registration objects, which a large harness such as
+        # uishell carries past the default section limit of an x64 object file.
+        target_compile_options(${target} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
         target_link_libraries(${target} PRIVATE OpenTSDoctestMain)
         opents_discover_doctest(${target} ${TEST_NAME})
     else()
