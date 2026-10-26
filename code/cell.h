@@ -563,6 +563,7 @@ class CellClass : public AbstractClass
 		void Cell_Color(RGBClass & lowcolor, RGBClass & highcolor) const;
 		int Preview_Cell_Color(unsigned char & unknown, bool terrainonly) const;
 		int Clear_Icon(IsometricTileType type, int seq_length) const;
+		static void Reset_Clear_Icon_Pattern(void);
 		static int Spot_Index(Coord const & coord);
 		bool Has_Tunnel(void) const;
 		bool Is_Near_Tunnel_NW(void) const;

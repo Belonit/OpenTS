@@ -1121,6 +1121,7 @@ void Clear_Scenario(void)
 	IonStormClass::Init();
 	EMPulseClass::Reset();
 	VeinholeMonsterClass::Reset();
+	CellClass::Reset_Clear_Icon_Pattern();
 
 	TiberiumClass::Deinit_Tiberium_Spread_System();
 	TiberiumClass::Deinit_Tiberium_Growth_System();

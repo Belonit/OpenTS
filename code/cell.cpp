@@ -3202,6 +3202,21 @@ BuildingClass * CellClass::Get_Gate(void) const
 }
 
 
+// The scenario's clear-tile pattern, picked from the visual random numbers at its first use.
+static bool ClearIconPatternBuilt = false;
+static int ClearIconPattern[64];
+
+
+/// <summary>
+/// Makes the next Clear_Icon call build the clear-tile pattern again, from the visual random
+/// numbers current at that call, as the first call in a new process does.
+/// </summary>
+void CellClass::Reset_Clear_Icon_Pattern(void)
+{
+	ClearIconPatternBuilt = false;
+}
+
+
 /***********************************************************************************************
  * CellClass::Clear_Icon -- Calculates what the clear icon number should be.                   *
  *                                                                                             *
@@ -3223,20 +3238,18 @@ BuildingClass * CellClass::Get_Gate(void) const
  *=============================================================================================*/
 int CellClass::Clear_Icon(IsometricTileType type, int seq_length) const
 {
-	static bool _init = false;
 	static int _small_pattern[16] = { 0, 1, 2, 3, 3, 2, 1, 0, 2, 3, 0, 1, 1, 0, 3, 2 };
-	static int _large_pattern[64];
 	static Point2D _adjacent_icon[8] = {
 		{-1,-1}, {0,-1}, {1,-1}, {-1,0}, {1,0}, {-1,1}, {0,1}, {1,1}
 	};
 
-	if (!_init) {
-		_init = true;
-		memset(_large_pattern, 0xFF, sizeof(_large_pattern));
+	if (!ClearIconPatternBuilt) {
+		ClearIconPatternBuilt = true;
+		memset(ClearIconPattern, 0xFF, sizeof(ClearIconPattern));
 
-		for (int i = 0; i < ARRAY_SIZE(_large_pattern); ++i) {
+		for (int i = 0; i < ARRAY_SIZE(ClearIconPattern); ++i) {
 			int random = -1;
-			for (int j = 0; j < ARRAY_SIZE(_large_pattern); j++) {
+			for (int j = 0; j < ARRAY_SIZE(ClearIconPattern); j++) {
 				random = NonCriticalRandomNumber() & 7;
 				bool duplicate = false;
 
@@ -3246,7 +3259,7 @@ int CellClass::Clear_Icon(IsometricTileType type, int seq_length) const
 					if (num < 0) num += 64;
 					if (num >= 64) num -= 64;
 
-					if (_large_pattern[num] == random) {
+					if (ClearIconPattern[num] == random) {
 						duplicate = true;
 						break;
 					}
@@ -3256,7 +3269,7 @@ int CellClass::Clear_Icon(IsometricTileType type, int seq_length) const
 					break;
 				}
 			}
-			_large_pattern[i] = random;
+			ClearIconPattern[i] = random;
 		}
 	}
 
@@ -3274,7 +3287,7 @@ int CellClass::Clear_Icon(IsometricTileType type, int seq_length) const
 	if (seq_length <= 4) {
 		return(_small_pattern[(cell.X & 0x03) | ((cell.Y & 0x03) << 2)]);
 	} else {
-		return(_large_pattern[(cell.X & 0x07) + ((cell.Y & 0x07) << 3)]);
+		return(ClearIconPattern[(cell.X & 0x07) + ((cell.Y & 0x07) << 3)]);
 	}
 }
 
