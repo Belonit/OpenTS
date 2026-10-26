@@ -357,6 +357,10 @@ namespace MapCapture
 
 			Map.Set_View_Dimensions(view);
 
+			// A full render draws overlays and shadows again inside each dirty area, and the logic
+			// frames registered theirs against whatever view was current while they ran.
+			TacticalMap->Reset_Dirty_Rectangles();
+
 			LogicalSurface = CompositeSurface;
 			TacticalMap->Render(*CompositeSurface, true, DRAW_PASS_FULL);
 
