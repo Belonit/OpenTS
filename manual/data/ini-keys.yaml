@@ -19532,6 +19532,23 @@ ScreenHeight:
       source: code/startup.cpp
       guard: null
     level: Startup
+ScreenTextColor:
+  key: ScreenTextColor
+  scopes:
+  - applies_to: *id002
+    file: rules.ini
+    section:
+      kind: identifier
+      source: object-type
+    value_type: color (R,G,B)
+    status: generated
+    _provenance:
+      default_candidate: null
+      declared_in: SideClass
+      member: ScreenTextColor
+      source: code/side.cpp
+      guard: null
+    level: SideClass
 ScreenWidth:
   key: ScreenWidth
   scopes:
